@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { SignUpInstitution } from './pages/registration/SignUpInstitution';
 import { Forgotpassword } from './pages/registration/Forgotpassword';
 import { Resetpassword } from './pages/registration/Resetpassword';
+import { SignInPage } from './pages/auth/SignInPage';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
       <Route path="/signup" element={<SignUpInstitution />} />
       <Route path="/forgot-password" element={<Forgotpassword />} />
       <Route path="/reset-password" element={<Resetpassword />} />
+      <Route path="/login" element={<SignInPage />} />
     </Routes>
   );
 }
