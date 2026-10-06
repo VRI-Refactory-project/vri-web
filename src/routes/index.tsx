@@ -1,17 +1,22 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { Placeholder } from '../components/Placeholder';
-import { Forgotpassword } from '../pages/registration/Forgotpassword';
+import { LandingPage } from '../pages/landing/LandingPage';
+import { RoleSelectionPage } from '../pages/registration/RoleSelectionPage';
+// import { Forgotpassword } from '../pages/registration/Forgotpassword';
 import { SignInPage } from '../pages/auth/SignInPage';
+import { CreateAccountPage } from '../pages/registration/CreateAccountPage';
 
 export const router = createBrowserRouter([
-  { path: '/', element: <Forgotpassword /> },
-  { path: '/login', element: <SignInPage /> },
+  { path: '/', element: <LandingPage /> },
+  { path: '/get-started', element: <RoleSelectionPage /> },
+  { path: '/sign-in', element: <SignInPage /> },
+  { path: '/register/deaf', element: <CreateAccountPage /> },
   { path: '/recover', element: <Placeholder title="Recover access" story="V2-008" /> },
-  {
-    path: '/register/deaf',
-    element: <Placeholder title="Deaf user registration" story="V2-001 / V2-002" />,
-  },
+  // {
+  //   path: '/register/deaf',
+  //   element: <Placeholder title="Deaf user registration" story="V2-001 / V2-002" />,
+  // },
   {
     path: '/register/interpreter',
     element: <Placeholder title="Interpreter registration (3 steps)" story="V2-003" />,
