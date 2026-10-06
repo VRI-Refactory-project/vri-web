@@ -3,6 +3,7 @@ import { ProtectedRoute } from '../components/ProtectedRoute';
 import { Placeholder } from '../components/Placeholder';
 import { LandingPage } from '../pages/landing/LandingPage';
 import { RoleSelectionPage } from '../pages/registration/RoleSelectionPage';
+// import { Forgotpassword } from '../pages/registration/Forgotpassword';
 import { SignInPage } from '../pages/auth/SignInPage';
 import { CreateAccountPage } from '../pages/registration/CreateAccountPage';
 

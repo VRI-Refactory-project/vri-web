@@ -1,0 +1,30 @@
+/* src/pages/AuthPages.css */
+
+/* --- Sign-up Page Specific --- */
+.step-indicator {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 40px;
+}
+
+.step-indicator .step {
+  height: 4px;
+  width: 60px;
+  background-color: #e2e8f0; /* Light gray for inactive */
+  border-radius: 4px;
+}
+
+.step-indicator .step.active {
+  background-color: var(--color-primary);
+}
+
+.step-text {
+  width: 100%;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-main);
+  margin-top: 8px;
+}
