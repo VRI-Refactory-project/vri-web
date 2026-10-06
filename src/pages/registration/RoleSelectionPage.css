@@ -1,11 +1,11 @@
 :root {
-  --rs-purple: #4F39C9;
-  --rs-purple-dark: #3F2BA8;
-  --rs-bg: #F5F3FB;
-  --rs-text: #1B1533;
-  --rs-text-muted: #6B6785;
-  --rs-border: #E5E1F0;
-  --rs-card-bg: #FFFFFF;
+  --rs-purple: #4f39c9;
+  --rs-purple-dark: #3f2ba8;
+  --rs-bg: #f5f3fb;
+  --rs-text: #1b1533;
+  --rs-text-muted: #6b6785;
+  --rs-border: #e5e1f0;
+  --rs-card-bg: #ffffff;
 }
 
 .rs-page {
@@ -88,7 +88,10 @@
   border-radius: 16px;
   padding: 1.5rem;
   cursor: pointer;
-  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
   font-family: inherit;
   color: inherit;
   text-align: left;

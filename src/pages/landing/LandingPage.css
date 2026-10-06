@@ -1,15 +1,13 @@
-
-
 :root {
-  --sc-purple:        #382C77;
-  --sc-purple-dark:   #382C77;
-  --sc-purple-soft:   #EEEAFB;
-  --sc-bg:            #F5F3FB;
-  --sc-text:          #1B1533;
-  --sc-text-muted:    #6B6785;
-  --sc-border:        #E5E1F0;
-  --sc-radius:        16px;
-  --sc-radius-pill:   999px;
+  --sc-purple: #382c77;
+  --sc-purple-dark: #382c77;
+  --sc-purple-soft: #eeeafb;
+  --sc-bg: #f5f3fb;
+  --sc-text: #1b1533;
+  --sc-text-muted: #6b6785;
+  --sc-border: #e5e1f0;
+  --sc-radius: 16px;
+  --sc-radius-pill: 999px;
 }
 
 /* --- Page shell --- */
@@ -37,8 +35,8 @@
   font-size: 1.125rem;
   color: var(--sc-text);
   text-decoration: none;
-    margin-top: 1.5rem;
-    margin-left: 4rem;  
+  margin-top: 1.5rem;
+  margin-left: 4rem;
 }
 
 .landing-logo-img {
@@ -89,7 +87,7 @@
   align-items: start;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem 2rem 2rem;   /* right side reduced from 5rem to 2rem */
+  padding: 2rem 2rem 2rem; /* right side reduced from 5rem to 2rem */
 }
 
 .landing-hero-left {
@@ -126,7 +124,7 @@
   font-size: 0.8rem;
   font-weight: 500;
   width: fit-content;
-  margin-bottom: 1.5rem;    
+  margin-bottom: 1.5rem;
 }
 
 .landing-title {
@@ -159,7 +157,9 @@
   font-weight: 600;
   cursor: pointer;
   width: fit-content;
-  transition: background 0.15s ease, transform 0.15s ease;
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
 }
 
 .landing-cta:hover {
@@ -193,11 +193,11 @@
 /* --- Hero image side --- */
 .landing-hero-right {
   position: relative;
-  margin-left: -4rem;      /* pulls it left */
+  margin-left: -4rem; /* pulls it left */
   /* or */
-  margin-right: -9rem;     /* pushes it right */
+  margin-right: -9rem; /* pushes it right */
   /* or */
-  transform: translateX(2rem);   /* shifts it right without affecting layout */
+  transform: translateX(2rem); /* shifts it right without affecting layout */
 }
 
 .landing-hero-image {
@@ -224,8 +224,8 @@
 
 .landing-pip {
   position: absolute;
-  top: 1rem;          
-  right: 1rem;        
+  top: 1rem;
+  right: 1rem;
   width: 120px;
   height: 120px;
   border-radius: 16px;

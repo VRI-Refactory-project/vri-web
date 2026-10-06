@@ -11,18 +11,13 @@ describe('RoleSelectionPage (V2-066)', () => {
         <MemoryRouter initialEntries={['/get-started']}>
           <Routes>
             <Route path="/get-started" element={<RoleSelectionPage />} />
-            <Route
-              path="/register/interpreter"
-              element={<p>interpreter form</p>}
-            />
+            <Route path="/register/interpreter" element={<p>interpreter form</p>} />
           </Routes>
         </MemoryRouter>
       </AuthProvider>,
     );
 
-    await userEvent.click(
-      screen.getByRole('button', { name: /interpreter/i })
-    );
+    await userEvent.click(screen.getByRole('button', { name: /interpreter/i }));
 
     expect(screen.getByText('interpreter form')).toBeInTheDocument();
   });

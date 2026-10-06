@@ -21,10 +21,7 @@ export function LandingPage() {
           <Link to="/sign-in" className="landing-login">
             Login
           </Link>
-          <button
-            className="landing-signup"
-            onClick={() => navigate('/get-started')}
-          >
+          <button className="landing-signup" onClick={() => navigate('/get-started')}>
             Sign Up
           </button>
         </nav>
@@ -40,14 +37,10 @@ export function LandingPage() {
           <h1 className="landing-title">SignConnect</h1>
 
           <p className="landing-subtitle">
-            Connect instantly with certified sign-language interpreters, or
-            schedule ahead.
+            Connect instantly with certified sign-language interpreters, or schedule ahead.
           </p>
 
-          <button
-            className="landing-cta"
-            onClick={() => navigate('/get-started')}
-          >
+          <button className="landing-cta" onClick={() => navigate('/get-started')}>
             Get Started →
           </button>
 
@@ -65,11 +58,7 @@ export function LandingPage() {
         </div>
 
         <div className="landing-hero-right">
-          <img
-            className="landing-hero-image"
-            src={interpreter}
-            alt="Sign language interpreter"
-          />
+          <img className="landing-hero-image" src={interpreter} alt="Sign language interpreter" />
           <div className="landing-pip">
             <img src={interpreter2} alt="Remote user preview" />
           </div>

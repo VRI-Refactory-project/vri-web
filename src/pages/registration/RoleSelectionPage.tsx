@@ -41,10 +41,7 @@ const CARDS: RoleCard[] = [
     title: 'I represent an Institution',
     description:
       'Make communication more accessible for your organisation, staff, students or clients.',
-    features: [
-      'Manage multiple users',
-      'Request interpreters for your organisation',
-    ],
+    features: ['Manage multiple users', 'Request interpreters for your organisation'],
   },
 ];
 
@@ -77,11 +74,11 @@ export function RoleSelectionPage() {
         <div className="rs-cards">
           {CARDS.map((card) => (
             <button
-  key={card.role}
-  className="rs-card"
-  onClick={() => handleSelect(card.role)}
-  aria-label={card.title}
->
+              key={card.role}
+              className="rs-card"
+              onClick={() => handleSelect(card.role)}
+              aria-label={card.title}
+            >
               <div className="rs-card-top">
                 <span className="rs-card-icon">{card.icon}</span>
                 <span className="rs-card-badge">

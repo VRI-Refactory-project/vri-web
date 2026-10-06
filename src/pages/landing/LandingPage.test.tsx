@@ -17,24 +17,18 @@ describe('LandingPage', () => {
 
   it('renders the SignConnect hero heading', () => {
     renderPage();
-    expect(
-      screen.getByRole('heading', { name: 'SignConnect' }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'SignConnect' })).toBeInTheDocument();
   });
 
   it('navigates to /get-started when Get Started is clicked', async () => {
     renderPage();
-    await userEvent.click(
-      screen.getByRole('button', { name: /get started/i }),
-    );
+    await userEvent.click(screen.getByRole('button', { name: /get started/i }));
     expect(screen.getByText('role selection')).toBeInTheDocument();
   });
 
   it('navigates to /get-started when Sign Up is clicked', async () => {
     renderPage();
-    await userEvent.click(
-      screen.getByRole('button', { name: /sign up/i }),
-    );
+    await userEvent.click(screen.getByRole('button', { name: /sign up/i }));
     expect(screen.getByText('role selection')).toBeInTheDocument();
   });
 

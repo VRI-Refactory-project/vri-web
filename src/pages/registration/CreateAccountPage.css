@@ -1,11 +1,11 @@
 :root {
-  --ca-purple: #382C77;
-  --ca-purple-dark: #382C77;
-  --ca-text: #1B1533;
-  --ca-text-muted: #6B6785;
-  --ca-border: #E5E1F0;
-  --ca-input-border: #DDD8EC;
-  --ca-bg-input: #FAFAFD;
+  --ca-purple: #382c77;
+  --ca-purple-dark: #382c77;
+  --ca-text: #1b1533;
+  --ca-text-muted: #6b6785;
+  --ca-border: #e5e1f0;
+  --ca-input-border: #ddd8ec;
+  --ca-bg-input: #fafafd;
 }
 
 /* --- Page shell with background --- */
@@ -112,7 +112,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.5rem;
-  background: #F4F2FA;
+  background: #f4f2fa;
   border-radius: 12px;
   padding: 0.35rem;
   margin-bottom: 1.5rem;
@@ -132,7 +132,9 @@
   font-weight: 600;
   color: var(--ca-text-muted);
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
 .ca-tab.active {
@@ -177,7 +179,9 @@
   font-size: 0.95rem;
   color: var(--ca-text);
   outline: none;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
 }
 
 .ca-input:focus {
@@ -186,7 +190,7 @@
 }
 
 .ca-input::placeholder {
-  color: #B8B2C7;
+  color: #b8b2c7;
 }
 
 .ca-input-toggle {

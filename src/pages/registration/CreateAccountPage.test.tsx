@@ -17,9 +17,7 @@ describe('CreateAccountPage', () => {
 
   it('renders the "Create your account" heading', () => {
     renderPage();
-    expect(
-      screen.getByRole('heading', { name: /create your account/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /create your account/i })).toBeInTheDocument();
   });
 
   it('switches from Email to Phone tab when Phone is clicked', async () => {
@@ -40,17 +38,13 @@ describe('CreateAccountPage', () => {
   it('toggles the password field between masked and visible', async () => {
     renderPage();
 
-   const passwordInput = screen.getByLabelText('Password') as HTMLInputElement;
+    const passwordInput = screen.getByLabelText('Password') as HTMLInputElement;
     expect(passwordInput.type).toBe('password');
 
-    await userEvent.click(
-      screen.getByRole('button', { name: /show password/i }),
-    );
+    await userEvent.click(screen.getByRole('button', { name: /show password/i }));
     expect(passwordInput.type).toBe('text');
 
-    await userEvent.click(
-      screen.getByRole('button', { name: /hide password/i }),
-    );
+    await userEvent.click(screen.getByRole('button', { name: /hide password/i }));
     expect(passwordInput.type).toBe('password');
   });
 

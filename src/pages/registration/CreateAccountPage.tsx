@@ -15,10 +15,7 @@ export function CreateAccountPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div
-      className="ca-page"
-      style={{ backgroundImage: `url(${backgroundImage})` }}
-    >
+    <div className="ca-page" style={{ backgroundImage: `url(${backgroundImage})` }}>
       <Link to="/" className="ca-logo">
         <img src={logo} alt="SignConnect" />
       </Link>
@@ -29,9 +26,7 @@ export function CreateAccountPage() {
 
       <div className="ca-card">
         <h1 className="ca-title">Create your account</h1>
-        <p className="ca-subtitle">
-          Watch the video for help in sign language.
-        </p>
+        <p className="ca-subtitle">Watch the video for help in sign language.</p>
 
         <div className="ca-tabs" role="tablist">
           <button
@@ -106,8 +101,7 @@ export function CreateAccountPage() {
           <label className="ca-terms">
             <input type="checkbox" required />
             <span>
-              I agree to the <a href="/terms">Terms</a> and{' '}
-              <a href="/privacy">Privacy Policy</a>
+              I agree to the <a href="/terms">Terms</a> and <a href="/privacy">Privacy Policy</a>
             </span>
           </label>
 
