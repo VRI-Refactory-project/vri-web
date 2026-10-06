@@ -1,7 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { Placeholder } from '../components/Placeholder';
-import { RoleSelectionPage } from '../pages/registration/RoleSelectionPage';
+import { RoleSelectionPage } from '../pages/registration/Forgotpassword';
 import { SignInPage } from '../pages/auth/SignInPage';
 
 export const router = createBrowserRouter([
