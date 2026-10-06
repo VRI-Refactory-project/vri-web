@@ -6,7 +6,7 @@ import { SignInPage } from '../pages/auth/SignInPage';
 
 export const router = createBrowserRouter([
   { path: '/', element: <Forgotpassword /> },
-  { path: '/sign-in', element: <SignInPage /> },
+  { path: '/login', element: <SignInPage /> },
   { path: '/recover', element: <Placeholder title="Recover access" story="V2-008" /> },
   {
     path: '/register/deaf',
