@@ -6,6 +6,7 @@ import { RoleSelectionPage } from '../pages/registration/RoleSelectionPage';
 // import { Forgotpassword } from '../pages/registration/Forgotpassword';
 import { SignInPage } from '../pages/auth/SignInPage';
 import { CreateAccountPage } from '../pages/registration/CreateAccountPage';
+import { UploadCertificationsPage } from '../pages/registration/UploadCertificationsPage';
 
 export const router = createBrowserRouter([
   { path: '/', element: <LandingPage /> },
@@ -20,6 +21,11 @@ export const router = createBrowserRouter([
   {
     path: '/register/interpreter',
     element: <Placeholder title="Interpreter registration (3 steps)" story="V2-003" />,
+  },
+  { path: '/register/interpreter/certifications', element: <UploadCertificationsPage /> },
+  {
+    path: '/register/interpreter/pending',
+    element: <Placeholder title="Application pending review" story="V2-003 (final step)" />,
   },
   {
     path: '/register/institution',
