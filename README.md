@@ -8,7 +8,7 @@ Built with **React 18**, **TypeScript**, and **Vite**, fully containerised via *
 
 ---
 
-## 🛠️ Tech Stack & Architecture
+##  Tech Stack & Architecture
 
 - **Framework**: React (Vite + TypeScript)
 - **Runtime**: Node.js v20 (Docker) / v22 (CI Pipeline)
@@ -19,7 +19,7 @@ Built with **React 18**, **TypeScript**, and **Vite**, fully containerised via *
 
 ---
 
-## 🚀 Quick Start with Docker (Recommended)
+##  Quick Start with Docker (Recommended)
 
 Docker ensures line-ending consistency (`LF`) across Windows, macOS, and Linux environments.
 

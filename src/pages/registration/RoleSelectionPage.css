@@ -1,0 +1,196 @@
+:root {
+  --rs-purple: #4F39C9;
+  --rs-purple-dark: #3F2BA8;
+  --rs-bg: #F5F3FB;
+  --rs-text: #1B1533;
+  --rs-text-muted: #6B6785;
+  --rs-border: #E5E1F0;
+  --rs-card-bg: #FFFFFF;
+}
+
+.rs-page {
+  min-height: 100vh;
+  background: var(--rs-bg);
+  color: var(--rs-text);
+  font-family: 'Manrope', system-ui, sans-serif;
+}
+
+/* --- Header --- */
+.rs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 2rem;
+}
+
+.rs-logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.rs-logo img {
+  width: 200px;
+  height: 130px;
+  object-fit: contain;
+  display: block;
+}
+
+.rs-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--rs-text);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.rs-back:hover {
+  color: var(--rs-purple);
+}
+
+/* --- Main --- */
+.rs-main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 2rem 4rem;
+  text-align: center;
+}
+
+.rs-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 2rem 0 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.rs-subtitle {
+  color: var(--rs-text-muted);
+  font-size: 0.95rem;
+  margin: 0 0 2.5rem;
+}
+
+/* --- Cards --- */
+.rs-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 3rem;
+  text-align: left;
+}
+
+.rs-card {
+  background: var(--rs-card-bg);
+  border: 1px solid var(--rs-border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  font-family: inherit;
+  color: inherit;
+  text-align: left;
+}
+
+.rs-card:hover {
+  border-color: var(--rs-purple);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(79, 57, 201, 0.08);
+}
+
+.rs-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.rs-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--rs-bg);
+  display: grid;
+  place-items: center;
+  color: var(--rs-text);
+}
+
+.rs-card-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--rs-text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.rs-card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+
+.rs-card-desc {
+  font-size: 0.85rem;
+  color: var(--rs-text-muted);
+  line-height: 1.5;
+  margin: 0 0 1.25rem;
+}
+
+.rs-card-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rs-card-features li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--rs-text-muted);
+}
+
+.rs-card-features svg {
+  color: var(--rs-purple);
+  flex-shrink: 0;
+}
+
+/* --- Progress --- */
+.rs-progress {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.rs-progress-segment {
+  width: 100px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--rs-border);
+}
+
+.rs-progress-segment.active {
+  background: var(--rs-purple);
+}
+
+.rs-step {
+  font-size: 0.85rem;
+  color: var(--rs-text-muted);
+}
+
+/* --- Responsive --- */
+@media (max-width: 900px) {
+  .rs-cards {
+    grid-template-columns: 1fr;
+  }
+  .rs-title {
+    font-size: 1.5rem;
+  }
+}

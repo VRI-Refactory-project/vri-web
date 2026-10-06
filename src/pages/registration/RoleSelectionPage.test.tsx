@@ -8,15 +8,22 @@ describe('RoleSelectionPage (V2-066)', () => {
   it('routes to the interpreter registration when Interpreter is chosen', async () => {
     render(
       <AuthProvider>
-        <MemoryRouter>
+        <MemoryRouter initialEntries={['/get-started']}>
           <Routes>
-            <Route path="/" element={<RoleSelectionPage />} />
-            <Route path="/register/interpreter" element={<p>interpreter form</p>} />
+            <Route path="/get-started" element={<RoleSelectionPage />} />
+            <Route
+              path="/register/interpreter"
+              element={<p>interpreter form</p>}
+            />
           </Routes>
         </MemoryRouter>
       </AuthProvider>,
     );
-    await userEvent.click(screen.getByRole('button', { name: 'Interpreter' }));
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /interpreter/i })
+    );
+
     expect(screen.getByText('interpreter form')).toBeInTheDocument();
   });
 });
