@@ -1,0 +1,14 @@
+services:
+  frontend-web:
+    build: .
+    container_name: vri_react_web
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8000
+      - CHOKIDAR_USEPOLLING=true
+    stdin_open: true
+    tty: true
