@@ -10,12 +10,7 @@ interface AuthLayoutProps {
   onBack: () => void;
 }
 
-export const AuthLayout: React.FC<AuthLayoutProps> = ({ 
-  children, 
-  title, 
-  subtitle, 
-  onBack 
-}) => {
+export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subtitle, onBack }) => {
   return (
     <div className="auth-layout-container">
       <header className="auth-header">

@@ -9,7 +9,7 @@ function App() {
     <Routes>
       {/* If the user goes to the root URL, redirect them to /signup */}
       <Route path="/" element={<Navigate to="/signup" replace />} />
-      
+
       {/* Define the paths for your three pages */}
       <Route path="/signup" element={<SignUpInstitution />} />
       <Route path="/forgot-password" element={<Forgotpassword />} />

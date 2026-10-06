@@ -14,31 +14,31 @@ export const Resetpassword = () => {
   };
 
   return (
-    <AuthLayout 
-      title="Select a new password" 
+    <AuthLayout
+      title="Select a new password"
       subtitle="Choose a strong password you haven't used before"
       onBack={() => console.log('Go back')}
     >
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label>Email address</label>
-          <input 
-            type="email" 
-            className="form-input" 
+          <input
+            type="email"
+            className="form-input"
             placeholder="name@example.com"
             value={formData.email}
-            onChange={(e) => setFormData({...formData, email: e.target.value})}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
           />
         </div>
 
         <div className="form-group">
           <label>Password</label>
-          <input 
-            type="password" 
-            className="form-input" 
+          <input
+            type="password"
+            className="form-input"
             placeholder="Enter your password"
             value={formData.password}
-            onChange={(e) => setFormData({...formData, password: e.target.value})}
+            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
           />
         </div>
 

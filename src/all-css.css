@@ -3,13 +3,13 @@
 
 :root {
   /* Colors from your spec */
-  --color-primary: #382C77;
-  --color-bg-page: #F5F4FB;
-  --color-bg-form: #FFFFFF;
-  --color-border: #CBD5E1;
-  --color-text-main: #1E293B; 
-  --color-text-muted: #64748B; 
-  
+  --color-primary: #382c77;
+  --color-bg-page: #f5f4fb;
+  --color-bg-form: #ffffff;
+  --color-border: #cbd5e1;
+  --color-text-main: #1e293b;
+  --color-text-muted: #64748b;
+
   /* Properties */
   --radius-form: 15px;
   --font-main: 'Manrope', sans-serif;
@@ -46,7 +46,7 @@ body {
   width: 100%;
   padding: 12px 16px;
   border: 1px solid var(--color-border);
-  border-radius: 8px; 
+  border-radius: 8px;
   font-family: var(--font-main);
   font-size: 14px;
   outline: none;

@@ -1,11 +1,11 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { Placeholder } from '../components/Placeholder';
-import { RoleSelectionPage } from '../pages/registration/Forgotpassword';
+import { Forgotpassword } from '../pages/registration/Forgotpassword';
 import { SignInPage } from '../pages/auth/SignInPage';
 
 export const router = createBrowserRouter([
-  { path: '/', element: <RoleSelectionPage /> },
+  { path: '/', element: <Forgotpassword /> },
   { path: '/sign-in', element: <SignInPage /> },
   { path: '/recover', element: <Placeholder title="Recover access" story="V2-008" /> },
   {

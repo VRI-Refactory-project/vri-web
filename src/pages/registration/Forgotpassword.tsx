@@ -14,17 +14,17 @@ export const Forgotpassword = () => {
   };
 
   return (
-    <AuthLayout 
-      title="Forgot Password?" 
+    <AuthLayout
+      title="Forgot Password?"
       subtitle="Enter your email and we'll send reset instructions"
       onBack={() => console.log('Go back')}
     >
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label>Email address</label>
-          <input 
-            type="email" 
-            className="form-input" 
+          <input
+            type="email"
+            className="form-input"
             placeholder="name@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}

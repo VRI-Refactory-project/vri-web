@@ -12,7 +12,7 @@
 .step-indicator .step {
   height: 4px;
   width: 60px;
-  background-color: #E2E8F0; /* Light gray for inactive */
+  background-color: #e2e8f0; /* Light gray for inactive */
   border-radius: 4px;
 }
 
