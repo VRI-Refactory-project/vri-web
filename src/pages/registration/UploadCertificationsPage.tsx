@@ -1,5 +1,6 @@
 import { useRef, useState, type DragEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import logo from '../../assets/no_background_logo.png';
 import { StepProgress } from '../../components/StepProgress';
 import {
   stageCertificates,
@@ -182,7 +183,11 @@ export function UploadCertificationsPage() {
 
   return (
     <main className="cert-page">
-      <header className="cert-page__brand">SignConnect</header>
+      <header className="cert-page__brand">
+        <Link to="/">
+          <img src={logo} alt="SignConnect" />
+        </Link>
+      </header>
       <form className="cert-page__content" onSubmit={onSubmit} noValidate>
         <h1>Verify your certifications</h1>
         <p className="cert-page__subtitle">
