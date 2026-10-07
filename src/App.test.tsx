@@ -1,9 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import App from './App';
 
-describe('Basic Setup', () => {
-  it('should pass this dummy test to satisfy the CI pipeline', () => {
-    // This test simply checks that basic math works.
-    // It proves the testing framework is running correctly.
-    expect(1 + 1).toBe(2);
+describe('App', () => {
+  it('renders the landing page at "/" with the real router', () => {
+    render(<App />);
+    expect(screen.getByRole('heading', { name: 'SignConnect' })).toBeInTheDocument();
   });
 });

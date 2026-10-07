@@ -1,12 +1,56 @@
 import { api } from './api';
-import type { AuthSession } from '../types';
+import { toRole } from '../features/auth/roles';
+import type { AuthSession, AuthUser } from '../types';
 
-// Endpoints are placeholders until the backend contract (NEW-02, V2-008) is agreed.
-export const signIn = (identifier: string, password: string) =>
-  api<AuthSession>('/api/auth/login/', {
+// Shapes returned by the Django API (apps/accounts: LoginView, RefreshView, UserSerializer).
+interface ApiUser {
+  id: number;
+  full_name: string;
+  phone_number: string;
+  email: string | null;
+  role: string;
+  must_change_password: boolean;
+}
+
+interface LoginResponse {
+  access: string;
+  refresh: string;
+  user: ApiUser;
+}
+
+interface RefreshResponse {
+  access: string;
+  refresh?: string;
+}
+
+export function toAuthUser(user: ApiUser): AuthUser {
+  return {
+    id: String(user.id),
+    name: user.full_name,
+    role: toRole(user.role),
+    mustChangePassword: user.must_change_password,
+  };
+}
+
+/** `identifier` is a phone number (0772123456 or +256772123456) or an email address. */
+export async function signIn(identifier: string, password: string): Promise<AuthSession> {
+  const res = await api<LoginResponse>('/api/v1/auth/login/', {
     method: 'POST',
     body: JSON.stringify({ identifier, password }),
   });
+  return { token: res.access, refreshToken: res.refresh, user: toAuthUser(res.user) };
+}
 
+/** Exchanges a refresh token for a new access token. */
+export const refreshAccessToken = (refresh: string) =>
+  api<RefreshResponse>('/api/v1/auth/token/refresh/', {
+    method: 'POST',
+    body: JSON.stringify({ refresh }),
+  });
+
+// Placeholder until V2-008 is wired on the web (backend: /api/v1/auth/recovery/request/).
 export const requestRecovery = (identifier: string) =>
-  api<void>('/api/auth/recovery/', { method: 'POST', body: JSON.stringify({ identifier }) });
+  api<void>('/api/v1/auth/recovery/request/', {
+    method: 'POST',
+    body: JSON.stringify({ identifier }),
+  });

@@ -7,9 +7,14 @@ export interface AuthUser {
   id: string;
   name: string;
   role: Role;
+  /** True after an admin reset: the backend only allows changing the password until then. */
+  mustChangePassword: boolean;
 }
 
 export interface AuthSession {
+  /** Short-lived access token, sent as `Authorization: Bearer <token>`. */
   token: string;
+  /** Long-lived token used to get a new access token when the old one expires. */
+  refreshToken: string;
   user: AuthUser;
 }

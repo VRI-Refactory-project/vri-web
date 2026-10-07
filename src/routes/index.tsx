@@ -3,7 +3,9 @@ import { ProtectedRoute } from '../components/ProtectedRoute';
 import { Placeholder } from '../components/Placeholder';
 import { LandingPage } from '../pages/landing/LandingPage';
 import { RoleSelectionPage } from '../pages/registration/RoleSelectionPage';
-// import { Forgotpassword } from '../pages/registration/Forgotpassword';
+import { Forgotpassword } from '../pages/registration/Forgotpassword';
+import { Resetpassword } from '../pages/registration/Resetpassword';
+import { SignUpInstitution } from '../pages/registration/SignUpInstitution';
 import { SignInPage } from '../pages/auth/SignInPage';
 import { CreateAccountPage } from '../pages/registration/CreateAccountPage';
 import { UploadCertificationsPage } from '../pages/registration/UploadCertificationsPage';
@@ -13,6 +15,8 @@ export const router = createBrowserRouter([
   { path: '/get-started', element: <RoleSelectionPage /> },
   { path: '/sign-in', element: <SignInPage /> },
   { path: '/register/deaf', element: <CreateAccountPage /> },
+  { path: '/forgot-password', element: <Forgotpassword /> },
+  { path: '/reset-password', element: <Resetpassword /> },
   { path: '/recover', element: <Placeholder title="Recover access" story="V2-008" /> },
   // {
   //   path: '/register/deaf',
@@ -27,10 +31,7 @@ export const router = createBrowserRouter([
     path: '/register/interpreter/pending',
     element: <Placeholder title="Application pending review" story="V2-003 (final step)" />,
   },
-  {
-    path: '/register/institution',
-    element: <Placeholder title="Institution registration" story="V2-005 (Sprint 2)" />,
-  },
+  { path: '/register/institution', element: <SignUpInstitution /> },
   {
     element: <ProtectedRoute allow={['deaf']} />,
     children: [
