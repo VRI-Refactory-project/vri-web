@@ -12,7 +12,7 @@ interface ApiUser {
   must_change_password: boolean;
 }
 
-interface LoginResponse {
+export interface LoginResponse {
   access: string;
   refresh: string;
   user: ApiUser;
@@ -32,7 +32,7 @@ export function toAuthUser(user: ApiUser): AuthUser {
   };
 }
 
-const toSession = (res: LoginResponse): AuthSession => ({
+export const toSession = (res: LoginResponse): AuthSession => ({
   token: res.access,
   refreshToken: res.refresh,
   user: toAuthUser(res.user),

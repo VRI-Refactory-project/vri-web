@@ -28,3 +28,9 @@
   color: var(--color-text-main);
   margin-top: 8px;
 }
+
+.form-error {
+  margin: 12px 0 0;
+  color: #b3261e;
+  font-size: 14px;
+}

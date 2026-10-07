@@ -360,3 +360,24 @@
     width: 60px;
   }
 }
+
+.ca-hint {
+  margin: -0.5rem 0 1.25rem;
+  font-size: 0.8rem;
+  color: var(--ca-text-muted);
+}
+
+.ca-error {
+  margin: 0 0 1rem;
+  color: #b3261e;
+  font-size: 0.875rem;
+}
+
+select.ca-input {
+  appearance: none;
+}
+
+.ca-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
