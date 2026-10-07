@@ -1,4 +1,4 @@
-import { signIn } from './auth';
+import { confirmRecovery, requestRecovery, signIn } from './auth';
 import { ApiError } from './api';
 
 const apiUser = {
@@ -47,5 +47,30 @@ describe('signIn', () => {
       message: 'No active account found with the given credentials',
     });
     await expect(signIn('x', 'y')).rejects.toBeInstanceOf(ApiError);
+  });
+});
+
+describe('account recovery', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('requests a code with the identifier', async () => {
+    const fetchMock = mockFetch(200, { detail: 'If an account exists, a code was sent.' });
+    await requestRecovery('deaf@test.com');
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toContain('/api/v1/auth/recovery/request/');
+    expect(JSON.parse(init.body)).toEqual({ identifier: 'deaf@test.com' });
+  });
+
+  it('confirms with code and new_password and returns a session', async () => {
+    const fetchMock = mockFetch(200, { access: 'a', refresh: 'r', user: apiUser });
+    const session = await confirmRecovery('deaf@test.com', '123456', 'NewPass#2026');
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toContain('/api/v1/auth/recovery/confirm/');
+    expect(JSON.parse(init.body)).toEqual({
+      identifier: 'deaf@test.com',
+      code: '123456',
+      new_password: 'NewPass#2026',
+    });
+    expect(session.user.role).toBe('deaf');
   });
 });
