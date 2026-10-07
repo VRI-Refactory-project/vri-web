@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import logo from '../../assets/no_background_logo.png';
 import '../../components/Placeholder.css';
 
 // Shown after an interpreter or institution registers: their account exists but an admin has to
@@ -10,6 +11,7 @@ export function PendingReviewPage() {
 
   return (
     <main className="page">
+      <img src={logo} alt="SignConnect" style={{ height: 64, width: 'auto', marginBottom: 24 }} />
       <h1>Thanks, {session?.user.name ?? 'we have your application'}</h1>
       <p>
         {isInterpreter
