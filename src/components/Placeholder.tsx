@@ -1,3 +1,5 @@
+import './Placeholder.css';
+
 export function Placeholder({ title, story }: { title: string; story: string }) {
   return (
     <main className="page">
