@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { Placeholder } from '../components/Placeholder';
 import { LandingPage } from '../pages/landing/LandingPage';
+import { SplashPage } from '../pages/landing/SplashPage';
 import { RoleSelectionPage } from '../pages/registration/RoleSelectionPage';
 import { Forgotpassword } from '../pages/registration/Forgotpassword';
 import { Resetpassword } from '../pages/registration/Resetpassword';
@@ -12,7 +13,8 @@ import { PendingReviewPage } from '../pages/registration/PendingReviewPage';
 import { UploadCertificationsPage } from '../pages/registration/UploadCertificationsPage';
 
 export const router = createBrowserRouter([
-  { path: '/', element: <LandingPage /> },
+  { path: '/', element: <SplashPage /> },
+  { path: '/landing', element: <LandingPage /> },
   { path: '/get-started', element: <RoleSelectionPage /> },
   { path: '/sign-in', element: <SignInPage /> },
   { path: '/register/deaf', element: <CreateAccountPage /> },
