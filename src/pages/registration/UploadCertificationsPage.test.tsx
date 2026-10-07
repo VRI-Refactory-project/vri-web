@@ -21,7 +21,7 @@ describe('UploadCertificationsPage (V2-003)', () => {
   afterEach(() => vi.restoreAllMocks());
 
   it('blocks submission and shows errors when required fields are missing', async () => {
-    const upload = vi.spyOn(certifications, 'uploadCertifications');
+    const upload = vi.spyOn(certifications, 'uploadCertificate');
     renderPage();
     await userEvent.click(screen.getByRole('button', { name: 'Continue' }));
     expect(screen.getByText('Upload your certificate.')).toBeInTheDocument();
@@ -40,7 +40,9 @@ describe('UploadCertificationsPage (V2-003)', () => {
   });
 
   it('uploads a complete certificate and moves to the pending screen', async () => {
-    const upload = vi.spyOn(certifications, 'uploadCertifications').mockResolvedValue();
+    const upload = vi
+      .spyOn(certifications, 'uploadCertificate')
+      .mockResolvedValue({} as certifications.CertificationDocument);
     renderPage();
     await userEvent.upload(screen.getByLabelText('Certificate file 1'), pdf());
     await userEvent.selectOptions(screen.getByLabelText('Certificate type *'), 'Other');

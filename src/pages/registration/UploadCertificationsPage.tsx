@@ -2,7 +2,7 @@ import { useRef, useState, type DragEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { StepProgress } from '../../components/StepProgress';
 import { ApiError } from '../../services/api';
-import { uploadCertifications } from '../../services/certifications';
+import { uploadCertificate } from '../../services/certifications';
 import {
   CERTIFICATE_TYPES,
   validateEntry,
@@ -173,20 +173,31 @@ export function UploadCertificationsPage() {
     if (Object.keys(found).length > 0) return;
 
     setSubmitting(true);
+    // The backend takes one file per request. Upload in order and drop each certificate once it
+    // is saved, so a retry after a failure does not upload the same file twice.
+    let uploaded = 0;
     try {
-      await uploadCertifications(
-        entries.map((entry) => ({
+      for (const entry of entries) {
+        await uploadCertificate({
           file: entry.file as File,
           type: entry.type,
           organisation: entry.organisation.trim(),
-        })),
-      );
+        });
+        uploaded += 1;
+        setEntries((list) => list.filter((x) => x.id !== entry.id));
+      }
       navigate('/register/interpreter/pending');
     } catch (err) {
+      const reason =
+        err instanceof ApiError && err.status === 401
+          ? 'Please sign in to upload your certificates.'
+          : err instanceof ApiError
+            ? err.message
+            : 'We could not upload your certificates. Check your connection and try again.';
       setSubmitError(
-        err instanceof ApiError
-          ? err.message
-          : 'We could not upload your certificates. Check your connection and try again.',
+        uploaded > 0
+          ? `${uploaded} certificate(s) uploaded, but the next one failed: ${reason}`
+          : reason,
       );
     } finally {
       setSubmitting(false);
