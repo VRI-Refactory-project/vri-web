@@ -1,17 +1,38 @@
 // src/pages/auth/SignInPage.tsx
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { AuthLayout } from '../../components/Authlayout';
+import { dashboardPathFor } from '../../features/auth/roles';
+import { useAuth } from '../../hooks/useAuth';
+import { ApiError } from '../../services/api';
+import { signIn } from '../../services/auth';
 import './SignInPages.css';
 
 export const SignInPage = () => {
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState({ identifier: '', password: '' });
+  const [error, setError] = useState<string>();
+  const [submitting, setSubmitting] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Logging in with:', formData);
-    // TODO: Connect to your backend API later
+    setError(undefined);
+    setSubmitting(true);
+    try {
+      const session = await signIn(formData.identifier.trim(), formData.password);
+      login(session);
+      navigate(dashboardPathFor(session.user.role), { replace: true });
+    } catch (err) {
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : 'We could not sign you in. Check your connection and try again.',
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -35,21 +56,25 @@ export const SignInPage = () => {
         >
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label>Email address</label>
+              <label htmlFor="identifier">Email or phone number</label>
               <input
-                type="email"
+                id="identifier"
+                type="text"
+                autoComplete="username"
                 className="form-input"
-                placeholder="name@example.com"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="name@example.com or 0772123456"
+                value={formData.identifier}
+                onChange={(e) => setFormData({ ...formData, identifier: e.target.value })}
                 required
               />
             </div>
 
             <div className="form-group">
-              <label>Password</label>
+              <label htmlFor="password">Password</label>
               <input
+                id="password"
                 type="password"
+                autoComplete="current-password"
                 className="form-input"
                 placeholder="Enter your password"
                 value={formData.password}
@@ -58,8 +83,19 @@ export const SignInPage = () => {
               />
             </div>
 
-            <button type="submit" className="btn-primary" style={{ marginTop: '16px' }}>
-              Login <ChevronRight size={18} />
+            {error && (
+              <p role="alert" style={{ color: '#b91c1c', marginTop: '12px' }}>
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              className="btn-primary"
+              style={{ marginTop: '16px' }}
+              disabled={submitting}
+            >
+              {submitting ? 'Signing in...' : 'Login'} <ChevronRight size={18} />
             </button>
           </form>
 
