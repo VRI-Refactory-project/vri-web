@@ -1,8 +1,10 @@
 import { useRef, useState, type DragEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { StepProgress } from '../../components/StepProgress';
-import { ApiError } from '../../services/api';
-import { uploadCertificate } from '../../services/certifications';
+import {
+  stageCertificates,
+  stagedCertificates,
+} from '../../features/registration/stagedCertificates';
 import {
   CERTIFICATE_TYPES,
   validateEntry,
@@ -147,22 +149,22 @@ function CertificateForm({
   );
 }
 
-// V2-003, step 3 of 4 in the interpreter registration design: certification upload.
+// V2-003: interpreter registration, step 2 of 3. Collects the certificates; they are uploaded
+// after the account is created on the next step.
 export function UploadCertificationsPage() {
   const navigate = useNavigate();
-  const [entries, setEntries] = useState<CertificateEntry[]>(() => [newEntry()]);
+  const [entries, setEntries] = useState<CertificateEntry[]>(() => {
+    const kept = stagedCertificates();
+    return kept.length > 0 ? kept : [newEntry()];
+  });
   const [errors, setErrors] = useState<Record<number, EntryErrors>>({});
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string>();
-
   const update = (id: number, patch: Partial<CertificateEntry>) => {
     setEntries((list) => list.map((e) => (e.id === id ? { ...e, ...patch } : e)));
     setErrors((prev) => ({ ...prev, [id]: {} }));
   };
 
-  const onSubmit = async (e: React.FormEvent) => {
+  const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitError(undefined);
 
     const found: Record<number, EntryErrors> = {};
     entries.forEach((entry) => {
@@ -172,36 +174,10 @@ export function UploadCertificationsPage() {
     setErrors(found);
     if (Object.keys(found).length > 0) return;
 
-    setSubmitting(true);
-    // The backend takes one file per request. Upload in order and drop each certificate once it
-    // is saved, so a retry after a failure does not upload the same file twice.
-    let uploaded = 0;
-    try {
-      for (const entry of entries) {
-        await uploadCertificate({
-          file: entry.file as File,
-          type: entry.type,
-          organisation: entry.organisation.trim(),
-        });
-        uploaded += 1;
-        setEntries((list) => list.filter((x) => x.id !== entry.id));
-      }
-      navigate('/register/interpreter/pending');
-    } catch (err) {
-      const reason =
-        err instanceof ApiError && err.status === 401
-          ? 'Please sign in to upload your certificates.'
-          : err instanceof ApiError
-            ? err.message
-            : 'We could not upload your certificates. Check your connection and try again.';
-      setSubmitError(
-        uploaded > 0
-          ? `${uploaded} certificate(s) uploaded, but the next one failed: ${reason}`
-          : reason,
-      );
-    } finally {
-      setSubmitting(false);
-    }
+    // Nothing is uploaded yet: the account does not exist. The next page creates it and then
+    // uploads these files (see CreateAccountPage).
+    stageCertificates(entries);
+    navigate('/register/interpreter/account');
   };
 
   return (
@@ -234,17 +210,11 @@ export function UploadCertificationsPage() {
           + Add another certificate
         </button>
 
-        {submitError && (
-          <p className="field-error field-error--form" role="alert">
-            {submitError}
-          </p>
-        )}
-
-        <button type="submit" className="btn btn--primary" disabled={submitting}>
-          {submitting ? 'Uploading...' : 'Continue'}
+        <button type="submit" className="btn btn--primary">
+          Continue
         </button>
 
-        <StepProgress current={3} total={4} />
+        <StepProgress current={2} total={3} />
       </form>
     </main>
   );

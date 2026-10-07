@@ -25,6 +25,12 @@ function errorMessage(body: unknown): string | undefined {
   return undefined;
 }
 
+/** A message safe to show the user for anything thrown by `api()`. */
+export const describeError = (err: unknown) =>
+  err instanceof ApiError
+    ? err.message
+    : 'We could not reach the server. Check your connection and try again.';
+
 let refreshHandler: (() => Promise<string | null>) | null = null;
 
 /**

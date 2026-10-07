@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { Placeholder } from '../components/Placeholder';
 import { LandingPage } from '../pages/landing/LandingPage';
@@ -8,6 +8,7 @@ import { Resetpassword } from '../pages/registration/Resetpassword';
 import { SignUpInstitution } from '../pages/registration/SignUpInstitution';
 import { SignInPage } from '../pages/auth/SignInPage';
 import { CreateAccountPage } from '../pages/registration/CreateAccountPage';
+import { PendingReviewPage } from '../pages/registration/PendingReviewPage';
 import { UploadCertificationsPage } from '../pages/registration/UploadCertificationsPage';
 
 export const router = createBrowserRouter([
@@ -18,19 +19,13 @@ export const router = createBrowserRouter([
   { path: '/forgot-password', element: <Forgotpassword /> },
   { path: '/reset-password', element: <Resetpassword /> },
   { path: '/recover', element: <Placeholder title="Recover access" story="V2-008" /> },
-  // {
-  //   path: '/register/deaf',
-  //   element: <Placeholder title="Deaf user registration" story="V2-001 / V2-002" />,
-  // },
+  { path: '/register/interpreter', element: <UploadCertificationsPage /> },
   {
-    path: '/register/interpreter',
-    element: <Placeholder title="Interpreter registration (3 steps)" story="V2-003" />,
+    path: '/register/interpreter/certifications',
+    element: <Navigate to="/register/interpreter" replace />,
   },
-  { path: '/register/interpreter/certifications', element: <UploadCertificationsPage /> },
-  {
-    path: '/register/interpreter/pending',
-    element: <Placeholder title="Application pending review" story="V2-003 (final step)" />,
-  },
+  { path: '/register/interpreter/account', element: <CreateAccountPage role="interpreter" /> },
+  { path: '/register/pending', element: <PendingReviewPage /> },
   { path: '/register/institution', element: <SignUpInstitution /> },
   {
     element: <ProtectedRoute allow={['deaf']} />,

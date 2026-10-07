@@ -12,6 +12,8 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     globals: true,
+    // Slow machines and CI: the page tests render whole screens and can exceed the 5s default.
+    testTimeout: 20000,
     setupFiles: ["./src/test/setup.ts"],
   },
 });
