@@ -13,7 +13,9 @@ import {
   type CertificateEntry,
   type EntryErrors,
 } from './certificateValidation';
+import backgroundImage from '../../assets/background_image.png';
 import './UploadCertificationsPage.css';
+import './PhotoBackground.css';
 
 let nextId = 1;
 const newEntry = (): CertificateEntry => ({ id: nextId++, file: null, type: '', organisation: '' });
@@ -182,7 +184,7 @@ export function UploadCertificationsPage() {
   };
 
   return (
-    <main className="cert-page">
+    <main className="cert-page photo-bg" style={{ backgroundImage: `url(${backgroundImage})` }}>
       <header className="cert-page__brand">
         <Link to="/">
           <img src={logo} alt="SignConnect" />
