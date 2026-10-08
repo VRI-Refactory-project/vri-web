@@ -49,7 +49,7 @@
 }
 
 .splash-logo {
-  width: clamp(10rem, 28vw, 13.5rem);
+  width: clamp(30rem, 28vw, 13.5rem);
   height: auto;
   display: block;
   margin: 0 auto 1.25rem;
