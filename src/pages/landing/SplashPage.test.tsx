@@ -19,7 +19,9 @@ describe('SplashPage', () => {
     render(<SplashPage />);
 
     expect(screen.getByRole('heading', { name: /inclusive communication/i })).toBeInTheDocument();
-    expect(screen.getByText(/connect instantly with certified sign-language interpreters/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/connect instantly with certified sign-language interpreters/i),
+    ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /log in/i })).toHaveAttribute('href', '/sign-in');
   });
 
