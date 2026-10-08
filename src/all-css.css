@@ -78,3 +78,29 @@ body {
 .btn-primary:hover {
   opacity: 0.9;
 }
+
+
+
+
+/* --- Validation States --- */
+.form-input.input-error {
+  border-color: #dc2626;
+  background-color: #fef2f2;
+}
+
+.form-input.input-success {
+  border-color: #16a34a;
+  background-color: #f0fdf4;
+}
+
+.input-error-text {
+  color: #dc2626;
+  font-size: 12px;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+
+
+
+
