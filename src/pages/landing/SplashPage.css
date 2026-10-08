@@ -49,15 +49,11 @@
 }
 
 .splash-logo {
-<<<<<<< Updated upstream
-  width: clamp(30rem, 28vw, 13.5rem);
-=======
   width: clamp(20rem, 28vw, 13.5rem);
->>>>>>> Stashed changes
   height: auto;
   display: block;
   margin: 0 auto 1.25rem;
-  border-radius: 10%;
+  border-radius: 0;
 }
 
 .splash-title {
