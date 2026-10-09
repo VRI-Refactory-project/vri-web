@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { AuthShell } from '../../components/AuthShell';
+import { ROLE_STEP } from '../../features/registration/flows';
 import { useAuth } from '../../hooks/useAuth';
 import type { SelectableRole } from '../../types';
 
-import logo from '../../assets/no_background_logo.png';
 import deafUserImg from '../../assets/deafuser2.png';
 import interpreterImg from '../../assets/interpreter4.png';
 import institutionImg from '../../assets/institution.png';
@@ -59,18 +59,8 @@ export function RoleSelectionPage() {
   };
 
   return (
-    <div className="rs-page">
-      <header className="rs-header">
-        <Link to="/" className="rs-logo">
-          <img src={logo} alt="SignConnect" />
-        </Link>
-
-        <Link to="/" className="rs-back">
-          <ArrowLeft size={16} /> Back
-        </Link>
-      </header>
-
-      <main className="rs-main">
+    <AuthShell size="wide" bare backTo="/" steps={ROLE_STEP} current={1}>
+      <div className="rs-main">
         <h1 className="rs-title">Who's joining SignConnect?</h1>
         <p className="rs-subtitle">
           Pick the one that fits you best. You can add another one later.
@@ -94,7 +84,7 @@ export function RoleSelectionPage() {
             </button>
           ))}
         </div>
-      </main>
-    </div>
+      </div>
+    </AuthShell>
   );
 }
