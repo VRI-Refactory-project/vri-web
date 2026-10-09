@@ -1,33 +1,66 @@
 :root {
-  --sc-purple: #382c77;
+  --sc-purple: #FFFFFF;
   --sc-purple-dark: #382c77;
-  --sc-purple-soft: #eeeafb;
-  --sc-bg: #f5f3fb;
+  --sc-purple-soft: #382c77;
+  --sc-bg: #3B2774;
   --sc-text: #1b1533;
   --sc-text-muted: #6b6785;
-  --sc-border: #e5e1f0;
+  --sc-border: #382c77;
   --sc-radius: 16px;
   --sc-radius-pill: 999px;
 }
 
 /* --- Page shell --- */
-.landing {
+/* .landing {
   min-height: 100vh;
   background: var(--sc-bg);
   color: var(--sc-text);
+} */
+
+/* .landing {
+  height: 100vh;      
+  overflow: hidden;   
+  display: flex;      
+  flex-direction: column;
+  background: var(--sc-bg);
+  color: var(--sc-text);
+} */
+
+.landing {
+  /* Replace height: 100vh with this: */
+  min-height: 100vh;      /* At least as tall as the screen */
+  max-height: none;       /* Remove any hard max height */
+  
+  /* Keep the rest */
+  background: var(--sc-bg);
+  color: #e8e6f0;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;     /* Prevents horizontal scroll, allows vertical */
+  overflow-y: auto;       /* Allows vertical scroll if content is too tall */
 }
 
 /* --- Header --- */
+/* .landing-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; */
+  /* max-width: 1200px; */
+  /* margin: 0 auto;
+  padding: 0rem 3rem 1.5rem 2rem;
+} */
+
 .landing-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  /* max-width: 1200px; */
-  margin: 0 auto;
-  padding: 2.5rem 3rem 1.5rem 2rem;
+  width: 100%;            /* Ensure it takes full width */
+  /* max-width: 1200px;       */
+  margin: 0 auto;         /* Center it */
+  padding: 0.1rem 5rem;   /* Restore reasonable padding */
 }
 
-.landing-logo {
+/* .landing-logo {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -37,35 +70,53 @@
   text-decoration: none;
   margin-top: 1.5rem;
   margin-left: 4rem;
+} */
+
+.landing-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 900;
+  font-size: 1.125rem;
+  color: var(--sc-text);
+  text-decoration: none;
+ margin-left: 4rem;             /* Remove the extra margins pushing it around */
 }
 
 .landing-logo-img {
-  width: 150px;
-  height: 100px;
+  width: 200px;
+  height: 150px;
   object-fit: contain;
   display: block;
 }
+
+/* .landing-nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+} */
 
 .landing-nav {
   display: flex;
   align-items: center;
   gap: 1.5rem;
+  margin: 0;              /* Remove any extra margins */
 }
 
 .landing-login {
-  color: var(--sc-text);
+  color: #ffff;
   text-decoration: none;
   font-weight: 500;
   font-size: 0.95rem;
 }
 
 .landing-login:hover {
-  color: var(--sc-purple);
+  color: #e8e6f0;
 }
 
 .landing-signup {
   background: var(--sc-purple);
-  color: #fff;
+  color: #382c77;
   border: none;
   padding: 0.6rem 1.25rem;
   border-radius: 16px;
@@ -76,26 +127,87 @@
 }
 
 .landing-signup:hover {
-  background: var(--sc-purple-dark);
+  background:#e8e6f0;
 }
 
 /* --- Hero --- */
-.landing-hero {
+/* .landing-hero {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 3rem;
   align-items: start;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem 2rem 2rem; /* right side reduced from 5rem to 2rem */
+  padding: 2rem 2rem 2rem; 
+} */
+
+/* .landing-hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: center;    /* Centers content vertically */
+  /* width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;        
+  flex: 1;                
+  min-height: 0;          
+} */ 
+
+/* .landing-hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem 0 0; 
+  flex: 1;
+  min-height: 0;
+} */
+
+.landing-hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem; 
+  
+  /* Change this line: */
+  flex: none;             /* Don't force it to fill remaining space */
+  
+  /* Keep the rest */
+  min-height: 0;
 }
 
-.landing-hero-left {
+/* .landing-hero-left {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
   padding-top: 15rem;
   margin-left: -8rem;
+} */
+
+.landing-hero-left {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-top: 0;
+  margin-left: -5rem; /* Negative margin pulls it to the left */
+}
+
+.landing-hero-right {
+  position: relative;
+  margin-left: 0;         /* REMOVED -4rem */
+  margin-right: 0;        /* REMOVED -9rem */
+  transform: none;        /* REMOVED translateX */
+  display: flex;
+  justify-content: center; /* Center the image nicely */
+  align-items: center;
 }
 
 /* .landing-badge {
@@ -118,7 +230,7 @@
   gap: 0.5rem;
   background: #fff;
   border: 1px solid var(--sc-border);
-  color: var(--sc-text-muted);
+  color: #382c77;
   padding: 0.4rem 0.9rem;
   border-radius: 9999px;
   font-size: 0.8rem;
@@ -139,7 +251,7 @@
 .landing-subtitle {
   font-size: 1.125rem;
   line-height: 1.55;
-  color: var(--sc-text-muted);
+  color: #ffff;
   margin: 0;
   max-width: 28rem;
 }
@@ -148,8 +260,8 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: var(--sc-purple);
-  color: #fff;
+  background: #ffff;
+  color: #382c77;
   border: none;
   padding: 1rem 1.75rem;
   border-radius: 16px;
@@ -163,7 +275,7 @@
 }
 
 .landing-cta:hover {
-  background: var(--sc-purple-dark);
+  background: #e8e6f0;
   transform: translateY(-1px);
 }
 
@@ -180,7 +292,7 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  color: var(--sc-text-muted);
+  color: #ffff;
   font-size: 0.95rem;
   font-weight: 500;
 }
@@ -193,15 +305,27 @@
 /* --- Hero image side --- */
 .landing-hero-right {
   position: relative;
-  margin-left: -4rem; /* pulls it left */
+  margin-left: 0rem; /* pulls it left */
   /* or */
-  margin-right: -9rem; /* pushes it right */
+  margin-right: -20rem; /* pushes it right */
   /* or */
   transform: translateX(2rem); /* shifts it right without affecting layout */
 }
 
+/* .landing-hero-image {
+  width: 100%;
+  max-width: 600px;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: 24px;
+  display: block;
+  background: #ddd;
+  margin: 0 auto; 
+} */
+
 .landing-hero-image {
   width: 100%;
+  max-width: 420px;       /* Constrain width to fit the column */
   aspect-ratio: 4 / 5;
   object-fit: cover;
   border-radius: 24px;
@@ -224,8 +348,8 @@
 
 .landing-pip {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  top: 0.5rem;
+  right: 14rem;
   width: 120px;
   height: 120px;
   border-radius: 16px;
@@ -243,7 +367,7 @@
 
 .landing-status-pill {
   position: absolute;
-  left: -2rem;
+  left: 10rem;
   bottom: 1.25rem;
   display: inline-flex;
   align-items: center;
@@ -257,12 +381,25 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
-.landing-status-dot {
+/* .landing-status-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: var(--sc-purple);
   box-shadow: 0 0 0 3px var(--sc-purple-soft);
+} */
+
+.landing-status-dot {
+  width: 8px;
+  height: 8px;
+  min-width: 8px;        /* Prevents it from shrinking */
+  min-height: 8px;       /* Prevents it from shrinking */
+  max-width: 8px;        /* Prevents it from growing */
+  max-height: 8px;       /* Prevents it from growing */
+  flex-shrink: 0;        /* THE KEY FIX: Stops the flexbox from stretching it */
+  border-radius: 50%;
+  background: var(--sc-purple);
+  box-shadow: 0 0 0 3px var(--sc-purple-soft); /* The soft lavender ring */
 }
 
 /* --- Responsive --- */

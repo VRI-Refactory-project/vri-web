@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ShieldCheck, Check, Video, Lock } from 'lucide-react';
 import interpreter from '../../assets/interpreter.jpeg';
 import interpreter2 from '../../assets/interpreter2.png';
-import logo from '../../assets/logo.jpeg';
+import logo from '../../assets/no_bg.png';
 import './LandingPage.css';
 
 // Landing page: public marketing entry point.

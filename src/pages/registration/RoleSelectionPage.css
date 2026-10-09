@@ -1,15 +1,16 @@
+
 :root {
   --rs-purple: #4f39c9;
-  --rs-purple-dark: #3f2ba8;
-  --rs-bg: #f5f3fb;
+  --rs-bg: #F5F4FB;
   --rs-text: #1b1533;
   --rs-text-muted: #6b6785;
-  --rs-border: #e5e1f0;
-  --rs-card-bg: #ffffff;
 }
 
 .rs-page {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   background: var(--rs-bg);
   color: var(--rs-text);
   font-family: 'Manrope', system-ui, sans-serif;
@@ -21,20 +22,15 @@
   align-items: center;
   justify-content: space-between;
   max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
   padding: 1.5rem 2rem;
-}
-
-.rs-logo {
-  display: flex;
-  align-items: center;
-  text-decoration: none;
+  flex-shrink: 0;
 }
 
 .rs-logo img {
-  width: 200px;
-  height: 130px;
-  object-fit: contain;
+  width: 180px;
+  height: auto;
   display: block;
 }
 
@@ -52,148 +48,143 @@
   color: var(--rs-purple);
 }
 
-/* --- Main --- */
+/* --- Main Layout --- */
 .rs-main {
+  flex: 1;
+  min-height: 0;
   max-width: 1100px;
+  width: 100%;
   margin: 0 auto;
-  padding: 2rem 2rem 4rem;
+  padding: 0 2rem 2rem;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .rs-title {
-  font-size: 2rem;
-  font-weight: 700;
-  margin: 2rem 0 0.5rem;
+  font-size: 2.25rem;
+  font-weight: 800;
+  margin: 0.5rem 0 0.5rem;
   letter-spacing: -0.02em;
 }
 
 .rs-subtitle {
   color: var(--rs-text-muted);
-  font-size: 0.95rem;
+  font-size: 1rem;
   margin: 0 0 2.5rem;
 }
 
-/* --- Cards --- */
+/* --- Cards Grid --- */
 .rs-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.25rem;
-  margin-bottom: 3rem;
+  gap: 2rem;
   text-align: left;
+  min-height: 0;
 }
 
+/* --- Card Setup --- */
 .rs-card {
-  background: var(--rs-card-bg);
-  border: 1px solid var(--rs-border);
+  position: relative;
+  background: #e8e6f0;
+  padding: 0;
   border-radius: 16px;
-  padding: 1.5rem;
   cursor: pointer;
-  transition:
-    border-color 0.15s ease,
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   font-family: inherit;
   color: inherit;
   text-align: left;
+  overflow: hidden;
+  height: 60vh;
+  max-height: 480px;
+  z-index: 1;
+
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+.rs-card:focus,
+.rs-card:active,
+.rs-card:focus-visible,
+.rs-card:hover {
+  outline: none !important;
+  border: none !important;
 }
 
 .rs-card:hover {
-  border-color: var(--rs-purple);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(79, 57, 201, 0.08);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08) !important;
 }
 
-.rs-card-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1.25rem;
+/* --- THE SELECTED STATE --- */
+.rs-card.selected {
+  transform: scale(1.05) translateY(-8px);
+  box-shadow: 0 20px 40px rgba(79, 57, 201, 0.25) !important;
+  z-index: 10;
+  border: 2px solid var(--rs-purple) !important;
 }
 
-.rs-card-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: var(--rs-bg);
-  display: grid;
-  place-items: center;
-  color: var(--rs-text);
+/* --- Background Image Layer --- */
+.rs-card-bg-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  z-index: 1;
 }
 
-.rs-card-badge {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--rs-text-muted);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
+/* --- Text Overlay Layer --- */
+.rs-card-text-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 2;
+  padding: 1.5rem;
 }
 
 .rs-card-title {
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 1.35rem;
+  font-weight: 900;
   margin: 0 0 0.5rem;
+  line-height: 1.2;
+  color: #000000;
+  letter-spacing: -0.02em;
 }
 
 .rs-card-desc {
   font-size: 0.85rem;
-  color: var(--rs-text-muted);
-  line-height: 1.5;
-  margin: 0 0 1.25rem;
-}
-
-.rs-card-features {
-  list-style: none;
-  padding: 0;
+  color: #1b1533;
+  line-height: 1.4;
   margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.rs-card-features li {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.8rem;
-  color: var(--rs-text-muted);
-}
-
-.rs-card-features svg {
-  color: var(--rs-purple);
-  flex-shrink: 0;
-}
-
-/* --- Progress --- */
-.rs-progress {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.rs-progress-segment {
-  width: 100px;
-  height: 4px;
-  border-radius: 999px;
-  background: var(--rs-border);
-}
-
-.rs-progress-segment.active {
-  background: var(--rs-purple);
-}
-
-.rs-step {
-  font-size: 0.85rem;
-  color: var(--rs-text-muted);
 }
 
 /* --- Responsive --- */
 @media (max-width: 900px) {
+  .rs-page {
+    height: auto;
+    min-height: 100vh;
+    overflow: auto; /* allow scroll on mobile stacked layout */
+  }
+
   .rs-cards {
     grid-template-columns: 1fr;
   }
+
   .rs-title {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
+  }
+
+  .rs-card {
+    height: 400px;
+    max-height: none;
   }
 }
