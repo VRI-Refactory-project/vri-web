@@ -35,7 +35,7 @@ export const Forgotpassword = () => {
     <AuthLayout
       title="Forgot Password?"
       subtitle="Enter your email or phone number and we'll email you a 6-digit code"
-      onBack={() => navigate('/sign-in')}
+      backTo="/sign-in"
     >
       <form onSubmit={handleSubmit}>
         <div className="form-group">

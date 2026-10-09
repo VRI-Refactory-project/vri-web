@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import logo from '../../assets/no_background_logo.png';
-import '../../components/Placeholder.css';
+import { AuthShell } from '../../components/AuthShell';
 
 // Shown after an interpreter or institution registers: their account exists but an admin has to
 // approve it (V2-045 / V2-046) before they can take part.
@@ -10,20 +9,21 @@ export function PendingReviewPage() {
   const isInterpreter = session?.user.role === 'interpreter';
 
   return (
-    <main className="page">
-      <img src={logo} alt="SignConnect" style={{ height: 64, width: 'auto', marginBottom: 24 }} />
-      <h1>Thanks, {session?.user.name ?? 'we have your application'}</h1>
-      <p>
-        {isInterpreter
-          ? 'Your account is created and your certificates are with our team for review.'
-          : 'Your institution account is created and is waiting for our team to review it.'}{' '}
-        We will contact you once a decision is made.
-      </p>
-      <p>
+    <AuthShell>
+      <div className="as-card-header">
+        <h1>Thanks, {session?.user.name ?? 'we have your application'}</h1>
+        <p>
+          {isInterpreter
+            ? 'Your account is created and your certificates are with our team for review.'
+            : 'Your institution account is created and is waiting for our team to review it.'}{' '}
+          We will contact you once a decision is made.
+        </p>
+      </div>
+      <p style={{ textAlign: 'center' }}>
         <Link to="/" onClick={logout}>
           Back to the home page
         </Link>
       </p>
-    </main>
+    </AuthShell>
   );
 }

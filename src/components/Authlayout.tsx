@@ -1,35 +1,25 @@
-// src/components/AuthLayout.tsx
-import React from 'react';
-import { ChevronLeft } from 'lucide-react';
-import './Authlayout.css';
+import type { ReactNode } from 'react';
+import { AuthShell } from './AuthShell';
+
+// A titled form card inside the shared auth frame (sign-in, recovery, institution sign-up).
 
 interface AuthLayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
   title: string;
   subtitle: string;
-  onBack: () => void;
+  backTo: string;
+  steps?: readonly string[];
+  current?: number;
 }
 
-export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subtitle, onBack }) => {
+export function AuthLayout({ children, title, subtitle, backTo, steps, current }: AuthLayoutProps) {
   return (
-    <div className="auth-layout-container">
-      <header className="auth-header">
-        <div className="logo-container">
-          <img src="/logo.png" alt="SignConnect Logo" className="brand-logo" />
-        </div>
-        <button className="back-button" onClick={onBack}>
-          <ChevronLeft size={20} />
-          <span>Back</span>
-        </button>
-      </header>
-
-      <main className="auth-card">
-        <div className="auth-card-header">
-          <h1>{title}</h1>
-          <p>{subtitle}</p>
-        </div>
-        {children}
-      </main>
-    </div>
+    <AuthShell backTo={backTo} steps={steps} current={current}>
+      <div className="as-card-header">
+        <h1>{title}</h1>
+        <p>{subtitle}</p>
+      </div>
+      {children}
+    </AuthShell>
   );
-};
+}

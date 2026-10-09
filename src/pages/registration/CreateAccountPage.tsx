@@ -1,8 +1,8 @@
 import { useState, type FormEvent, type InputHTMLAttributes, type ReactNode } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Mail, Phone, Lock, Eye, EyeOff, Award, ChevronRight } from 'lucide-react';
-import logo from '../../assets/no_background_logo.png';
-import backgroundImage from '../../assets/background_image.png';
+import { User, Mail, Phone, Lock, Eye, EyeOff, Award, ChevronRight } from 'lucide-react';
+import { AuthShell } from '../../components/AuthShell';
+import { FLOWS } from '../../features/registration/flows';
 import { useAuth } from '../../hooks/useAuth';
 import { dashboardPathFor } from '../../features/auth/roles';
 import {
@@ -129,148 +129,127 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
   };
 
   return (
-    <div className="ca-page" style={{ backgroundImage: `url(${backgroundImage})` }}>
-      <Link to="/" className="ca-logo">
-        <img src={logo} alt="SignConnect" />
-      </Link>
+    <AuthShell
+      backTo={isInterpreter ? '/register/interpreter' : '/get-started'}
+      steps={isInterpreter ? FLOWS.interpreter : FLOWS.deaf}
+      current={isInterpreter ? 3 : 2}
+    >
+      <h1 className="ca-title">Create your account</h1>
+      <p className="ca-subtitle">Watch the video for help in sign language.</p>
 
-      <Link to={isInterpreter ? '/register/interpreter' : '/get-started'} className="ca-back">
-        <ArrowLeft size={16} /> Back
-      </Link>
-
-      <div className="ca-card">
-        <h1 className="ca-title">Create your account</h1>
-        <p className="ca-subtitle">Watch the video for help in sign language.</p>
-
-        <form onSubmit={onSubmit} noValidate>
-          {field('ca-name', 'Full name', <User size={16} />, {
-            type: 'text',
-            autoComplete: 'name',
-            placeholder: 'Your full name',
-            value: form.name,
-            onChange: set('name'),
+      <form onSubmit={onSubmit} noValidate>
+        {field('ca-name', 'Full name', <User size={16} />, {
+          type: 'text',
+          autoComplete: 'name',
+          placeholder: 'Your full name',
+          value: form.name,
+          onChange: set('name'),
+          disabled: accountCreated,
+        })}
+        {field('ca-phone', 'Phone number', <Phone size={16} />, {
+          type: 'tel',
+          autoComplete: 'tel',
+          placeholder: '0772 123 456',
+          value: form.phone,
+          onChange: set('phone'),
+          disabled: accountCreated,
+        })}
+        {field(
+          'ca-email',
+          isInterpreter ? 'Email address' : 'Email address (optional)',
+          <Mail size={16} />,
+          {
+            type: 'email',
+            autoComplete: 'email',
+            placeholder: 'name@example.com',
+            value: form.email,
+            onChange: set('email'),
             disabled: accountCreated,
-          })}
-          {field('ca-phone', 'Phone number', <Phone size={16} />, {
-            type: 'tel',
-            autoComplete: 'tel',
-            placeholder: '0772 123 456',
-            value: form.phone,
-            onChange: set('phone'),
-            disabled: accountCreated,
-          })}
-          {field(
-            'ca-email',
-            isInterpreter ? 'Email address' : 'Email address (optional)',
-            <Mail size={16} />,
-            {
-              type: 'email',
-              autoComplete: 'email',
-              placeholder: 'name@example.com',
-              value: form.email,
-              onChange: set('email'),
-              disabled: accountCreated,
-            },
-          )}
-          {!isInterpreter && (
-            <p className="ca-hint">
-              An email lets you reset your password yourself. Without one you will need our help.
-            </p>
-          )}
+          },
+        )}
+        {!isInterpreter && (
+          <p className="ca-hint">
+            An email lets you reset your password yourself. Without one you will need our help.
+          </p>
+        )}
 
-          {isInterpreter && (
-            <div className="ca-field">
-              <label className="ca-label" htmlFor="ca-specialisation">
-                Specialisation
-              </label>
-              <div className="ca-input-wrap">
-                <span className="ca-input-icon">
-                  <Award size={16} />
-                </span>
-                <select
-                  id="ca-specialisation"
-                  className="ca-input"
-                  value={specialisation}
-                  disabled={accountCreated}
-                  onChange={(e) => setSpecialisation(e.target.value as Specialisation)}
-                >
-                  {SPECIALISATIONS.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          )}
-
+        {isInterpreter && (
           <div className="ca-field">
-            <label className="ca-label" htmlFor="ca-password">
-              Password
+            <label className="ca-label" htmlFor="ca-specialisation">
+              Specialisation
             </label>
             <div className="ca-input-wrap">
               <span className="ca-input-icon">
-                <Lock size={16} />
+                <Award size={16} />
               </span>
-              <input
-                id="ca-password"
+              <select
+                id="ca-specialisation"
                 className="ca-input"
-                type={showPassword ? 'text' : 'password'}
-                placeholder="••••••••"
-                autoComplete="new-password"
-                value={form.password}
-                onChange={set('password')}
+                value={specialisation}
                 disabled={accountCreated}
-              />
-              <button
-                type="button"
-                className="ca-input-toggle"
-                onClick={() => setShowPassword((v) => !v)}
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                onChange={(e) => setSpecialisation(e.target.value as Specialisation)}
               >
-                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
+                {SPECIALISATIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
+        )}
 
-          <label className="ca-terms">
-            <input type="checkbox" required />
-            <span>
-              I agree to the <a href="/terms">Terms</a> and <a href="/privacy">Privacy Policy</a>
-            </span>
+        <div className="ca-field">
+          <label className="ca-label" htmlFor="ca-password">
+            Password
           </label>
-
-          {error && (
-            <p className="ca-error" role="alert">
-              {error}
-            </p>
-          )}
-
-          <button type="submit" className="ca-submit" disabled={submitting}>
-            {submitting ? 'Please wait...' : accountCreated ? 'Try upload again' : 'Create account'}{' '}
-            <ChevronRight size={18} />
-          </button>
-        </form>
-
-        <p className="ca-footer">
-          Have an account? <Link to="/sign-in">Sign in</Link>
-        </p>
-      </div>
-
-      <div className="ca-welcome">
-        <div className="ca-welcome-text">
-          Welcome! I'll walk you through creating your account, one step at a time.
+          <div className="ca-input-wrap">
+            <span className="ca-input-icon">
+              <Lock size={16} />
+            </span>
+            <input
+              id="ca-password"
+              className="ca-input"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="••••••••"
+              autoComplete="new-password"
+              value={form.password}
+              onChange={set('password')}
+              disabled={accountCreated}
+            />
+            <button
+              type="button"
+              className="ca-input-toggle"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
         </div>
-      </div>
 
-      <div className="ca-step">
-        <div className="ca-progress">
-          <span className="ca-progress-segment active" />
-          <span className="ca-progress-segment active" />
-          <span className={`ca-progress-segment${isInterpreter ? ' active' : ''}`} />
-        </div>
-        <p className="ca-step-text">Step {isInterpreter ? 3 : 2} of 3</p>
-      </div>
-    </div>
+        <label className="ca-terms">
+          <input type="checkbox" required />
+          <span>
+            I agree to the <a href="/terms">Terms</a> and <a href="/privacy">Privacy Policy</a>
+          </span>
+        </label>
+
+        {error && (
+          <p className="ca-error" role="alert">
+            {error}
+          </p>
+        )}
+
+        <button type="submit" className="ca-submit" disabled={submitting}>
+          {submitting ? 'Please wait...' : accountCreated ? 'Try upload again' : 'Create account'}{' '}
+          <ChevronRight size={18} />
+        </button>
+      </form>
+
+      <p className="ca-footer">
+        Have an account? <Link to="/sign-in">Sign in</Link>
+      </p>
+    </AuthShell>
   );
 }
