@@ -130,6 +130,9 @@
   }
 
   .rs-card {
-    height: 360px;
+    height: 320px;
+    width: 100%;
+    max-width: 520px;
+    margin-inline: auto;
   }
 }

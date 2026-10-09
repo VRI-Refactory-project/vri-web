@@ -269,6 +269,47 @@
   }
 }
 
+/* The wide card (role selection) needs more room beside it for the step list, so it switches
+   to the bar layout sooner. Same rules as the block above. */
+@media (max-width: 1380px) {
+  .as-main--wide {
+    grid-template-columns: minmax(0, var(--card-width));
+    justify-content: center;
+    row-gap: 1rem;
+  }
+  .as-main--wide > .as-steps-slot {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: stretch;
+    width: auto;
+    min-height: 44px;
+    padding-top: 0;
+  }
+  .as-main--wide > :not(.as-steps-slot) {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .as-main--wide .step-list {
+    display: none;
+  }
+  .as-main--wide .step-compact {
+    display: block;
+  }
+}
+
+/* Short screens (small laptops, phones on their side): smaller logo, less padding. */
+@media (max-height: 700px) {
+  .as-logo img {
+    height: 56px;
+  }
+  .as-header {
+    padding-block: 0.75rem;
+  }
+  .as-card {
+    padding-block: 1.75rem;
+  }
+}
+
 @media (max-width: 640px) {
   .as-header {
     padding: 1rem;
