@@ -76,5 +76,42 @@ describe('registration services', () => {
       organisation_name: 'Mulago',
       organisation_type: 'HOSPITAL',
     });
+    expect(JSON.parse(init.body)).not.toHaveProperty('organisation_type_other');
+  });
+
+  it('sends what an "Other" institution is, and only for that type', async () => {
+    const fetchMock = mockFetch('institution');
+    await registerInstitution({
+      name: 'Dr Okello',
+      phone: '+256772123456',
+      email: 'a@school.org',
+      password: 'pw',
+      organisationName: 'Hill School',
+      organisationType: 'OTHER',
+      organisationTypeOther: ' School for the Deaf ',
+    });
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({
+      organisation_type: 'OTHER',
+      organisation_type_other: 'School for the Deaf',
+    });
+
+    await registerInstitution({
+      name: 'Dr Okello',
+      phone: '+256772123456',
+      email: 'a@mulago.org',
+      password: 'pw',
+      organisationName: 'Mulago',
+      organisationType: 'HOSPITAL',
+      organisationTypeOther: 'left over text',
+    });
+    expect(JSON.parse(fetchMock.mock.calls[1][1].body)).not.toHaveProperty(
+      'organisation_type_other',
+    );
+  });
+
+  it('sends the phone number without spaces or dashes', async () => {
+    const fetchMock = mockFetch('deaf_hoh');
+    await registerDeaf({ name: 'Amina', phone: '+256 772-123 456', password: 'pw' });
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).phone_number).toBe('+256772123456');
   });
 });

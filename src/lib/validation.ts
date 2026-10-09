@@ -1,0 +1,93 @@
+// Shared form validation for the sign-up, sign-in and recovery pages.
+// Every validator is a plain function: it returns a message for the person filling in the form,
+// or undefined when the value is fine. The API checks the same rules again, so these exist to
+// help people fix a mistake before they send, not to protect the server.
+
+export const PHONE_EXAMPLE = '+256772123456';
+
+/** Remove the spaces and dashes people type for readability. This is what the API receives. */
+export function normalizePhone(value: string): string {
+  return value.replace(/[\s-]/g, '');
+}
+
+/**
+ * Applied while typing and pasting, so letters never reach a phone field. Keeps digits, spaces,
+ * dashes and a single + at the start.
+ */
+export function sanitizePhoneInput(value: string): string {
+  const cleaned = value.replace(/[^\d+\s-]/g, '').replace(/^\s+/, '');
+  const rest = cleaned.replace(/\+/g, '');
+  return (cleaned.startsWith('+') ? '+' : '') + rest;
+}
+
+/** A phone number must start with + and a country code, then digits only (international format). */
+export function validatePhone(value: string): string | undefined {
+  const phone = normalizePhone(value);
+  if (!phone) return 'Enter your phone number.';
+  if (!phone.startsWith('+')) {
+    return `Start with your country code, for example ${PHONE_EXAMPLE}.`;
+  }
+  if (!/^\+[1-9]\d{7,14}$/.test(phone)) {
+    return `Use a country code and digits only, for example ${PHONE_EXAMPLE}.`;
+  }
+  return undefined;
+}
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+export function validateEmail(
+  value: string,
+  options: { required?: boolean } = {},
+): string | undefined {
+  const { required = true } = options;
+  const email = value.trim();
+  if (!email) return required ? 'Enter your email address.' : undefined;
+  if (!EMAIL_PATTERN.test(email)) return 'Enter a valid email address, like name@example.com.';
+  if (/^\d+$/.test(email.split('@')[0])) {
+    return 'The part before the @ cannot be only numbers.';
+  }
+  return undefined;
+}
+
+const NAME_PATTERN = /^\p{L}[\p{L}\s'’.-]*$/u;
+
+/** Letters from any alphabet, plus spaces, hyphens, apostrophes and full stops (O'Neil, Anne-Marie). */
+export function validateName(value: string, what = 'your full name'): string | undefined {
+  const name = value.trim();
+  if (!name) return `Enter ${what}.`;
+  if (name.length < 2) return 'That is too short.';
+  if (!NAME_PATTERN.test(name)) return 'Use letters, spaces, hyphens and apostrophes only.';
+  return undefined;
+}
+
+/** For choosing a new password only. Never use this on sign-in: older accounts must still get in. */
+export function validatePassword(value: string): string | undefined {
+  if (!value) return 'Enter a password.';
+  if (value.length < 8) return 'Use at least 8 characters.';
+  if (/^\d+$/.test(value)) return 'Add some letters. A password cannot be only numbers.';
+  return undefined;
+}
+
+/** A required text field, such as an institution name. */
+export function validateRequiredText(
+  value: string,
+  message: string,
+  minLength = 2,
+): string | undefined {
+  const text = value.trim();
+  if (!text) return message;
+  if (text.length < minLength) return 'That is too short.';
+  return undefined;
+}
+
+/** Turns a map of check results into a map of only the messages, so `Object.keys` is the error count. */
+export function collectErrors<K extends string>(
+  checks: Record<K, string | undefined>,
+): Partial<Record<K, string>> {
+  const errors: Partial<Record<K, string>> = {};
+  for (const key of Object.keys(checks) as K[]) {
+    const message = checks[key];
+    if (message) errors[key] = message;
+  }
+  return errors;
+}

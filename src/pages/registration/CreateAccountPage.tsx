@@ -10,6 +10,14 @@ import {
   stagedCertificates,
   unstageCertificate,
 } from '../../features/registration/stagedCertificates';
+import {
+  collectErrors,
+  sanitizePhoneInput,
+  validateEmail,
+  validateName,
+  validatePassword,
+  validatePhone,
+} from '../../lib/validation';
 import { describeError } from '../../services/api';
 import { uploadCertificate } from '../../services/certifications';
 import {
@@ -30,12 +38,17 @@ const SPECIALISATIONS: { value: Specialisation; label: string }[] = [
   { value: 'LEGAL', label: 'Legal' },
 ];
 
+type FieldName = 'name' | 'phone' | 'email' | 'password' | 'terms';
+const FIELD_ORDER: FieldName[] = ['name', 'phone', 'email', 'password', 'terms'];
+
 function field(
   id: string,
   label: string,
   icon: ReactNode,
   input: InputHTMLAttributes<HTMLInputElement>,
+  error?: string,
 ) {
+  const errorId = `${id}-error`;
   return (
     <div className="ca-field">
       <label className="ca-label" htmlFor={id}>
@@ -43,8 +56,19 @@ function field(
       </label>
       <div className="ca-input-wrap">
         <span className="ca-input-icon">{icon}</span>
-        <input id={id} className="ca-input" {...input} />
+        <input
+          id={id}
+          className={error ? 'ca-input ca-input--error' : 'ca-input'}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? errorId : undefined}
+          {...input}
+        />
       </div>
+      {error && (
+        <p className="ca-field-error" id={errorId}>
+          {error}
+        </p>
+      )}
     </div>
   );
 }
@@ -58,14 +82,33 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
   const { login } = useAuth();
   const isInterpreter = role === 'interpreter';
   const [form, setForm] = useState({ name: '', phone: '', email: '', password: '' });
+  const [agreed, setAgreed] = useState(false);
   const [specialisation, setSpecialisation] = useState<Specialisation>('GENERAL');
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>();
+  // An error shows once the person has left the field, or tried to submit.
+  const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
+  const [submitted, setSubmitted] = useState(false);
   // Once the account exists, a retry must only upload what is left, never register again.
   const [accountCreated, setAccountCreated] = useState(false);
-  const set = (field: keyof typeof form) => (e: { target: { value: string } }) =>
-    setForm((f) => ({ ...f, [field]: e.target.value }));
+
+  const set = (name: keyof typeof form) => (e: { target: { value: string } }) =>
+    setForm((f) => ({
+      ...f,
+      [name]: name === 'phone' ? sanitizePhoneInput(e.target.value) : e.target.value,
+    }));
+
+  // Worked out from the form on every render, so a submit never reads out-of-date results.
+  const errors = collectErrors<FieldName>({
+    name: validateName(form.name),
+    phone: validatePhone(form.phone),
+    email: validateEmail(form.email, { required: isInterpreter }),
+    password: validatePassword(form.password),
+    terms: agreed ? undefined : 'Accept the Terms and Privacy Policy to continue.',
+  });
+  const shown = (name: FieldName) => (touched[name] || submitted ? errors[name] : undefined);
+  const touch = (name: FieldName) => () => setTouched((t) => ({ ...t, [name]: true }));
 
   // An interpreter who has not chosen certificates (or reloaded the page) starts from that step.
   if (isInterpreter && !accountCreated && stagedCertificates().length === 0) {
@@ -88,12 +131,10 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
     e.preventDefault();
     setError(undefined);
     if (!accountCreated) {
-      if (!form.name.trim() || !form.phone.trim() || !form.password) {
-        setError('Enter your name, phone number and a password.');
-        return;
-      }
-      if (isInterpreter && !form.email.trim()) {
-        setError('Enter your email address. We use it to contact you about your application.');
+      setSubmitted(true);
+      const firstInvalid = FIELD_ORDER.find((name) => errors[name]);
+      if (firstInvalid) {
+        document.getElementById(`ca-${firstInvalid}`)?.focus();
         return;
       }
     }
@@ -138,22 +179,38 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
       <p className="ca-subtitle">Watch the video for help in sign language.</p>
 
       <form onSubmit={onSubmit} noValidate>
-        {field('ca-name', 'Full name', <User size={16} />, {
-          type: 'text',
-          autoComplete: 'name',
-          placeholder: 'Your full name',
-          value: form.name,
-          onChange: set('name'),
-          disabled: accountCreated,
-        })}
-        {field('ca-phone', 'Phone number', <Phone size={16} />, {
-          type: 'tel',
-          autoComplete: 'tel',
-          placeholder: '0772 123 456',
-          value: form.phone,
-          onChange: set('phone'),
-          disabled: accountCreated,
-        })}
+        {field(
+          'ca-name',
+          'Full name',
+          <User size={16} />,
+          {
+            type: 'text',
+            autoComplete: 'name',
+            placeholder: 'Your full name',
+            value: form.name,
+            onChange: set('name'),
+            onBlur: touch('name'),
+            disabled: accountCreated,
+          },
+          shown('name'),
+        )}
+        {field(
+          'ca-phone',
+          'Phone number',
+          <Phone size={16} />,
+          {
+            type: 'tel',
+            inputMode: 'tel',
+            autoComplete: 'tel',
+            placeholder: '+256 772 123 456',
+            maxLength: 20,
+            value: form.phone,
+            onChange: set('phone'),
+            onBlur: touch('phone'),
+            disabled: accountCreated,
+          },
+          shown('phone'),
+        )}
         {field(
           'ca-email',
           isInterpreter ? 'Email address' : 'Email address (optional)',
@@ -164,8 +221,10 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
             placeholder: 'name@example.com',
             value: form.email,
             onChange: set('email'),
+            onBlur: touch('email'),
             disabled: accountCreated,
           },
+          shown('email'),
         )}
         {!isInterpreter && (
           <p className="ca-hint">
@@ -209,12 +268,15 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
             </span>
             <input
               id="ca-password"
-              className="ca-input"
+              className={shown('password') ? 'ca-input ca-input--error' : 'ca-input'}
               type={showPassword ? 'text' : 'password'}
               placeholder="••••••••"
               autoComplete="new-password"
+              aria-invalid={shown('password') ? true : undefined}
+              aria-describedby={shown('password') ? 'ca-password-error' : undefined}
               value={form.password}
               onChange={set('password')}
+              onBlur={touch('password')}
               disabled={accountCreated}
             />
             <button
@@ -226,14 +288,35 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
               {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
           </div>
+          {shown('password') && (
+            <p className="ca-field-error" id="ca-password-error">
+              {shown('password')}
+            </p>
+          )}
         </div>
 
-        <label className="ca-terms">
-          <input type="checkbox" required />
-          <span>
-            I agree to the <a href="/terms">Terms</a> and <a href="/privacy">Privacy Policy</a>
-          </span>
-        </label>
+        <div className="ca-field">
+          <label className="ca-terms">
+            <input
+              id="ca-terms"
+              type="checkbox"
+              checked={agreed}
+              aria-invalid={shown('terms') ? true : undefined}
+              aria-describedby={shown('terms') ? 'ca-terms-error' : undefined}
+              onChange={(e) => setAgreed(e.target.checked)}
+              onBlur={touch('terms')}
+              disabled={accountCreated}
+            />
+            <span>
+              I agree to the <a href="/terms">Terms</a> and <a href="/privacy">Privacy Policy</a>
+            </span>
+          </label>
+          {shown('terms') && (
+            <p className="ca-field-error" id="ca-terms-error">
+              {shown('terms')}
+            </p>
+          )}
+        </div>
 
         {error && (
           <p className="ca-error" role="alert">

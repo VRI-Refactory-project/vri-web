@@ -17,37 +17,95 @@ const renderPage = () =>
     </AuthProvider>,
   );
 
+const okSession = {
+  token: 't',
+  refreshToken: 'r',
+  user: { id: '2', name: 'Dr Okello', role: 'institution' as const, mustChangePassword: false },
+};
+
 describe('SignUpInstitution', () => {
   afterEach(() => {
     vi.restoreAllMocks();
     sessionStorage.clear();
   });
 
-  it('asks for every field before submitting', async () => {
+  it('shows what is missing next to each field before submitting', async () => {
     const spy = vi.spyOn(registration, 'registerInstitution');
     renderPage();
     await userEvent.click(screen.getByRole('button', { name: /submit registration/i }));
-    expect(screen.getByRole('alert')).toHaveTextContent('Fill in every field');
+    expect(screen.getByText('Enter the institution name.')).toBeInTheDocument();
+    expect(screen.getByText('Enter your full name.')).toBeInTheDocument();
+    expect(screen.getByText('Enter your phone number.')).toBeInTheDocument();
+    expect(screen.getByText('Enter your email address.')).toBeInTheDocument();
+    expect(screen.getByText('Enter a password.')).toBeInTheDocument();
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it('never lets letters into the phone field', async () => {
+    renderPage();
+    const phone = screen.getByLabelText('Phone number') as HTMLInputElement;
+    await userEvent.type(phone, 'jjjj');
+    expect(phone.value).toBe('');
+  });
+
+  it('asks for a country code when the number starts with 0', async () => {
+    renderPage();
+    await userEvent.type(screen.getByLabelText('Phone number'), '0772123456');
+    await userEvent.tab();
+    expect(screen.getByText(/start with your country code/i)).toBeInTheDocument();
+  });
+
+  it('rejects a work email that is only numbers', async () => {
+    renderPage();
+    await userEvent.type(screen.getByLabelText('Work email'), '12345');
+    await userEvent.tab();
+    expect(screen.getByText(/valid email/i)).toBeInTheDocument();
+  });
+
+  it('asks what the institution is only when "Other" is chosen', async () => {
+    const spy = vi.spyOn(registration, 'registerInstitution');
+    renderPage();
+    expect(screen.queryByLabelText('Please specify the type')).not.toBeInTheDocument();
+    await userEvent.selectOptions(screen.getByLabelText('Institution type'), 'OTHER');
+    expect(screen.getByLabelText('Please specify the type')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /submit registration/i }));
+    expect(screen.getByText('Tell us what kind of institution this is.')).toBeInTheDocument();
     expect(spy).not.toHaveBeenCalled();
   });
 
   it('registers the institution and shows the pending page', async () => {
-    const spy = vi.spyOn(registration, 'registerInstitution').mockResolvedValue({
-      token: 't',
-      refreshToken: 'r',
-      user: { id: '2', name: 'Dr Okello', role: 'institution', mustChangePassword: false },
-    });
+    const spy = vi.spyOn(registration, 'registerInstitution').mockResolvedValue(okSession);
     renderPage();
     await userEvent.type(screen.getByLabelText('Institution name'), 'Mulago');
     await userEvent.selectOptions(screen.getByLabelText('Institution type'), 'COURT');
     await userEvent.type(screen.getByLabelText('Your full name'), 'Dr Okello');
-    await userEvent.type(screen.getByLabelText('Phone number'), '0772123456');
+    await userEvent.type(screen.getByLabelText('Phone number'), '+256772123456');
     await userEvent.type(screen.getByLabelText('Work email'), 'a@mulago.org');
     await userEvent.type(screen.getByLabelText('Password'), 'secret-pass-1');
     await userEvent.click(screen.getByRole('button', { name: /submit registration/i }));
     await waitFor(() => expect(screen.getByText('pending review')).toBeInTheDocument());
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({ organisationName: 'Mulago', organisationType: 'COURT' }),
+    );
+  });
+
+  it('sends what "Other" means along with the registration', async () => {
+    const spy = vi.spyOn(registration, 'registerInstitution').mockResolvedValue(okSession);
+    renderPage();
+    await userEvent.type(screen.getByLabelText('Institution name'), 'Hill School');
+    await userEvent.selectOptions(screen.getByLabelText('Institution type'), 'OTHER');
+    await userEvent.type(screen.getByLabelText('Please specify the type'), 'School for the Deaf');
+    await userEvent.type(screen.getByLabelText('Your full name'), 'Dr Okello');
+    await userEvent.type(screen.getByLabelText('Phone number'), '+256772123456');
+    await userEvent.type(screen.getByLabelText('Work email'), 'a@school.org');
+    await userEvent.type(screen.getByLabelText('Password'), 'secret-pass-1');
+    await userEvent.click(screen.getByRole('button', { name: /submit registration/i }));
+    await waitFor(() => expect(screen.getByText('pending review')).toBeInTheDocument());
+    expect(spy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        organisationType: 'OTHER',
+        organisationTypeOther: 'School for the Deaf',
+      }),
     );
   });
 });
