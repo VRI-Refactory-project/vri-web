@@ -1,7 +1,7 @@
 import { useRef, useState, type DragEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import logo from '../../assets/no_background_logo.png';
-import { StepProgress } from '../../components/StepProgress';
+import { useNavigate } from 'react-router-dom';
+import { AuthShell } from '../../components/AuthShell';
+import { FLOWS } from '../../features/registration/flows';
 import {
   stageCertificates,
   stagedCertificates,
@@ -13,9 +13,7 @@ import {
   type CertificateEntry,
   type EntryErrors,
 } from './certificateValidation';
-import backgroundImage from '../../assets/background_image.png';
 import './UploadCertificationsPage.css';
-import './PhotoBackground.css';
 
 let nextId = 1;
 const newEntry = (): CertificateEntry => ({ id: nextId++, file: null, type: '', organisation: '' });
@@ -184,12 +182,7 @@ export function UploadCertificationsPage() {
   };
 
   return (
-    <main className="cert-page photo-bg" style={{ backgroundImage: `url(${backgroundImage})` }}>
-      <header className="cert-page__brand">
-        <Link to="/">
-          <img src={logo} alt="SignConnect" />
-        </Link>
-      </header>
+    <AuthShell backTo="/get-started" steps={FLOWS.interpreter} current={2}>
       <form className="cert-page__content" onSubmit={onSubmit} noValidate>
         <h1>Verify your certifications</h1>
         <p className="cert-page__subtitle">
@@ -220,9 +213,7 @@ export function UploadCertificationsPage() {
         <button type="submit" className="btn btn--primary">
           Continue
         </button>
-
-        <StepProgress current={2} total={3} />
       </form>
-    </main>
+    </AuthShell>
   );
 }

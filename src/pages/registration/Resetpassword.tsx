@@ -48,7 +48,7 @@ export const Resetpassword = () => {
     <AuthLayout
       title="Select a new password"
       subtitle="Enter the 6-digit code from your email and choose a new password"
-      onBack={() => navigate('/forgot-password')}
+      backTo="/forgot-password"
     >
       <form onSubmit={handleSubmit}>
         <div className="form-group">

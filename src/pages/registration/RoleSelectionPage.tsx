@@ -1,8 +1,9 @@
-import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Hand, Ear, Home, Play, Check } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Hand, Ear, Home, Play, Check } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import type { SelectableRole } from '../../types';
-import logo from '../../assets/logo.jpeg';
+import { AuthShell } from '../../components/AuthShell';
+import { ROLE_STEP } from '../../features/registration/flows';
 import './RoleSelectionPage.css';
 
 // V2-066: select role, store it locally, route to the matching registration form.
@@ -55,17 +56,8 @@ export function RoleSelectionPage() {
   };
 
   return (
-    <div className="rs-page">
-      <header className="rs-header">
-        <Link to="/" className="rs-logo">
-          <img src={logo} alt="SignConnect" />
-        </Link>
-        <Link to="/" className="rs-back">
-          <ArrowLeft size={16} /> Back
-        </Link>
-      </header>
-
-      <main className="rs-main">
+    <AuthShell backTo="/" size="wide" steps={ROLE_STEP} current={1}>
+      <div className="rs-main">
         <h1 className="rs-title">Who's joining SignConnect?</h1>
         <p className="rs-subtitle">
           Pick the one that fits you best. You can add another one later.
@@ -97,14 +89,7 @@ export function RoleSelectionPage() {
             </button>
           ))}
         </div>
-
-        <div className="rs-progress">
-          <span className="rs-progress-segment active" />
-          <span className="rs-progress-segment" />
-          <span className="rs-progress-segment" />
-        </div>
-        <p className="rs-step">Step 1 of 3</p>
-      </main>
-    </div>
+      </div>
+    </AuthShell>
   );
 }

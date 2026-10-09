@@ -1,17 +1,4 @@
-.cert-page {
-  min-height: 100vh;
-  background: #f5f4fb;
-  color: #1f1b3a;
-  padding: 1.5rem 1rem 3rem;
-}
-.cert-page__brand img {
-  height: 64px;
-  width: auto;
-  display: block;
-}
 .cert-page__content {
-  max-width: 34rem;
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -19,7 +6,7 @@
 }
 .cert-page__content h1 {
   margin: 0;
-  font-size: 2rem;
+  font-size: 1.75rem;
 }
 .cert-page__subtitle {
   margin: 0;
@@ -27,6 +14,7 @@
   color: #5a567a;
 }
 .cert-card {
+  min-width: 0;
   border: 0;
   margin: 0;
   padding: 0;
@@ -85,6 +73,8 @@
 }
 .field select,
 .field input {
+  width: 100%;
+  min-width: 0;
   padding: 0.625rem 0.75rem;
   border: 1px solid #d3cfea;
   border-radius: 0.5rem;
@@ -138,23 +128,6 @@
 }
 .link-btn--add {
   align-self: center;
-}
-.step-progress__bars {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.5rem;
-}
-.step-progress__bar {
-  height: 0.25rem;
-  border-radius: 999px;
-  background: #dcd8ef;
-}
-.step-progress__bar--done {
-  background: #3b2a7a;
-}
-.step-progress__label {
-  margin: 0.25rem 0 0;
-  font-size: 0.75rem;
 }
 .visually-hidden {
   position: absolute;
