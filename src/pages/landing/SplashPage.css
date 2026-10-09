@@ -49,7 +49,7 @@
 }
 
 .splash-logo {
-  width: clamp(20rem, 28vw, 13.5rem);
+  width: 20rem;
   height: auto;
   display: block;
   margin: 0 auto 1.25rem;
@@ -111,7 +111,7 @@
 .splash-login-prompt {
   margin: clamp(5.5rem, 16vh, 8rem) 0 0;
   color: rgba(255, 255, 255, 0.64);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
 }
 
 .splash-login-link {

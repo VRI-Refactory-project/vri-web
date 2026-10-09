@@ -1,6 +1,6 @@
 import { ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import splashLogo from '../../assets/splsh_logo.png';
+import splashLogo from '../../assets/no_bg.png';
 import './SplashPage.css';
 
 /**
