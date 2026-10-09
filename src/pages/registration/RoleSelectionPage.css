@@ -1,7 +1,6 @@
-
 :root {
   --rs-purple: #4f39c9;
-  --rs-bg: #F5F4FB;
+  --rs-bg: #f5f4fb;
   --rs-text: #1b1533;
   --rs-text-muted: #6b6785;
 }
@@ -91,7 +90,9 @@
   padding: 0;
   border-radius: 16px;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
   font-family: inherit;
   color: inherit;
   text-align: left;
