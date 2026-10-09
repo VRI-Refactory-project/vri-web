@@ -4,3 +4,21 @@
   color: #b3261e;
   font-size: 14px;
 }
+
+/* Inline message under a single field. */
+.field-error {
+  margin: 6px 0 0;
+  color: #b3261e;
+  font-size: 13px;
+}
+
+.form-input--error,
+.form-input--error:focus {
+  border-color: #b3261e;
+}
+
+.field-hint {
+  margin: 6px 0 0;
+  color: #6b6785;
+  font-size: 13px;
+}
