@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from '../../features/auth/AuthProvider';
@@ -19,6 +19,8 @@ describe('RoleSelectionPage (V2-066)', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /interpreter/i }));
 
-    expect(screen.getByText('interpreter form')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('interpreter form')).toBeInTheDocument();
+    });
   });
 });
