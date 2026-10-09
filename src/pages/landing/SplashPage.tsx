@@ -25,11 +25,7 @@ export function SplashPage() {
           Connect instantly with certified sign-language interpreters.
         </p>
 
-        <button
-          type="button"
-          className="splash-continue"
-          onClick={() => navigate('/landing')}
-        >
+        <button type="button" className="splash-continue" onClick={() => navigate('/landing')}>
           <span>Continue</span>
           <ArrowRight size={18} aria-hidden="true" />
         </button>
