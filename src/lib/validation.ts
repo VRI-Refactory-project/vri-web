@@ -91,3 +91,39 @@ export function collectErrors<K extends string>(
   }
   return errors;
 }
+
+/**
+ * One box that takes either an email address or a phone number (sign-in, password recovery).
+ * An @ means email; a leading + or digit means phone, which must start with a country code.
+ */
+export function validateIdentifier(value: string): string | undefined {
+  const text = value.trim();
+  if (!text) return 'Enter your email address or phone number.';
+  if (text.includes('@')) return validateEmail(text);
+  if (/^[+\d]/.test(text)) return validatePhone(text);
+  return `Enter a valid email address, or a phone number that starts with your country code, for example ${PHONE_EXAMPLE}.`;
+}
+
+/** What the API receives for an identifier: emails as typed, phone numbers without spaces or dashes. */
+export function identifierForApi(value: string): string {
+  const text = value.trim();
+  return text.includes('@') ? text : normalizePhone(text);
+}
+
+/** Sign-in only checks that a password was typed. Older accounts may not meet today's password rules. */
+export function validatePasswordPresent(value: string): string | undefined {
+  return value ? undefined : 'Enter your password.';
+}
+
+/** Digits only, at most six, so letters never reach the code field. */
+export function sanitizeCodeInput(value: string): string {
+  return value.replace(/\D/g, '').slice(0, 6);
+}
+
+/** The 6-digit code that password recovery emails. */
+export function validateCode(value: string): string | undefined {
+  const code = value.trim();
+  if (!code) return 'Enter the 6-digit code from your email.';
+  if (!/^\d{6}$/.test(code)) return 'The code has 6 digits.';
+  return undefined;
+}

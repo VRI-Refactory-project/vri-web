@@ -58,7 +58,7 @@ describe('account recovery pages (V2-008)', () => {
     render(
       <AuthProvider>
         <MemoryRouter
-          initialEntries={[{ pathname: '/reset-password', state: { identifier: 'x' } }]}
+          initialEntries={[{ pathname: '/reset-password', state: { identifier: 'deaf@test.com' } }]}
         >
           <Routes>
             <Route path="/reset-password" element={<Resetpassword />} />
@@ -71,5 +71,45 @@ describe('account recovery pages (V2-008)', () => {
     await userEvent.click(screen.getByRole('button', { name: /reset password/i }));
     expect(await screen.findByRole('alert')).toHaveTextContent('Invalid or expired code');
     expect(sessionStorage.getItem('vri.session')).toBeNull();
+  });
+
+  it('asks for a valid email or phone number before requesting a code', async () => {
+    const request = vi.spyOn(authService, 'requestRecovery');
+    renderFlow();
+    await userEvent.type(screen.getByLabelText('Email or phone number'), '0772123456');
+    await userEvent.click(screen.getByRole('button', { name: /send code/i }));
+    expect(screen.getByText(/start with your country code/i)).toBeInTheDocument();
+    expect(request).not.toHaveBeenCalled();
+  });
+
+  it('accepts a phone number with a country code, sent without spaces', async () => {
+    const request = vi.spyOn(authService, 'requestRecovery').mockResolvedValue({ detail: 'ok' });
+    renderFlow();
+    await userEvent.type(screen.getByLabelText('Email or phone number'), '+256 772 123 456');
+    await userEvent.click(screen.getByRole('button', { name: /send code/i }));
+    expect(request).toHaveBeenCalledWith('+256772123456');
+  });
+
+  it('checks the code and the new password before resetting', async () => {
+    const confirm = vi.spyOn(authService, 'confirmRecovery');
+    render(
+      <AuthProvider>
+        <MemoryRouter
+          initialEntries={[{ pathname: '/reset-password', state: { identifier: 'deaf@test.com' } }]}
+        >
+          <Routes>
+            <Route path="/reset-password" element={<Resetpassword />} />
+          </Routes>
+        </MemoryRouter>
+      </AuthProvider>,
+    );
+    const code = screen.getByLabelText('6-digit code') as HTMLInputElement;
+    await userEvent.type(code, '12ab34');
+    expect(code.value).toBe('1234');
+    await userEvent.type(screen.getByLabelText('New password'), 'short');
+    await userEvent.click(screen.getByRole('button', { name: /reset password/i }));
+    expect(screen.getByText('The code has 6 digits.')).toBeInTheDocument();
+    expect(screen.getByText(/at least 8 characters/i)).toBeInTheDocument();
+    expect(confirm).not.toHaveBeenCalled();
   });
 });

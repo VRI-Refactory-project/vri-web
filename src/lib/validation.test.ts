@@ -1,9 +1,14 @@
 import {
   collectErrors,
+  identifierForApi,
   normalizePhone,
+  sanitizeCodeInput,
   sanitizePhoneInput,
+  validateCode,
   validateEmail,
+  validateIdentifier,
   validateName,
+  validatePasswordPresent,
   validatePassword,
   validatePhone,
   validateRequiredText,
@@ -119,5 +124,48 @@ describe('required text and error collection', () => {
 
   it('keeps only the checks that failed', () => {
     expect(collectErrors({ a: 'Bad', b: undefined, c: 'Worse' })).toEqual({ a: 'Bad', c: 'Worse' });
+  });
+});
+
+describe('email or phone identifier', () => {
+  it('accepts an email address or a phone number with a country code', () => {
+    expect(validateIdentifier('amina@example.com')).toBeUndefined();
+    expect(validateIdentifier('+256772123456')).toBeUndefined();
+    expect(validateIdentifier('+256 772 123 456')).toBeUndefined();
+  });
+
+  it('asks for something when empty', () => {
+    expect(validateIdentifier(' ')).toBe('Enter your email address or phone number.');
+  });
+
+  it('asks for a country code on a number without one', () => {
+    expect(validateIdentifier('0772123456')).toMatch(/country code/);
+  });
+
+  it('rejects emails that are only numbers before the @, and text that is neither', () => {
+    expect(validateIdentifier('12345@example.com')).toMatch(/only numbers/);
+    expect(validateIdentifier('amina')).toMatch(/valid email address, or a phone number/);
+  });
+
+  it('sends phone numbers without spaces and emails as typed', () => {
+    expect(identifierForApi(' +256 772-123 456 ')).toBe('+256772123456');
+    expect(identifierForApi(' a@b.org ')).toBe('a@b.org');
+  });
+});
+
+describe('sign-in password and recovery code', () => {
+  it('only asks that a password is typed', () => {
+    expect(validatePasswordPresent('')).toBe('Enter your password.');
+    expect(validatePasswordPresent('1')).toBeUndefined();
+  });
+
+  it('keeps only up to six digits while typing', () => {
+    expect(sanitizeCodeInput('12a3-4 5678')).toBe('123456');
+  });
+
+  it('wants exactly six digits', () => {
+    expect(validateCode('')).toBe('Enter the 6-digit code from your email.');
+    expect(validateCode('123')).toBe('The code has 6 digits.');
+    expect(validateCode('123456')).toBeUndefined();
   });
 });
