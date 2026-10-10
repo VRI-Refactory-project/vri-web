@@ -27,7 +27,7 @@ function renderPage(role: 'deaf' | 'interpreter' = 'deaf') {
           <Route path={path} element={<CreateAccountPage role={role} />} />
           <Route path="/get-started" element={<p>role selection</p>} />
           <Route path="/sign-in" element={<p>sign in page</p>} />
-          <Route path="/dashboard/deaf" element={<p>deaf home</p>} />
+          <Route path="/register/welcome" element={<p>welcome step</p>} />
           <Route path="/register/interpreter" element={<p>choose certificates</p>} />
           <Route path="/register/pending" element={<p>pending review</p>} />
         </Routes>
@@ -66,7 +66,7 @@ describe('CreateAccountPage', () => {
     expect(passwordInput.type).toBe('text');
   });
 
-  it('registers a deaf user, signs them in and opens their dashboard', async () => {
+  it('registers a deaf user, signs them in and moves to the welcome step', async () => {
     const spy = vi.spyOn(registration, 'registerDeaf').mockResolvedValue(session('deaf'));
     renderPage();
     await fill({
@@ -76,7 +76,7 @@ describe('CreateAccountPage', () => {
     });
     await userEvent.click(screen.getByRole('checkbox'));
     await userEvent.click(screen.getByRole('button', { name: /create account/i }));
-    await waitFor(() => expect(screen.getByText('deaf home')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('welcome step')).toBeInTheDocument());
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({ name: 'Amina', phone: '+256772123456', password: 'secret-pass-1' }),
     );

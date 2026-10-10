@@ -325,3 +325,21 @@
     border-radius: 16px;
   }
 }
+
+/* --- Form messages shared by sign-up, sign-in and recovery --- */
+.form-error {
+  margin: 12px 0 0;
+  color: #b3261e;
+  font-size: 14px;
+}
+
+.field-error {
+  margin: 6px 0 0;
+  color: #b3261e;
+  font-size: 13px;
+}
+
+.form-input--error,
+.form-input--error:focus {
+  border-color: #b3261e;
+}

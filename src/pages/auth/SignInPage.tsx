@@ -3,11 +3,22 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { AuthLayout } from '../../components/Authlayout';
+import { FieldError } from '../../components/FieldError';
 import { dashboardPathFor } from '../../features/auth/roles';
 import { useAuth } from '../../hooks/useAuth';
+import {
+  collectErrors,
+  identifierForApi,
+  validateIdentifier,
+  validatePasswordPresent,
+} from '../../lib/validation';
+import { useFieldErrors } from '../../lib/useFieldErrors';
 import { ApiError } from '../../services/api';
 import { signIn } from '../../services/auth';
 import './SignInPages.css';
+
+type FieldName = 'identifier' | 'password';
+const FIELD_ORDER: readonly FieldName[] = ['identifier', 'password'];
 
 export const SignInPage = () => {
   const [formData, setFormData] = useState({ identifier: '', password: '' });
@@ -16,12 +27,21 @@ export const SignInPage = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  // Sign-in checks the shape of the identifier, but never password strength: an older account
+  // must still be able to get in with the password it already has.
+  const errors = collectErrors<FieldName>({
+    identifier: validateIdentifier(formData.identifier),
+    password: validatePasswordPresent(formData.password),
+  });
+  const { shown, check, fieldProps } = useFieldErrors(errors, FIELD_ORDER, (name) => name);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(undefined);
+    if (!check()) return;
     setSubmitting(true);
     try {
-      const session = await signIn(formData.identifier.trim(), formData.password);
+      const session = await signIn(identifierForApi(formData.identifier), formData.password);
       login(session);
       navigate(dashboardPathFor(session.user.role), { replace: true });
     } catch (err) {
@@ -37,37 +57,35 @@ export const SignInPage = () => {
 
   return (
     <AuthLayout title="Welcome Back" subtitle="Sign In to continue to SignConnect." backTo="/">
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         <div className="form-group">
           <label htmlFor="identifier">Email or phone number</label>
           <input
-            id="identifier"
+            {...fieldProps('identifier')}
             type="text"
             autoComplete="username"
-            className="form-input"
-            placeholder="name@example.com or 0772123456"
+            placeholder="name@example.com or +256 772 123 456"
             value={formData.identifier}
             onChange={(e) => setFormData({ ...formData, identifier: e.target.value })}
-            required
           />
+          <FieldError id="identifier" message={shown('identifier')} />
         </div>
 
         <div className="form-group">
           <label htmlFor="password">Password</label>
           <input
-            id="password"
+            {...fieldProps('password')}
             type="password"
             autoComplete="current-password"
-            className="form-input"
             placeholder="Enter your password"
             value={formData.password}
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            required
           />
+          <FieldError id="password" message={shown('password')} />
         </div>
 
         {error && (
-          <p role="alert" style={{ color: '#b91c1c', marginTop: '12px' }}>
+          <p role="alert" className="form-error">
             {error}
           </p>
         )}

@@ -10,6 +10,7 @@ import { SignUpInstitution } from '../pages/registration/SignUpInstitution';
 import { SignInPage } from '../pages/auth/SignInPage';
 import { CreateAccountPage } from '../pages/registration/CreateAccountPage';
 import { PendingReviewPage } from '../pages/registration/PendingReviewPage';
+import { WelcomePage } from '../pages/registration/WelcomePage';
 import { UploadCertificationsPage } from '../pages/registration/UploadCertificationsPage';
 
 export const router = createBrowserRouter([
@@ -28,6 +29,10 @@ export const router = createBrowserRouter([
   },
   { path: '/register/interpreter/account', element: <CreateAccountPage role="interpreter" /> },
   { path: '/register/pending', element: <PendingReviewPage /> },
+  {
+    element: <ProtectedRoute allow={['deaf']} />,
+    children: [{ path: '/register/welcome', element: <WelcomePage /> }],
+  },
   { path: '/register/institution', element: <SignUpInstitution /> },
   {
     element: <ProtectedRoute allow={['deaf']} />,

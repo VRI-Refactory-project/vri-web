@@ -4,7 +4,6 @@ import { User, Mail, Phone, Lock, Eye, EyeOff, Award, ChevronRight } from 'lucid
 import { AuthShell } from '../../components/AuthShell';
 import { FLOWS } from '../../features/registration/flows';
 import { useAuth } from '../../hooks/useAuth';
-import { dashboardPathFor } from '../../features/auth/roles';
 import {
   clearStagedCertificates,
   stagedCertificates,
@@ -151,7 +150,7 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
         created = true;
         setAccountCreated(true);
         if (!isInterpreter) {
-          navigate(dashboardPathFor(session.user.role), { replace: true });
+          navigate('/register/welcome', { replace: true });
           return;
         }
       }

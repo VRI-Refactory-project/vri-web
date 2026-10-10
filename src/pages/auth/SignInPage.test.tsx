@@ -21,7 +21,7 @@ function renderPage() {
 }
 
 async function fillAndSubmit() {
-  await userEvent.type(screen.getByLabelText('Email or phone number'), '0772123456');
+  await userEvent.type(screen.getByLabelText('Email or phone number'), '+256772123456');
   await userEvent.type(screen.getByLabelText('Password'), 'secret');
   await userEvent.click(screen.getByRole('button', { name: /login/i }));
 }
@@ -57,5 +57,63 @@ describe('SignInPage', () => {
     renderPage();
     await fillAndSubmit();
     expect(await screen.findByRole('alert')).toHaveTextContent(/could not sign you in/i);
+  });
+
+  it('sends the phone number without spaces or dashes', async () => {
+    const spy = vi.spyOn(authService, 'signIn').mockResolvedValue({
+      token: 'a',
+      refreshToken: 'r',
+      user: { id: '1', name: 'Ruth', role: 'interpreter', mustChangePassword: false },
+    });
+    renderPage();
+    await userEvent.type(screen.getByLabelText('Email or phone number'), '+256 772-123 456');
+    await userEvent.type(screen.getByLabelText('Password'), 'secret');
+    await userEvent.click(screen.getByRole('button', { name: /login/i }));
+    expect(spy).toHaveBeenCalledWith('+256772123456', 'secret');
+  });
+
+  it('signs in with an email address', async () => {
+    const spy = vi.spyOn(authService, 'signIn').mockResolvedValue({
+      token: 'a',
+      refreshToken: 'r',
+      user: { id: '1', name: 'Ruth', role: 'interpreter', mustChangePassword: false },
+    });
+    renderPage();
+    await userEvent.type(screen.getByLabelText('Email or phone number'), ' ruth@example.com ');
+    await userEvent.type(screen.getByLabelText('Password'), 'x');
+    await userEvent.click(screen.getByRole('button', { name: /login/i }));
+    expect(spy).toHaveBeenCalledWith('ruth@example.com', 'x');
+  });
+
+  it('says what is missing and does not call the API', async () => {
+    const spy = vi.spyOn(authService, 'signIn');
+    renderPage();
+    await userEvent.click(screen.getByRole('button', { name: /login/i }));
+    expect(screen.getByText('Enter your email address or phone number.')).toBeInTheDocument();
+    expect(screen.getByText('Enter your password.')).toBeInTheDocument();
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it('asks for a country code when the number starts with 0', async () => {
+    const spy = vi.spyOn(authService, 'signIn');
+    renderPage();
+    await userEvent.type(screen.getByLabelText('Email or phone number'), '0772123456');
+    await userEvent.type(screen.getByLabelText('Password'), 'secret');
+    await userEvent.click(screen.getByRole('button', { name: /login/i }));
+    expect(screen.getByText(/start with your country code/i)).toBeInTheDocument();
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it('does not apply password rules, so older short passwords still sign in', async () => {
+    const spy = vi.spyOn(authService, 'signIn').mockResolvedValue({
+      token: 'a',
+      refreshToken: 'r',
+      user: { id: '1', name: 'Ruth', role: 'interpreter', mustChangePassword: false },
+    });
+    renderPage();
+    await userEvent.type(screen.getByLabelText('Email or phone number'), 'ruth@example.com');
+    await userEvent.type(screen.getByLabelText('Password'), '123');
+    await userEvent.click(screen.getByRole('button', { name: /login/i }));
+    expect(spy).toHaveBeenCalledWith('ruth@example.com', '123');
   });
 });
