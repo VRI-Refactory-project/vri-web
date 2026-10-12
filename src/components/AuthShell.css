@@ -47,7 +47,7 @@
 /* The transparent logo sits straight on the photo, no box behind it. */
 .as-logo img {
   display: block;
-  height: 80px;
+  height: 100px;
   width: auto;
 }
 
@@ -181,7 +181,7 @@
 }
 
 /* --- Content: [step list | card | empty], so the card stays centred with or without steps --- */
-.as-main {
+/* .as-main {
   flex: 1;
   width: 100%;
   max-width: 1200px;
@@ -189,6 +189,42 @@
   padding: 0.5rem 1.5rem 3rem;
   display: grid;
   grid-template-columns: 1fr minmax(0, var(--card-width)) 1fr;
+  column-gap: 2rem;
+  align-items: start;
+  align-content: start;
+}
+
+
+.as-main--form {
+  --card-width: 540px;
+}
+
+.as-main--wide {
+  --card-width: 900px;
+}
+
+.as-steps-slot {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: end;
+  width: 180px;
+  padding-top: 1rem;
+}
+
+.as-main > :not(.as-steps-slot) {
+  grid-column: 2;
+  grid-row: 1;
+} */
+
+/* --- Content: [step list | card | empty], matching the header's alignment --- */
+.as-main {
+  flex: 1;
+  width: 100%;
+  max-width: 1200px; /* Same as header */
+  margin: 0 auto;
+  padding: 0.5rem 1.5rem 3rem; /* Same as header horizontal padding */
+  display: grid;
+  grid-template-columns: 220px minmax(0, var(--card-width)) 1fr;
   column-gap: 2rem;
   align-items: start;
   align-content: start;
@@ -205,9 +241,10 @@
 .as-steps-slot {
   grid-column: 1;
   grid-row: 1;
-  justify-self: end;
+  justify-self: start; /* CHANGED: from 'end' to 'start' */
   width: 180px;
   padding-top: 1rem;
+  margin-left: 0; /* No extra offset, will align with header padding */
 }
 
 .as-main > :not(.as-steps-slot) {
