@@ -27,7 +27,7 @@ function renderPage(role: 'deaf' | 'interpreter' = 'deaf') {
           <Route path={path} element={<CreateAccountPage role={role} />} />
           <Route path="/get-started" element={<p>role selection</p>} />
           <Route path="/sign-in" element={<p>sign in page</p>} />
-          <Route path="/dashboard/deaf" element={<p>deaf home</p>} />
+          <Route path="/register/welcome" element={<p>welcome step</p>} />
           <Route path="/register/interpreter" element={<p>choose certificates</p>} />
           <Route path="/register/pending" element={<p>pending review</p>} />
         </Routes>
@@ -66,15 +66,19 @@ describe('CreateAccountPage', () => {
     expect(passwordInput.type).toBe('text');
   });
 
-  it('registers a deaf user, signs them in and opens their dashboard', async () => {
+  it('registers a deaf user, signs them in and moves to the welcome step', async () => {
     const spy = vi.spyOn(registration, 'registerDeaf').mockResolvedValue(session('deaf'));
     renderPage();
-    await fill({ 'Full name': 'Amina', 'Phone number': '0772123456', Password: 'secret-pass-1' });
+    await fill({
+      'Full name': 'Amina',
+      'Phone number': '+256772123456',
+      Password: 'secret-pass-1',
+    });
     await userEvent.click(screen.getByRole('checkbox'));
     await userEvent.click(screen.getByRole('button', { name: /create account/i }));
-    await waitFor(() => expect(screen.getByText('deaf home')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('welcome step')).toBeInTheDocument());
     expect(spy).toHaveBeenCalledWith(
-      expect.objectContaining({ name: 'Amina', phone: '0772123456', password: 'secret-pass-1' }),
+      expect.objectContaining({ name: 'Amina', phone: '+256772123456', password: 'secret-pass-1' }),
     );
   });
 
@@ -83,7 +87,11 @@ describe('CreateAccountPage', () => {
       new ApiError(400, 'A user with this phone number already exists.'),
     );
     renderPage();
-    await fill({ 'Full name': 'Amina', 'Phone number': '0772123456', Password: 'x' });
+    await fill({
+      'Full name': 'Amina',
+      'Phone number': '+256772123456',
+      Password: 'secret-pass-1',
+    });
     await userEvent.click(screen.getByRole('checkbox'));
     await userEvent.click(screen.getByRole('button', { name: /create account/i }));
     expect(await screen.findByRole('alert')).toHaveTextContent('already exists');
@@ -94,7 +102,46 @@ describe('CreateAccountPage', () => {
     renderPage();
     await userEvent.click(screen.getByRole('checkbox'));
     await userEvent.click(screen.getByRole('button', { name: /create account/i }));
-    expect(screen.getByRole('alert')).toHaveTextContent('Enter your name');
+    expect(screen.getByText('Enter your full name.')).toBeInTheDocument();
+    expect(screen.getByText('Enter your phone number.')).toBeInTheDocument();
+    expect(screen.getByText('Enter a password.')).toBeInTheDocument();
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it('never lets letters into the phone field', async () => {
+    renderPage();
+    const phone = screen.getByLabelText('Phone number') as HTMLInputElement;
+    await userEvent.type(phone, 'jjjj+256abc772');
+    expect(phone.value).toBe('+256772');
+    await userEvent.clear(phone);
+    await userEvent.type(phone, '+256 772');
+    expect(phone.value).toBe('+256 772');
+  });
+
+  it('asks for a country code when the number starts with 0', async () => {
+    renderPage();
+    await userEvent.type(screen.getByLabelText('Phone number'), '0772123456');
+    await userEvent.tab();
+    expect(screen.getByText(/start with your country code/i)).toBeInTheDocument();
+  });
+
+  it('rejects an email that is only numbers', async () => {
+    renderPage();
+    await userEvent.type(screen.getByLabelText('Email address (optional)'), '12345');
+    await userEvent.tab();
+    expect(screen.getByText(/valid email/i)).toBeInTheDocument();
+  });
+
+  it('requires the terms to be accepted', async () => {
+    const spy = vi.spyOn(registration, 'registerDeaf');
+    renderPage();
+    await fill({
+      'Full name': 'Amina',
+      'Phone number': '+256772123456',
+      Password: 'secret-pass-1',
+    });
+    await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+    expect(screen.getByText(/accept the terms/i)).toBeInTheDocument();
     expect(spy).not.toHaveBeenCalled();
   });
 
@@ -118,10 +165,14 @@ describe('CreateAccountPage', () => {
       staged();
       const spy = vi.spyOn(registration, 'registerInterpreter');
       renderPage('interpreter');
-      await fill({ 'Full name': 'Joel', 'Phone number': '0772123456', Password: 'pw' });
+      await fill({
+        'Full name': 'Joel',
+        'Phone number': '+256772123456',
+        Password: 'secret-pass-1',
+      });
       await userEvent.click(screen.getByRole('checkbox'));
       await userEvent.click(screen.getByRole('button', { name: /create account/i }));
-      expect(screen.getByRole('alert')).toHaveTextContent('Enter your email');
+      expect(screen.getByText('Enter your email address.')).toBeInTheDocument();
       expect(spy).not.toHaveBeenCalled();
     });
 
@@ -134,9 +185,9 @@ describe('CreateAccountPage', () => {
       renderPage('interpreter');
       await fill({
         'Full name': 'Joel',
-        'Phone number': '0772123456',
+        'Phone number': '+256772123456',
         'Email address': 'j@x.org',
-        Password: 'pw',
+        Password: 'secret-pass-1',
       });
       await userEvent.click(screen.getByRole('checkbox'));
       await userEvent.click(screen.getByRole('button', { name: /create account/i }));
@@ -156,9 +207,9 @@ describe('CreateAccountPage', () => {
       renderPage('interpreter');
       await fill({
         'Full name': 'Joel',
-        'Phone number': '0772123456',
+        'Phone number': '+256772123456',
         'Email address': 'j@x.org',
-        Password: 'pw',
+        Password: 'secret-pass-1',
       });
       await userEvent.click(screen.getByRole('checkbox'));
       await userEvent.click(screen.getByRole('button', { name: /create account/i }));

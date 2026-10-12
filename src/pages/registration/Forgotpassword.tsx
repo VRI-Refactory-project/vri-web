@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { AuthLayout } from '../../components/Authlayout';
+import { FieldError } from '../../components/FieldError';
+import { collectErrors, identifierForApi, validateIdentifier } from '../../lib/validation';
+import { useFieldErrors } from '../../lib/useFieldErrors';
 import { ApiError } from '../../services/api';
 import { requestRecovery } from '../../services/auth';
 import './AuthPages.css';
@@ -12,14 +15,23 @@ export const Forgotpassword = () => {
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
 
+  const errors = collectErrors<'identifier'>({ identifier: validateIdentifier(identifier) });
+  const { shown, check, fieldProps } = useFieldErrors(
+    errors,
+    ['identifier'] as const,
+    () => 'identifier',
+  );
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(undefined);
+    if (!check()) return;
+    const who = identifierForApi(identifier);
     setSubmitting(true);
     try {
-      await requestRecovery(identifier.trim());
+      await requestRecovery(who);
       // The API answers the same for unknown accounts, so we always move on to the code step.
-      navigate('/reset-password', { state: { identifier: identifier.trim() } });
+      navigate('/reset-password', { state: { identifier: who } });
     } catch (err) {
       setError(
         err instanceof ApiError
@@ -35,25 +47,24 @@ export const Forgotpassword = () => {
     <AuthLayout
       title="Forgot Password?"
       subtitle="Enter your email or phone number and we'll email you a 6-digit code"
-      onBack={() => navigate('/sign-in')}
+      backTo="/sign-in"
     >
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         <div className="form-group">
           <label htmlFor="identifier">Email or phone number</label>
           <input
-            id="identifier"
+            {...fieldProps('identifier')}
             type="text"
             autoComplete="username"
-            className="form-input"
-            placeholder="name@example.com or 0772123456"
+            placeholder="name@example.com or +256 772 123 456"
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
-            required
           />
+          <FieldError id="identifier" message={shown('identifier')} />
         </div>
 
         {error && (
-          <p role="alert" style={{ color: '#b91c1c', marginTop: '12px' }}>
+          <p role="alert" className="form-error">
             {error}
           </p>
         )}

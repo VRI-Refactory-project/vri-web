@@ -8,103 +8,55 @@
   --sc-border: #382c77;
   --sc-radius: 16px;
   --sc-radius-pill: 999px;
+  /* Side padding that grows with the screen: 16px on a phone, 32px from about 1000px up. */
+  --landing-gutter: clamp(1rem, 4vw, 4rem);
 }
 
 /* --- Page shell --- */
-/* .landing {
-  min-height: 100vh;
-  background: var(--sc-bg);
-  color: var(--sc-text);
-} */
-
-/* .landing {
-  height: 100vh;      
-  overflow: hidden;   
-  display: flex;      
-  flex-direction: column;
-  background: var(--sc-bg);
-  color: var(--sc-text);
-} */
-
 .landing {
-  /* Replace height: 100vh with this: */
-  min-height: 100vh; /* At least as tall as the screen */
-  max-height: none; /* Remove any hard max height */
-
-  /* Keep the rest */
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
   background: var(--sc-bg);
   color: #e8e6f0;
-  display: flex;
-  flex-direction: column;
-  overflow-x: hidden; /* Prevents horizontal scroll, allows vertical */
-  overflow-y: auto; /* Allows vertical scroll if content is too tall */
+  overflow-x: hidden;
 }
 
-/* --- Header --- */
-/* .landing-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between; */
-/* max-width: 1200px; */
-/* margin: 0 auto;
-  padding: 0rem 3rem 1.5rem 2rem;
-} */
-
+/* --- Header: the same width as the hero, so the logo and the nav line up with the content --- */
 .landing-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%; /* Ensure it takes full width */
-  /* max-width: 1200px;       */
-  margin: 0 auto; /* Center it */
-  padding: 0.1rem 5rem; /* Restore reasonable padding */
+  gap: 1rem;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0.5rem var(--landing-gutter);
 }
-
-/* .landing-logo {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 700;
-  font-size: 1.125rem;
-  color: var(--sc-text);
-  text-decoration: none;
-  margin-top: 1.5rem;
-  margin-left: 4rem;
-} */
 
 .landing-logo {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-weight: 900;
-  font-size: 1.125rem;
-  color: var(--sc-text);
   text-decoration: none;
-  margin-left: 4rem; /* Remove the extra margins pushing it around */
 }
 
 .landing-logo-img {
-  width: 200px;
-  height: 150px;
-  object-fit: contain;
   display: block;
+  height: clamp(72px, 10vw, 130px);
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
 }
-
-/* .landing-nav {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-} */
 
 .landing-nav {
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  margin: 0; /* Remove any extra margins */
 }
 
 .landing-login {
-  color: #ffff;
+  color: #fff;
   text-decoration: none;
   font-weight: 500;
   font-size: 0.95rem;
@@ -118,6 +70,7 @@
   background: var(--sc-purple);
   color: #382c77;
   border: none;
+  min-height: 44px;
   padding: 0.6rem 1.25rem;
   border-radius: 16px;
   font-weight: 600;
@@ -130,99 +83,27 @@
   background: #e8e6f0;
 }
 
-/* --- Hero --- */
-/* .landing-hero {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3rem;
-  align-items: start;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem 2rem 2rem; 
-} */
-
-/* .landing-hero {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3rem;
-  align-items: center;    /* Centers content vertically */
-/* width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;        
-  flex: 1;                
-  min-height: 0;          
-} */
-
-/* .landing-hero {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3rem;
-  align-items: center;
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem 0 0; 
+/* --- Hero: text left, picture right. It fills the rest of the screen and centres in it. --- */
+.landing-hero {
+  /* Fills what is left of the screen, so the whole page fits without scrolling on a desktop. */
   flex: 1;
   min-height: 0;
-} */
-
-.landing-hero {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3rem;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: clamp(2rem, 5vw, 5rem);
   align-items: center;
   width: 100%;
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 0 auto;
-  padding: 0 2rem;
-
-  /* Change this line: */
-  flex: none; /* Don't force it to fill remaining space */
-
-  /* Keep the rest */
-  min-height: 0;
+  padding: 0 var(--landing-gutter) 1.5rem;
 }
-
-/* .landing-hero-left {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  padding-top: 15rem;
-  margin-left: -8rem;
-} */
 
 .landing-hero-left {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  padding-top: 0;
-  margin-left: -5rem; /* Negative margin pulls it to the left */
+  min-width: 0;
 }
-
-.landing-hero-right {
-  position: relative;
-  margin-left: 0; /* REMOVED -4rem */
-  margin-right: 0; /* REMOVED -9rem */
-  transform: none; /* REMOVED translateX */
-  display: flex;
-  justify-content: center; /* Center the image nicely */
-  align-items: center;
-}
-
-/* .landing-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: #fff;
-  border: 1px solid var(--sc-border);
-  color: var(--sc-text-muted);
-  padding: 0.4rem 0.9rem;
-  border-radius: 9999px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  width: fit-content;
-} */
 
 .landing-badge {
   display: inline-flex;
@@ -236,33 +117,35 @@
   font-size: 0.8rem;
   font-weight: 500;
   width: fit-content;
-  margin-bottom: 1.5rem;
 }
 
 .landing-title {
-  font-size: 5.75rem;
+  /* Scales with the screen but stops at a size that still fits its column. */
+  font-size: clamp(2.5rem, 7vw, 6.5rem);
   line-height: 1.05;
   font-weight: 800;
   margin: 0;
   color: var(--sc-purple);
   letter-spacing: -0.03em;
+  overflow-wrap: anywhere;
 }
 
 .landing-subtitle {
-  font-size: 1.125rem;
+  font-size: clamp(1rem, 1.7vw, 1.4rem);
   line-height: 1.55;
-  color: #ffff;
+  color: #fff;
   margin: 0;
-  max-width: 28rem;
+  max-width: 34rem;
 }
 
 .landing-cta {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: #ffff;
+  background: #fff;
   color: #382c77;
   border: none;
+  min-height: 48px;
   padding: 1rem 1.75rem;
   border-radius: 16px;
   font-size: 1.05rem;
@@ -282,7 +165,7 @@
 .landing-features {
   display: flex;
   flex-wrap: wrap;
-  gap: 2rem;
+  gap: 0.75rem 2rem;
   list-style: none;
   padding: 0;
   margin: 0.5rem 0 0;
@@ -292,7 +175,7 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  color: #ffff;
+  color: #fff;
   font-size: 0.95rem;
   font-weight: 500;
 }
@@ -302,56 +185,32 @@
   flex-shrink: 0;
 }
 
-/* --- Hero image side --- */
+/* --- Picture side. The small preview and the status pill are placed against the main picture,
+   so they stay attached to it at every width. --- */
 .landing-hero-right {
   position: relative;
-  margin-left: 0rem; /* pulls it left */
-  /* or */
-  margin-right: -20rem; /* pushes it right */
-  /* or */
-  transform: translateX(2rem); /* shifts it right without affecting layout */
+  width: fit-content;
+  max-width: 100%;
+  justify-self: end;
 }
-
-/* .landing-hero-image {
-  width: 100%;
-  max-width: 600px;
-  aspect-ratio: 4 / 5;
-  object-fit: cover;
-  border-radius: 24px;
-  display: block;
-  background: #ddd;
-  margin: 0 auto; 
-} */
 
 .landing-hero-image {
-  width: 100%;
-  max-width: 420px; /* Constrain width to fit the column */
+  display: block;
+  height: clamp(360px, calc(100dvh - 210px), 760px);
+  width: auto;
+  max-width: 100%;
   aspect-ratio: 4 / 5;
   object-fit: cover;
   border-radius: 24px;
-  display: block;
   background: #ddd;
 }
-
-/* .landing-pip {
-  position: absolute;
-  top: -0.75rem;
-  right: -0.75rem;
-  width: 88px;
-  height: 88px;
-  border-radius: 16px;
-  overflow: hidden;
-  border: 3px solid #fff;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-  background: #ddd;
-} */
 
 .landing-pip {
   position: absolute;
-  top: 0.5rem;
-  right: 14rem;
-  width: 120px;
-  height: 120px;
+  top: 0.75rem;
+  right: -0.75rem;
+  width: clamp(80px, 26%, 120px);
+  aspect-ratio: 1;
   border-radius: 16px;
   overflow: hidden;
   border: 3px solid #fff;
@@ -363,15 +222,17 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .landing-status-pill {
   position: absolute;
-  left: 10rem;
+  left: 1rem;
   bottom: 1.25rem;
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  max-width: calc(100% - 2rem);
   background: #fff;
   padding: 0.55rem 1rem;
   border-radius: var(--sc-radius-pill);
@@ -381,45 +242,75 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
-/* .landing-status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--sc-purple);
-  box-shadow: 0 0 0 3px var(--sc-purple-soft);
-} */
-
 .landing-status-dot {
   width: 8px;
   height: 8px;
-  min-width: 8px; /* Prevents it from shrinking */
-  min-height: 8px; /* Prevents it from shrinking */
-  max-width: 8px; /* Prevents it from growing */
-  max-height: 8px; /* Prevents it from growing */
-  flex-shrink: 0; /* THE KEY FIX: Stops the flexbox from stretching it */
+  flex: none;
   border-radius: 50%;
-  background: var(--sc-purple);
-  box-shadow: 0 0 0 3px var(--sc-purple-soft); /* The soft lavender ring */
+  background: var(--sc-purple-soft);
+  box-shadow: 0 0 0 3px #d8d3f0;
 }
 
-/* --- Responsive --- */
+/* --- Tablets and phones: one column, picture under the text --- */
 @media (max-width: 900px) {
-  .landing-header {
-    padding: 1.5rem 1.5rem 1rem;
+  .landing-hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.5rem;
+    align-items: start;
+    padding-bottom: 3rem;
+  }
+
+  .landing-hero-left {
+    align-items: center;
+    text-align: center;
+  }
+
+  .landing-subtitle {
+    margin-inline: auto;
+  }
+
+  .landing-features {
+    justify-content: center;
   }
 
   .landing-hero {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-    padding: 1.5rem 1.5rem 3rem;
+    flex: none;
   }
 
-  .landing-title {
-    font-size: 2.75rem;
+  .landing-hero-right {
+    width: min(100%, 380px);
+    justify-self: center;
   }
 
+  .landing-hero-image {
+    height: auto;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .landing-nav {
+    gap: 1rem;
+  }
+
+  .landing-signup {
+    padding-inline: 1rem;
+  }
+
+  .landing-cta {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Keep the preview inside the screen edge on the narrowest phones. */
+  .landing-pip {
+    right: 0.5rem;
+  }
+}
+
+/* Short landscape screens (phones turned sideways, small laptops): less empty space above the text. */
+@media (max-height: 520px) and (min-width: 600px) {
   .landing-logo-img {
-    width: 110px;
-    height: 75px;
+    height: 56px;
   }
 }

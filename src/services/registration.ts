@@ -1,3 +1,4 @@
+import { normalizePhone } from '../lib/validation';
 import { api } from './api';
 import { toSession, type LoginResponse } from './auth';
 import type { AuthSession } from '../types';
@@ -32,6 +33,8 @@ export interface InstitutionRegistration {
   password: string;
   organisationName: string;
   organisationType: OrganisationType;
+  /** What the institution is, in the person's own words. Only sent when the type is OTHER. */
+  organisationTypeOther?: string;
 }
 
 async function register(path: string, body: Record<string, unknown>): Promise<AuthSession> {
@@ -47,7 +50,7 @@ const optional = (value: string | undefined) => (value?.trim() ? { email: value.
 export const registerDeaf = (d: DeafRegistration) =>
   register('deaf', {
     full_name: d.name.trim(),
-    phone_number: d.phone.trim(),
+    phone_number: normalizePhone(d.phone),
     password: d.password,
     ...optional(d.email),
   });
@@ -55,7 +58,7 @@ export const registerDeaf = (d: DeafRegistration) =>
 export const registerInterpreter = (d: InterpreterRegistration) =>
   register('interpreter', {
     full_name: d.name.trim(),
-    phone_number: d.phone.trim(),
+    phone_number: normalizePhone(d.phone),
     email: d.email.trim(),
     password: d.password,
     ...(d.specialisation ? { specialisation: d.specialisation } : {}),
@@ -64,9 +67,12 @@ export const registerInterpreter = (d: InterpreterRegistration) =>
 export const registerInstitution = (d: InstitutionRegistration) =>
   register('institution', {
     full_name: d.name.trim(),
-    phone_number: d.phone.trim(),
+    phone_number: normalizePhone(d.phone),
     email: d.email.trim(),
     password: d.password,
     organisation_name: d.organisationName.trim(),
     organisation_type: d.organisationType,
+    ...(d.organisationType === 'OTHER' && d.organisationTypeOther?.trim()
+      ? { organisation_type_other: d.organisationTypeOther.trim() }
+      : {}),
   });

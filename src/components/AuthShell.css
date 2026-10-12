@@ -1,0 +1,345 @@
+/* The shared frame for every auth screen. See AuthShell.tsx. */
+.as-page {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-main, 'Manrope', system-ui, sans-serif);
+  color: var(--color-text-main, #1e293b);
+  background-color: #2a2060;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+/* Dark tint so white cards and controls read clearly on the photo. */
+.as-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 15, 50, 0.45);
+  z-index: 0;
+}
+
+.as-page > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* --- Header: logo | step | back, in the same three places on every screen --- */
+.as-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.25rem 1.5rem;
+}
+
+.as-logo {
+  justify-self: start;
+  display: block;
+}
+
+/* The transparent logo sits straight on the photo, no box behind it. */
+.as-logo img {
+  display: block;
+  height: 80px;
+  width: auto;
+}
+
+.as-back-cell {
+  justify-self: end;
+}
+
+.as-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  padding: 0 1.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 999px;
+  /* Clear glass: the photo shows through, white text stays readable on the dark tint. */
+  background: rgba(255, 255, 255, 0.18);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.as-back:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* --- Steps: a vertical list left of the card on wide screens --- */
+.as-steps-slot {
+  min-width: 0;
+}
+
+.step-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.step-list__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 56px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* The line joining one dot to the next. */
+.step-list__item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 17px;
+  top: 40px;
+  bottom: -16px;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.step-list__item--done:not(:last-child)::after {
+  background: #fff;
+}
+
+.step-list__dot {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.step-list__item--current {
+  color: #fff;
+  font-weight: 800;
+}
+
+.step-list__item--current .step-list__dot {
+  background: #fff;
+  border-color: #fff;
+  color: var(--color-primary, #382c77);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.25);
+}
+
+.step-list__item--done {
+  color: #fff;
+}
+
+.step-list__item--done .step-list__dot {
+  background: var(--color-primary, #382c77);
+  border-color: #fff;
+  color: #fff;
+}
+
+/* The compact version is only for narrow screens. */
+.step-compact {
+  display: none;
+}
+
+.step-compact__bars {
+  display: grid;
+  grid-template-columns: repeat(var(--steps, 3), 1fr);
+  gap: 0.35rem;
+}
+
+.step-compact__bar {
+  height: 0.3rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.step-compact__bar--done {
+  background: #fff;
+}
+
+.step-compact__label {
+  margin: 0.45rem 0 0;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+/* --- Content: [step list | card | empty], so the card stays centred with or without steps --- */
+.as-main {
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.5rem 1.5rem 3rem;
+  display: grid;
+  grid-template-columns: 1fr minmax(0, var(--card-width)) 1fr;
+  column-gap: 2rem;
+  align-items: start;
+  align-content: start;
+}
+
+.as-main--form {
+  --card-width: 540px;
+}
+
+.as-main--wide {
+  --card-width: 900px;
+}
+
+.as-steps-slot {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: end;
+  width: 180px;
+  padding-top: 1rem;
+}
+
+.as-main > :not(.as-steps-slot) {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.as-card {
+  background: var(--color-bg-form, #fff);
+  border-radius: 20px;
+  padding: 2.5rem 2rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+.as-card-header {
+  text-align: center;
+  margin-bottom: 1.75rem;
+}
+
+.as-card-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.4rem;
+  letter-spacing: -0.02em;
+  color: var(--color-text-main, #1e293b);
+}
+
+.as-card-header p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-text-muted, #64748b);
+}
+
+/* --- Narrower than card + step list: the step list becomes a bar above the card.
+   The slot keeps its height even when empty so the card starts at the same place. --- */
+@media (max-width: 1180px) {
+  .as-main {
+    grid-template-columns: minmax(0, var(--card-width));
+    justify-content: center;
+    row-gap: 1rem;
+  }
+  .as-steps-slot {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: stretch;
+    width: auto;
+    min-height: 44px;
+    padding-top: 0;
+  }
+  .as-main > :not(.as-steps-slot) {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .step-list {
+    display: none;
+  }
+  .step-compact {
+    display: block;
+  }
+}
+
+/* The wide card (role selection) needs more room beside it for the step list, so it switches
+   to the bar layout sooner. Same rules as the block above. */
+@media (max-width: 1380px) {
+  .as-main--wide {
+    grid-template-columns: minmax(0, var(--card-width));
+    justify-content: center;
+    row-gap: 1rem;
+  }
+  .as-main--wide > .as-steps-slot {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: stretch;
+    width: auto;
+    min-height: 44px;
+    padding-top: 0;
+  }
+  .as-main--wide > :not(.as-steps-slot) {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .as-main--wide .step-list {
+    display: none;
+  }
+  .as-main--wide .step-compact {
+    display: block;
+  }
+}
+
+/* Short screens (small laptops, phones on their side): smaller logo, less padding. */
+@media (max-height: 700px) {
+  .as-logo img {
+    height: 56px;
+  }
+  .as-header {
+    padding-block: 0.75rem;
+  }
+  .as-card {
+    padding-block: 1.75rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .as-header {
+    padding: 1rem;
+  }
+  .as-logo img {
+    height: 56px;
+  }
+  .as-main {
+    padding: 0.25rem 1rem 2rem;
+  }
+  .as-card {
+    padding: 1.75rem 1.25rem;
+    border-radius: 16px;
+  }
+}
+
+/* --- Form messages shared by sign-up, sign-in and recovery --- */
+.form-error {
+  margin: 12px 0 0;
+  color: #b3261e;
+  font-size: 14px;
+}
+
+.field-error {
+  margin: 6px 0 0;
+  color: #b3261e;
+  font-size: 13px;
+}
+
+.form-input--error,
+.form-input--error:focus {
+  border-color: #b3261e;
+}
