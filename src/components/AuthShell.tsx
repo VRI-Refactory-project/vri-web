@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import logo from '../assets/no_background_logo.png';
+import logo from '../assets/no_bg.png';
 import backgroundImage from '../assets/background_image.png';
 import { StepProgress } from './StepProgress';
 import './AuthShell.css';
