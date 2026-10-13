@@ -14,6 +14,9 @@ import { WelcomePage } from '../pages/registration/WelcomePage';
 import { UploadCertificationsPage } from '../pages/registration/UploadCertificationsPage';
 import { InterpreterLayout } from '../components/interpreter/InterpreterLayout';
 import { InterpreterHomePage } from '../pages/interpreter/InterpreterHomePage';
+import { DashboardLayout } from '../components/dashboard/DashboardLayout';
+import { deafNavigation } from '../features/dashboard/navigation';
+import { DashboardPage } from '../pages/dashboards/DHH_dashboard';
 import { AdminLayout } from '../features/admin/AdminLayout';
 import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage';
 
@@ -38,12 +41,47 @@ export const router = createBrowserRouter([
     children: [{ path: '/register/welcome', element: <WelcomePage /> }],
   },
   { path: '/register/institution', element: <SignUpInstitution /> },
+
   {
     element: <ProtectedRoute allow={['deaf']} />,
     children: [
-      { path: '/dashboard/deaf', element: <Placeholder title="Deaf dashboard" story="Sprint 2" /> },
+      {
+        path: '/dashboard/deaf',
+        element: (
+          <DashboardLayout links={deafNavigation} navLabel="Deaf dashboard" accountTo="/profile" />
+        ),
+        children: [
+          { index: true, element: <DashboardPage /> },
+          { path: 'sessions', element: <Placeholder title="Sessions" story="Sprint 2" /> },
+          { path: 'messages', element: <Placeholder title="Messages" story="Sprint 2" /> },
+          { path: 'wallet', element: <Placeholder title="Wallet" story="Not scheduled" /> },
+          { path: 'profile', element: <Placeholder title="Profile" story="Sprint 2" /> },
+          { path: 'settings', element: <Placeholder title="Settings" story="Sprint 2" /> },
+        ],
+      },
     ],
   },
+
+  // TODO: Wrap with ProtectedRoute again once the backend is connected
+  // {
+  //   path: '/dashboard/deaf',
+  //   element: (
+  //     <DashboardLayout
+  //       links={deafNavigation}
+  //       navLabel="Deaf dashboard"
+  //       accountTo="/profile"
+  //     />
+  //   ),
+  //   children: [
+  //     { index: true, element: <DashboardPage /> },
+  //     { path: 'sessions', element: <Placeholder title="Sessions" story="Sprint 2" /> },
+  //     { path: 'messages', element: <Placeholder title="Messages" story="Sprint 2" /> },
+  //     { path: 'wallet', element: <Placeholder title="Wallet" story="Not scheduled" /> },
+  //     { path: 'profile', element: <Placeholder title="Profile" story="Sprint 2" /> },
+  //     { path: 'settings', element: <Placeholder title="Settings" story="Sprint 2" /> },
+  //   ],
+  // },
+
   {
     element: <ProtectedRoute allow={['interpreter']} />,
     children: [
