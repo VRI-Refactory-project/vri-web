@@ -1,0 +1,163 @@
+.dl-shell {
+  display: grid;
+  grid-template-columns: 235px 1fr;
+  min-height: 100vh;
+  background: #f6f5fc;
+  font-family: 'Plus Jakarta Sans', 'Manrope', system-ui, sans-serif;
+  color: #0f172a;
+}
+
+.dl-sidebar {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  box-sizing: border-box;
+  padding: 0 15px 20px;
+  background: #3b2579;
+  font-family: 'Manrope', system-ui, sans-serif;
+}
+
+.dl-logo {
+  display: block;
+  width: 150px;
+  height: 100px;
+  margin: 0 auto 31px;
+  object-fit: cover;
+}
+
+.dl-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 3.6px;
+}
+
+.dl-link {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 11.6px 19px;
+  line-height: 1.12;
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.dl-link:hover {
+  color: #fff;
+}
+
+.dl-link:focus-visible,
+.dl-account:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.dl-link--active {
+  background: #fff;
+  color: #0d2f1f;
+}
+
+.dl-link--active:hover {
+  color: #0d2f1f;
+}
+
+.dl-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  margin-left: auto;
+  border-radius: 9999px;
+  background: #fff;
+  color: #4b34a0;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.dl-account {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
+  padding: 16px 8px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  text-decoration: none;
+}
+
+.dl-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  background: #fff;
+  color: #4b3a9e;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.dl-account-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dl-account-text strong {
+  overflow: hidden;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dl-account-text small {
+  color: #b9b3d9;
+  font-size: 13px;
+}
+
+.dl-main {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 54px 68px 54px 33px;
+}
+
+@media (max-width: 860px) {
+  .dl-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .dl-sidebar {
+    position: static;
+    height: auto;
+    padding-bottom: 12px;
+  }
+
+  .dl-logo {
+    height: 70px;
+    width: 105px;
+    margin-bottom: 12px;
+  }
+
+  .dl-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .dl-account {
+    margin-top: 12px;
+  }
+
+  .dl-main {
+    padding: 24px 16px;
+  }
+}
