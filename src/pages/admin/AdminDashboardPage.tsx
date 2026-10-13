@@ -1,4 +1,5 @@
 // src/pages/admin/AdminDashboardPage.tsx
+import { useEffect, useState } from 'react';
 import {
   Search,
   Calendar,
@@ -8,11 +9,11 @@ import {
   Building2,
   Video,
   ShieldCheck,
-  Hourglass,
   MapPin,
   Lightbulb,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { fetchAdminSummary, type AdminDashboardSummary } from '../../services/admin';
 import './AdminDashboardPage.css';
 
 const KPIS = [
@@ -57,6 +58,26 @@ export function AdminDashboardPage() {
   const role = session?.user.role ?? 'admin';
   const initial = name.trim().charAt(0).toUpperCase() || '?';
 
+  const [summary, setSummary] = useState<AdminDashboardSummary | null>(null);
+
+  useEffect(() => {
+    fetchAdminSummary()
+      .then(setSummary)
+      .catch(() => setSummary(null));
+  }, []);
+
+  const kpis = KPIS.map((k) => {
+    if (!summary) return k;
+    const value =
+      k.id === 'total-users' ? summary.totalUsers.toLocaleString()
+      : k.id === 'dhh' ? summary.dhhUsers.toLocaleString()
+      : k.id === 'institutions' ? summary.institutions.toLocaleString()
+      : k.id === 'interpreters' ? summary.interpreters.toLocaleString()
+      : k.id === 'pending' ? summary.pendingVerifications.toLocaleString()
+      : k.value;
+    return { ...k, value };
+  });
+
   return (
     <div className="ad-page">
       {/* Top bar */}
@@ -92,7 +113,7 @@ export function AdminDashboardPage() {
 
       {/* KPI cards */}
       <div className="ad-kpis">
-        {KPIS.map(({ id, label, value, delta, trend, Icon }) => (
+        {kpis.map(({ id, label, value, delta, trend, Icon }) => (
           <div key={id} className="ad-kpi">
             <div className="ad-kpi-head">
               <span className="ad-kpi-icon"><Icon size={14} /></span>
@@ -185,7 +206,6 @@ export function AdminDashboardPage() {
             <h3>User growth</h3>
             <small>Last 8 months</small>
           </div>
-          {/* Simple SVG line — no chart library needed */}
           <svg viewBox="0 0 320 140" style={{ width: '100%', height: 160 }}>
             <defs>
               <linearGradient id="ug" x1="0" y1="0" x2="0" y2="1">

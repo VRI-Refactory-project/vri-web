@@ -1,17 +1,23 @@
 // src/features/admin/AdminLayout.tsx
+import { useEffect, useState } from 'react';
 import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
 import { adminNavItems } from './navigation';
+import { fetchAdminSummary } from '../../services/admin';
 
-/**
- * Admin dashboard frame. Wraps every /dashboard/admin/* page with the
- * shared sidebar + main layout. Badge counts are added here as the
- * backing data hooks land (e.g. interpreters awaiting verification).
- */
 export function AdminLayout() {
+  const [pending, setPending] = useState(0);
+
+  useEffect(() => {
+    fetchAdminSummary()
+      .then((s) => setPending(s.pendingVerifications))
+      .catch(() => setPending(0));
+  }, []);
+
   return (
     <DashboardLayout
       links={adminNavItems}
       navLabel="Admin"
+      badges={{ verifications: pending }}
       accountTo="/dashboard/admin/settings"
       accountLabel="View account"
     />
