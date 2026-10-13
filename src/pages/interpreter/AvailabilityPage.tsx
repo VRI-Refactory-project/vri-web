@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Bell,
@@ -15,17 +14,10 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import { interpreterApi } from "../../services/interpreterApi";
+import { interpreterApi } from '../../services/interpreterApi';
 import './AvailabilityPage.css';
 
-type DayName =
-  | 'Monday'
-  | 'Tuesday'
-  | 'Wednesday'
-  | 'Thursday'
-  | 'Friday'
-  | 'Saturday'
-  | 'Sunday';
+type DayName = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
 
 type DaySchedule = {
   day: DayName;
@@ -160,24 +152,21 @@ export function AvailabilityPage() {
     }
   }, []);
 
-//   useEffect(() => {
-//     void loadAvailability();
-//   }, [loadAvailability]);
+  //   useEffect(() => {
+  //     void loadAvailability();
+  //   }, [loadAvailability]);
 
-useEffect(() => {
-  const timeoutId = window.setTimeout(() => {
-    void loadAvailability();
-  }, 0);
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      void loadAvailability();
+    }, 0);
 
-  return () => {
-    window.clearTimeout(timeoutId);
-  };
-}, [loadAvailability]);
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [loadAvailability]);
 
-  const updateDay = (
-    day: DayName,
-    updates: Partial<DaySchedule>,
-  ) => {
+  const updateDay = (day: DayName, updates: Partial<DaySchedule>) => {
     setSchedule((current) =>
       current.map((item) => (item.day === day ? { ...item, ...updates } : item)),
     );
@@ -207,9 +196,7 @@ useEffect(() => {
   };
 
   const handleSaveSchedule = async () => {
-    const invalid = schedule.find(
-      (item) => item.enabled && item.start >= item.end,
-    );
+    const invalid = schedule.find((item) => item.enabled && item.start >= item.end);
 
     if (invalid) {
       setError(`Check the start and end times for ${invalid.day}.`);
@@ -319,9 +306,7 @@ useEffect(() => {
       id: `exception-${Date.now()}`,
       date: draft.date,
       unavailable: draft.type === 'unavailable',
-      ...(draft.type === 'modified'
-        ? { start: draft.start, end: draft.end }
-        : {}),
+      ...(draft.type === 'modified' ? { start: draft.start, end: draft.end } : {}),
       note: draft.note.trim(),
     };
 
@@ -339,17 +324,9 @@ useEffect(() => {
   const selectedException = exceptions.find((item) => item.date === selectedDate);
 
   const calendarDays = useMemo(() => {
-    const firstWeekday = new Date(
-      month.getFullYear(),
-      month.getMonth(),
-      1,
-    ).getDay();
+    const firstWeekday = new Date(month.getFullYear(), month.getMonth(), 1).getDay();
 
-    const daysInMonth = new Date(
-      month.getFullYear(),
-      month.getMonth() + 1,
-      0,
-    ).getDate();
+    const daysInMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
 
     return [
       ...Array.from({ length: firstWeekday }, () => null),
@@ -358,9 +335,7 @@ useEffect(() => {
   }, [month]);
 
   const changeMonth = (delta: number) => {
-    setMonth((current) =>
-      new Date(current.getFullYear(), current.getMonth() + delta, 1),
-    );
+    setMonth((current) => new Date(current.getFullYear(), current.getMonth() + delta, 1));
   };
 
   const monthLabel = month.toLocaleDateString('en-GB', {
@@ -414,16 +389,10 @@ useEffect(() => {
       </header>
 
       <section className="availability-live-card" aria-label="Real-time availability">
-        <span
-          className={
-            isAvailable ? 'availability-live-dot is-on' : 'availability-live-dot'
-          }
-        />
+        <span className={isAvailable ? 'availability-live-dot is-on' : 'availability-live-dot'} />
 
         <div className="availability-live-copy">
-          <strong>
-            {isAvailable ? 'Available for requests' : 'Currently unavailable'}
-          </strong>
+          <strong>{isAvailable ? 'Available for requests' : 'Currently unavailable'}</strong>
 
           <span>
             {isAvailable
@@ -447,11 +416,7 @@ useEffect(() => {
       {error && (
         <div className="availability-message is-error" role="alert">
           {error}
-          <button
-            type="button"
-            aria-label="Dismiss error"
-            onClick={() => setError('')}
-          >
+          <button type="button" aria-label="Dismiss error" onClick={() => setError('')}>
             <X size={16} />
           </button>
         </div>
@@ -461,11 +426,7 @@ useEffect(() => {
         <div className="availability-message is-success" role="status">
           <Check size={16} />
           <span>{notice}</span>
-          <button
-            type="button"
-            aria-label="Dismiss message"
-            onClick={() => setNotice('')}
-          >
+          <button type="button" aria-label="Dismiss message" onClick={() => setNotice('')}>
             <X size={16} />
           </button>
         </div>
@@ -482,11 +443,7 @@ useEffect(() => {
             <span className="availability-timezone">(EAT)</span>
           </div>
 
-          <button
-            type="button"
-            className="availability-copy-button"
-            onClick={copyMondayToWeekdays}
-          >
+          <button type="button" className="availability-copy-button" onClick={copyMondayToWeekdays}>
             <Copy size={17} />
             Copy Monday’s hours to weekdays
           </button>
@@ -513,9 +470,7 @@ useEffect(() => {
                     <span />
                   </button>
 
-                  <span
-                    className={`availability-day-status ${item.enabled ? 'is-on' : ''}`}
-                  >
+                  <span className={`availability-day-status ${item.enabled ? 'is-on' : ''}`}>
                     {item.enabled ? 'Available' : 'Unavailable'}
                   </span>
 
@@ -542,11 +497,7 @@ useEffect(() => {
             </div>
           )}
 
-          <button
-            type="button"
-            className="availability-add-button"
-            onClick={openAddDialog}
-          >
+          <button type="button" className="availability-add-button" onClick={openAddDialog}>
             <Plus size={21} />
             Add availability
           </button>
@@ -554,9 +505,7 @@ useEffect(() => {
 
         <aside className="availability-panel exceptions-panel">
           <h2>Exceptions</h2>
-          <p className="availability-panel-description">
-            Dates when your normal schedule changes
-          </p>
+          <p className="availability-panel-description">Dates when your normal schedule changes</p>
 
           <div className="availability-calendar">
             <div className="availability-calendar-heading">
@@ -593,9 +542,7 @@ useEffect(() => {
                   return <span key={`blank-${index}`} />;
                 }
 
-                const dateKey = toDateKey(
-                  new Date(month.getFullYear(), month.getMonth(), day),
-                );
+                const dateKey = toDateKey(new Date(month.getFullYear(), month.getMonth(), day));
 
                 const exception = exceptions.find((item) => item.date === dateKey);
                 const selected = selectedDate === dateKey;
@@ -625,8 +572,12 @@ useEffect(() => {
           </div>
 
           <div className="availability-legend">
-            <span><i className="legend-unavailable" /> Unavailable</span>
-            <span><i className="legend-modified" /> Modified hours</span>
+            <span>
+              <i className="legend-unavailable" /> Unavailable
+            </span>
+            <span>
+              <i className="legend-modified" /> Modified hours
+            </span>
           </div>
 
           <div className="availability-selected-exception">
@@ -675,11 +626,7 @@ useEffect(() => {
             </div>
           )}
 
-          <button
-            type="button"
-            className="availability-add-exception"
-            onClick={openAddDialog}
-          >
+          <button type="button" className="availability-add-exception" onClick={openAddDialog}>
             <Plus size={20} />
             Add exception for a date
           </button>
@@ -707,14 +654,10 @@ useEffect(() => {
                 </span>
 
                 <h2 id="availability-modal-title">
-                  {editingDay
-                    ? `Edit ${editingDay}`
-                    : 'Add availability or exception'}
+                  {editingDay ? `Edit ${editingDay}` : 'Add availability or exception'}
                 </h2>
 
-                <p>
-                  Set a date and hours when your normal schedule should change.
-                </p>
+                <p>Set a date and hours when your normal schedule should change.</p>
               </div>
 
               <button
@@ -854,11 +797,7 @@ useEffect(() => {
                 Cancel
               </button>
 
-              <button
-                type="button"
-                className="availability-primary-button"
-                onClick={saveDialog}
-              >
+              <button type="button" className="availability-primary-button" onClick={saveDialog}>
                 <Check size={17} />
                 Save
               </button>
@@ -882,8 +821,8 @@ useEffect(() => {
             <h2 id="availability-delete-title">Remove this exception?</h2>
 
             <p>
-              This removes the exception from the current preview. Save changes
-              to persist the updated schedule.
+              This removes the exception from the current preview. Save changes to persist the
+              updated schedule.
             </p>
 
             <div className="availability-modal-footer">
