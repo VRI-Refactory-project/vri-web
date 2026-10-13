@@ -402,7 +402,7 @@ function field(
         />
       </div>
       {error && (
-        <p className="ca-field-error" id={errorId}>
+        <p className="field-error" id={errorId}>
           {error}
         </p>
       )}
@@ -683,7 +683,7 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
             </button>
           </div>
           {shown('password') && (
-            <p className="ca-field-error" id="ca-password-error">
+            <p className="field-error" id="ca-password-error">
               {shown('password')}
             </p>
           )}
@@ -706,14 +706,14 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
             </span>
           </label>
           {shown('terms') && (
-            <p className="ca-field-error" id="ca-terms-error">
+            <p className="field-error" id="ca-terms-error">
               {shown('terms')}
             </p>
           )}
         </div>
 
         {error && (
-          <p className="ca-error" role="alert">
+          <p className="form-error" role="alert">
             {error}
           </p>
         )}
