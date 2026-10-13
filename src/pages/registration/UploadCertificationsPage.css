@@ -85,11 +85,6 @@
 .field [aria-invalid='true'] {
   border-color: #b3261e;
 }
-.field-error {
-  margin: 0.25rem 0 0;
-  color: #b3261e;
-  font-size: 0.75rem;
-}
 .field-error--form {
   text-align: center;
 }
