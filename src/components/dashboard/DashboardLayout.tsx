@@ -1,6 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
-import logo from '../../assets/signconnect-logo.png';
+import logo from '../../assets/no_bg.png';
 import { useAuth } from '../../hooks/useAuth';
 import './DashboardLayout.css';
 
