@@ -17,6 +17,8 @@ import { InterpreterHomePage } from '../pages/interpreter/InterpreterHomePage';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { deafNavigation } from '../features/dashboard/navigation';
 import { DashboardPage } from '../pages/dashboards/DHH_dashboard';
+import { AdminLayout } from '../features/admin/AdminLayout';
+import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage';
 
 export const router = createBrowserRouter([
   { path: '/', element: <SplashPage /> },
@@ -116,7 +118,17 @@ export const router = createBrowserRouter([
     children: [
       {
         path: '/dashboard/admin',
-        element: <Placeholder title="Admin dashboard" story="Sprint 2" />,
+        element: <AdminLayout />,
+        children: [
+          { index: true, element: <AdminDashboardPage /> },
+          { path: 'users', element: <Placeholder title="Users" story="V2-064" /> },
+          { path: 'verifications', element: <Placeholder title="Verifications" story="V2-064" /> },
+          { path: 'institutions', element: <Placeholder title="Institutions" story="V2-064" /> },
+          { path: 'sessions', element: <Placeholder title="Sessions" story="V2-064" /> },
+          { path: 'reports', element: <Placeholder title="Reports" story="V2-064" /> },
+          { path: 'audit-logs', element: <Placeholder title="Audit Logs" story="V2-064" /> },
+          { path: 'settings', element: <Placeholder title="Settings" story="V2-064" /> },
+        ],
       },
       {
         path: '/admin/interpreters',

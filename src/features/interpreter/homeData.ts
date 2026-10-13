@@ -16,7 +16,7 @@ export interface NextSession {
 export interface InterpreterHome {
   availableRequests: number;
   todaysSessions: number;
-  /** Shown only when the backend supplies it. There is no earnings endpoint yet. */
+  /** Display amount, e.g. "UGX 245k". The card is hidden when this is missing. */
   pendingEarnings?: string;
   recentSessions: CompletedSession[];
   nextSession?: NextSession;
@@ -31,6 +31,8 @@ export interface InterpreterHome {
 const SAMPLE_HOME: InterpreterHome = {
   availableRequests: 3,
   todaysSessions: 2,
+  // TODO: sample amount only. There is no earnings endpoint yet, so this is not real money.
+  pendingEarnings: 'UGX 245k',
   recentSessions: [
     { id: '1', title: 'General Interpreting', client: 'Muyenga Health Clinic', time: '11:42am' },
     { id: '2', title: 'Video relay', client: 'Kampala Referral Hospital', time: '10:15am' },

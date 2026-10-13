@@ -99,8 +99,12 @@ describe('InterpreterHomePage', () => {
     );
   });
 
-  it('leaves out the earnings card until the backend supplies earnings', () => {
+  it('shows the pending earnings card with a link to the wallet', () => {
     renderHome();
-    expect(screen.queryByText('Pending Earnings')).not.toBeInTheDocument();
+    expect(screen.getByText('Pending Earnings')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Open wallet/ })).toHaveAttribute(
+      'href',
+      '/dashboard/interpreter/wallet',
+    );
   });
 });
