@@ -12,6 +12,8 @@ import { CreateAccountPage } from '../pages/registration/CreateAccountPage';
 import { PendingReviewPage } from '../pages/registration/PendingReviewPage';
 import { WelcomePage } from '../pages/registration/WelcomePage';
 import { UploadCertificationsPage } from '../pages/registration/UploadCertificationsPage';
+import { InterpreterLayout } from '../components/interpreter/InterpreterLayout';
+import { InterpreterHomePage } from '../pages/interpreter/InterpreterHomePage';
 
 export const router = createBrowserRouter([
   { path: '/', element: <SplashPage /> },
@@ -45,7 +47,16 @@ export const router = createBrowserRouter([
     children: [
       {
         path: '/dashboard/interpreter',
-        element: <Placeholder title="Interpreter dashboard" story="Sprint 2" />,
+        element: <InterpreterLayout />,
+        children: [
+          { index: true, element: <InterpreterHomePage /> },
+          { path: 'requests', element: <Placeholder title="Requests" story="Sprint 2" /> },
+          { path: 'sessions', element: <Placeholder title="Sessions" story="Sprint 2" /> },
+          { path: 'availability', element: <Placeholder title="Availability" story="V2-021" /> },
+          { path: 'wallet', element: <Placeholder title="Wallet" story="Not scheduled" /> },
+          { path: 'profile', element: <Placeholder title="Profile" story="Sprint 2" /> },
+          { path: 'settings', element: <Placeholder title="Settings" story="Sprint 2" /> },
+        ],
       },
     ],
   },
