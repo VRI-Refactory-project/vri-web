@@ -221,3 +221,104 @@ select.ca-input {
   opacity: 0.7;
   cursor: not-allowed;
 }
+
+/* Ensure the AuthShell card is a positioning context */
+/* If your AuthShell uses a different class name, replace .auth-shell-card with that class */
+.auth-shell-card {
+  position: relative;
+}
+
+/* ── Floating Video Widget ───────────────────────────── */
+.ca-video-widget {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 200px;
+  height: 140px;
+  background-color: #000;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  z-index: 20;
+  border: 2px solid #fff;
+}
+
+.ca-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ca-video-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+  transition: background 0.2s;
+}
+
+.ca-video-close:hover {
+  background-color: rgba(0, 0, 0, 0.9);
+}
+
+.ca-video-caption {
+  position: absolute;
+  bottom: 24px; /* sits above the controls */
+  left: 0;
+  width: 100%;
+  background: rgba(0, 50, 60, 0.85);
+  color: #fff;
+  font-size: 10px;
+  padding: 4px 8px;
+  text-align: center;
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ca-video-controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ca-video-time {
+  color: #fff;
+  font-size: 9px;
+  font-family: monospace;
+}
+
+.ca-video-progress {
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.ca-video-progress-fill {
+  height: 100%;
+  background: #fff;
+  border-radius: 2px;
+  transition: width 0.2s linear;
+}

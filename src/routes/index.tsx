@@ -12,6 +12,7 @@ import { CreateAccountPage } from '../pages/registration/CreateAccountPage';
 import { PendingReviewPage } from '../pages/registration/PendingReviewPage';
 import { WelcomePage } from '../pages/registration/WelcomePage';
 import { UploadCertificationsPage } from '../pages/registration/UploadCertificationsPage';
+import { DashboardPage } from '../pages/dashboards/DHH_dashboard';
 
 export const router = createBrowserRouter([
   { path: '/', element: <SplashPage /> },
@@ -34,12 +35,15 @@ export const router = createBrowserRouter([
     children: [{ path: '/register/welcome', element: <WelcomePage /> }],
   },
   { path: '/register/institution', element: <SignUpInstitution /> },
-  {
-    element: <ProtectedRoute allow={['deaf']} />,
-    children: [
-      { path: '/dashboard/deaf', element: <Placeholder title="Deaf dashboard" story="Sprint 2" /> },
-    ],
-  },
+  // {
+  //   element: <ProtectedRoute allow={['deaf']} />,
+  //   children: [
+  //   { path: '/dashboard/deaf', element: <DashboardPage /> },
+  //   ],
+  // },
+
+    { path: '/dashboard/deaf', element: <DashboardPage /> },
+    
   {
     element: <ProtectedRoute allow={['interpreter']} />,
     children: [
