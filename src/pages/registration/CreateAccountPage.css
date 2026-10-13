@@ -207,10 +207,14 @@
   color: var(--ca-text-muted);
 }
 
-.ca-error {
-  margin: 0 0 1rem;
-  color: #b3261e;
-  font-size: 0.875rem;
+/* Error text (.field-error, .form-error) is shared: see components/AuthShell.css */
+.ca-input--error,
+.ca-input--error:focus {
+  border-color: #b3261e;
+}
+
+.ca-terms + .field-error {
+  margin: 0.4rem 0 1rem;
 }
 
 select.ca-input {
