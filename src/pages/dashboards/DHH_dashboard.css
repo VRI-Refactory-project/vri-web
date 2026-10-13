@@ -234,8 +234,8 @@ body {
   max-width: 400px;
 }
 
-/* .btn-primary {
-  background-color: var(--white);
+.dash-btn-primary {
+  background-color: var(--white)!important;
   color: var(--primary);
   border: none;
   padding: 12px 24px;
@@ -251,32 +251,21 @@ body {
 
 .btn-primary:hover {
   transform: translateY(-2px);
-} */
-
-.btn-primary {
-  background-color: #ffffff;
-  color: #382C77;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 14px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: transform 0.2s, background-color 0.2s;
 }
 
-.btn-primary:hover {
-  transform: translateY(-2px);
-  background-color: #dcd8f0;
-}
-
-.hero-illustration {
+/* .hero-illustration {
   position: absolute;
   right: 40px;
   bottom: -20px;
+} */
+
+.hero-illustration {
+  position: absolute;
+  right: 60px;
+  top: 50%;
+  transform: translateY(-50%) rotate(-15deg);
+  color: #ffffff;
+  pointer-events: none;
 }
 
 .hand-icon-placeholder {
@@ -488,6 +477,7 @@ body {
   color: var(--text-muted);
 }
 
+
 /* ── INTERPRETERS ────────────────────────────────────────── */
 .interpreter-grid {
   display: grid;
@@ -499,50 +489,74 @@ body {
   background: var(--white);
   border: 1px solid var(--border-color);
   border-radius: 16px;
-  padding: 16px;
+  padding: 12px;
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  flex-direction: row;
+  gap: 16px;
+  align-items: stretch;
 }
 
 .interpreter-image-wrap {
   position: relative;
-  width: 48px;
-  height: 48px;
+  width: 140px;
+  height: 140px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .interpreter-image-wrap img {
   width: 100%;
   height: 100%;
-  border-radius: 12px;
   object-fit: cover;
+  display: block;
 }
 
-.status-dot-online {
+.status-badge {
   position: absolute;
-  bottom: -2px;
-  right: -2px;
-  width: 12px;
-  height: 12px;
-  background-color: var(--success);
-  border: 2px solid var(--white);
+  bottom: 8px;
+  left: 8px;
+  background: #ffffff;
+  color: #1a1a1a;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.status-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: #10b981;
   border-radius: 50%;
+  display: inline-block;
 }
 
 .interpreter-info {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
 }
 
 .interpreter-header {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .interpreter-header h4 {
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .verified-icon {
@@ -552,7 +566,7 @@ body {
 .interpreter-langs {
   font-size: 13px;
   color: var(--text-muted);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .interpreter-rating {
@@ -561,6 +575,7 @@ body {
   gap: 4px;
   font-size: 13px;
   font-weight: 500;
+  margin-bottom: 10px;
 }
 
 .star-icon {
@@ -569,21 +584,25 @@ body {
 }
 
 .btn-outline {
-  background: transparent;
-  border: 1px solid var(--border-color);
-  color: var(--text-main);
-  padding: 8px 16px;
+  background: #EBE9F6;
+  border: none;
+  color: var(--primary);
+  padding: 10px 18px;
   border-radius: 10px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  width: 100%;
+  width: fit-content;
 }
 
 .btn-outline:hover {
-  background-color: var(--bg-color);
-  border-color: var(--text-muted);
+  background: #dcd8f0;
+}
+
+/* Hide the old square status dot since we're using the badge now */
+.status-dot-online {
+  display: none;
 }
 
 /* ── RESPONSIVE ──────────────────────────────────────────── */
@@ -638,3 +657,4 @@ body {
     display: none;
   }
 }
+
