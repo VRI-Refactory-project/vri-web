@@ -1,14 +1,14 @@
 /* ── RESET & VARIABLES ───────────────────────────────────── */
 :root {
-  --primary: #382C77; /* Deep purple/indigo */
+  --primary: #382c77; /* Deep purple/indigo */
   --primary-light: #f3efff;
   --bg-color: #f8f9fa;
-  --sidebar-bg: #382C77; /* Darker purple for sidebar */
+  --sidebar-bg: #382c77; /* Darker purple for sidebar */
   --text-main: #1a1a1a;
   --text-muted: #6b7280;
   --border-color: #e5e7eb;
   --white: #ffffff;
-  --success: #10b981;  
+  --success: #10b981;
 }
 
 * {
@@ -18,7 +18,11 @@
 }
 
 body {
-  font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+  font-family:
+    'Manrope',
+    system-ui,
+    -apple-system,
+    sans-serif;
   background-color: var(--bg-color);
   color: var(--text-main);
 }
@@ -43,7 +47,7 @@ body {
 .sidebar-logo {
   display: flex;
   align-items: center;
-    justify-content: center;
+  justify-content: center;
   gap: 10px;
   margin-bottom: 10px;
   padding-left: 8px;
@@ -88,8 +92,8 @@ body {
 }
 
 .nav-item.active {
-  background-color: #EBE9F6;
-  color:  #382C77;
+  background-color: #ebe9f6;
+  color: #382c77;
 }
 
 .sidebar-footer {
@@ -109,8 +113,8 @@ body {
 .avatar-circle {
   width: 36px;
   height: 36px;
-  background-color: #EBE9F6;
-  color: #382C77;
+  background-color: #ebe9f6;
+  color: #382c77;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -235,7 +239,7 @@ body {
 }
 
 .dash-btn-primary {
-  background-color: var(--white)!important;
+  background-color: var(--white) !important;
   color: var(--primary);
   border: none;
   padding: 12px 24px;
@@ -477,7 +481,6 @@ body {
   color: var(--text-muted);
 }
 
-
 /* ── INTERPRETERS ────────────────────────────────────────── */
 .interpreter-grid {
   display: grid;
@@ -584,7 +587,7 @@ body {
 }
 
 .btn-outline {
-  background: #EBE9F6;
+  background: #ebe9f6;
   border: none;
   color: var(--primary);
   padding: 10px 18px;
@@ -657,4 +660,3 @@ body {
     display: none;
   }
 }
-

@@ -1,4 +1,3 @@
-
 import {
   Video,
   Settings,
@@ -69,15 +68,13 @@ export function DashboardPage() {
         <div className="hero-content">
           <span className="hero-tag">ON DEMAND VRI</span>
           <h2 className="hero-title">Start session now</h2>
-          <p className="hero-subtitle">
-            Connect with a verified interpreter in under two minutes.
-          </p>
+          <p className="hero-subtitle">Connect with a verified interpreter in under two minutes.</p>
           <button className="dash-btn-primary">
             <Video size={18} /> Start VRI Session
           </button>
         </div>
         <div className="hero-illustration">
-            <Hand size={140} strokeWidth={1.2} />
+          <Hand size={140} strokeWidth={1.2} />
         </div>
       </section>
 
@@ -190,26 +187,24 @@ export function DashboardPage() {
             // </div>
 
             <div key={interpreter.id} className="interpreter-card">
-  <div className="interpreter-image-wrap">
-    <img src={interpreter.image} alt={interpreter.name} />
-    {interpreter.isAvailable && (
-      <span className="status-badge">Available</span>
-    )}
-  </div>
-  <div className="interpreter-info">
-    <div className="interpreter-header">
-      <h4>{interpreter.name}</h4>
-      <CheckCircle2 size={16} className="verified-icon" />
-    </div>
-    <p className="interpreter-langs">{interpreter.languages}</p>
-    <div className="interpreter-rating">
-      <Star size={14} className="star-icon" />
-      <span>{interpreter.rating}</span>
-      <span className="text-muted">· {interpreter.specialties}</span>
-    </div>
-    <button className="btn-outline">View profile</button>
-  </div>
-</div>
+              <div className="interpreter-image-wrap">
+                <img src={interpreter.image} alt={interpreter.name} />
+                {interpreter.isAvailable && <span className="status-badge">Available</span>}
+              </div>
+              <div className="interpreter-info">
+                <div className="interpreter-header">
+                  <h4>{interpreter.name}</h4>
+                  <CheckCircle2 size={16} className="verified-icon" />
+                </div>
+                <p className="interpreter-langs">{interpreter.languages}</p>
+                <div className="interpreter-rating">
+                  <Star size={14} className="star-icon" />
+                  <span>{interpreter.rating}</span>
+                  <span className="text-muted">· {interpreter.specialties}</span>
+                </div>
+                <button className="btn-outline">View profile</button>
+              </div>
+            </div>
           ))}
         </div>
       </section>

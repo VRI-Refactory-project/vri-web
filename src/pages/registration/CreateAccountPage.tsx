@@ -1,5 +1,3 @@
-
-
 import { useState, useRef, type FormEvent, type InputHTMLAttributes, type ReactNode } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { User, Mail, Phone, Lock, Eye, EyeOff, Award, ChevronRight } from 'lucide-react';
@@ -105,7 +103,7 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
   const [videoDismissed, setVideoDismissed] = useState(false);
   const [videoProgress, setVideoProgress] = useState(0);
   const [videoDuration, setVideoDuration] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);  
+  const [currentTime, setCurrentTime] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const set = (name: keyof typeof form) => (e: { target: { value: string } }) =>
@@ -213,21 +211,16 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
             onTimeUpdate={(e) => {
               const v = e.currentTarget;
               if (v.duration) setVideoProgress((v.currentTime / v.duration) * 100);
-              setCurrentTime(v.currentTime); 
+              setCurrentTime(v.currentTime);
             }}
           />
-          <div className="ca-video-caption">
-            Watch the video for help in sign language
-          </div>
+          <div className="ca-video-caption">Watch the video for help in sign language</div>
           <div className="ca-video-controls">
             <span className="ca-video-time">
               {formatTime(currentTime)} / {formatTime(videoDuration)}
             </span>
             <div className="ca-video-progress">
-              <div
-                className="ca-video-progress-fill"
-                style={{ width: `${videoProgress}%` }}
-              />
+              <div className="ca-video-progress-fill" style={{ width: `${videoProgress}%` }} />
             </div>
           </div>
         </div>

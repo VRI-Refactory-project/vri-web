@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { DashboardPage } from './DHH_dashboard'
+import { DashboardPage } from './DHH_dashboard';
 
 // Mock useAuth since DashboardLayout reads the current user
 vi.mock('../../hooks/useAuth', () => ({
@@ -14,7 +14,7 @@ function renderPage() {
   return render(
     <MemoryRouter>
       <DashboardPage />
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 }
 
