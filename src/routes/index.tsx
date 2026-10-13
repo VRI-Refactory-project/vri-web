@@ -15,6 +15,11 @@ import { UploadCertificationsPage } from '../pages/registration/UploadCertificat
 import { InterpreterLayout } from '../components/interpreter/InterpreterLayout';
 import { InterpreterHomePage } from '../pages/interpreter/InterpreterHomePage';
 import { AdminLayout } from '../features/admin/AdminLayout';
+import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage';
+
+
+
+
 
 export const router = createBrowserRouter([
   { path: '/', element: <SplashPage /> },
@@ -77,7 +82,7 @@ export const router = createBrowserRouter([
         path: '/dashboard/admin',
         element: <AdminLayout />,
         children: [
-          { index: true, element: <Placeholder title="Admin dashboard" story="V2-064" /> },
+          { index: true, element: <AdminDashboardPage /> },
           { path: 'users', element: <Placeholder title="Users" story="V2-064" /> },
           { path: 'verifications', element: <Placeholder title="Verifications" story="V2-064" /> },
           { path: 'institutions', element: <Placeholder title="Institutions" story="V2-064" /> },
