@@ -17,16 +17,56 @@ import { fetchAdminSummary, type AdminDashboardSummary } from '../../services/ad
 import './AdminDashboardPage.css';
 
 const KPIS = [
-  { id: 'total-users', label: 'Total Users', value: '12,824', delta: '+12%', trend: 'up' as const, Icon: Users },
-  { id: 'dhh', label: 'DHH Users', value: '7,046', delta: '+8%', trend: 'up' as const, Icon: Users },
-  { id: 'institutions', label: 'Institutions', value: '3,824', delta: '+4%', trend: 'up' as const, Icon: Building2 },
-  { id: 'interpreters', label: 'Interpreters', value: '1,984', delta: '+18%', trend: 'up' as const, Icon: Video },
-  { id: 'pending', label: 'Pending Verifications', value: '984', delta: '-3%', trend: 'down' as const, Icon: ShieldCheck },
+  {
+    id: 'total-users',
+    label: 'Total Users',
+    value: '12,824',
+    delta: '+12%',
+    trend: 'up' as const,
+    Icon: Users,
+  },
+  {
+    id: 'dhh',
+    label: 'DHH Users',
+    value: '7,046',
+    delta: '+8%',
+    trend: 'up' as const,
+    Icon: Users,
+  },
+  {
+    id: 'institutions',
+    label: 'Institutions',
+    value: '3,824',
+    delta: '+4%',
+    trend: 'up' as const,
+    Icon: Building2,
+  },
+  {
+    id: 'interpreters',
+    label: 'Interpreters',
+    value: '1,984',
+    delta: '+18%',
+    trend: 'up' as const,
+    Icon: Video,
+  },
+  {
+    id: 'pending',
+    label: 'Pending Verifications',
+    value: '984',
+    delta: '-3%',
+    trend: 'down' as const,
+    Icon: ShieldCheck,
+  },
 ];
 
 const BARS = [
-  { d: 'Mon', h: 42 }, { d: 'Tue', h: 58 }, { d: 'Wed', h: 47 },
-  { d: 'Thu', h: 68 }, { d: 'Fri', h: 74 }, { d: 'Sat', h: 39 }, { d: 'Sun', h: 52 },
+  { d: 'Mon', h: 42 },
+  { d: 'Tue', h: 58 },
+  { d: 'Wed', h: 47 },
+  { d: 'Thu', h: 68 },
+  { d: 'Fri', h: 74 },
+  { d: 'Sat', h: 39 },
+  { d: 'Sun', h: 52 },
 ];
 
 const ACTIVITY = [
@@ -46,10 +86,38 @@ const LOCATIONS = [
 ];
 
 const SESSIONS = [
-  { id: 'S-1042', date: 'Today, 11:30 AM', client: 'Grace Nakato (DHH)', interpreter: 'Musa Kato', type: 'VRI', status: 'Scheduled' },
-  { id: 'S-1041', date: 'Today, 2:00 PM', client: 'John Ssemakula (DHH)', interpreter: 'Sarah Nakato', type: 'On-site', status: 'Pending' },
-  { id: 'S-1040', date: 'Tomorrow, 9:00 AM', client: 'Daniel Gombe (DHH)', interpreter: 'Moses Ochieng', type: 'VRI', status: 'Scheduled' },
-  { id: 'S-1039', date: 'Tomorrow, 10:30 AM', client: 'Michael Tumusiime (DHH)', interpreter: 'Grace Atim', type: 'VRI', status: 'Completed' },
+  {
+    id: 'S-1042',
+    date: 'Today, 11:30 AM',
+    client: 'Grace Nakato (DHH)',
+    interpreter: 'Musa Kato',
+    type: 'VRI',
+    status: 'Scheduled',
+  },
+  {
+    id: 'S-1041',
+    date: 'Today, 2:00 PM',
+    client: 'John Ssemakula (DHH)',
+    interpreter: 'Sarah Nakato',
+    type: 'On-site',
+    status: 'Pending',
+  },
+  {
+    id: 'S-1040',
+    date: 'Tomorrow, 9:00 AM',
+    client: 'Daniel Gombe (DHH)',
+    interpreter: 'Moses Ochieng',
+    type: 'VRI',
+    status: 'Scheduled',
+  },
+  {
+    id: 'S-1039',
+    date: 'Tomorrow, 10:30 AM',
+    client: 'Michael Tumusiime (DHH)',
+    interpreter: 'Grace Atim',
+    type: 'VRI',
+    status: 'Completed',
+  },
 ];
 
 export function AdminDashboardPage() {
@@ -69,12 +137,17 @@ export function AdminDashboardPage() {
   const kpis = KPIS.map((k) => {
     if (!summary) return k;
     const value =
-      k.id === 'total-users' ? summary.totalUsers.toLocaleString()
-      : k.id === 'dhh' ? summary.dhhUsers.toLocaleString()
-      : k.id === 'institutions' ? summary.institutions.toLocaleString()
-      : k.id === 'interpreters' ? summary.interpreters.toLocaleString()
-      : k.id === 'pending' ? summary.pendingVerifications.toLocaleString()
-      : k.value;
+      k.id === 'total-users'
+        ? summary.totalUsers.toLocaleString()
+        : k.id === 'dhh'
+          ? summary.dhhUsers.toLocaleString()
+          : k.id === 'institutions'
+            ? summary.institutions.toLocaleString()
+            : k.id === 'interpreters'
+              ? summary.interpreters.toLocaleString()
+              : k.id === 'pending'
+                ? summary.pendingVerifications.toLocaleString()
+                : k.value;
     return { ...k, value };
   });
 
@@ -116,7 +189,9 @@ export function AdminDashboardPage() {
         {kpis.map(({ id, label, value, delta, trend, Icon }) => (
           <div key={id} className="ad-kpi">
             <div className="ad-kpi-head">
-              <span className="ad-kpi-icon"><Icon size={14} /></span>
+              <span className="ad-kpi-icon">
+                <Icon size={14} />
+              </span>
               <span>{label}</span>
             </div>
             <div className="ad-kpi-value">{value}</div>
@@ -143,13 +218,14 @@ export function AdminDashboardPage() {
         </div>
 
         <div className="ad-panel">
-          <div className="ad-panel-head"><h3>Session types</h3></div>
+          <div className="ad-panel-head">
+            <h3>Session types</h3>
+          </div>
           <div className="ad-donut-wrap">
             <div
               className="ad-donut"
               style={{
-                background:
-                  'conic-gradient(#4b34a0 0 45%, #16a34a 45% 82%, #cbd5e1 82% 100%)',
+                background: 'conic-gradient(#4b34a0 0 45%, #16a34a 45% 82%, #cbd5e1 82% 100%)',
               }}
             >
               <div className="ad-donut-hole">
@@ -158,15 +234,26 @@ export function AdminDashboardPage() {
               </div>
             </div>
             <div className="ad-legend">
-              <div><span className="ad-legend-dot" style={{ background: '#4b34a0' }} />Video call (VRI)</div>
-              <div><span className="ad-legend-dot" style={{ background: '#16a34a' }} />On-site</div>
-              <div><span className="ad-legend-dot" style={{ background: '#cbd5e1' }} />Still waiting</div>
+              <div>
+                <span className="ad-legend-dot" style={{ background: '#4b34a0' }} />
+                Video call (VRI)
+              </div>
+              <div>
+                <span className="ad-legend-dot" style={{ background: '#16a34a' }} />
+                On-site
+              </div>
+              <div>
+                <span className="ad-legend-dot" style={{ background: '#cbd5e1' }} />
+                Still waiting
+              </div>
             </div>
           </div>
         </div>
 
         <div className="ad-panel">
-          <div className="ad-panel-head"><h3>Recent activity</h3></div>
+          <div className="ad-panel-head">
+            <h3>Recent activity</h3>
+          </div>
           <div className="ad-feed">
             {ACTIVITY.map((a, i) => (
               <div key={i} className="ad-feed-item">
@@ -190,7 +277,9 @@ export function AdminDashboardPage() {
             {LOCATIONS.map((l) => (
               <div key={l.label}>
                 <div className="ad-loc-row">
-                  <span><MapPin size={12} /> {l.label}</span>
+                  <span>
+                    <MapPin size={12} /> {l.label}
+                  </span>
                   <span>{l.value}</span>
                 </div>
                 <div className="ad-loc-bar">
@@ -227,7 +316,9 @@ export function AdminDashboardPage() {
         </div>
 
         <div className="ad-panel">
-          <div className="ad-panel-head"><h3>Quick insights</h3></div>
+          <div className="ad-panel-head">
+            <h3>Quick insights</h3>
+          </div>
           <div className="ad-insights">
             <div className="ad-insight">
               <Lightbulb size={14} />
@@ -252,13 +343,24 @@ export function AdminDashboardPage() {
             <h3>Interpreter performance</h3>
             <small>Avg. session duration</small>
           </div>
-          <div className="ad-metric"><span>Sessions this week</span><strong>342</strong></div>
-          <div className="ad-metric"><span>Avg. duration</span><strong>2h 34m</strong></div>
-          <div className="ad-metric"><span>Completion rate</span><strong>96%</strong></div>
+          <div className="ad-metric">
+            <span>Sessions this week</span>
+            <strong>342</strong>
+          </div>
+          <div className="ad-metric">
+            <span>Avg. duration</span>
+            <strong>2h 34m</strong>
+          </div>
+          <div className="ad-metric">
+            <span>Completion rate</span>
+            <strong>96%</strong>
+          </div>
         </div>
 
         <div className="ad-panel">
-          <div className="ad-panel-head"><h3>Verification status</h3></div>
+          <div className="ad-panel-head">
+            <h3>Verification status</h3>
+          </div>
           <div className="ad-vbar">
             <span style={{ width: '42%', background: '#16a34a' }} />
             <span style={{ width: '28%', background: '#f59e0b' }} />
@@ -266,10 +368,22 @@ export function AdminDashboardPage() {
             <span style={{ width: '14%', background: '#4b34a0' }} />
           </div>
           <div className="ad-vlegend">
-            <span><i style={{ background: '#16a34a' }} />Approved · 1,842</span>
-            <span><i style={{ background: '#f59e0b' }} />Pending · 984</span>
-            <span><i style={{ background: '#ef4444' }} />Rejected · 42</span>
-            <span><i style={{ background: '#4b34a0' }} />Flagged · 28</span>
+            <span>
+              <i style={{ background: '#16a34a' }} />
+              Approved · 1,842
+            </span>
+            <span>
+              <i style={{ background: '#f59e0b' }} />
+              Pending · 984
+            </span>
+            <span>
+              <i style={{ background: '#ef4444' }} />
+              Rejected · 42
+            </span>
+            <span>
+              <i style={{ background: '#4b34a0' }} />
+              Flagged · 28
+            </span>
           </div>
         </div>
       </div>

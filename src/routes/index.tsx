@@ -17,10 +17,6 @@ import { InterpreterHomePage } from '../pages/interpreter/InterpreterHomePage';
 import { AdminLayout } from '../features/admin/AdminLayout';
 import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage';
 
-
-
-
-
 export const router = createBrowserRouter([
   { path: '/', element: <SplashPage /> },
   { path: '/landing', element: <LandingPage /> },
@@ -75,7 +71,7 @@ export const router = createBrowserRouter([
       },
     ],
   },
-      {
+  {
     element: <ProtectedRoute allow={['admin']} />,
     children: [
       {
