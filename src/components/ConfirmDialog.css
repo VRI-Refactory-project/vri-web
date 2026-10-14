@@ -1,0 +1,164 @@
+.cd-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  display: grid;
+  place-items: center;
+  z-index: 1000;
+  padding: 24px;
+  animation: cd-fade 0.15s ease-out;
+}
+
+@keyframes cd-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.cd-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px 28px 24px;
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25);
+  animation: cd-pop 0.2s ease-out;
+}
+
+@keyframes cd-pop {
+  from { transform: scale(0.96); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+.cd-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #ede9fe;    /* soft lavender */
+  color: #3b2579;         /* brand purple */
+  display: grid;
+  place-items: center;
+  margin: 0 auto 16px;
+}
+
+.cd-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 8px;
+}
+
+.cd-message {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0 0 22px;
+  line-height: 1.4;
+}
+
+.cd-btn {
+  display: block;
+  width: 100%;
+  background: #3b2579;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 20px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.cd-btn:hover {
+  background: #4b34a0;
+}
+
+/* ── ICON VARIANTS ────────────────────────────────────── */
+.cd-icon--success {
+  background: #ede9fe;
+  color: #3b2579;
+}
+
+.cd-icon--danger {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+/* ── INPUT (reason field) ─────────────────────────────── */
+.cd-input {
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-family: inherit;
+  font-size: 14px;
+  color: #111827;
+  background: #fff;
+  outline: none;
+  margin-bottom: 16px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.cd-input::placeholder {
+  color: #9ca3af;
+}
+
+.cd-input:focus {
+  border-color: #3b2579;
+  box-shadow: 0 0 0 3px rgba(59, 37, 121, 0.08);
+}
+
+/* ── BUTTON VARIANTS ──────────────────────────────────── */
+.cd-btn--danger {
+  background: #3b2579;
+}
+
+.cd-btn--danger:hover {
+  background: #4b34a0;
+}
+
+/* ── ICON VARIANTS ────────────────────────────────────── */
+.cd-icon--success {
+  background: #ede9fe;
+  color: #3b2579;
+}
+
+.cd-icon--danger {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+/* ── INPUT (reason field) ─────────────────────────────── */
+.cd-input {
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-family: inherit;
+  font-size: 14px;
+  color: #111827;
+  background: #fff;
+  outline: none;
+  margin-bottom: 16px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.cd-input::placeholder {
+  color: #9ca3af;
+}
+
+.cd-input:focus {
+  border-color: #3b2579;
+  box-shadow: 0 0 0 3px rgba(59, 37, 121, 0.08);
+}
+
+/* ── BUTTON VARIANTS ──────────────────────────────────── */
+.cd-btn--danger {
+  background: #3b2579;
+}
+
+.cd-btn--danger:hover {
+  background: #4b34a0;
+}
