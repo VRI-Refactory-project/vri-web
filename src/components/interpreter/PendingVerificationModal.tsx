@@ -1,6 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ShieldCheck } from 'lucide-react';
-import { useApiData } from '../../lib/useApiData';
 import { useAuth } from '../../hooks/useAuth';
 import { api } from '../../services/api';
 import { Modal } from '../Modal';
@@ -18,8 +17,22 @@ const getInterpreterStatus = () =>
  */
 export function PendingVerificationModal() {
   const { session } = useAuth();
-  const { data } = useApiData(getInterpreterStatus);
+  const [data, setData] = useState<{ verification_status: VerificationStatus } | null>(null);
   const [dismissed, setDismissed] = useState(false);
+
+  // A failed request just leaves the pop-up hidden: it must never block the dashboard.
+  useEffect(() => {
+    let cancelled = false;
+    getInterpreterStatus().then(
+      (status) => {
+        if (!cancelled) setData(status);
+      },
+      () => {},
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const emailPending = session?.user.emailVerified === false && !!session.user.email;
   if (!data || data.verification_status === 'APPROVED' || dismissed || emailPending) return null;
