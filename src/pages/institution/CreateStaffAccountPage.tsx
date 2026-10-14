@@ -175,8 +175,12 @@ export function CreateStaffAccountPage() {
     try {
       // TODO: replace with your real API call once the backend is connected:
       // await createStaffAccount(form);
+      //   await new Promise((r) => setTimeout(r, 800));
+      //   navigate('/dashboard/institution/staff');
       await new Promise((r) => setTimeout(r, 800));
-      navigate('/dashboard/institution/staff');
+      navigate('/dashboard/institution/staff/created', {
+        state: { name: form.fullName },
+      });
     } catch {
       setServerError('Could not create the account. Please try again.');
     } finally {
