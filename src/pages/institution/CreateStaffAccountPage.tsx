@@ -118,24 +118,13 @@
 //   );
 // }
 
-
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronDown } from 'lucide-react';
-import {
-  collectErrors,
-  validateEmail,
-  validateName,
-} from '../../lib/validation';
+import { collectErrors, validateEmail, validateName } from '../../lib/validation';
 import './CreateStaffAccountPage.css';
 
-const DEPARTMENTS = [
-  'Healthcare',
-  'Reception',
-  'Social Services',
-  'IT Support',
-  'Administration',
-];
+const DEPARTMENTS = ['Healthcare', 'Reception', 'Social Services', 'IT Support', 'Administration'];
 
 const ROLES = ['Staff', 'Manager', 'Admin'];
 
@@ -168,10 +157,8 @@ export function CreateStaffAccountPage() {
     role: form.role ? undefined : 'Select a role.',
   });
 
-  const shown = (name: FieldName) =>
-    touched[name] || submitted ? errors[name] : undefined;
-  const touch = (name: FieldName) => () =>
-    setTouched((t) => ({ ...t, [name]: true }));
+  const shown = (name: FieldName) => (touched[name] || submitted ? errors[name] : undefined);
+  const touch = (name: FieldName) => () => setTouched((t) => ({ ...t, [name]: true }));
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();

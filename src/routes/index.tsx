@@ -111,18 +111,18 @@ export const router = createBrowserRouter([
   },
 
   // TODO: Wrap with ProtectedRoute allow={['institution']} once the backend is live
-// {
-//   path: '/dashboard/institution',
-//   element: <InstitutionLayout />,
-//   children: [
-//     { index: true, element: <Placeholder title="Institution dashboard" story="V2-028" /> },
-//     { path: 'staff', element: <StaffManagementPage /> },
-//     { path: 'staff/new', element: <CreateStaffAccountPage /> },
-//     { path: 'sessions', element: <Placeholder title="Sessions" story="V2-028" /> },
-//     { path: 'analytics', element: <Placeholder title="Analytics" story="V2-028" /> },
-//     { path: 'settings', element: <Placeholder title="Settings" story="V2-028" /> },
-//   ],
-// },
+  // {
+  //   path: '/dashboard/institution',
+  //   element: <InstitutionLayout />,
+  //   children: [
+  //     { index: true, element: <Placeholder title="Institution dashboard" story="V2-028" /> },
+  //     { path: 'staff', element: <StaffManagementPage /> },
+  //     { path: 'staff/new', element: <CreateStaffAccountPage /> },
+  //     { path: 'sessions', element: <Placeholder title="Sessions" story="V2-028" /> },
+  //     { path: 'analytics', element: <Placeholder title="Analytics" story="V2-028" /> },
+  //     { path: 'settings', element: <Placeholder title="Settings" story="V2-028" /> },
+  //   ],
+  // },
 
   {
     element: <ProtectedRoute allow={['admin']} />,
