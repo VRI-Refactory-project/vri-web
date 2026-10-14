@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Search,
   Bell,
@@ -13,6 +14,7 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 import './CredentialReviewPage.css';
+import { ConfirmDialog } from '../../components/ConfirmDialog';
 
 import danielPhoto from '../../assets/interpreter3.png';
 
@@ -45,6 +47,8 @@ const verificationProgress = [
 
 // ── PAGE ──────────────────────────────────────────────────
 export function CredentialReviewPage() {
+  const [approvedOpen, setApprovedOpen] = useState(false);
+  const [rejectedOpen, setRejectedOpen] = useState(false);
   return (
     <>
       {/* Top bar */}
@@ -214,15 +218,45 @@ export function CredentialReviewPage() {
 
           <div className="crp-actions">
             <button className="crp-btn">Request changes</button>
-            <button className="crp-btn crp-btn--danger">
+            <button className="crp-btn crp-btn--danger" onClick={() => setRejectedOpen(true)}>
               <XCircle size={14} /> Reject
             </button>
-            <button className="crp-btn crp-btn--success">
+            <button className="crp-btn crp-btn--success" onClick={() => setApprovedOpen(true)}>
               <Check size={14} /> Approve verification
             </button>
           </div>
         </aside>
       </div>
+
+      {/* Approve confirmation modal */}
+      <ConfirmDialog
+        open={approvedOpen}
+        variant="success"
+        title="Approve interpreter"
+        message="Everything is complete and your account is up to date."
+        confirmLabel="Done"
+        onConfirm={() => {
+          setApprovedOpen(false);
+          // TODO: call approve API here
+        }}
+        onClose={() => setApprovedOpen(false)}
+      />
+
+      <ConfirmDialog
+        open={rejectedOpen}
+        variant="danger"
+        title="Reject interpreter"
+        message="Your account has been rejected"
+        confirmLabel="Done"
+        withReason
+        reasonPlaceholder="Reason for rejection"
+        onConfirm={(reason) => {
+          console.log('Rejection reason:', reason);
+          // TODO: call reject API here
+          setRejectedOpen(false);
+        }}
+        onClose={() => setRejectedOpen(false)}
+      />
     </>
   );
 }

@@ -146,11 +146,17 @@ export const router = createBrowserRouter([
           { path: 'profile', element: <AdminProfilePage /> },
         ],
       },
+
       {
         path: '/admin/interpreters',
         element: <Placeholder title="Interpreter review" story="V2-045" />,
       },
     ],
+  },
+
+  {
+    path: '/admin/interpreters',
+    element: <Placeholder title="Interpreter review" story="V2-045" />,
   },
 
   { path: '*', element: <Placeholder title="Page not found" story="n/a" /> },
