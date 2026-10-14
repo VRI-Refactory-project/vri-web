@@ -1,0 +1,122 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.modal {
+  width: 100%;
+  max-width: 440px;
+  box-sizing: border-box;
+  padding: 32px 28px 28px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
+  font-family: 'Manrope', system-ui, sans-serif;
+  color: #0f172a;
+  text-align: center;
+  outline: none;
+}
+
+.modal__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: #ece9f8;
+  color: #3b2579;
+}
+
+.modal__title {
+  margin: 0 0 8px;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.modal__text {
+  margin: 0 0 20px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #475569;
+}
+
+.modal__code {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font:
+    700 26px/1 'Manrope',
+    system-ui,
+    sans-serif;
+  letter-spacing: 0.4em;
+  text-align: center;
+}
+
+.modal__code:focus {
+  outline: 2px solid #3b2579;
+  outline-offset: 1px;
+}
+
+.modal__code--invalid {
+  border-color: #b3261e;
+}
+
+.modal__primary {
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px;
+  border: 0;
+  border-radius: 10px;
+  background: #3b2579;
+  color: #fff;
+  font:
+    700 15px 'Manrope',
+    system-ui,
+    sans-serif;
+  cursor: pointer;
+}
+
+.modal__primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.modal__secondary {
+  margin: 14px 4px 0;
+  padding: 4px;
+  border: 0;
+  background: none;
+  color: #3b2579;
+  font:
+    600 14px 'Manrope',
+    system-ui,
+    sans-serif;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.modal__secondary:disabled {
+  color: #94a3b8;
+  text-decoration: none;
+  cursor: default;
+}
+
+.modal__info {
+  margin: 12px 0 0;
+  font-size: 14px;
+  color: #166534;
+}
+
+.modal .form-error {
+  text-align: center;
+}

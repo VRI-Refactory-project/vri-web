@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import type { AuthSession, SelectableRole } from '../../types';
+import type { AuthSession, AuthUser, SelectableRole } from '../../types';
 
 export interface AuthState {
   session: AuthSession | null;
@@ -7,6 +7,8 @@ export interface AuthState {
   selectRole: (role: SelectableRole) => void;
   login: (session: AuthSession) => void;
   logout: () => void;
+  /** Updates fields of the signed-in user, e.g. after their email is verified. */
+  updateUser: (user: Partial<AuthUser>) => void;
 }
 
 export const AuthContext = createContext<AuthState | null>(null);

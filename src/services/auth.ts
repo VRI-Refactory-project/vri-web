@@ -10,6 +10,7 @@ interface ApiUser {
   email: string | null;
   role: string;
   must_change_password: boolean;
+  email_verified?: boolean;
 }
 
 export interface LoginResponse {
@@ -29,6 +30,8 @@ export function toAuthUser(user: ApiUser): AuthUser {
     name: user.full_name,
     role: toRole(user.role),
     mustChangePassword: user.must_change_password,
+    email: user.email,
+    emailVerified: user.email_verified,
   };
 }
 
@@ -75,4 +78,17 @@ export async function confirmRecovery(
     body: JSON.stringify({ identifier, code, new_password: newPassword }),
   });
   return toSession(res);
+}
+
+/** Email verification: send the signed-in user a new 6-digit code. */
+export const resendEmailCode = () =>
+  api<{ detail: string }>('/api/v1/auth/email/resend/', { method: 'POST' });
+
+/** Email verification: check the code from the email. Returns the updated user. */
+export async function confirmEmailCode(code: string): Promise<AuthUser> {
+  const user = await api<ApiUser>('/api/v1/auth/email/verify/', {
+    method: 'POST',
+    body: JSON.stringify({ code }),
+  });
+  return toAuthUser(user);
 }
