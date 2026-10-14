@@ -1,0 +1,251 @@
+/* src/pages/interpreter/ProfilePage.css */
+.ip-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  font-family: 'Manrope', system-ui, sans-serif;
+  color: #0f172a;
+}
+
+.ip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.ip-header h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+}
+.ip-header p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.ip-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid #e2e0ee;
+  background: #fff;
+  border-radius: 15px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+  cursor: pointer;
+}
+
+.ip-card {
+  background: #fff;
+  border: 1px solid #eceafa;
+  border-radius: 15px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ip-card h2 {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 700;
+}
+
+/* Hero */
+.ip-hero {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.ip-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 84px;
+  height: 84px;
+  border-radius: 15px;
+  background: #efeafd;
+  color: #4b34a0;
+  font-weight: 700;
+  font-size: 28px;
+  flex: none;
+}
+
+.ip-hero-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.ip-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.ip-name-input {
+  font-size: 20px;
+  font-weight: 700;
+  font-family: inherit;
+  border: 1px solid #e2e0ee;
+  border-radius: 10px;
+  padding: 4px 10px;
+  color: #0f172a;
+  background: #f7f6fd;
+  outline: none;
+}
+
+.ip-verified {
+  color: #4b34a0;
+}
+
+.ip-headline {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.ip-stats {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 13px;
+  color: #334155;
+  margin-top: 2px;
+}
+
+.ip-stats > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.ip-star {
+  color: #f59e0b;
+  fill: #f59e0b;
+}
+
+.ip-pill {
+  display: inline-block;
+  align-self: flex-start;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  background: #d1fae5;
+  color: #047857;
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+/* Three-panel grid */
+.ip-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.ip-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 13px;
+  color: #334155;
+}
+
+.ip-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ip-list button {
+  background: none;
+  border: none;
+  color: #8a86a5;
+  cursor: pointer;
+  display: inline-flex;
+  padding: 2px;
+}
+
+.ip-add {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.ip-add input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #e2e0ee;
+  border-radius: 10px;
+  background: #f7f6fd;
+  font-family: inherit;
+  font-size: 12.5px;
+  outline: none;
+}
+
+.ip-add button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: none;
+  background: #4b34a0;
+  color: #fff;
+  cursor: pointer;
+}
+
+/* Actions */
+.ip-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.ip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 22px;
+  border-radius: 15px;
+  border: none;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ip-btn--ghost {
+  background: #efeafd;
+  color: #4b34a0;
+}
+.ip-btn--primary {
+  background: #4b34a0;
+  color: #fff;
+}
+
+@media (max-width: 1000px) {
+  .ip-grid {
+    grid-template-columns: 1fr;
+  }
+  .ip-hero {
+    flex-direction: column;
+  }
+}
