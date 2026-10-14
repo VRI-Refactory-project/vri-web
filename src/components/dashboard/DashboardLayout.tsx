@@ -38,7 +38,7 @@ export function DashboardLayout({
 }: Props) {
   const { session } = useAuth();
   const name = session?.user.name ?? '';
-  const initial = name.trim().charAt(0).toUpperCase() || 'MK';
+  const initial = name.trim().charAt(0).toUpperCase() || 'MJ';
 
   return (
     <div className="dl-shell">
