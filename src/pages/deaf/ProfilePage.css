@@ -1,0 +1,342 @@
+/* src/pages/deaf/ProfilePage.css */
+.pr-page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  font-family: 'Manrope', system-ui, sans-serif;
+  color: #0f172a;
+}
+
+.pr-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.pr-header h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+}
+.pr-header p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.pr-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid #e2e0ee;
+  background: #fff;
+  border-radius: 15px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+  cursor: pointer;
+}
+
+.pr-columns {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 20px;
+}
+
+.pr-left,
+.pr-right {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pr-card {
+  background: #fff;
+  border: 1px solid #eceafa;
+  border-radius: 15px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pr-card h2 {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pr-photo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.pr-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 9999px;
+  background: #efeafd;
+  color: #4b34a0;
+  font-weight: 700;
+  font-size: 20px;
+  flex: none;
+}
+
+.pr-photo-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.pr-photo-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #e2e0ee;
+  background: #fff;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #1e293b;
+}
+
+.pr-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 16px;
+}
+
+.pr-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pr-field--full {
+  grid-column: 1 / -1;
+}
+
+.pr-field label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b6890;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pr-field input,
+.pr-input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid #e2e0ee;
+  border-radius: 15px;
+  background: #f7f6fd;
+  font-family: inherit;
+  font-size: 13.5px;
+  color: #1e293b;
+}
+
+.pr-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+}
+
+.pr-input input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 0;
+}
+
+.pr-input svg {
+  color: #8a86a5;
+  flex: none;
+}
+
+.pr-field input:read-only,
+.pr-input input:read-only {
+  cursor: default;
+  color: #0f172a;
+}
+
+.pr-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pr-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #4b34a0;
+  color: #fff;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pr-chip button {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+}
+
+.pr-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 13px;
+  color: #334155;
+}
+
+.pr-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pr-tag {
+  margin-left: auto;
+  font-size: 11px;
+  color: #8a86a5;
+  font-weight: 600;
+}
+
+.pr-hint {
+  margin: 6px 0 0;
+  font-size: 11.5px;
+  color: #8a86a5;
+  line-height: 1.5;
+}
+
+.pr-prefs {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pr-pref {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: #334155;
+}
+
+.pr-pref > span:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pr-switch {
+  width: 36px;
+  height: 20px;
+  border-radius: 9999px;
+  background: #d5d1e8;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.15s;
+  border: none;
+}
+
+.pr-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-radius: 9999px;
+  transition: transform 0.15s;
+}
+
+.pr-switch--on {
+  background: #4b34a0;
+}
+.pr-switch--on::after {
+  transform: translateX(16px);
+}
+
+.pr-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.pr-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 22px;
+  border-radius: 15px;
+  border: none;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pr-btn--ghost {
+  background: #efeafd;
+  color: #4b34a0;
+}
+.pr-btn--primary {
+  background: #4b34a0;
+  color: #fff;
+}
+
+@media (max-width: 900px) {
+  .pr-columns {
+    grid-template-columns: 1fr;
+  }
+  .pr-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pr-error {
+  padding: 12px 16px;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #b91c1c;
+  border-radius: 15px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.pr-error {
+  padding: 12px 16px;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #b91c1c;
+  border-radius: 15px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
