@@ -24,6 +24,7 @@ import { AvailabilityPage } from '../pages/interpreter/AvailabilityPage';
 import { ProfilePage as DeafProfilePage } from '../pages/deaf/ProfilePage';
 import { ProfilePage as InterpreterProfilePage } from '../pages/interpreter/ProfilePage';
 import { SettingsPage } from '../pages/admin/SettingsPage';
+import { AdminProfilePage } from '../pages/admin/AdminProfilePage';
 
 export const router = createBrowserRouter([
   { path: '/', element: <SplashPage /> },
@@ -112,6 +113,7 @@ export const router = createBrowserRouter([
           { path: 'reports', element: <Placeholder title="Reports" story="V2-064" /> },
           { path: 'audit-logs', element: <Placeholder title="Audit Logs" story="V2-064" /> },
           { path: 'settings', element: <SettingsPage /> },
+          { path: 'profile', element: <AdminProfilePage /> },
         ],
       },
       {
