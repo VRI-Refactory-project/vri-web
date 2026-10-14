@@ -1,0 +1,151 @@
+/* ── BACK LINK ────────────────────────────────────────── */
+.csa-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #111827;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  margin-bottom: 16px;
+}
+.csa-back:hover {
+  color: #3b2579;
+}
+
+/* ── HEADER ───────────────────────────────────────────── */
+.csa-header {
+  margin-bottom: 24px;
+    text-align: center;
+}
+.csa-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 6px;
+}
+.csa-header p {
+  color: #6b7280;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* ── FORM CARD ────────────────────────────────────────── */
+.csa-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 28px 32px;
+  max-width: 880px;
+  margin: 0 auto; 
+  width: 100%;
+}
+
+.csa-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.csa-field label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.csa-field input,
+.csa-field select {
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-family: inherit;
+  font-size: 14px;
+  color: #111827;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.csa-field input::placeholder {
+  color: #9ca3af;
+}
+
+.csa-field input:focus,
+.csa-field select:focus {
+  border-color: #3b2579;
+  box-shadow: 0 0 0 3px rgba(59, 37, 121, 0.08);
+}
+
+/* Custom select wrapper for the chevron */
+.csa-select-wrap {
+  position: relative;
+}
+.csa-select-wrap select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 40px;
+  cursor: pointer;
+}
+.csa-select-icon {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  pointer-events: none;
+}
+
+/* ── SUBMIT BUTTON ────────────────────────────────────── */
+.csa-submit {
+  width: 100%;
+  background: #3b2579;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.csa-submit:hover:not(:disabled) {
+  background: #4b34a0;
+  box-shadow: 0 4px 12px rgba(59, 37, 121, 0.25);
+}
+
+.csa-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── INPUT ERROR STATE ─────────────────────────────────── */
+.csa-input--error,
+.csa-input--error:focus {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+/* ── FIELD ERROR MESSAGE ───────────────────────────────── */
+.csa-field-error {
+  font-size: 12px;
+  color: #ef4444;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* ── SERVER ERROR ──────────────────────────────────────── */
+.csa-server-error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
