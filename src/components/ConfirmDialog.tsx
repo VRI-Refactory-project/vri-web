@@ -1,41 +1,3 @@
-// import { Check } from 'lucide-react';
-// import './ConfirmDialog.css';
-
-// interface Props {
-//   open: boolean;
-//   title: string;
-//   message: string;
-//   confirmLabel?: string;
-//   onClose: () => void;
-// }
-
-// export function ConfirmDialog({
-//   open,
-//   title,
-//   message,
-//   confirmLabel = 'Done',
-//   onClose,
-// }: Props) {
-//   if (!open) return null;
-
-//   return (
-//     <div className="cd-overlay" role="dialog" aria-modal="true" aria-labelledby="cd-title">
-//       <div className="cd-card">
-//         <div className="cd-icon" aria-hidden="true">
-//           <Check size={20} strokeWidth={3} />
-//         </div>
-//         <h2 id="cd-title" className="cd-title">
-//           {title}
-//         </h2>
-//         <p className="cd-message">{message}</p>
-//         <button type="button" className="cd-btn" onClick={onClose}>
-//           {confirmLabel}
-//         </button>
-//       </div>
-//     </div>
-//   );
-// }
-
 import { useEffect, useState } from 'react';
 import { Check, X } from 'lucide-react';
 import './ConfirmDialog.css';
@@ -65,9 +27,9 @@ export function ConfirmDialog({
 }: Props) {
   const [reason, setReason] = useState('');
 
-  useEffect(() => {
-    if (open) setReason('');
-  }, [open]);
+  //   useEffect(() => {
+  //     if (open) setReason('');
+  //   }, [open]);
 
   useEffect(() => {
     if (!open) return;
