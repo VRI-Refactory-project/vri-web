@@ -29,6 +29,7 @@ import { SettingsPage } from '../pages/admin/SettingsPage';
 import { AdminProfilePage } from '../pages/admin/AdminProfilePage';
 import { CreateStaffAccountPage } from '../pages/institution/CreateStaffAccountPage';
 import { OfflinePage } from '../pages/OfflinePage';
+import { StaffAccountCreatedPage } from '../pages/institution/StaffAccountCreatedPage';
 
 export const router = createBrowserRouter([
   { path: '/', element: <SplashPage /> },
@@ -102,6 +103,7 @@ export const router = createBrowserRouter([
           { index: true, element: <Placeholder title="Institution dashboard" story="V2-028" /> },
           { path: 'staff', element: <StaffManagementPage /> },
           { path: 'staff/new', element: <CreateStaffAccountPage /> },
+          { path: 'staff/created', element: <StaffAccountCreatedPage /> },
           { path: 'sessions', element: <Placeholder title="Sessions" story="V2-028" /> },
           { path: 'analytics', element: <Placeholder title="Analytics" story="V2-028" /> },
           { path: 'settings', element: <Placeholder title="Settings" story="V2-028" /> },
@@ -110,7 +112,7 @@ export const router = createBrowserRouter([
     ],
   },
 
-  // TODO: Wrap with ProtectedRoute allow={['institution']} once the backend is live
+  //   TODO: Wrap with ProtectedRoute allow={['institution']} once the backend is live
   // {
   //   path: '/dashboard/institution',
   //   element: <InstitutionLayout />,
@@ -118,6 +120,7 @@ export const router = createBrowserRouter([
   //     { index: true, element: <Placeholder title="Institution dashboard" story="V2-028" /> },
   //     { path: 'staff', element: <StaffManagementPage /> },
   //     { path: 'staff/new', element: <CreateStaffAccountPage /> },
+  //     { path: 'staff/created', element: <StaffAccountCreatedPage /> },
   //     { path: 'sessions', element: <Placeholder title="Sessions" story="V2-028" /> },
   //     { path: 'analytics', element: <Placeholder title="Analytics" story="V2-028" /> },
   //     { path: 'settings', element: <Placeholder title="Settings" story="V2-028" /> },
