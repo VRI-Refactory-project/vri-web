@@ -149,7 +149,7 @@
 /* Three-panel grid */
 .ip-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
 }
 
@@ -248,4 +248,16 @@
   .ip-hero {
     flex-direction: column;
   }
+}
+
+.ip-inline-input {
+  font-family: inherit;
+  font-size: 13px;
+  border: 1px solid #e2e0ee;
+  border-radius: 8px;
+  padding: 4px 8px;
+  margin-left: 6px;
+  background: #f7f6fd;
+  outline: none;
+  width: 180px;
 }

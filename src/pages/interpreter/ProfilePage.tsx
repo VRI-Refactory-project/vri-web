@@ -15,6 +15,8 @@ interface InterpreterProfile {
   specialisations: string[];
   availabilityToday: string;
   responseTime: string;
+  emergencyName: string;
+  emergencyPhone: string;
 }
 
 export function ProfilePage() {
@@ -33,6 +35,8 @@ export function ProfilePage() {
     specialisations: ['Healthcare', 'Legal', 'Education'],
     availabilityToday: 'Today until 6:00 PM',
     responseTime: 'under 2 min',
+    emergencyName: 'Sarah Okafor',
+    emergencyPhone: '+256 771 987 654',
   });
 
   const [newLanguage, setNewLanguage] = useState('');
@@ -163,6 +167,40 @@ export function ProfilePage() {
             </li>
             <li>
               <span>✓ Response time: {form.responseTime}</span>
+            </li>
+          </ul>
+        </div>
+
+        <div className="ip-card">
+          <h2>Emergency contact</h2>
+          <ul className="ip-list">
+            <li>
+              <span>
+                Name:
+                {editing ? (
+                  <input
+                    className="ip-inline-input"
+                    value={form.emergencyName}
+                    onChange={(e) => set('emergencyName', e.target.value)}
+                  />
+                ) : (
+                  <> {form.emergencyName}</>
+                )}
+              </span>
+            </li>
+            <li>
+              <span>
+                Phone:
+                {editing ? (
+                  <input
+                    className="ip-inline-input"
+                    value={form.emergencyPhone}
+                    onChange={(e) => set('emergencyPhone', e.target.value)}
+                  />
+                ) : (
+                  <> {form.emergencyPhone}</>
+                )}
+              </span>
             </li>
           </ul>
         </div>
