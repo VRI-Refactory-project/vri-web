@@ -3,10 +3,42 @@ import './StaffManagementPage.css';
 
 // ── MOCK DATA ─────────────────────────────────────────────
 const staffMembers = [
-  { id: 'sc', initials: 'SC', name: 'Maggie Nanduga', dept: 'Healthcare',     role: 'Staff', status: 'Active',          lastActive: '5 min ago' },
-  { id: 'mr', initials: 'MR', name: 'Michael Reed',   dept: 'Reception',      role: 'Staff', status: 'Active',          lastActive: '18 min ago' },
-  { id: 'ps', initials: 'PS', name: 'Priya Shah',     dept: 'Social Services',role: 'Staff', status: 'Invitation Sent', lastActive: '—' },
-  { id: 'jo', initials: 'JO', name: 'James Otieno',   dept: 'IT Support',     role: 'Staff', status: 'Inactive',        lastActive: '3 days ago' },
+  {
+    id: 'sc',
+    initials: 'SC',
+    name: 'Maggie Nanduga',
+    dept: 'Healthcare',
+    role: 'Staff',
+    status: 'Active',
+    lastActive: '5 min ago',
+  },
+  {
+    id: 'mr',
+    initials: 'MR',
+    name: 'Michael Reed',
+    dept: 'Reception',
+    role: 'Staff',
+    status: 'Active',
+    lastActive: '18 min ago',
+  },
+  {
+    id: 'ps',
+    initials: 'PS',
+    name: 'Priya Shah',
+    dept: 'Social Services',
+    role: 'Staff',
+    status: 'Invitation Sent',
+    lastActive: '—',
+  },
+  {
+    id: 'jo',
+    initials: 'JO',
+    name: 'James Otieno',
+    dept: 'IT Support',
+    role: 'Staff',
+    status: 'Inactive',
+    lastActive: '3 days ago',
+  },
 ];
 
 function statusBadge(status: string) {
@@ -103,7 +135,16 @@ export function StaffManagementPage() {
 // Tiny inline icon (avoids adding another lucide import)
 function UsersIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
       <circle cx="9" cy="7" r="4" />
       <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
