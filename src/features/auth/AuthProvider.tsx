@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { setAuthToken, setRefreshHandler } from '../../services/api';
 import { refreshAccessToken } from '../../services/auth';
-import type { AuthSession, SelectableRole } from '../../types';
+import type { AuthSession, AuthUser, SelectableRole } from '../../types';
 import { AuthContext } from './authContext';
 
 const STORAGE_KEY = 'vri.session';
@@ -47,6 +47,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback((s: AuthSession) => apply(s), [apply]);
   const logout = useCallback(() => apply(null), [apply]);
+  const updateUser = useCallback(
+    (user: Partial<AuthUser>) => {
+      const current = sessionRef.current;
+      if (current) apply({ ...current, user: { ...current.user, ...user } });
+    },
+    [apply],
+  );
 
   // When an access token expires, quietly get a new one; if that fails, sign the user out.
   useEffect(() => {
@@ -66,8 +73,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [apply]);
 
   const value = useMemo(
-    () => ({ session, selectedRole, selectRole: setSelectedRole, login, logout }),
-    [session, selectedRole, login, logout],
+    () => ({ session, selectedRole, selectRole: setSelectedRole, login, logout, updateUser }),
+    [session, selectedRole, login, logout, updateUser],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

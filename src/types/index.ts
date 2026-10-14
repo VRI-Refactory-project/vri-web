@@ -9,6 +9,10 @@ export interface AuthUser {
   role: Role;
   /** True after an admin reset: the backend only allows changing the password until then. */
   mustChangePassword: boolean;
+  /** The email address on the account, if any. Phone-only accounts have none to verify. */
+  email?: string | null;
+  /** Undefined when the API is older than email verification: treated as "nothing to ask". */
+  emailVerified?: boolean;
 }
 
 export interface AuthSession {

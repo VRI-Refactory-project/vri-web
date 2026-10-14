@@ -33,6 +33,7 @@ function renderHome() {
         selectRole: () => {},
         login: () => {},
         logout: () => {},
+        updateUser: () => {},
       }}
     >
       <RouterProvider router={router} />
