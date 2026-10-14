@@ -48,30 +48,30 @@ export function CredentialReviewPage() {
   return (
     <>
       {/* Top bar */}
-  <div className="crp-topbar">
-  <div className="crp-search">
-    <Search size={16} />
-    <input placeholder="Search users by name, email, phone or ID..." />
-  </div>
+      <div className="crp-topbar">
+        <div className="crp-search">
+          <Search size={16} />
+          <input placeholder="Search users by name, email, phone or ID..." />
+        </div>
 
-  <div className="crp-topbar-actions">
-    <button className="crp-bell" aria-label="Notifications">
-      <Bell size={20} />
-      <span className="crp-bell-dot" />
-    </button>
+        <div className="crp-topbar-actions">
+          <button className="crp-bell" aria-label="Notifications">
+            <Bell size={20} />
+            <span className="crp-bell-dot" />
+          </button>
 
-    <span className="crp-divider" />
+          <span className="crp-divider" />
 
-    <button className="crp-user-menu">
-      <span className="crp-avatar">MJ</span>
-      <span className="crp-user-info">
-        <strong>Maya Johnson</strong>
-        <small>Admin</small>
-      </span>
-      <ChevronDown size={16} className="crp-chevron" />
-    </button>
-  </div>
-</div>
+          <button className="crp-user-menu">
+            <span className="crp-avatar">MJ</span>
+            <span className="crp-user-info">
+              <strong>Maya Johnson</strong>
+              <small>Admin</small>
+            </span>
+            <ChevronDown size={16} className="crp-chevron" />
+          </button>
+        </div>
+      </div>
 
       {/* Breadcrumb */}
       <div className="crp-breadcrumb">
@@ -102,7 +102,9 @@ export function CredentialReviewPage() {
               <div className="crp-doc-preview">
                 <div className="crp-doc-preview-inner">
                   <span className="crp-doc-label">
-                    CERTIFICATE OF<br />INTERPRETER REGISTRATION
+                    CERTIFICATE OF
+                    <br />
+                    INTERPRETER REGISTRATION
                   </span>
                   <h3>INTERPRETER CERTIFICATE</h3>
                   <p className="crp-doc-name">Daniel Brooks</p>

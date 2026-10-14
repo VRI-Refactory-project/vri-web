@@ -116,7 +116,7 @@ export const router = createBrowserRouter([
   //   ],
   // },
 
-    // TODO: Wrap with ProtectedRoute allow={['admin']} once the backend is live
+  // TODO: Wrap with ProtectedRoute allow={['admin']} once the backend is live
   {
     path: '/dashboard/admin',
     element: <AdminLayout />,
@@ -136,6 +136,6 @@ export const router = createBrowserRouter([
     path: '/admin/interpreters',
     element: <Placeholder title="Interpreter review" story="V2-045" />,
   },
-  
+
   { path: '*', element: <Placeholder title="Page not found" story="n/a" /> },
 ]);
