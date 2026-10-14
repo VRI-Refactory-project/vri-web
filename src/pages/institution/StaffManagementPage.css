@@ -1,0 +1,211 @@
+/* ── HEADER ───────────────────────────────────────────── */
+.sm-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+.sm-header h1 {
+  font-size: 26px;
+  font-weight: 700;
+  margin: 0 0 4px;
+  color: #111827;
+}
+.sm-header p {
+  color: #6b7280;
+  font-size: 14px;
+  margin: 0;
+}
+
+.sm-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #3b2579;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s ease;
+}
+.sm-btn-primary:hover {
+  background: #4b34a0;
+}
+
+/* ── SUMMARY ──────────────────────────────────────────── */
+.sm-summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+.sm-summary-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #ede9fe;
+  color: #3b2579;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.sm-summary strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+.sm-summary span {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+/* ── FILTERS ──────────────────────────────────────────── */
+.sm-filters {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.sm-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+.sm-search svg {
+  color: #9ca3af;
+}
+.sm-search input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  flex: 1;
+  color: #111827;
+}
+.sm-search input::placeholder {
+  color: #9ca3af;
+}
+.sm-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  min-width: 130px;
+  justify-content: space-between;
+}
+
+/* ── TABLE ────────────────────────────────────────────── */
+.sm-table {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 8px 8px 0;
+}
+.sm-thead {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 0.7fr 1.2fr 1fr auto;
+  align-items: center;
+  padding: 12px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #6b7280;
+  border-bottom: 1px solid #f3f4f6;
+}
+.sm-row {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 0.7fr 1.2fr 1fr auto;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 13px;
+  color: #111827;
+}
+.sm-row:last-child {
+  border-bottom: none;
+}
+.sm-member {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sm-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #ede9fe;
+  color: #3b2579;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.sm-cell {
+  color: #4b5563;
+}
+.sm-muted {
+  color: #6b7280;
+}
+.sm-view {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  color: #3b2579;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 6px 8px;
+  border-radius: 8px;
+}
+.sm-view:hover {
+  background: #f3efff;
+}
+
+/* ── STATUS BADGES ────────────────────────────────────── */
+.sm-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.sm-badge--active {
+  background: #d1fae5;
+  color: #065f46;
+}
+.sm-badge--pending {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+.sm-badge--inactive {
+  background: #f3f4f6;
+  color: #6b7280;
+}

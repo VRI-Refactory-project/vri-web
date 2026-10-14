@@ -21,6 +21,8 @@ import { AdminLayout } from '../features/admin/AdminLayout';
 import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage';
 import { CredentialReviewPage } from '../pages/admin/CredentialReviewPage';
 import { AvailabilityPage } from '../pages/interpreter/AvailabilityPage';
+import { InstitutionLayout } from '../features/institution/InstitutionLayout';
+import { StaffManagementPage } from '../pages/institution/StaffManagementPage';
 import { ProfilePage as DeafProfilePage } from '../pages/deaf/ProfilePage';
 import { ProfilePage as InterpreterProfilePage } from '../pages/interpreter/ProfilePage';
 import { SettingsPage } from '../pages/admin/SettingsPage';
@@ -92,7 +94,14 @@ export const router = createBrowserRouter([
     children: [
       {
         path: '/dashboard/institution',
-        element: <Placeholder title="Institution dashboard" story="V2-028" />,
+        element: <InstitutionLayout />,
+        children: [
+          { index: true, element: <Placeholder title="Institution dashboard" story="V2-028" /> },
+          { path: 'staff', element: <StaffManagementPage /> },
+          { path: 'sessions', element: <Placeholder title="Sessions" story="V2-028" /> },
+          { path: 'analytics', element: <Placeholder title="Analytics" story="V2-028" /> },
+          { path: 'settings', element: <Placeholder title="Settings" story="V2-028" /> },
+        ],
       },
     ],
   },
