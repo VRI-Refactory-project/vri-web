@@ -36,7 +36,14 @@ describe('signIn', () => {
     expect(session).toEqual({
       token: 'a',
       refreshToken: 'r',
-      user: { id: '7', name: 'Amina Nakato', role: 'deaf', mustChangePassword: false },
+      user: {
+        id: '7',
+        name: 'Amina Nakato',
+        role: 'deaf',
+        mustChangePassword: false,
+        email: null,
+        emailVerified: undefined,
+      },
     });
   });
 

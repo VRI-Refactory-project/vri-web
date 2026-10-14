@@ -20,6 +20,7 @@ import { DashboardPage } from '../pages/dashboards/DHH_dashboard';
 import { AdminLayout } from '../features/admin/AdminLayout';
 import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage';
 import { CredentialReviewPage } from '../pages/admin/CredentialReviewPage';
+import { AvailabilityPage } from '../pages/interpreter/AvailabilityPage';
 
 export const router = createBrowserRouter([
   { path: '/', element: <SplashPage /> },
@@ -73,7 +74,7 @@ export const router = createBrowserRouter([
           { index: true, element: <InterpreterHomePage /> },
           { path: 'requests', element: <Placeholder title="Requests" story="Sprint 2" /> },
           { path: 'sessions', element: <Placeholder title="Sessions" story="Sprint 2" /> },
-          { path: 'availability', element: <Placeholder title="Availability" story="V2-021" /> },
+          { path: 'availability', element: <AvailabilityPage /> },
           { path: 'wallet', element: <Placeholder title="Wallet" story="Not scheduled" /> },
           { path: 'profile', element: <Placeholder title="Profile" story="Sprint 2" /> },
           { path: 'settings', element: <Placeholder title="Settings" story="Sprint 2" /> },

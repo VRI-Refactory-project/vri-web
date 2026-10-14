@@ -43,4 +43,14 @@ export const interpreterApi = {
       method: 'PATCH',
       body: JSON.stringify({ available }),
     }),
+  // inside the existing interpreterApi object / exports
+  getAvailability: () => {
+    return api.get('/interpreter/availability');
+  },
+  updateAvailability: (data) => {
+    return api.put('/interpreter/availability', data);
+  },
+  updateLiveStatus: (isLive) => {
+    return api.put('/interpreter/live-status', { isLive });
+  },
 };
