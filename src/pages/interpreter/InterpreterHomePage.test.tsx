@@ -1,7 +1,7 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { INTERPRETER_NAV } from '../../features/interpreter/navigation';
 import { InterpreterLayout } from '../../components/interpreter/InterpreterLayout';
 import { AuthContext } from '../../features/auth/authContext';
@@ -14,7 +14,28 @@ const session: AuthSession = {
   user: { id: '1', name: 'Amina Okafor', role: 'interpreter', mustChangePassword: false },
 };
 
+const fetchMock = vi.fn();
+vi.stubGlobal('fetch', fetchMock);
+afterEach(() => fetchMock.mockReset());
+
+const reply = (ok: boolean, status: number, body: unknown) => ({
+  ok,
+  status,
+  statusText: 'x',
+  json: async () => body,
+});
+
+/** The profile starts with the given availability; PATCH answers with `patch`. */
+function mockProfile(isAvailable: boolean, patch?: ReturnType<typeof reply>) {
+  fetchMock.mockImplementation(async (_url: string, init?: RequestInit) =>
+    init?.method === 'PATCH'
+      ? (patch ?? reply(true, 200, { is_available: !isAvailable }))
+      : reply(true, 200, { is_available: isAvailable }),
+  );
+}
+
 function renderHome() {
+  if (!fetchMock.getMockImplementation()) mockProfile(true);
   const router = createMemoryRouter(
     [
       {
@@ -76,16 +97,35 @@ describe('InterpreterHomePage', () => {
     );
   });
 
-  it('switches between available and unavailable', async () => {
+  it('shows the saved availability and switches it through the API', async () => {
+    mockProfile(true);
     renderHome();
     const toggle = screen.getByRole('switch', { name: /available for interpreting requests/i });
-    expect(toggle).toBeChecked();
+    await waitFor(() => expect(toggle).toBeChecked());
     expect(
       screen.getByText('You are available to receive interpreting requests'),
     ).toBeInTheDocument();
     await userEvent.click(toggle);
-    expect(toggle).not.toBeChecked();
+    await waitFor(() => expect(toggle).not.toBeChecked());
     expect(screen.getByText('You will not receive interpreting requests')).toBeInTheDocument();
+    const patch = fetchMock.mock.calls.find(([, init]) => init?.method === 'PATCH');
+    expect(patch?.[0]).toContain('/api/v1/interpreters/me/');
+    expect(JSON.parse(patch?.[1].body)).toEqual({ is_available: false });
+  });
+
+  it('goes back and shows the API message when availability is refused', async () => {
+    mockProfile(
+      false,
+      reply(false, 400, {
+        is_available: ['You can only set yourself available after your profile is approved.'],
+      }),
+    );
+    renderHome();
+    const toggle = screen.getByRole('switch', { name: /available for interpreting requests/i });
+    await waitFor(() => expect(toggle).toBeEnabled());
+    await userEvent.click(toggle);
+    expect(await screen.findByRole('alert')).toHaveTextContent(/after your profile is approved/i);
+    expect(toggle).not.toBeChecked();
   });
 
   it('shows the request and session counts with links to their pages', () => {

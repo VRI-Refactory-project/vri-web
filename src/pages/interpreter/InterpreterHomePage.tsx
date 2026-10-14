@@ -37,7 +37,7 @@ function StatCard(props: {
 export function InterpreterHomePage() {
   const { session } = useAuth();
   const { data } = useInterpreterHome();
-  const { available, setAvailable } = useAvailability();
+  const { available, setAvailable, loading, saving, error } = useAvailability();
   const name = session?.user.name ?? '';
   const firstName = name.trim().split(/\s+/)[0] ?? '';
   const initial = name.trim().charAt(0).toUpperCase() || '?';
@@ -65,6 +65,11 @@ export function InterpreterHomePage() {
               ? 'You are available to receive interpreting requests'
               : 'You will not receive interpreting requests'}
           </p>
+          {error && (
+            <p className="ih-error" role="alert">
+              {error}
+            </p>
+          )}
         </div>
         <button
           type="button"
@@ -72,7 +77,8 @@ export function InterpreterHomePage() {
           aria-checked={available}
           aria-label="Available for interpreting requests"
           className={available ? 'ih-switch ih-switch--on' : 'ih-switch'}
-          onClick={() => setAvailable(!available)}
+          disabled={loading || saving}
+          onClick={() => void setAvailable(!available)}
         >
           <span className="ih-switch-knob" />
         </button>

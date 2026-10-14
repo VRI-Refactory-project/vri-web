@@ -35,7 +35,13 @@ export function PendingVerificationModal() {
   }, []);
 
   const emailPending = session?.user.emailVerified === false && !!session.user.email;
-  if (!data || data.verification_status === 'APPROVED' || dismissed || emailPending) return null;
+  if (
+    !data?.verification_status ||
+    data.verification_status === 'APPROVED' ||
+    dismissed ||
+    emailPending
+  )
+    return null;
 
   const rejected = data.verification_status === 'REJECTED';
   return (

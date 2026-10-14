@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { api, describeError } from '../../services/api';
 
 export interface CompletedSession {
   id: string;
@@ -44,13 +45,63 @@ export function useInterpreterHome(): { data: InterpreterHome } {
   return { data: SAMPLE_HOME };
 }
 
+/** The part of GET/PATCH /api/v1/interpreters/me/ used by the availability toggle. */
+interface ProfileAvailability {
+  is_available: boolean;
+}
+
+const PROFILE_PATH = '/api/v1/interpreters/me/';
+
 /**
- * Availability toggle state.
+ * Availability toggle (V2-021), kept on the interpreter profile in the API.
  *
- * TODO(V2-021): persist through the availability endpoint once it exists.
- * Today the choice only lasts until the page is reloaded.
+ * The switch changes straight away and goes back if the API refuses, for example while the
+ * profile is not approved yet (the API's own message is shown). Until the profile has loaded
+ * the switch is off and cannot be used.
  */
-export function useAvailability(initial = true) {
-  const [available, setAvailable] = useState(initial);
-  return { available, setAvailable };
+export function useAvailability() {
+  const [available, setAvailableState] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    api<ProfileAvailability>(PROFILE_PATH).then(
+      (profile) => {
+        if (cancelled) return;
+        setAvailableState(profile.is_available);
+        setLoading(false);
+      },
+      (err: unknown) => {
+        if (cancelled) return;
+        setError(describeError(err));
+        setLoading(false);
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const setAvailable = async (next: boolean) => {
+    const previous = available;
+    setAvailableState(next);
+    setSaving(true);
+    setError('');
+    try {
+      const profile = await api<ProfileAvailability>(PROFILE_PATH, {
+        method: 'PATCH',
+        body: JSON.stringify({ is_available: next }),
+      });
+      setAvailableState(profile.is_available);
+    } catch (err) {
+      setAvailableState(previous);
+      setError(describeError(err));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return { available, setAvailable, loading, saving, error };
 }
