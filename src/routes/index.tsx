@@ -27,12 +27,14 @@ import { ProfilePage as DeafProfilePage } from '../pages/deaf/ProfilePage';
 import { ProfilePage as InterpreterProfilePage } from '../pages/interpreter/ProfilePage';
 import { SettingsPage } from '../pages/admin/SettingsPage';
 import { AdminProfilePage } from '../pages/admin/AdminProfilePage';
+import { OfflinePage } from '../pages/OfflinePage';
 
 export const router = createBrowserRouter([
   { path: '/', element: <SplashPage /> },
   { path: '/landing', element: <LandingPage /> },
   { path: '/get-started', element: <RoleSelectionPage /> },
   { path: '/sign-in', element: <SignInPage /> },
+  { path: '/offline', element: <OfflinePage /> },
   { path: '/register/deaf', element: <CreateAccountPage /> },
   { path: '/forgot-password', element: <Forgotpassword /> },
   { path: '/reset-password', element: <Resetpassword /> },
