@@ -1,5 +1,6 @@
 import { Search, Plus, ChevronDown, ChevronRight, Check, Clock, Minus } from 'lucide-react';
 import './StaffManagementPage.css';
+import { Link } from 'react-router-dom';
 
 // ── MOCK DATA ─────────────────────────────────────────────
 const staffMembers = [
@@ -70,9 +71,9 @@ export function StaffManagementPage() {
           <h1>Staff Management</h1>
           <p>Manage staff accounts, roles and access across your institution.</p>
         </div>
-        <button className="sm-btn-primary">
+        <Link to="/dashboard/institution/staff/new" className="sm-btn-primary">
           <Plus size={16} /> Create Staff Account
-        </button>
+        </Link>
       </div>
 
       {/* Summary card */}

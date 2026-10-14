@@ -30,6 +30,7 @@
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
+  text-decoration: none;
   transition: background 0.15s ease;
 }
 .sm-btn-primary:hover {
