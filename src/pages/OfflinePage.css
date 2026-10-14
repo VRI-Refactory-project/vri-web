@@ -1,0 +1,123 @@
+/* src/pages/OfflinePage.css */
+.op-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background: #f5f4fb;
+  font-family: 'Manrope', system-ui, sans-serif;
+  color: #0f172a;
+}
+
+.op-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 64px;
+  max-width: 1200px;
+  width: 100%;
+}
+
+.op-illustration {
+  display: flex;
+  justify-content: center;
+}
+
+.op-illustration img {
+  width: 100%;
+  max-width: 520px;
+  height: auto;
+  display: block;
+}
+
+.op-text {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 460px;
+}
+
+.op-title {
+  margin: 0;
+  font-size: 46px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.op-description {
+  margin: 0;
+  font-size: 15.5px;
+  line-height: 1.7;
+  color: #64748b;
+}
+
+.op-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 15px 24px;
+  background: #4b34a0;
+  color: #ffffff;
+  border: none;
+  border-radius: 15px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.op-btn:hover {
+  background: #3d2a86;
+}
+
+.op-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.op-back:hover {
+  color: #0f172a;
+}
+
+@media (max-width: 860px) {
+  .op-page {
+    padding: 24px 16px;
+  }
+
+  .op-content {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    text-align: center;
+  }
+
+  .op-illustration img {
+    max-width: 360px;
+  }
+
+  .op-text {
+    max-width: none;
+    align-items: center;
+  }
+
+  .op-title {
+    font-size: 32px;
+  }
+
+  .op-back {
+    align-self: center;
+  }
+}

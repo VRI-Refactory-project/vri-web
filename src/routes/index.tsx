@@ -28,12 +28,14 @@ import { ProfilePage as InterpreterProfilePage } from '../pages/interpreter/Prof
 import { SettingsPage } from '../pages/admin/SettingsPage';
 import { AdminProfilePage } from '../pages/admin/AdminProfilePage';
 import { CreateStaffAccountPage } from '../pages/institution/CreateStaffAccountPage';
+import { OfflinePage } from '../pages/OfflinePage';
 
 export const router = createBrowserRouter([
   { path: '/', element: <SplashPage /> },
   { path: '/landing', element: <LandingPage /> },
   { path: '/get-started', element: <RoleSelectionPage /> },
   { path: '/sign-in', element: <SignInPage /> },
+  { path: '/offline', element: <OfflinePage /> },
   { path: '/register/deaf', element: <CreateAccountPage /> },
   { path: '/forgot-password', element: <Forgotpassword /> },
   { path: '/reset-password', element: <Resetpassword /> },
