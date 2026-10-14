@@ -34,6 +34,8 @@ interface DeafProfile {
   publicProfile: boolean;
 }
 
+type FieldErrors = Partial<Record<keyof DeafProfile, string>>;
+
 export function ProfilePage() {
   const navigate = useNavigate();
   const { session } = useAuth();
@@ -42,6 +44,8 @@ export function ProfilePage() {
   const initial = (first[0] ?? 'M').toUpperCase();
 
   const [editing, setEditing] = useState(false);
+  const [errors, setErrors] = useState<FieldErrors>({});
+
   const [form, setForm] = useState<DeafProfile>({
     firstName: first,
     lastName: last,
@@ -57,14 +61,49 @@ export function ProfilePage() {
     publicProfile: false,
   });
 
-  const set = <K extends keyof DeafProfile>(k: K, v: DeafProfile[K]) =>
+  const set = <K extends keyof DeafProfile>(k: K, v: DeafProfile[K]) => {
     setForm((f) => ({ ...f, [k]: v }));
+    if (errors[k]) setErrors((e) => ({ ...e, [k]: undefined }));
+  };
 
   const removeLanguage = (lang: string) =>
     set(
       'languages',
       form.languages.filter((l) => l !== lang),
     );
+
+  const validate = (): FieldErrors => {
+    const e: FieldErrors = {};
+    if (!form.firstName.trim()) e.firstName = 'First name is required';
+    if (!form.lastName.trim()) e.lastName = 'Last name is required';
+    if (!form.email.trim()) e.email = 'Email is required';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Please enter a valid email';
+    if (!form.phone.trim()) e.phone = 'Phone number is required';
+    if (!form.location.trim()) e.location = 'Location is required';
+    if (!form.emergencyName.trim()) e.emergencyName = 'Emergency contact name is required';
+    if (!form.emergencyPhone.trim()) e.emergencyPhone = 'Emergency contact phone is required';
+    return e;
+  };
+
+  const handleSave = () => {
+    const e = validate();
+    setErrors(e);
+    if (Object.keys(e).length === 0) setEditing(false);
+  };
+
+  const handleCancel = () => {
+    setErrors({});
+    setEditing(false);
+  };
+
+  const topError =
+    errors.firstName ||
+    errors.lastName ||
+    errors.email ||
+    errors.phone ||
+    errors.location ||
+    errors.emergencyName ||
+    errors.emergencyPhone;
 
   return (
     <div className="pr-page">
@@ -77,6 +116,8 @@ export function ProfilePage() {
           <ArrowLeft size={15} /> Back
         </button>
       </div>
+
+      {topError && <div className="pr-error">{topError}</div>}
 
       <div className="pr-columns">
         {/* LEFT */}
@@ -109,7 +150,9 @@ export function ProfilePage() {
                     set('lastName', rest.join(' '));
                   }}
                 />
+                {errors.firstName && <div className="pr-field-error">{errors.firstName}</div>}
               </div>
+
               <div className="pr-field">
                 <label>Preferred name</label>
                 <input
@@ -117,7 +160,9 @@ export function ProfilePage() {
                   readOnly={!editing}
                   onChange={(e) => set('firstName', e.target.value)}
                 />
+                {errors.firstName && <div className="pr-field-error">{errors.firstName}</div>}
               </div>
+
               <div className="pr-field">
                 <label>Email</label>
                 <div className="pr-input">
@@ -129,7 +174,9 @@ export function ProfilePage() {
                     onChange={(e) => set('email', e.target.value)}
                   />
                 </div>
+                {errors.email && <div className="pr-field-error">{errors.email}</div>}
               </div>
+
               <div className="pr-field">
                 <label>Phone number</label>
                 <div className="pr-input">
@@ -140,7 +187,9 @@ export function ProfilePage() {
                     onChange={(e) => set('phone', e.target.value)}
                   />
                 </div>
+                {errors.phone && <div className="pr-field-error">{errors.phone}</div>}
               </div>
+
               <div className="pr-field pr-field--full">
                 <label>Location</label>
                 <div className="pr-input">
@@ -151,6 +200,7 @@ export function ProfilePage() {
                     onChange={(e) => set('location', e.target.value)}
                   />
                 </div>
+                {errors.location && <div className="pr-field-error">{errors.location}</div>}
               </div>
             </div>
           </div>
@@ -183,6 +233,9 @@ export function ProfilePage() {
                   readOnly={!editing}
                   onChange={(e) => set('emergencyName', e.target.value)}
                 />
+                {errors.emergencyName && (
+                  <div className="pr-field-error">{errors.emergencyName}</div>
+                )}
               </div>
               <div className="pr-field">
                 <label>Phone</label>
@@ -191,6 +244,9 @@ export function ProfilePage() {
                   readOnly={!editing}
                   onChange={(e) => set('emergencyPhone', e.target.value)}
                 />
+                {errors.emergencyPhone && (
+                  <div className="pr-field-error">{errors.emergencyPhone}</div>
+                )}
               </div>
             </div>
           </div>
@@ -245,10 +301,10 @@ export function ProfilePage() {
       <div className="pr-actions">
         {editing ? (
           <>
-            <button className="pr-btn pr-btn--ghost" onClick={() => setEditing(false)}>
+            <button className="pr-btn pr-btn--ghost" onClick={handleCancel}>
               Cancel
             </button>
-            <button className="pr-btn pr-btn--primary" onClick={() => setEditing(false)}>
+            <button className="pr-btn pr-btn--primary" onClick={handleSave}>
               <Save size={15} /> Save changes
             </button>
           </>

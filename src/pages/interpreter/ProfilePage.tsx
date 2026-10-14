@@ -19,12 +19,15 @@ interface InterpreterProfile {
   emergencyPhone: string;
 }
 
+type FieldErrors = Partial<Record<keyof InterpreterProfile, string>>;
+
 export function ProfilePage() {
   const navigate = useNavigate();
   const { session } = useAuth();
   const fullName = session?.user.name ?? 'Amina Okafor';
 
   const [editing, setEditing] = useState(false);
+  const [errors, setErrors] = useState<FieldErrors>({});
   const [form, setForm] = useState<InterpreterProfile>({
     fullName,
     headline: 'Certified ASL Interpreter · 8 years experience',
@@ -42,14 +45,18 @@ export function ProfilePage() {
   const [newLanguage, setNewLanguage] = useState('');
   const [newSpecialisation, setNewSpecialisation] = useState('');
 
-  const set = <K extends keyof InterpreterProfile>(k: K, v: InterpreterProfile[K]) =>
+  const set = <K extends keyof InterpreterProfile>(k: K, v: InterpreterProfile[K]) => {
     setForm((f) => ({ ...f, [k]: v }));
+    if (errors[k]) setErrors((e) => ({ ...e, [k]: undefined }));
+  };
 
-  const removeItem = (key: 'languages' | 'specialisations', value: string) =>
+  const removeItem = (key: 'languages' | 'specialisations', value: string) => {
     set(
       key,
       form[key].filter((v) => v !== value),
     );
+    if (errors[key]) setErrors((e) => ({ ...e, [key]: undefined }));
+  };
 
   const addItem = (key: 'languages' | 'specialisations') => {
     const v = key === 'languages' ? newLanguage : newSpecialisation;
@@ -58,6 +65,37 @@ export function ProfilePage() {
     if (key === 'languages') setNewLanguage('');
     else setNewSpecialisation('');
   };
+
+  const validate = (): FieldErrors => {
+    const e: FieldErrors = {};
+    if (!form.fullName.trim()) e.fullName = 'Full name is required';
+    if (!form.headline.trim()) e.headline = 'Headline is required';
+    if (form.languages.length === 0) e.languages = 'At least one language is required';
+    if (form.specialisations.length === 0)
+      e.specialisations = 'At least one specialisation is required';
+    if (!form.emergencyName.trim()) e.emergencyName = 'Emergency contact name is required';
+    if (!form.emergencyPhone.trim()) e.emergencyPhone = 'Emergency contact phone is required';
+    return e;
+  };
+
+  const handleSave = () => {
+    const e = validate();
+    setErrors(e);
+    if (Object.keys(e).length === 0) setEditing(false);
+  };
+
+  const handleCancel = () => {
+    setErrors({});
+    setEditing(false);
+  };
+
+  const topError =
+    errors.fullName ||
+    errors.headline ||
+    errors.languages ||
+    errors.specialisations ||
+    errors.emergencyName ||
+    errors.emergencyPhone;
 
   return (
     <div className="ip-page">
@@ -71,7 +109,8 @@ export function ProfilePage() {
         </button>
       </div>
 
-      {/* Hero card */}
+      {topError && <div className="ip-error">{topError}</div>}
+
       <div className="ip-card ip-hero">
         <span className="ip-avatar">{fullName.trim().charAt(0).toUpperCase() || 'A'}</span>
         <div className="ip-hero-info">
@@ -98,7 +137,13 @@ export function ProfilePage() {
         </div>
       </div>
 
-      {/* Three panels */}
+      {(errors.fullName || errors.headline) && (
+        <div className="ip-card">
+          {errors.fullName && <div className="ip-field-error">{errors.fullName}</div>}
+          {errors.headline && <div className="ip-field-error">{errors.headline}</div>}
+        </div>
+      )}
+
       <div className="ip-grid">
         <div className="ip-card">
           <h2>Languages</h2>
@@ -126,6 +171,7 @@ export function ProfilePage() {
               </button>
             </div>
           )}
+          {errors.languages && <div className="ip-field-error">{errors.languages}</div>}
         </div>
 
         <div className="ip-card">
@@ -157,6 +203,7 @@ export function ProfilePage() {
               </button>
             </div>
           )}
+          {errors.specialisations && <div className="ip-field-error">{errors.specialisations}</div>}
         </div>
 
         <div className="ip-card">
@@ -203,17 +250,18 @@ export function ProfilePage() {
               </span>
             </li>
           </ul>
+          {errors.emergencyName && <div className="ip-field-error">{errors.emergencyName}</div>}
+          {errors.emergencyPhone && <div className="ip-field-error">{errors.emergencyPhone}</div>}
         </div>
       </div>
 
-      {/* Actions */}
       <div className="ip-actions">
         {editing ? (
           <>
-            <button className="ip-btn ip-btn--ghost" onClick={() => setEditing(false)}>
+            <button className="ip-btn ip-btn--ghost" onClick={handleCancel}>
               Cancel
             </button>
-            <button className="ip-btn ip-btn--primary" onClick={() => setEditing(false)}>
+            <button className="ip-btn ip-btn--primary" onClick={handleSave}>
               <Save size={15} /> Save changes
             </button>
           </>
