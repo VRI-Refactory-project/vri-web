@@ -1,14 +1,6 @@
-
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  AlertCircle,
-  Check,
-  CircleUserRound,
-  Info,
-  Plus,
-  UserRound,
-} from 'lucide-react';
+import { AlertCircle, Check, CircleUserRound, Info, Plus, UserRound } from 'lucide-react';
 import './InstitutionDashboardPage.css';
 
 type SessionStatus = 'Live' | 'Ended' | 'Pending';
@@ -143,7 +135,6 @@ const ALERTS = [
 ] as const;
 
 export interface InstitutionDashboardPageProps {
-
   data?: InstitutionDashboardData;
   onCreateStaff?: () => void;
   onViewSession?: (sessionId: string) => void;
@@ -164,12 +155,9 @@ export function InstitutionDashboardPage({
     if (!query) return data.sessions;
 
     return data.sessions.filter((session) =>
-      [
-        session.member,
-        session.department,
-        session.interpreter,
-        session.id,
-      ].some((value) => value.toLowerCase().includes(query)),
+      [session.member, session.department, session.interpreter, session.id].some((value) =>
+        value.toLowerCase().includes(query),
+      ),
     );
   }, [data.sessions, search]);
 
@@ -192,9 +180,7 @@ export function InstitutionDashboardPage({
       return;
     }
 
-    navigate(
-      `/dashboard/institution/sessions?sessionId=${encodeURIComponent(sessionId)}`,
-    );
+    navigate(`/dashboard/institution/sessions?sessionId=${encodeURIComponent(sessionId)}`);
   };
 
   return (
@@ -216,9 +202,7 @@ export function InstitutionDashboardPage({
         <article className="id-kpi">
           <span className="id-kpi-label">Staff</span>
           <strong>{data.staff}</strong>
-          <span className="id-kpi-note id-positive">
-            {data.activeStaff} active
-          </span>
+          <span className="id-kpi-note id-positive">{data.activeStaff} active</span>
         </article>
 
         <article className="id-kpi">
@@ -230,9 +214,7 @@ export function InstitutionDashboardPage({
         <article className="id-kpi">
           <span className="id-kpi-label">Usage</span>
           <strong>{data.usageHours.toFixed(1)}h</strong>
-          <span className="id-kpi-note id-positive">
-            {data.usagePlanPercent}% under plan
-          </span>
+          <span className="id-kpi-note id-positive">{data.usagePlanPercent}% under plan</span>
         </article>
       </section>
 
@@ -254,9 +236,7 @@ export function InstitutionDashboardPage({
                 onClick={() => goTo(alert.action)}
                 aria-label={`${alert.title}. ${alert.detail}`}
               >
-                <span
-                  className={`id-alert-icon id-alert-icon--${alert.type}`}
-                >
+                <span className={`id-alert-icon id-alert-icon--${alert.type}`}>
                   <Icon size={18} aria-hidden="true" />
                 </span>
 
@@ -295,9 +275,7 @@ export function InstitutionDashboardPage({
           aria-label="Session activity for the seven days of the week"
         >
           {data.weeklyActivity.map((value, index) => {
-            const height = weekly
-              ? value
-              : Math.max(12, Math.round(value * 0.65));
+            const height = weekly ? value : Math.max(12, Math.round(value * 0.65));
 
             return (
               <div className="id-chart-day" key={`${index}-${WEEKDAYS[index]}`}>
@@ -318,9 +296,7 @@ export function InstitutionDashboardPage({
       <section className="id-section id-sessions-section">
         <div className="id-section-heading">
           <h2>Staff active sessions</h2>
-          <p className="id-teal">
-            {data.activeSessions} staff members currently in a session
-          </p>
+          <p className="id-teal">{data.activeSessions} staff members currently in a session</p>
         </div>
 
         <div className="id-panel id-table-panel">
@@ -358,9 +334,7 @@ export function InstitutionDashboardPage({
                     <td>{session.startTime}</td>
                     <td>{session.duration}</td>
                     <td>
-                      <span
-                        className={`id-status id-status--${session.status.toLowerCase()}`}
-                      >
+                      <span className={`id-status id-status--${session.status.toLowerCase()}`}>
                         <span />
                         {session.status}
                       </span>
@@ -389,8 +363,7 @@ export function InstitutionDashboardPage({
           </div>
 
           <p className="id-table-footer">
-            Showing {filteredSessions.length} of {data.activeSessions} active
-            sessions
+            Showing {filteredSessions.length} of {data.activeSessions} active sessions
           </p>
         </div>
       </section>
@@ -415,12 +388,10 @@ export function InstitutionDashboardPage({
             >
               <strong>{department.name}</strong>
               <span>
-                {department.sessionsToday}{' '}
-                {department.sessionsToday === 1 ? 'session' : 'sessions'} today
+                {department.sessionsToday} {department.sessionsToday === 1 ? 'session' : 'sessions'}{' '}
+                today
               </span>
-              <span className="id-teal">
-                {department.active} active
-              </span>
+              <span className="id-teal">{department.active} active</span>
             </button>
           ))}
         </div>
@@ -432,28 +403,16 @@ export function InstitutionDashboardPage({
         </div>
 
         <div className="id-quick-actions">
-          <button
-            type="button"
-            className="id-button id-button--primary"
-            onClick={createStaff}
-          >
+          <button type="button" className="id-button id-button--primary" onClick={createStaff}>
             <Plus size={17} aria-hidden="true" />
             Create staff account
           </button>
 
-          <button
-            type="button"
-            className="id-button"
-            onClick={() => goTo('sessions')}
-          >
+          <button type="button" className="id-button" onClick={() => goTo('sessions')}>
             View sessions
           </button>
 
-          <button
-            type="button"
-            className="id-button"
-            onClick={() => goTo('analytics')}
-          >
+          <button type="button" className="id-button" onClick={() => goTo('analytics')}>
             View analytics
           </button>
         </div>
@@ -462,20 +421,12 @@ export function InstitutionDashboardPage({
       <section className="id-panel id-attention">
         <h2>Needs attention</h2>
 
-        <button
-          type="button"
-          className="id-attention-item"
-          onClick={() => goTo('staff')}
-        >
+        <button type="button" className="id-attention-item" onClick={() => goTo('staff')}>
           <span className="id-attention-dot id-attention-dot--purple" />
           {data.pendingStaff} staff accounts pending activation
         </button>
 
-        <button
-          type="button"
-          className="id-attention-item"
-          onClick={() => goTo('sessions')}
-        >
+        <button type="button" className="id-attention-item" onClick={() => goTo('sessions')}>
           <span className="id-attention-dot id-attention-dot--red" />
           {data.flaggedSessions} session flagged for review
         </button>
