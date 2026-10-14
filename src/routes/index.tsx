@@ -25,6 +25,8 @@ import { InstitutionLayout } from '../features/institution/InstitutionLayout';
 import { StaffManagementPage } from '../pages/institution/StaffManagementPage';
 import { ProfilePage as DeafProfilePage } from '../pages/deaf/ProfilePage';
 import { ProfilePage as InterpreterProfilePage } from '../pages/interpreter/ProfilePage';
+import { SettingsPage } from '../pages/admin/SettingsPage';
+import { AdminProfilePage } from '../pages/admin/AdminProfilePage';
 
 export const router = createBrowserRouter([
   { path: '/', element: <SplashPage /> },
@@ -86,15 +88,6 @@ export const router = createBrowserRouter([
       },
     ],
   },
-  // {
-  //   element: <ProtectedRoute allow={['institution']} />,
-  //   children: [
-  //     {
-  //       path: '/dashboard/institution',
-  //       element: <Placeholder title="Institution dashboard" story="V2-028" />,
-  //     },
-  //   ],
-  // },
 
   {
     element: <ProtectedRoute allow={['institution']} />,
@@ -113,19 +106,6 @@ export const router = createBrowserRouter([
     ],
   },
 
-  //   TODO: Wrap with ProtectedRoute allow={['institution']} once the backend is live
-  // {
-  //   path: '/dashboard/institution',
-  //   element: <InstitutionLayout />,
-  //   children: [
-  //     { index: true, element: <Placeholder title="Institution dashboard" story="V2-028" /> },
-  //     { path: 'staff', element: <StaffManagementPage /> },
-  //     { path: 'sessions', element: <Placeholder title="Sessions" story="V2-028" /> },
-  //     { path: 'analytics', element: <Placeholder title="Analytics" story="V2-028" /> },
-  //     { path: 'settings', element: <Placeholder title="Settings" story="V2-028" /> },
-  //   ],
-  // },
-
   {
     element: <ProtectedRoute allow={['admin']} />,
     children: [
@@ -141,7 +121,8 @@ export const router = createBrowserRouter([
           { path: 'sessions', element: <Placeholder title="Sessions" story="V2-064" /> },
           { path: 'reports', element: <Placeholder title="Reports" story="V2-064" /> },
           { path: 'audit-logs', element: <Placeholder title="Audit Logs" story="V2-064" /> },
-          { path: 'settings', element: <Placeholder title="Settings" story="V2-064" /> },
+          { path: 'settings', element: <SettingsPage /> },
+          { path: 'profile', element: <AdminProfilePage /> },
         ],
       },
       {
@@ -149,27 +130,6 @@ export const router = createBrowserRouter([
         element: <Placeholder title="Interpreter review" story="V2-045" />,
       },
     ],
-  },
-
-  // TODO: Wrap with ProtectedRoute allow={['admin']} once the backend is live
-  // {
-  //   path: '/dashboard/admin',
-  //   element: <AdminLayout />,
-  //   children: [
-  //     { index: true, element: <AdminDashboardPage /> },
-  //     { path: 'users', element: <Placeholder title="Users" story="V2-064" /> },
-  //     { path: 'verifications', element: <Placeholder title="Verifications" story="V2-064" /> },
-  //     { path: 'verifications/:id', element: <CredentialReviewPage /> },
-  //     { path: 'institutions', element: <Placeholder title="Institutions" story="V2-064" /> },
-  //     { path: 'sessions', element: <Placeholder title="Sessions" story="V2-064" /> },
-  //     { path: 'reports', element: <Placeholder title="Reports" story="V2-064" /> },
-  //     { path: 'audit-logs', element: <Placeholder title="Audit Logs" story="V2-064" /> },
-  //     { path: 'settings', element: <Placeholder title="Settings" story="V2-064" /> },
-  //   ],
-  // },
-  {
-    path: '/admin/interpreters',
-    element: <Placeholder title="Interpreter review" story="V2-045" />,
   },
 
   { path: '*', element: <Placeholder title="Page not found" story="n/a" /> },
