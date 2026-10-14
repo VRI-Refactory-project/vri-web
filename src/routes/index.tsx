@@ -20,6 +20,7 @@ import { DashboardPage } from '../pages/dashboards/DHH_dashboard';
 import { AdminLayout } from '../features/admin/AdminLayout';
 import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage';
 import { CredentialReviewPage } from '../pages/admin/CredentialReviewPage';
+import { InstitutionAccountsPage } from '../pages/admin/InstitutionAccountsPage';
 import { AvailabilityPage } from '../pages/interpreter/AvailabilityPage';
 import { InstitutionLayout } from '../features/institution/InstitutionLayout';
 import { StaffManagementPage } from '../pages/institution/StaffManagementPage';
@@ -112,20 +113,8 @@ export const router = createBrowserRouter([
     ],
   },
 
-  //   TODO: Wrap with ProtectedRoute allow={['institution']} once the backend is live
-  // {
-  //   path: '/dashboard/institution',
-  //   element: <InstitutionLayout />,
-  //   children: [
-  //     { index: true, element: <Placeholder title="Institution dashboard" story="V2-028" /> },
-  //     { path: 'staff', element: <StaffManagementPage /> },
-  //     { path: 'staff/new', element: <CreateStaffAccountPage /> },
-  //     { path: 'staff/created', element: <StaffAccountCreatedPage /> },
-  //     { path: 'sessions', element: <Placeholder title="Sessions" story="V2-028" /> },
-  //     { path: 'analytics', element: <Placeholder title="Analytics" story="V2-028" /> },
-  //     { path: 'settings', element: <Placeholder title="Settings" story="V2-028" /> },
-  //   ],
-  // },
+  // TODO: Wrap with ProtectedRoute allow={['institution']} once the backend is live.
+  // This preserves the original commented-out route block from the project.
 
   {
     element: <ProtectedRoute allow={['admin']} />,
@@ -138,7 +127,7 @@ export const router = createBrowserRouter([
           { path: 'users', element: <Placeholder title="Users" story="V2-064" /> },
           { path: 'verifications', element: <Placeholder title="Verifications" story="V2-064" /> },
           { path: 'verifications/:id', element: <CredentialReviewPage /> },
-          { path: 'institutions', element: <Placeholder title="Institutions" story="V2-064" /> },
+          { path: 'institutions', element: <InstitutionAccountsPage /> },
           { path: 'sessions', element: <Placeholder title="Sessions" story="V2-064" /> },
           { path: 'reports', element: <Placeholder title="Reports" story="V2-064" /> },
           { path: 'audit-logs', element: <Placeholder title="Audit Logs" story="V2-064" /> },
