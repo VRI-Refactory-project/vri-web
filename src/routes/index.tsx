@@ -20,6 +20,7 @@ import { DashboardPage } from '../pages/dashboards/DHH_dashboard';
 import { AdminLayout } from '../features/admin/AdminLayout';
 import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage';
 import { AvailabilityPage } from '../pages/interpreter/AvailabilityPage';
+import { ProfilePage as DeafProfilePage } from '../pages/deaf/ProfilePage';
 
 export const router = createBrowserRouter([
   { path: '/', element: <SplashPage /> },
@@ -56,7 +57,7 @@ export const router = createBrowserRouter([
           { path: 'sessions', element: <Placeholder title="Sessions" story="Sprint 2" /> },
           { path: 'messages', element: <Placeholder title="Messages" story="Sprint 2" /> },
           { path: 'wallet', element: <Placeholder title="Wallet" story="Not scheduled" /> },
-          { path: 'profile', element: <Placeholder title="Profile" story="Sprint 2" /> },
+          { path: 'profile', element: <DeafProfilePage /> },
           { path: 'settings', element: <Placeholder title="Settings" story="Sprint 2" /> },
         ],
       },
