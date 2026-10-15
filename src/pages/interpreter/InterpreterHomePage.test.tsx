@@ -25,12 +25,24 @@ const reply = (ok: boolean, status: number, body: unknown) => ({
   json: async () => body,
 });
 
-/** The profile starts with the given availability; PATCH answers with `patch`. */
-function mockProfile(isAvailable: boolean, patch?: ReturnType<typeof reply>) {
+type Reason = 'not_approved' | 'switched_off' | 'day_off' | 'outside_hours' | null;
+
+const status = (isAvailable: boolean, reason: Reason = null) => ({
+  is_available: isAvailable,
+  available_now: isAvailable && reason === null,
+  reason,
+});
+
+/** The status starts with the given availability; PATCH answers with `patch`. */
+function mockProfile(
+  isAvailable: boolean,
+  patch?: ReturnType<typeof reply>,
+  reason: Reason = null,
+) {
   fetchMock.mockImplementation(async (_url: string, init?: RequestInit) =>
     init?.method === 'PATCH'
-      ? (patch ?? reply(true, 200, { is_available: !isAvailable }))
-      : reply(true, 200, { is_available: isAvailable }),
+      ? (patch ?? reply(true, 200, status(!isAvailable)))
+      : reply(true, 200, status(isAvailable, reason)),
   );
 }
 
@@ -109,8 +121,17 @@ describe('InterpreterHomePage', () => {
     await waitFor(() => expect(toggle).not.toBeChecked());
     expect(screen.getByText('You will not receive interpreting requests')).toBeInTheDocument();
     const patch = fetchMock.mock.calls.find(([, init]) => init?.method === 'PATCH');
-    expect(patch?.[0]).toContain('/api/v1/interpreters/me/');
+    expect(patch?.[0]).toContain('/api/v1/interpreters/me/availability/status/');
     expect(JSON.parse(patch?.[1].body)).toEqual({ is_available: false });
+  });
+
+  it('explains why requests are not coming when the switch is on but it is outside working hours', async () => {
+    mockProfile(true, undefined, 'outside_hours');
+    renderHome();
+    expect(await screen.findByText(/outside your working hours/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole('switch', { name: /available for interpreting requests/i }),
+    ).toBeChecked();
   });
 
   it('goes back and shows the API message when availability is refused', async () => {
