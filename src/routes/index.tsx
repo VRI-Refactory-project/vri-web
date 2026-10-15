@@ -7,6 +7,7 @@ import { RoleSelectionPage } from '../pages/registration/RoleSelectionPage';
 import { Forgotpassword } from '../pages/registration/Forgotpassword';
 import { Resetpassword } from '../pages/registration/Resetpassword';
 import { SignUpInstitution } from '../pages/registration/SignUpInstitution';
+import { VerifyEmailPage } from '../pages/auth/VerifyEmailPage';
 import { SignInPage } from '../pages/auth/SignInPage';
 import { CreateAccountPage } from '../pages/registration/CreateAccountPage';
 import { PendingReviewPage } from '../pages/registration/PendingReviewPage';
@@ -15,7 +16,6 @@ import { UploadCertificationsPage } from '../pages/registration/UploadCertificat
 import { InterpreterLayout } from '../components/interpreter/InterpreterLayout';
 import { InterpreterHomePage } from '../pages/interpreter/InterpreterHomePage';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
-import { VerifyEmailModal } from '../components/VerifyEmailModal';
 import { deafNavigation } from '../features/dashboard/navigation';
 import { DashboardPage } from '../pages/dashboards/DHH_dashboard';
 import { AdminLayout } from '../features/admin/AdminLayout';
@@ -39,6 +39,7 @@ export const router = createBrowserRouter([
   { path: '/landing', element: <LandingPage /> },
   { path: '/get-started', element: <RoleSelectionPage /> },
   { path: '/sign-in', element: <SignInPage /> },
+  { path: '/verify-email', element: <VerifyEmailPage /> },
   { path: '/offline', element: <OfflinePage /> },
   { path: '/register/deaf', element: <CreateAccountPage /> },
   { path: '/forgot-password', element: <Forgotpassword /> },
@@ -63,14 +64,7 @@ export const router = createBrowserRouter([
       {
         path: '/dashboard/deaf',
         element: (
-          <>
-            <DashboardLayout
-              links={deafNavigation}
-              navLabel="Deaf dashboard"
-              accountTo="/profile"
-            />
-            <VerifyEmailModal />
-          </>
+          <DashboardLayout links={deafNavigation} navLabel="Deaf dashboard" accountTo="/profile" />
         ),
         children: [
           { index: true, element: <DashboardPage /> },
