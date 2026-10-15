@@ -1,8 +1,13 @@
 import { render, screen } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { AuthProvider } from '../features/auth/AuthProvider';
 import type { AuthSession } from '../types';
 import { ProtectedRoute } from './ProtectedRoute';
+
+function SignInStub() {
+  const state = useLocation().state as { from?: string } | null;
+  return <p>sign in page, came from {state?.from ?? 'nowhere'}</p>;
+}
 
 function renderAt(session: AuthSession | null) {
   sessionStorage.clear();
@@ -12,7 +17,7 @@ function renderAt(session: AuthSession | null) {
       <MemoryRouter initialEntries={['/dashboard/interpreter']}>
         <Routes>
           <Route path="/" element={<p>landing</p>} />
-          <Route path="/sign-in" element={<p>sign in page</p>} />
+          <Route path="/sign-in" element={<SignInStub />} />
           <Route element={<ProtectedRoute allow={['interpreter']} />}>
             <Route path="/dashboard/interpreter" element={<p>interpreter home</p>} />
           </Route>
@@ -33,7 +38,12 @@ describe('ProtectedRoute', () => {
 
   it('sends signed-out visitors to sign in', () => {
     renderAt(null);
-    expect(screen.getByText('sign in page')).toBeInTheDocument();
+    expect(screen.getByText(/sign in page/)).toBeInTheDocument();
+  });
+
+  it('remembers the page a signed-out visitor was heading to', () => {
+    renderAt(null);
+    expect(screen.getByText('sign in page, came from /dashboard/interpreter')).toBeInTheDocument();
   });
 
   it('sends the wrong role home', () => {
