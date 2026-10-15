@@ -34,6 +34,7 @@ export function VerificationsPage() {
   const [rows, setRows] = useState<InterpreterRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [query, setQuery] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -61,84 +62,119 @@ export function VerificationsPage() {
     setFilter(next);
   };
 
+  const needle = query.trim().toLowerCase();
+  const visible = needle
+    ? rows.filter((r) =>
+        [r.fullName, r.email, r.phoneNumber].some((v) => v.toLowerCase().includes(needle)),
+      )
+    : rows;
+
   return (
     <div className="vp">
       <header className="vp-header">
-        <h1>Verifications</h1>
-        <p>Review interpreter certificates and decide who can take requests.</p>
+        <h1>Interpreter verifications</h1>
+        <p>Review interpreter applications, credentials and identity checks.</p>
       </header>
 
-      <div className="vp-filters" role="group" aria-label="Filter by status">
-        {FILTERS.map((f) => (
-          <button
-            key={f.value}
-            type="button"
-            className={f.value === filter ? 'vp-filter vp-filter--on' : 'vp-filter'}
-            aria-pressed={f.value === filter}
-            onClick={() => choose(f.value)}
-          >
-            {f.label}
-          </button>
-        ))}
-      </div>
-
-      {error && (
-        <p className="vp-error" role="alert">
-          {error}
-        </p>
-      )}
-
-      {loading ? (
-        <p className="vp-empty" role="status">
-          Loading…
-        </p>
-      ) : rows.length === 0 && !error ? (
-        <p className="vp-empty">No interpreters here.</p>
-      ) : (
-        rows.length > 0 && (
-          <div className="vp-table-wrap">
-            <table className="vp-table">
-              <thead>
-                <tr>
-                  <th>Interpreter</th>
-                  <th>Contact</th>
-                  <th>Certificates</th>
-                  <th>Registered</th>
-                  <th>Status</th>
-                  <th>
-                    <span className="vp-sr">Action</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((r) => (
-                  <tr key={r.id}>
-                    <td>
-                      <strong>{r.fullName}</strong>
-                    </td>
-                    <td>
-                      {r.email || r.phoneNumber}
-                      {r.email && <small>{r.phoneNumber}</small>}
-                    </td>
-                    <td>{r.certificationCount}</td>
-                    <td>{formatDate(r.createdAt)}</td>
-                    <td>
-                      <span className={`vp-pill vp-pill--${r.status.toLowerCase()}`}>
-                        {STATUS_LABEL[r.status]}
-                      </span>
-                    </td>
-                    <td>
-                      <Link className="vp-link" to={`/dashboard/admin/verifications/${r.id}`}>
-                        Review
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      <section className="vp-card" aria-labelledby="vp-queue-title">
+        <div className="vp-card-head">
+          <div>
+            <h2 id="vp-queue-title">Verification queue</h2>
+            <p>Applications are ordered by submission time.</p>
           </div>
-        )
-      )}
+          {!loading && (
+            <span className="vp-count">
+              {rows.length} {filter === 'INACTIVE' ? 'pending' : 'shown'}
+            </span>
+          )}
+        </div>
+
+        <div className="vp-tools">
+          <label className="vp-search">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" strokeWidth="1.8" />
+              <path d="m20 20-4-4" fill="none" stroke="currentColor" strokeWidth="1.8" />
+            </svg>
+            <input
+              type="search"
+              placeholder="Search interpreters"
+              aria-label="Search interpreters"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </label>
+        </div>
+
+        <div className="vp-filters" role="group" aria-label="Filter by status">
+          {FILTERS.map((f) => (
+            <button
+              key={f.value}
+              type="button"
+              className={f.value === filter ? 'vp-filter vp-filter--on' : 'vp-filter'}
+              aria-pressed={f.value === filter}
+              onClick={() => choose(f.value)}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        {error && (
+          <p className="vp-error" role="alert">
+            {error}
+          </p>
+        )}
+
+        {loading ? (
+          <p className="vp-empty" role="status">
+            Loading…
+          </p>
+        ) : rows.length === 0 && !error ? (
+          <p className="vp-empty">No interpreters here.</p>
+        ) : visible.length === 0 && rows.length > 0 ? (
+          <p className="vp-empty">No interpreters match your search.</p>
+        ) : (
+          visible.length > 0 && (
+            <div className="vp-list">
+              <div className="vp-list-head" aria-hidden="true">
+                <span>INTERPRETER</span>
+                <span>STATUS</span>
+              </div>
+              <ul>
+                {visible.map((r) => (
+                  <li key={r.id} className="vp-row">
+                    <div className="vp-who">
+                      <strong>{r.fullName}</strong>
+                      <small>
+                        {[r.specialisation, `Submitted ${formatDate(r.createdAt)}`]
+                          .filter(Boolean)
+                          .join(' · ')}
+                      </small>
+                    </div>
+                    <span className={`vp-pill vp-pill--${r.status.toLowerCase()}`}>
+                      {STATUS_LABEL[r.status]}
+                    </span>
+                    <Link
+                      className="vp-link"
+                      aria-label="Review"
+                      to={`/dashboard/admin/verifications/${r.id}`}
+                    >
+                      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                        <path
+                          d="m9 5 7 7-7 7"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                        />
+                      </svg>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )
+        )}
+      </section>
     </div>
   );
 }

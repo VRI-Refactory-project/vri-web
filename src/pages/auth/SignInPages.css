@@ -13,3 +13,13 @@
   color: var(--color-primary);
   text-decoration: underline;
 }
+
+.login-notice {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f4f2fa;
+  color: var(--color-primary, #382c77);
+  font-size: 13px;
+  font-weight: 600;
+}

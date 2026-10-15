@@ -15,6 +15,7 @@ import { UploadCertificationsPage } from '../pages/registration/UploadCertificat
 import { InterpreterLayout } from '../components/interpreter/InterpreterLayout';
 import { InterpreterHomePage } from '../pages/interpreter/InterpreterHomePage';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
+import { VerifyEmailModal } from '../components/VerifyEmailModal';
 import { deafNavigation } from '../features/dashboard/navigation';
 import { DashboardPage } from '../pages/dashboards/DHH_dashboard';
 import { AdminLayout } from '../features/admin/AdminLayout';
@@ -32,6 +33,7 @@ import { AdminProfilePage } from '../pages/admin/AdminProfilePage';
 import { CreateStaffAccountPage } from '../pages/institution/CreateStaffAccountPage';
 import { OfflinePage } from '../pages/OfflinePage';
 import { StaffAccountCreatedPage } from '../pages/institution/StaffAccountCreatedPage';
+import { InstitutionDashboardPage } from '../pages/institution/InstitutionDashboardPage';
 
 export const router = createBrowserRouter([
   { path: '/', element: <SplashPage /> },
@@ -62,7 +64,14 @@ export const router = createBrowserRouter([
       {
         path: '/dashboard/deaf',
         element: (
-          <DashboardLayout links={deafNavigation} navLabel="Deaf dashboard" accountTo="/profile" />
+          <>
+            <DashboardLayout
+              links={deafNavigation}
+              navLabel="Deaf dashboard"
+              accountTo="/profile"
+            />
+            <VerifyEmailModal />
+          </>
         ),
         children: [
           { index: true, element: <DashboardPage /> },
@@ -102,7 +111,7 @@ export const router = createBrowserRouter([
         path: '/dashboard/institution',
         element: <InstitutionLayout />,
         children: [
-          { index: true, element: <Placeholder title="Institution dashboard" story="V2-028" /> },
+          { index: true, element: <InstitutionDashboardPage /> },
           { path: 'staff', element: <StaffManagementPage /> },
           { path: 'staff/new', element: <CreateStaffAccountPage /> },
           { path: 'staff/created', element: <StaffAccountCreatedPage /> },
@@ -113,9 +122,6 @@ export const router = createBrowserRouter([
       },
     ],
   },
-
-  // TODO: Wrap with ProtectedRoute allow={['institution']} once the backend is live.
-  // This preserves the original commented-out route block from the project.
 
   {
     element: <ProtectedRoute allow={['admin']} />,
@@ -149,5 +155,8 @@ export const router = createBrowserRouter([
     element: <Placeholder title="Interpreter review" story="V2-045" />,
   },
 
-  { path: '*', element: <Placeholder title="Page not found" story="n/a" /> },
+  {
+    path: '*',
+    element: <Placeholder title="Page not found" message="We could not find this page." />,
+  },
 ]);

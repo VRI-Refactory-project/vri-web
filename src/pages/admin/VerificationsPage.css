@@ -1,97 +1,177 @@
 .vp {
-  padding: 24px;
+  padding: 32px 24px;
   max-width: 1100px;
+  font-family: 'Manrope', system-ui, sans-serif;
+  color: #1d1a30;
 }
 
 .vp-header h1 {
-  margin: 0 0 4px;
-  font-size: 24px;
+  margin: 0 0 6px;
+  font-size: 32px;
+  font-weight: 700;
 }
 
 .vp-header p {
-  margin: 0 0 20px;
-  color: #5b6472;
+  margin: 0 0 24px;
+  font-size: 15px;
+  color: #5a5775;
+}
+
+.vp-card {
+  padding: 20px 20px 8px;
+  border: 1px solid #e2e0ee;
+  border-radius: 20px;
+  background: #fff;
+}
+
+.vp-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.vp-card-head h2 {
+  margin: 0 0 2px;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.vp-card-head p {
+  margin: 0;
+  font-size: 13px;
+  color: #5a5775;
+}
+
+.vp-count {
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: #ebe8f7;
+  color: #4b3a9e;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.vp-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  height: 40px;
+  border: 1px solid #d9d5ee;
+  border-radius: 12px;
+  color: #5a5775;
+}
+
+.vp-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  color: #1d1a30;
+}
+
+.vp-search:focus-within {
+  border-color: #4b3a9e;
 }
 
 .vp-filters {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 16px;
+  margin: 14px 0 16px;
 }
 
 .vp-filter {
-  padding: 8px 14px;
-  border: 1px solid #d5dae1;
+  padding: 6px 14px;
+  border: 1px solid #d9d5ee;
   border-radius: 999px;
   background: #fff;
+  color: #1d1a30;
   font: inherit;
+  font-size: 13px;
+  font-weight: 700;
   cursor: pointer;
 }
 
 .vp-filter--on {
-  border-color: #1f4fd8;
-  background: #1f4fd8;
+  border-color: #4b3a9e;
+  background: #4b3a9e;
   color: #fff;
 }
 
 .vp-error {
   margin: 0 0 12px;
-  color: #b3261e;
+  color: #a8324a;
 }
 
 .vp-empty {
   padding: 32px 0;
   text-align: center;
-  color: #5b6472;
+  color: #5a5775;
 }
 
-.vp-table-wrap {
-  overflow-x: auto;
-  border: 1px solid #e3e7ed;
-  border-radius: 12px;
-  background: #fff;
+.vp-list ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.vp-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-}
-
-.vp-table th,
-.vp-table td {
+.vp-list-head {
+  display: flex;
+  justify-content: space-between;
   padding: 12px 16px;
-  border-bottom: 1px solid #eef0f4;
-  vertical-align: top;
+  margin: 0 -20px;
+  padding-inline: 36px 72px;
+  background: #f4f3fa;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #5a5775;
 }
 
-.vp-table tbody tr:last-child td {
+.vp-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid #ebe9f5;
+}
+
+.vp-row:last-child {
   border-bottom: 0;
 }
 
-.vp-table th {
-  font-size: 13px;
-  font-weight: 600;
-  color: #5b6472;
+.vp-who {
+  flex: 1;
+  min-width: 0;
 }
 
-.vp-table small {
+.vp-who strong {
   display: block;
-  color: #5b6472;
+  font-size: 14px;
+}
+
+.vp-who small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: #5a5775;
 }
 
 .vp-pill {
-  display: inline-block;
-  padding: 3px 10px;
+  padding: 6px 16px;
   border-radius: 999px;
-  background: #eef0f4;
-  font-size: 13px;
-}
-
-.vp-pill--inactive {
-  background: #fff4d6;
-  color: #7a5a00;
+  background: #ebe8f7;
+  color: #4b3a9e;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .vp-pill--approved {
@@ -101,24 +181,33 @@
 
 .vp-pill--rejected,
 .vp-pill--deactivated {
-  background: #fde3e1;
-  color: #8c1d18;
+  background: #fbe4e8;
+  color: #a8324a;
 }
 
 .vp-link {
-  color: #1f4fd8;
-  font-weight: 600;
-  text-decoration: none;
+  display: inline-flex;
+  padding: 6px;
+  border-radius: 8px;
+  color: #1d1a30;
 }
 
-.vp-link:hover {
-  text-decoration: underline;
+.vp-link:hover,
+.vp-link:focus-visible {
+  background: #f4f3fa;
 }
 
-.vp-sr {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
+@media (max-width: 640px) {
+  .vp {
+    padding: 20px 16px;
+  }
+  .vp-header h1 {
+    font-size: 24px;
+  }
+  .vp-list-head {
+    display: none;
+  }
+  .vp-row {
+    flex-wrap: wrap;
+  }
 }

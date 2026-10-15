@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { DashboardPage } from './DHH_dashboard';
 
@@ -9,6 +9,16 @@ vi.mock('../../hooks/useAuth', () => ({
     session: { user: { name: 'Micheal Kiggundu', role: 'deaf' } },
   }),
 }));
+
+const fetchMock = vi.fn();
+vi.stubGlobal('fetch', fetchMock);
+
+const dashboard = (sessions: unknown[] = []) => ({
+  ok: true,
+  status: 200,
+  statusText: 'OK',
+  json: async () => ({ user: {}, requests: [], sessions, chats: [] }),
+});
 
 function renderPage() {
   return render(
@@ -21,39 +31,47 @@ function renderPage() {
 describe('DashboardPage (deaf)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    fetchMock.mockResolvedValue(dashboard());
   });
 
-  it('greets the signed-in user', () => {
+  it('greets the signed-in user by first name', async () => {
     renderPage();
-    expect(screen.getByRole('heading', { name: /good morning, micheal/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: /good (morning|afternoon|evening), micheal/i }),
+    ).toBeInTheDocument();
+    await screen.findByText('No upcoming sessions yet.');
   });
 
-  it('shows the Start VRI Session call to action', () => {
+  it('shows the Start VRI Session call to action', async () => {
     renderPage();
+    await screen.findByText('No upcoming sessions yet.');
     expect(screen.getByRole('button', { name: /start vri session/i })).toBeInTheDocument();
   });
 
-  it('renders the three summary stats', () => {
+  it('shows no sessions when the API has none', async () => {
     renderPage();
-    expect(screen.getByText(/2 sessions/i)).toBeInTheDocument();
-    expect(screen.getByText(/\$48\.50/)).toBeInTheDocument();
-    expect(screen.getByText(/7 sessions/i)).toBeInTheDocument();
+    expect(await screen.findByText('No upcoming sessions yet.')).toBeInTheDocument();
+    expect(screen.getByText('0 sessions')).toBeInTheDocument();
+    expect(fetchMock.mock.calls[0][0]).toContain('/api/v1/dashboard/deaf/');
+    expect(screen.queryByText(/dr\. sarah chen/i)).not.toBeInTheDocument();
   });
 
-  it('lists upcoming sessions', () => {
+  it('counts the sessions the API returns', async () => {
+    fetchMock.mockResolvedValue(dashboard([{ id: 1 }, { id: 2 }]));
     renderPage();
-    expect(screen.getByText(/dr\. sarah chen/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/today, 3:30 pm/i).length).toBeGreaterThan(1);
+    await waitFor(() => expect(screen.getByText('2 sessions')).toBeInTheDocument());
   });
 
-  it('lists available interpreters', () => {
+  it('lists the sample interpreters', async () => {
     renderPage();
+    await screen.findByText('No upcoming sessions yet.');
     expect(screen.getByText(/amina okafor/i)).toBeInTheDocument();
     expect(screen.getByText(/daniel brooks/i)).toBeInTheDocument();
   });
 
-  it('shows the Available badge only when an interpreter is available', () => {
+  it('shows the Available badge only when an interpreter is available', async () => {
     renderPage();
+    await screen.findByText('No upcoming sessions yet.');
     const availableBadges = screen.getAllByText(/available/i);
     // Adjust the number if you change isAvailable for other interpreters
     expect(availableBadges.length).toBeGreaterThan(0);
