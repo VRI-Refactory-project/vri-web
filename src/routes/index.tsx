@@ -33,6 +33,7 @@ import { AdminProfilePage } from '../pages/admin/AdminProfilePage';
 import { CreateStaffAccountPage } from '../pages/institution/CreateStaffAccountPage';
 import { OfflinePage } from '../pages/OfflinePage';
 import { StaffAccountCreatedPage } from '../pages/institution/StaffAccountCreatedPage';
+import { InstitutionDashboardPage } from '../pages/institution/InstitutionDashboardPage';
 
 export const router = createBrowserRouter([
   { path: '/', element: <SplashPage /> },
@@ -110,7 +111,7 @@ export const router = createBrowserRouter([
         path: '/dashboard/institution',
         element: <InstitutionLayout />,
         children: [
-          { index: true, element: <Placeholder title="Institution dashboard" story="V2-028" /> },
+          { index: true, element: <InstitutionDashboardPage /> },
           { path: 'staff', element: <StaffManagementPage /> },
           { path: 'staff/new', element: <CreateStaffAccountPage /> },
           { path: 'staff/created', element: <StaffAccountCreatedPage /> },
@@ -121,9 +122,6 @@ export const router = createBrowserRouter([
       },
     ],
   },
-
-  // TODO: Wrap with ProtectedRoute allow={['institution']} once the backend is live.
-  // This preserves the original commented-out route block from the project.
 
   {
     element: <ProtectedRoute allow={['admin']} />,
