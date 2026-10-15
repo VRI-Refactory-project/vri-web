@@ -111,7 +111,7 @@ export const router = createBrowserRouter([
         path: '/dashboard/institution',
         element: <InstitutionLayout />,
         children: [
-         { index: true, element: <InstitutionDashboardPage /> },
+          { index: true, element: <InstitutionDashboardPage /> },
           { path: 'staff', element: <StaffManagementPage /> },
           { path: 'staff/new', element: <CreateStaffAccountPage /> },
           { path: 'staff/created', element: <StaffAccountCreatedPage /> },
@@ -122,8 +122,6 @@ export const router = createBrowserRouter([
       },
     ],
   },
-
-
 
   {
     element: <ProtectedRoute allow={['admin']} />,
