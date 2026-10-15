@@ -1,42 +1,31 @@
-import { ArrowRight } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import splashLogo from '../../assets/no_bg.png';
 import './SplashPage.css';
 
+/** How long the splash stays up before moving on to the public landing page. */
+export const SPLASH_DURATION_MS = 2200;
+
 /**
- * First-entry splash screen for SignConnect.
- *
- * This page is intentionally frontend-only. Continue hands off to the
- * existing public landing page, while Log in keeps the existing auth flow.
+ * First-entry splash screen for SignConnect: just the logo and name on a plain background, then it
+ * moves on to the public landing page by itself (like the WhatsApp / Instagram launch screens).
  */
 export function SplashPage() {
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const timer = setTimeout(() => navigate('/landing', { replace: true }), SPLASH_DURATION_MS);
+    return () => clearTimeout(timer);
+  }, [navigate]);
+
   return (
     <main className="splash-page">
-      <section className="splash-content" aria-labelledby="splash-title">
-        <img className="splash-logo" src={splashLogo} alt="SignConnect VRI Platform" />
-
-        <h1 id="splash-title" className="splash-title">
-          Inclusive Communication. Anytime. Anywhere.
-        </h1>
-
-        <p className="splash-description">
-          Connect instantly with certified sign-language interpreters.
-        </p>
-
-        <button type="button" className="splash-continue" onClick={() => navigate('/landing')}>
-          <span>Continue</span>
-          <ArrowRight size={18} aria-hidden="true" />
-        </button>
-
-        <p className="splash-login-prompt">
-          Already have an account?{' '}
-          <Link to="/sign-in" className="splash-login-link">
-            Log in
-          </Link>
-        </p>
-      </section>
+      <h1 className="splash-sr-only">SignConnect</h1>
+      <div className="splash-logo-frame">
+        {/* The artwork also carries the "VRI Platform" line and the tagline at the bottom; the
+            frame crops them so only the logo and the name show. */}
+        <img className="splash-logo" src={splashLogo} alt="SignConnect" />
+      </div>
     </main>
   );
 }
