@@ -15,6 +15,7 @@ import { UploadCertificationsPage } from '../pages/registration/UploadCertificat
 import { InterpreterLayout } from '../components/interpreter/InterpreterLayout';
 import { InterpreterHomePage } from '../pages/interpreter/InterpreterHomePage';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
+import { VerifyEmailModal } from '../components/VerifyEmailModal';
 import { deafNavigation } from '../features/dashboard/navigation';
 import { DashboardPage } from '../pages/dashboards/DHH_dashboard';
 import { AdminLayout } from '../features/admin/AdminLayout';
@@ -62,7 +63,14 @@ export const router = createBrowserRouter([
       {
         path: '/dashboard/deaf',
         element: (
-          <DashboardLayout links={deafNavigation} navLabel="Deaf dashboard" accountTo="/profile" />
+          <>
+            <DashboardLayout
+              links={deafNavigation}
+              navLabel="Deaf dashboard"
+              accountTo="/profile"
+            />
+            <VerifyEmailModal />
+          </>
         ),
         children: [
           { index: true, element: <DashboardPage /> },
