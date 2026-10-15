@@ -20,6 +20,7 @@ import { DashboardPage } from '../pages/dashboards/DHH_dashboard';
 import { AdminLayout } from '../features/admin/AdminLayout';
 import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage';
 import { CredentialReviewPage } from '../pages/admin/CredentialReviewPage';
+import { VerificationsPage } from '../pages/admin/VerificationsPage';
 import { InstitutionAccountsPage } from '../pages/admin/InstitutionAccountsPage';
 import { AvailabilityPage } from '../pages/interpreter/AvailabilityPage';
 import { InstitutionLayout } from '../features/institution/InstitutionLayout';
@@ -125,7 +126,7 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <AdminDashboardPage /> },
           { path: 'users', element: <Placeholder title="Users" story="V2-064" /> },
-          { path: 'verifications', element: <Placeholder title="Verifications" story="V2-064" /> },
+          { path: 'verifications', element: <VerificationsPage /> },
           { path: 'verifications/:id', element: <CredentialReviewPage /> },
           { path: 'institutions', element: <InstitutionAccountsPage /> },
           { path: 'sessions', element: <Placeholder title="Sessions" story="V2-064" /> },
