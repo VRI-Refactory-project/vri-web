@@ -149,5 +149,8 @@ export const router = createBrowserRouter([
     element: <Placeholder title="Interpreter review" story="V2-045" />,
   },
 
-  { path: '*', element: <Placeholder title="Page not found" story="n/a" /> },
+  {
+    path: '*',
+    element: <Placeholder title="Page not found" message="We could not find this page." />,
+  },
 ]);

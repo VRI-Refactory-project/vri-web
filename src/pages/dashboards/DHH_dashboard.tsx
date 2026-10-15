@@ -10,23 +10,29 @@ import {
   Hand,
 } from 'lucide-react';
 
+import { useEffect, useState } from 'react';
+import { useAuth } from '../../hooks/useAuth';
+import { api } from '../../services/api';
 import './DHH_dashboard.css';
 import aminaImage from '../../assets/interpreter2.png';
 import danielImage from '../../assets/interpreter3.png';
 
-// --- MOCK DATA ---
-const upcomingSessions = [
-  {
-    id: 1,
-    day: '21',
-    month: 'SEP',
-    name: 'Dr. Sarah Chen',
-    time: 'Today, 3:30 PM',
-    type: 'Healthcare · American Sign Language',
-    status: 'Scheduled',
-  },
-];
+/** The part of GET /api/v1/dashboard/deaf/ this page uses. */
+interface DeafDashboard {
+  requests: Record<string, unknown>[];
+  sessions: Record<string, unknown>[];
+}
 
+function greeting(date = new Date()) {
+  const hour = date.getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 18) return 'Good afternoon';
+  return 'Good evening';
+}
+
+// --- SAMPLE DATA ---
+// There is no interpreter search or rating data in the API yet, so these cards are samples
+// for demonstration. They are labelled as such on the page.
 const availableInterpreters = [
   {
     id: 1,
@@ -49,12 +55,33 @@ const availableInterpreters = [
 ];
 
 export function DashboardPage() {
+  const { session } = useAuth();
+  const firstName = (session?.user.name ?? '').trim().split(/\s+/)[0] ?? '';
+  const [sessions, setSessions] = useState<DeafDashboard['sessions'] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    api<DeafDashboard>('/api/v1/dashboard/deaf/').then(
+      (data) => {
+        if (!cancelled) setSessions(data.sessions);
+      },
+      () => {
+        if (!cancelled) setSessions([]);
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const sessionCount = sessions?.length ?? 0;
+
   return (
     <>
       {/* Header */}
       <header className="dashboard-header">
         <div>
-          <h1 className="greeting">Good morning, Micheal</h1>
+          <h1 className="greeting">{[greeting(), firstName].filter(Boolean).join(', ')}</h1>
           <p className="sub-greeting">How can we help you communicate today?</p>
         </div>
         <button className="icon-btn notification-btn">
@@ -106,18 +133,22 @@ export function DashboardPage() {
       <section className="stats-grid">
         <div className="stat-card">
           <span className="stat-label">Upcoming</span>
-          <span className="stat-value">2 sessions</span>
-          <span className="stat-sub">Next: Today, 3:30 PM</span>
+          <span className="stat-value">
+            {sessionCount} {sessionCount === 1 ? 'session' : 'sessions'}
+          </span>
+          <span className="stat-sub">
+            {sessionCount === 0 ? 'Nothing booked yet' : 'Scheduled with an interpreter'}
+          </span>
         </div>
         <div className="stat-card">
           <span className="stat-label">Wallet</span>
           <span className="stat-value">$48.50</span>
-          <span className="stat-sub">Available balance</span>
+          <span className="stat-sub">Available balance (sample)</span>
         </div>
         <div className="stat-card">
           <span className="stat-label">This month</span>
           <span className="stat-value">7 sessions</span>
-          <span className="stat-sub">3h 15m interpreted</span>
+          <span className="stat-sub">3h 15m interpreted (sample)</span>
         </div>
       </section>
 
@@ -131,21 +162,19 @@ export function DashboardPage() {
         </div>
 
         <div className="session-list">
-          {upcomingSessions.map((session) => (
-            <div key={session.id} className="session-card">
-              <div className="session-date">
-                <span className="date-day">{session.day}</span>
-                <span className="date-month">{session.month}</span>
-              </div>
+          {sessions !== null && sessionCount === 0 && (
+            <p className="text-muted">No upcoming sessions yet.</p>
+          )}
+          {sessions?.map((item, index) => (
+            <div key={String(item.id ?? index)} className="session-card">
               <div className="session-details">
-                <h4>{session.name}</h4>
+                <h4>{String(item.interpreter_name ?? 'Interpreter session')}</h4>
                 <p>
-                  <Clock size={14} /> {session.time}
+                  <Clock size={14} /> {String(item.starts_at ?? '')}
                 </p>
-                <p className="session-type">{session.type}</p>
               </div>
               <div className="session-status">
-                <span className="badge badge-scheduled">{session.status}</span>
+                <span className="badge badge-scheduled">Scheduled</span>
               </div>
               <ChevronRight size={20} className="session-arrow" />
             </div>
@@ -156,7 +185,7 @@ export function DashboardPage() {
       {/* Available Interpreters */}
       <section className="dashboard-section">
         <div className="section-header">
-          <h3>Available interpreters</h3>
+          <h3>Available interpreters (sample)</h3>
           <a href="#" className="view-all">
             See all <ChevronRight size={16} />
           </a>
