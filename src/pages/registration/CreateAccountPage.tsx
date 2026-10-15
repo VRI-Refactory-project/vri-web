@@ -114,8 +114,8 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
 
   // Worked out from the form on every render, so a submit never reads out-of-date results.
   const errors = collectErrors<FieldName>({
-    firstname: validateName(form.firstname),
-    lastname: validateName(form.lastname),
+    firstname: validateName(form.firstname, 'your first name'),
+    lastname: validateName(form.lastname, 'your last name'),
     phone: validatePhone(form.phone),
     email: validateEmail(form.email, { required: isInterpreter }),
     password: validatePassword(form.password),

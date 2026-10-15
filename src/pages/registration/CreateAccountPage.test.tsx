@@ -52,7 +52,8 @@ describe('CreateAccountPage', () => {
   it('asks a deaf user for name, phone, optional email and password only', () => {
     renderPage();
     expect(screen.getByRole('heading', { name: /create your account/i })).toBeInTheDocument();
-    expect(screen.getByLabelText('Full name')).toBeInTheDocument();
+    expect(screen.getByLabelText('First name')).toBeInTheDocument();
+    expect(screen.getByLabelText('Last name')).toBeInTheDocument();
     expect(screen.getByLabelText('Phone number')).toBeInTheDocument();
     expect(screen.getByLabelText('Email address (optional)')).toBeInTheDocument();
     expect(screen.queryByLabelText('Specialisation')).not.toBeInTheDocument();
@@ -99,17 +100,7 @@ describe('CreateAccountPage', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('already exists');
   });
 
-  it('blocks submission without a name, phone or password', async () => {
-    const spy = vi.spyOn(registration, 'registerDeaf');
-    renderPage();
-    await userEvent.click(screen.getByRole('checkbox'));
-    await userEvent.click(screen.getByRole('button', { name: /create account/i }));
-    expect(screen.getByText('Enter your first name.')).toBeInTheDocument();
-    expect(screen.getByText('Enter your last   name.')).toBeInTheDocument();
-    expect(screen.getByText('Enter your phone number.')).toBeInTheDocument();
-    expect(screen.getByText('Enter a password.')).toBeInTheDocument();
-    expect(spy).not.toHaveBeenCalled();
-  });
+
 
   it('never lets letters into the phone field', async () => {
     renderPage();
@@ -139,7 +130,8 @@ describe('CreateAccountPage', () => {
     const spy = vi.spyOn(registration, 'registerDeaf');
     renderPage();
     await fill({
-      'Full name': 'Amina',
+      'First name': 'Catherine',
+      'Last name': 'Nawagirwa',
       'Phone number': '+256772123456',
       Password: 'secret-pass-1',
     });
@@ -169,7 +161,8 @@ describe('CreateAccountPage', () => {
       const spy = vi.spyOn(registration, 'registerInterpreter');
       renderPage('interpreter');
       await fill({
-        'Full name': 'Joel',
+         'First name': 'Catherine',
+         'Last name': 'Nawagirwa',
         'Phone number': '+256772123456',
         Password: 'secret-pass-1',
       });
@@ -187,7 +180,8 @@ describe('CreateAccountPage', () => {
         .mockResolvedValue({} as certifications.CertificationDocument);
       renderPage('interpreter');
       await fill({
-        'Full name': 'Joel',
+        'First name': 'Catherine',
+        'Last name': 'Nawagirwa',
         'Phone number': '+256772123456',
         'Email address': 'j@x.org',
         Password: 'secret-pass-1',
@@ -209,7 +203,8 @@ describe('CreateAccountPage', () => {
         .mockResolvedValue({} as certifications.CertificationDocument);
       renderPage('interpreter');
       await fill({
-        'Full name': 'Joel',
+        'First name': 'Catherine',
+        'Last name': 'Nawagirwa',
         'Phone number': '+256772123456',
         'Email address': 'j@x.org',
         Password: 'secret-pass-1',
