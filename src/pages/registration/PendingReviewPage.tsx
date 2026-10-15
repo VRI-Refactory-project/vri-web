@@ -1,5 +1,6 @@
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { AuthShell } from '../../components/AuthShell';
+import { needsEmailVerification } from '../../features/auth/emailGate';
 import { FLOWS } from '../../features/registration/flows';
 import { useAuth } from '../../hooks/useAuth';
 import './CreateAccountPage.css';
@@ -10,6 +11,11 @@ import './CreateAccountPage.css';
 export function PendingReviewPage() {
   const { session, logout } = useAuth();
   const isInterpreter = session?.user.role === 'interpreter';
+
+  // Confirm the email first; the person comes back here afterwards.
+  if (session && needsEmailVerification(session.user)) {
+    return <Navigate to="/verify-email" replace state={{ next: '/register/pending' }} />;
+  }
 
   return (
     <AuthShell steps={isInterpreter ? undefined : FLOWS.institution} current={3}>
