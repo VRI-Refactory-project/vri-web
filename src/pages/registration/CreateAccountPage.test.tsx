@@ -70,7 +70,8 @@ describe('CreateAccountPage', () => {
     const spy = vi.spyOn(registration, 'registerDeaf').mockResolvedValue(session('deaf'));
     renderPage();
     await fill({
-      'Full name': 'Amina',
+      'First name': 'Catherine',
+      'Last name': 'Nawagirwa',
       'Phone number': '+256772123456',
       Password: 'secret-pass-1',
     });
@@ -78,7 +79,7 @@ describe('CreateAccountPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /create account/i }));
     await waitFor(() => expect(screen.getByText('welcome step')).toBeInTheDocument());
     expect(spy).toHaveBeenCalledWith(
-      expect.objectContaining({ name: 'Amina', phone: '+256772123456', password: 'secret-pass-1' }),
+      expect.objectContaining({ name: 'Catherine Nawagirwa', phone: '+256772123456', password: 'secret-pass-1' }),
     );
   });
 
@@ -88,7 +89,8 @@ describe('CreateAccountPage', () => {
     );
     renderPage();
     await fill({
-      'Full name': 'Amina',
+      'First name': 'Catherine',
+      'Last name': 'Nawagirwa',
       'Phone number': '+256772123456',
       Password: 'secret-pass-1',
     });
@@ -102,7 +104,8 @@ describe('CreateAccountPage', () => {
     renderPage();
     await userEvent.click(screen.getByRole('checkbox'));
     await userEvent.click(screen.getByRole('button', { name: /create account/i }));
-    expect(screen.getByText('Enter your full name.')).toBeInTheDocument();
+    expect(screen.getByText('Enter your first name.')).toBeInTheDocument();
+    expect(screen.getByText('Enter your last   name.')).toBeInTheDocument();
     expect(screen.getByText('Enter your phone number.')).toBeInTheDocument();
     expect(screen.getByText('Enter a password.')).toBeInTheDocument();
     expect(spy).not.toHaveBeenCalled();
