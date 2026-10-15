@@ -2,18 +2,20 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from '../../features/auth/AuthProvider';
+import { AuthContext, type AuthState } from '../../features/auth/authContext';
 import { ApiError } from '../../services/api';
 import * as authService from '../../services/auth';
 import { SignInPage } from './SignInPage';
 
-function renderPage() {
+function renderPage(entry: string | { pathname: string; state?: unknown } = '/sign-in') {
   return render(
     <AuthProvider>
-      <MemoryRouter initialEntries={['/sign-in']}>
+      <MemoryRouter initialEntries={[entry]}>
         <Routes>
           <Route path="/sign-in" element={<SignInPage />} />
           <Route path="/dashboard/interpreter" element={<p>interpreter home</p>} />
           <Route path="/dashboard/deaf" element={<p>deaf home</p>} />
+          <Route path="/dashboard/interpreter/availability" element={<p>availability page</p>} />
         </Routes>
       </MemoryRouter>
     </AuthProvider>,
@@ -115,5 +117,56 @@ describe('SignInPage', () => {
     await userEvent.type(screen.getByLabelText('Password'), '123');
     await userEvent.click(screen.getByRole('button', { name: /login/i }));
     expect(spy).toHaveBeenCalledWith('ruth@example.com', '123');
+  });
+
+  const interpreterSession = {
+    token: 'a',
+    refreshToken: 'r',
+    user: { id: '1', name: 'Ruth', role: 'interpreter' as const, mustChangePassword: false },
+  };
+
+  it('takes someone who is already signed in straight to their dashboard', () => {
+    sessionStorage.setItem('vri.session', JSON.stringify(interpreterSession));
+    renderPage();
+    expect(screen.getByText('interpreter home')).toBeInTheDocument();
+  });
+
+  it('brings them back to the page they were sent away from', async () => {
+    vi.spyOn(authService, 'signIn').mockResolvedValue(interpreterSession);
+    renderPage({ pathname: '/sign-in', state: { from: '/dashboard/interpreter/availability' } });
+    await fillAndSubmit();
+    expect(await screen.findByText('availability page')).toBeInTheDocument();
+  });
+
+  it('ignores a return page that belongs to another role', async () => {
+    vi.spyOn(authService, 'signIn').mockResolvedValue(interpreterSession);
+    renderPage({ pathname: '/sign-in', state: { from: '/dashboard/deaf' } });
+    await fillAndSubmit();
+    expect(await screen.findByText('interpreter home')).toBeInTheDocument();
+  });
+
+  it('says so when the session has ended', () => {
+    const value: AuthState = {
+      session: null,
+      sessionExpired: true,
+      selectedRole: null,
+      selectRole: () => {},
+      login: () => {},
+      logout: () => {},
+      updateUser: () => {},
+    };
+    render(
+      <AuthContext.Provider value={value}>
+        <MemoryRouter initialEntries={['/sign-in']}>
+          <SignInPage />
+        </MemoryRouter>
+      </AuthContext.Provider>,
+    );
+    expect(screen.getByRole('status')).toHaveTextContent(/session has ended/i);
+  });
+
+  it('shows no session notice on a normal visit', () => {
+    renderPage();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 });

@@ -1,6 +1,6 @@
 // src/pages/auth/SignInPage.tsx
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { AuthLayout } from '../../components/Authlayout';
 import { FieldError } from '../../components/FieldError';
@@ -14,18 +14,26 @@ import {
 } from '../../lib/validation';
 import { useFieldErrors } from '../../lib/useFieldErrors';
 import { ApiError } from '../../services/api';
+import type { Role } from '../../types';
 import { signIn } from '../../services/auth';
 import './SignInPages.css';
 
 type FieldName = 'identifier' | 'password';
 const FIELD_ORDER: readonly FieldName[] = ['identifier', 'password'];
 
+/** Back to the page they were sent away from, but only if it belongs to their role's dashboard. */
+function destinationFor(role: Role, from: unknown): string {
+  const home = dashboardPathFor(role);
+  return typeof from === 'string' && (from === home || from.startsWith(`${home}/`)) ? from : home;
+}
+
 export const SignInPage = () => {
   const [formData, setFormData] = useState({ identifier: '', password: '' });
   const [error, setError] = useState<string>();
   const [submitting, setSubmitting] = useState(false);
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  const { session, sessionExpired, login } = useAuth();
+  const location = useLocation();
+  const from = (location.state as { from?: string } | null)?.from;
 
   // Sign-in checks the shape of the identifier, but never password strength: an older account
   // must still be able to get in with the password it already has.
@@ -42,8 +50,8 @@ export const SignInPage = () => {
     setSubmitting(true);
     try {
       const session = await signIn(identifierForApi(formData.identifier), formData.password);
+      // The redirect below takes them to their dashboard once the session is stored.
       login(session);
-      navigate(dashboardPathFor(session.user.role), { replace: true });
     } catch (err) {
       setError(
         err instanceof ApiError
@@ -55,9 +63,17 @@ export const SignInPage = () => {
     }
   };
 
+  // Someone who is already signed in has no use for this form.
+  if (session) return <Navigate to={destinationFor(session.user.role, from)} replace />;
+
   return (
     <AuthLayout title="Welcome Back" subtitle="Sign In to continue to SignConnect." backTo="/">
       <form onSubmit={handleSubmit} noValidate>
+        {sessionExpired && (
+          <p role="status" className="login-notice">
+            Your session has ended. Please sign in again.
+          </p>
+        )}
         <div className="form-group">
           <label htmlFor="identifier">Email or phone number</label>
           <input
