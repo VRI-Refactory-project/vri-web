@@ -1,7 +1,11 @@
 import { Link } from 'react-router-dom';
 import { Check } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { useAvailability, useInterpreterHome } from '../../features/interpreter/homeData';
+import {
+  reasonText,
+  useAvailability,
+  useInterpreterHome,
+} from '../../features/interpreter/homeData';
 import './InterpreterHomePage.css';
 
 const BASE = '/dashboard/interpreter';
@@ -37,7 +41,8 @@ function StatCard(props: {
 export function InterpreterHomePage() {
   const { session } = useAuth();
   const { data } = useInterpreterHome();
-  const { available, setAvailable, loading, saving, error } = useAvailability();
+  const { available, reason, setAvailable, loading, saving, error } = useAvailability();
+  const reasonNote = available ? reasonText(reason) : '';
   const name = session?.user.name ?? '';
   const firstName = name.trim().split(/\s+/)[0] ?? '';
   const initial = name.trim().charAt(0).toUpperCase() || '?';
@@ -65,6 +70,7 @@ export function InterpreterHomePage() {
               ? 'You are available to receive interpreting requests'
               : 'You will not receive interpreting requests'}
           </p>
+          {reasonNote && <p className="ih-status-note">{reasonNote}</p>}
           {error && (
             <p className="ih-error" role="alert">
               {error}
@@ -103,7 +109,7 @@ export function InterpreterHomePage() {
           <StatCard
             label="Pending Earnings"
             value={data.pendingEarnings}
-            note="Ready for payout"
+            note="Sample figure, not real money"
             to={`${BASE}/wallet`}
             cta="Open wallet"
           />
