@@ -9,21 +9,21 @@ export interface AdminDashboardSummary {
   pendingVerifications: number;
 }
 
-interface ApiSummary {
-  total_users: number;
-  dhh_users: number;
-  institutions: number;
-  interpreters: number;
-  pending_verifications: number;
+/** GET /api/v1/dashboard/admin/ */
+interface ApiAdminDashboard {
+  interpreters_pending_verification: number;
+  institutions_pending_approval: number;
+  users_by_role: Record<string, number>;
 }
 
 export async function fetchAdminSummary(): Promise<AdminDashboardSummary> {
-  const raw = await api<ApiSummary>('/api/v1/admin/dashboard/summary/');
+  const raw = await api<ApiAdminDashboard>('/api/v1/dashboard/admin/');
+  const byRole = raw.users_by_role;
   return {
-    totalUsers: raw.total_users,
-    dhhUsers: raw.dhh_users,
-    institutions: raw.institutions,
-    interpreters: raw.interpreters,
-    pendingVerifications: raw.pending_verifications,
+    totalUsers: Object.values(byRole).reduce((sum, n) => sum + n, 0),
+    dhhUsers: byRole.deaf_hoh ?? 0,
+    institutions: byRole.institution ?? 0,
+    interpreters: byRole.interpreter ?? 0,
+    pendingVerifications: raw.interpreters_pending_verification,
   };
 }
