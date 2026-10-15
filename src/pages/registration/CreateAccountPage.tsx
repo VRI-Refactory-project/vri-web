@@ -37,8 +37,8 @@ const SPECIALISATIONS: { value: Specialisation; label: string }[] = [
   { value: 'LEGAL', label: 'Legal' },
 ];
 
-type FieldName = 'name' | 'phone' | 'email' | 'password' | 'terms';
-const FIELD_ORDER: FieldName[] = ['name', 'phone', 'email', 'password', 'terms'];
+type FieldName = 'firstname' | 'lastname' | 'phone' | 'email' | 'password' | 'terms';
+const FIELD_ORDER: FieldName[] = ['firstname', 'lastname', 'phone', 'email', 'password', 'terms'];
 
 function field(
   id: string,
@@ -87,7 +87,7 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
   const navigate = useNavigate();
   const { login } = useAuth();
   const isInterpreter = role === 'interpreter';
-  const [form, setForm] = useState({ name: '', phone: '', email: '', password: '' });
+  const [form, setForm] = useState({ firstname: '', lastname: '', phone: '', email: '', password: '' });
   const [agreed, setAgreed] = useState(false);
   const [specialisation, setSpecialisation] = useState<Specialisation>('GENERAL');
   const [showPassword, setShowPassword] = useState(false);
