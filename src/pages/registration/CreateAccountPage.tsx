@@ -114,7 +114,8 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
 
   // Worked out from the form on every render, so a submit never reads out-of-date results.
   const errors = collectErrors<FieldName>({
-    name: validateName(form.name),
+    firstname: validateName(form.firstname),
+    lastname: validateName(form.lastname),
     phone: validatePhone(form.phone),
     email: validateEmail(form.email, { required: isInterpreter }),
     password: validatePassword(form.password),
@@ -156,18 +157,30 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
     // State updates are not visible inside this call, so track "created" locally for the catch.
     let created = accountCreated;
     try {
-      if (!created) {
-        const session = isInterpreter
-          ? await registerInterpreter({ ...form, specialisation })
-          : await registerDeaf(form);
-        login(session);
-        created = true;
-        setAccountCreated(true);
-        if (!isInterpreter) {
-          navigate('/register/welcome', { replace: true });
-          return;
-        }
-      }
+     if (!created) {
+  const registrationData = {
+    name: `${form.firstname.trim()} ${form.lastname.trim()}`,
+    phone: form.phone,
+    email: form.email,
+    password: form.password,
+  };
+
+  const session = isInterpreter
+    ? await registerInterpreter({
+        ...registrationData,
+        specialisation,
+      })
+    : await registerDeaf(registrationData);
+
+  login(session);
+  created = true;
+  setAccountCreated(true);
+
+  if (!isInterpreter) {
+    navigate('/register/welcome', { replace: true });
+    return;
+  }
+}
       await uploadStaged();
       navigate('/register/pending', { replace: true });
     } catch (err) {
@@ -230,21 +243,38 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
       <p className="ca-subtitle">Watch the video for help in sign language.</p>
 
       <form onSubmit={onSubmit} noValidate>
-        {field(
-          'ca-name',
-          'Full name',
-          <User size={16} />,
-          {
-            type: 'text',
-            autoComplete: 'name',
-            placeholder: 'Your full name',
-            value: form.name,
-            onChange: set('name'),
-            onBlur: touch('name'),
-            disabled: accountCreated,
-          },
-          shown('name'),
-        )}
+       {field(
+  'ca-firstname',
+  'First name',
+  <User size={16} />,
+  {
+    type: 'text',
+    autoComplete: 'given-name',
+    placeholder: 'Your first name',
+    value: form.firstname,
+    onChange: set('firstname'),
+    onBlur: touch('firstname'),
+    disabled: accountCreated,
+  },
+  shown('firstname'),
+)}
+
+{field(
+  'ca-lastname',
+  'Last name',
+  <User size={16} />,
+  {
+    type: 'text',
+    autoComplete: 'family-name',
+    placeholder: 'Your last name',
+    value: form.lastname,
+    onChange: set('lastname'),
+    onBlur: touch('lastname'),
+    disabled: accountCreated,
+  },
+  shown('lastname'),
+)}
+        
         {field(
           'ca-phone',
           'Phone number',
