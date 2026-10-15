@@ -87,7 +87,13 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
   const navigate = useNavigate();
   const { login } = useAuth();
   const isInterpreter = role === 'interpreter';
-  const [form, setForm] = useState({ firstname: '', lastname: '', phone: '', email: '', password: '' });
+  const [form, setForm] = useState({
+    firstname: '',
+    lastname: '',
+    phone: '',
+    email: '',
+    password: '',
+  });
   const [agreed, setAgreed] = useState(false);
   const [specialisation, setSpecialisation] = useState<Specialisation>('GENERAL');
   const [showPassword, setShowPassword] = useState(false);
@@ -157,30 +163,30 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
     // State updates are not visible inside this call, so track "created" locally for the catch.
     let created = accountCreated;
     try {
-     if (!created) {
-  const registrationData = {
-    name: `${form.firstname.trim()} ${form.lastname.trim()}`,
-    phone: form.phone,
-    email: form.email,
-    password: form.password,
-  };
+      if (!created) {
+        const registrationData = {
+          name: `${form.firstname.trim()} ${form.lastname.trim()}`,
+          phone: form.phone,
+          email: form.email,
+          password: form.password,
+        };
 
-  const session = isInterpreter
-    ? await registerInterpreter({
-        ...registrationData,
-        specialisation,
-      })
-    : await registerDeaf(registrationData);
+        const session = isInterpreter
+          ? await registerInterpreter({
+              ...registrationData,
+              specialisation,
+            })
+          : await registerDeaf(registrationData);
 
-  login(session);
-  created = true;
-  setAccountCreated(true);
+        login(session);
+        created = true;
+        setAccountCreated(true);
 
-  if (!isInterpreter) {
-    navigate('/register/welcome', { replace: true });
-    return;
-  }
-}
+        if (!isInterpreter) {
+          navigate('/register/welcome', { replace: true });
+          return;
+        }
+      }
       await uploadStaged();
       navigate('/register/pending', { replace: true });
     } catch (err) {
@@ -243,38 +249,38 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
       <p className="ca-subtitle">Watch the video for help in sign language.</p>
 
       <form onSubmit={onSubmit} noValidate>
-       {field(
-  'ca-firstname',
-  'First name',
-  <User size={16} />,
-  {
-    type: 'text',
-    autoComplete: 'given-name',
-    placeholder: 'Your first name',
-    value: form.firstname,
-    onChange: set('firstname'),
-    onBlur: touch('firstname'),
-    disabled: accountCreated,
-  },
-  shown('firstname'),
-)}
+        {field(
+          'ca-firstname',
+          'First name',
+          <User size={16} />,
+          {
+            type: 'text',
+            autoComplete: 'given-name',
+            placeholder: 'Your first name',
+            value: form.firstname,
+            onChange: set('firstname'),
+            onBlur: touch('firstname'),
+            disabled: accountCreated,
+          },
+          shown('firstname'),
+        )}
 
-{field(
-  'ca-lastname',
-  'Last name',
-  <User size={16} />,
-  {
-    type: 'text',
-    autoComplete: 'family-name',
-    placeholder: 'Your last name',
-    value: form.lastname,
-    onChange: set('lastname'),
-    onBlur: touch('lastname'),
-    disabled: accountCreated,
-  },
-  shown('lastname'),
-)}
-        
+        {field(
+          'ca-lastname',
+          'Last name',
+          <User size={16} />,
+          {
+            type: 'text',
+            autoComplete: 'family-name',
+            placeholder: 'Your last name',
+            value: form.lastname,
+            onChange: set('lastname'),
+            onBlur: touch('lastname'),
+            disabled: accountCreated,
+          },
+          shown('lastname'),
+        )}
+
         {field(
           'ca-phone',
           'Phone number',

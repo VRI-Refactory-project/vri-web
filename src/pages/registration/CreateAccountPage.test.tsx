@@ -80,7 +80,11 @@ describe('CreateAccountPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /create account/i }));
     await waitFor(() => expect(screen.getByText('welcome step')).toBeInTheDocument());
     expect(spy).toHaveBeenCalledWith(
-      expect.objectContaining({ name: 'Catherine Nawagirwa', phone: '+256772123456', password: 'secret-pass-1' }),
+      expect.objectContaining({
+        name: 'Catherine Nawagirwa',
+        phone: '+256772123456',
+        password: 'secret-pass-1',
+      }),
     );
   });
 
@@ -99,8 +103,6 @@ describe('CreateAccountPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /create account/i }));
     expect(await screen.findByRole('alert')).toHaveTextContent('already exists');
   });
-
-
 
   it('never lets letters into the phone field', async () => {
     renderPage();
@@ -161,8 +163,8 @@ describe('CreateAccountPage', () => {
       const spy = vi.spyOn(registration, 'registerInterpreter');
       renderPage('interpreter');
       await fill({
-         'First name': 'Catherine',
-         'Last name': 'Nawagirwa',
+        'First name': 'Catherine',
+        'Last name': 'Nawagirwa',
         'Phone number': '+256772123456',
         Password: 'secret-pass-1',
       });
