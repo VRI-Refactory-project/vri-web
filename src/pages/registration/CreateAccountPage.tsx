@@ -37,8 +37,8 @@ const SPECIALISATIONS: { value: Specialisation; label: string }[] = [
   { value: 'LEGAL', label: 'Legal' },
 ];
 
-type FieldName = 'name' | 'phone' | 'email' | 'password' | 'terms';
-const FIELD_ORDER: FieldName[] = ['name', 'phone', 'email', 'password', 'terms'];
+type FieldName = 'firstname' | 'lastname' | 'phone' | 'email' | 'password' | 'terms';
+const FIELD_ORDER: FieldName[] = ['firstname', 'lastname', 'phone', 'email', 'password', 'terms'];
 
 function field(
   id: string,
@@ -87,7 +87,13 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
   const navigate = useNavigate();
   const { login } = useAuth();
   const isInterpreter = role === 'interpreter';
-  const [form, setForm] = useState({ name: '', phone: '', email: '', password: '' });
+  const [form, setForm] = useState({
+    firstname: '',
+    lastname: '',
+    phone: '',
+    email: '',
+    password: '',
+  });
   const [agreed, setAgreed] = useState(false);
   const [specialisation, setSpecialisation] = useState<Specialisation>('GENERAL');
   const [showPassword, setShowPassword] = useState(false);
@@ -114,7 +120,8 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
 
   // Worked out from the form on every render, so a submit never reads out-of-date results.
   const errors = collectErrors<FieldName>({
-    name: validateName(form.name),
+    firstname: validateName(form.firstname, 'your first name'),
+    lastname: validateName(form.lastname, 'your last name'),
     phone: validatePhone(form.phone),
     email: validateEmail(form.email, { required: isInterpreter }),
     password: validatePassword(form.password),
@@ -157,12 +164,24 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
     let created = accountCreated;
     try {
       if (!created) {
+        const registrationData = {
+          name: `${form.firstname.trim()} ${form.lastname.trim()}`,
+          phone: form.phone,
+          email: form.email,
+          password: form.password,
+        };
+
         const session = isInterpreter
-          ? await registerInterpreter({ ...form, specialisation })
-          : await registerDeaf(form);
+          ? await registerInterpreter({
+              ...registrationData,
+              specialisation,
+            })
+          : await registerDeaf(registrationData);
+
         login(session);
         created = true;
         setAccountCreated(true);
+
         if (!isInterpreter) {
           navigate('/register/welcome', { replace: true });
           return;
@@ -231,20 +250,37 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
 
       <form onSubmit={onSubmit} noValidate>
         {field(
-          'ca-name',
-          'Full name',
+          'ca-firstname',
+          'First name',
           <User size={16} />,
           {
             type: 'text',
-            autoComplete: 'name',
-            placeholder: 'Your full name',
-            value: form.name,
-            onChange: set('name'),
-            onBlur: touch('name'),
+            autoComplete: 'given-name',
+            placeholder: 'Your first name',
+            value: form.firstname,
+            onChange: set('firstname'),
+            onBlur: touch('firstname'),
             disabled: accountCreated,
           },
-          shown('name'),
+          shown('firstname'),
         )}
+
+        {field(
+          'ca-lastname',
+          'Last name',
+          <User size={16} />,
+          {
+            type: 'text',
+            autoComplete: 'family-name',
+            placeholder: 'Your last name',
+            value: form.lastname,
+            onChange: set('lastname'),
+            onBlur: touch('lastname'),
+            disabled: accountCreated,
+          },
+          shown('lastname'),
+        )}
+
         {field(
           'ca-phone',
           'Phone number',
