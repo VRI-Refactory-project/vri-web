@@ -1,1 +1,55 @@
 /* The form message styles (.form-error, .field-error, .form-input--error) live in components/AuthShell.css. */
+/* Two-column row for the institution form */
+.inst-form .inst-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 16px;
+}
+
+/* Slightly tighter vertical rhythm on this form only */
+.inst-form .form-group {
+  margin-bottom: 14px;
+}
+
+.inst-form .form-input {
+  padding: 10px 14px;
+}
+
+/* Password field with eye icon */
+.inst-password-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inst-password-wrap .form-input {
+  padding-right: 42px;
+  width: 100%;
+}
+
+.inst-eye {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 4px;
+  color: #6b6890;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inst-eye:hover {
+  color: #4b34a0;
+}
+
+/* On small screens, stack the pairs again */
+@media (max-width: 520px) {
+  .inst-form .inst-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}

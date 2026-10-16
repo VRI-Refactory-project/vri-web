@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Eye, EyeOff } from 'lucide-react';
 import { AuthLayout } from '../../components/Authlayout';
 import { FLOWS } from '../../features/registration/flows';
 import { useAuth } from '../../hooks/useAuth';
@@ -51,6 +51,7 @@ export const SignUpInstitution = () => {
   });
   const [error, setError] = useState<string>();
   const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   // An error shows once the person has left the field, or tried to submit.
   const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
   const [submitted, setSubmitted] = useState(false);
@@ -123,7 +124,7 @@ export const SignUpInstitution = () => {
       steps={FLOWS.institution}
       current={2}
     >
-      <form onSubmit={handleSubmit} noValidate>
+      <form onSubmit={handleSubmit} noValidate className="inst-form">
         <div className="form-group">
           <label htmlFor="inst-organisationName">Institution name</label>
           <input
@@ -167,57 +168,72 @@ export const SignUpInstitution = () => {
           </div>
         )}
 
-        <div className="form-group">
-          <label htmlFor="inst-name">Your full name</label>
-          <input
-            {...props('name')}
-            type="text"
-            autoComplete="name"
-            value={form.name}
-            onChange={set('name')}
-          />
-          {message('name')}
+        <div className="inst-row">
+          <div className="form-group">
+            <label htmlFor="inst-name">Your full name</label>
+            <input
+              {...props('name')}
+              type="text"
+              autoComplete="name"
+              value={form.name}
+              onChange={set('name')}
+            />
+            {message('name')}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="inst-phone">Phone number</label>
+            <input
+              {...props('phone')}
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              placeholder="+256 772 123 456"
+              maxLength={20}
+              value={form.phone}
+              onChange={set('phone')}
+            />
+            {message('phone')}
+          </div>
         </div>
 
-        <div className="form-group">
-          <label htmlFor="inst-phone">Phone number</label>
-          <input
-            {...props('phone')}
-            type="tel"
-            inputMode="tel"
-            autoComplete="tel"
-            placeholder="+256 772 123 456"
-            maxLength={20}
-            value={form.phone}
-            onChange={set('phone')}
-          />
-          {message('phone')}
-        </div>
+        <div className="inst-row">
+          <div className="form-group">
+            <label htmlFor="inst-email">Work email</label>
+            <input
+              {...props('email')}
+              type="email"
+              autoComplete="email"
+              placeholder="name@example.com"
+              value={form.email}
+              onChange={set('email')}
+            />
+            {message('email')}
+          </div>
 
-        <div className="form-group">
-          <label htmlFor="inst-email">Work email</label>
-          <input
-            {...props('email')}
-            type="email"
-            autoComplete="email"
-            placeholder="name@example.com"
-            value={form.email}
-            onChange={set('email')}
-          />
-          {message('email')}
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="inst-password">Password</label>
-          <input
-            {...props('password')}
-            type="password"
-            autoComplete="new-password"
-            placeholder="At least 8 characters"
-            value={form.password}
-            onChange={set('password')}
-          />
-          {message('password')}
+          <div className="form-group">
+            <label htmlFor="inst-password">Password</label>
+            <div className="inst-password-wrap">
+              <input
+                {...props('password')}
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="new-password"
+                placeholder="At least 8 characters"
+                value={form.password}
+                onChange={set('password')}
+              />
+              <button
+                type="button"
+                className="inst-eye"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+            {message('password')}
+          </div>
         </div>
 
         {error && (
