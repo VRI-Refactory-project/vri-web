@@ -35,14 +35,14 @@ export function AuthShell({
   onBack,
   size = 'form',
   bare = false,
-    logo: logoOverride,
+  logo: logoOverride,
 }: AuthShellProps) {
   return (
     <div className="as-page" style={{ backgroundImage: `url(${backgroundImage})` }}>
       <header className="as-header">
         {/* <Link to="/" className="as-logo"> */}
         <Link to="/" className={`as-logo ${logoOverride ? 'as-logo--custom' : ''}`}>
-         <img src={logoOverride ?? logo} alt="SignConnect" />
+          <img src={logoOverride ?? logo} alt="SignConnect" />
         </Link>
 
         <div className="as-back-cell">

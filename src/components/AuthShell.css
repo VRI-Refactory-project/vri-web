@@ -45,7 +45,7 @@
   display: flex;
   align-items: center;
   height: 100px;
-   margin-left: -45px;
+  margin-left: -45px;
 }
 
 /* The transparent logo sits straight on the photo, no box behind it. */
@@ -226,9 +226,9 @@
   width: 100%;
   max-width: 1200px; /* Same as header */
   margin: 0 auto;
-  padding:  0 1.5rem 3rem; /* Same as header horizontal padding */
+  padding: 0 1.5rem 3rem; /* Same as header horizontal padding */
   display: grid;
-  grid-template-columns: 220px minmax(0, var(--card-width)) ;
+  grid-template-columns: 220px minmax(0, var(--card-width));
   column-gap: 2rem;
   align-items: start;
   align-content: start;
@@ -346,7 +346,7 @@
 .as-logo--custom img {
   height: 50px;
   width: auto;
-   margin-left: 65px;
+  margin-left: 65px;
 }
 
 /* Match the reduced height on short / narrow screens, just like the
