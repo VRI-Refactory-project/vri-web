@@ -14,6 +14,7 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
+import { describeError } from '../../services/api';
 import { interpreterApi } from '../../services/interpreterApi';
 import './AvailabilityPage.css';
 
@@ -137,16 +138,13 @@ export function AvailabilityPage() {
 
   const loadAvailability = useCallback(async () => {
     try {
-      const result = (await interpreterApi.getAvailability()) as AvailabilityPayload;
+      const result: AvailabilityPayload = await interpreterApi.getAvailability();
 
       setSchedule(mapSchedule(result));
       setExceptions(Array.isArray(result.exceptions) ? result.exceptions : []);
       setIsAvailable(result.available ?? true);
-    } catch {
-      // Preserve a usable page while the backend endpoint is being connected.
-      setError(
-        'Could not load saved availability. Showing a local preview until the API is available.',
-      );
+    } catch (err) {
+      setError(`Could not load your saved availability. ${describeError(err)}`);
     } finally {
       setLoading(false);
     }
@@ -189,9 +187,9 @@ export function AvailabilityPage() {
           ? 'You are now available for interpreting requests.'
           : 'You are now unavailable for interpreting requests.',
       );
-    } catch {
+    } catch (err) {
       setIsAvailable(previousValue);
-      setError('Live status could not be saved. Please check your connection.');
+      setError(describeError(err));
     }
   };
 
@@ -219,10 +217,8 @@ export function AvailabilityPage() {
       });
 
       setNotice('Your weekly availability has been saved.');
-    } catch {
-      setError(
-        'The API did not save your schedule. Confirm the endpoint and request format with your backend team.',
-      );
+    } catch (err) {
+      setError(describeError(err));
     } finally {
       setSaving(false);
     }

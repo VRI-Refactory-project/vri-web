@@ -12,7 +12,7 @@
   font-size: 1.75rem;
   font-weight: 700;
   text-align: center;
-  margin: 0 0 0.4rem;
+  margin: 0 0 0.35rem;
   letter-spacing: -0.02em;
 }
 
@@ -20,48 +20,19 @@
   text-align: center;
   color: var(--ca-text-muted);
   font-size: 0.9rem;
-  margin: 0 0 1.75rem;
+  margin: 0 0 1.25rem;
 }
 
-/* --- Tabs --- */
-.ca-tabs {
+/* --- Two-column rows (First|Last, Phone|Email) --- */
+.ca-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
-  background: #f4f2fa;
-  border-radius: 12px;
-  padding: 0.35rem;
-  margin-bottom: 1.5rem;
-}
-
-.ca-tab {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  padding: 0.7rem 0.5rem;
-  border-radius: 8px;
-  border: none;
-  background: transparent;
-  font-family: inherit;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--ca-text-muted);
-  cursor: pointer;
-  transition:
-    background 0.15s ease,
-    color 0.15s ease;
-}
-
-.ca-tab.active {
-  background: #fff;
-  color: var(--ca-text);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  gap: 0 1rem;
 }
 
 /* --- Form fields --- */
 .ca-field {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 }
 
 .ca-label {
@@ -69,7 +40,7 @@
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--ca-text);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
 }
 
 .ca-input-wrap {
@@ -80,19 +51,19 @@
 
 .ca-input-icon {
   position: absolute;
-  left: 1rem;
+  left: 0.9rem;
   color: var(--ca-text-muted);
   pointer-events: none;
 }
 
 .ca-input {
   width: 100%;
-  padding: 0.85rem 1rem 0.85rem 2.75rem;
+  padding: 0.7rem 1rem 0.7rem 2.6rem;
   border: 1px solid var(--ca-input-border);
   background: var(--ca-bg-input);
   border-radius: 10px;
   font-family: inherit;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: var(--ca-text);
   outline: none;
   transition:
@@ -132,7 +103,7 @@
   gap: 0.6rem;
   font-size: 0.85rem;
   color: var(--ca-text-muted);
-  margin: 1.25rem 0 1.5rem;
+  margin: 0.5rem 0 1rem;
 }
 
 .ca-terms input[type='checkbox'] {
@@ -162,10 +133,10 @@
   background: var(--ca-purple);
   color: #fff;
   border: none;
-  padding: 1rem;
+  padding: 0.85rem;
   border-radius: 12px;
   font-family: inherit;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s ease;
@@ -175,10 +146,15 @@
   background: var(--ca-purple-dark);
 }
 
+.ca-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 /* --- Footer --- */
 .ca-footer {
   text-align: center;
-  margin-top: 1.5rem;
+  margin-top: 1.1rem;
   font-size: 0.85rem;
   color: var(--ca-text-muted);
 }
@@ -199,37 +175,20 @@
   .ca-title {
     font-size: 1.4rem;
   }
+  .ca-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
 }
 
-.ca-hint {
-  margin: -0.5rem 0 1.25rem;
-  font-size: 0.8rem;
-  color: var(--ca-text-muted);
-}
-
-/* Error text (.field-error, .form-error) is shared: see components/AuthShell.css */
+/* --- Error styling --- */
 .ca-input--error,
 .ca-input--error:focus {
   border-color: #b3261e;
 }
 
-.ca-terms + .field-error {
-  margin: 0.4rem 0 1rem;
-}
-
 select.ca-input {
   appearance: none;
-}
-
-.ca-submit:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-/* Ensure the AuthShell card is a positioning context */
-/* If your AuthShell uses a different class name, replace .auth-shell-card with that class */
-.auth-shell-card {
-  position: relative;
 }
 
 /* ── Floating Video Widget ───────────────────────────── */
@@ -280,7 +239,7 @@ select.ca-input {
 
 .ca-video-caption {
   position: absolute;
-  bottom: 24px; /* sits above the controls */
+  bottom: 24px;
   left: 0;
   width: 100%;
   background: rgba(0, 50, 60, 0.85);

@@ -879,3 +879,114 @@
     animation-duration: 0.01ms !important;
   }
 }
+
+/* =========================================================
+   TYPOGRAPHY SCALE-UP OVERRIDE
+   Bumps every text size in the main content area.
+   Remove or tune this block to revert.
+   ========================================================= */
+
+/* Base size for the whole dashboard */
+.id-page {
+  font-size: 16px;
+}
+
+/* ---- Page heading ---- */
+.id-heading h1 {
+  font-size: clamp(30px, 3vw, 38px) !important;
+}
+.id-heading p {
+  font-size: 15px !important;
+}
+
+/* ---- KPI cards ---- */
+.id-kpi-label {
+  font-size: 12px !important;
+}
+.id-kpi strong {
+  font-size: 30px !important;
+}
+.id-kpi-note {
+  font-size: 13px !important;
+}
+
+/* ---- Section headings ---- */
+.id-section-heading h2,
+.id-activity-heading h2,
+.id-attention h2 {
+  font-size: 20px !important;
+}
+.id-section-heading p,
+.id-activity-heading p {
+  font-size: 14px !important;
+}
+
+/* ---- Alerts feed ---- */
+.id-alert-copy strong {
+  font-size: 15px !important;
+}
+.id-alert-copy small {
+  font-size: 13.5px !important;
+}
+.id-alert-time {
+  font-size: 12.5px !important;
+}
+
+/* ---- Chart axis labels + weekly toggle ---- */
+.id-chart-day > span {
+  font-size: 12.5px !important;
+}
+.id-weekly-toggle {
+  font-size: 13.5px !important;
+}
+
+/* ---- Search box ---- */
+.id-search input {
+  font-size: 14px !important;
+  padding: 10px 12px;
+}
+
+/* ---- Table ---- */
+.id-table {
+  font-size: 14px !important;
+}
+.id-table th {
+  font-size: 12px !important;
+  padding: 12px 10px;
+}
+.id-table td {
+  font-size: 14px !important;
+  padding: 12px 10px;
+}
+.id-status {
+  font-size: 12.5px !important;
+}
+.id-view-link {
+  font-size: 14px !important;
+}
+.id-table-footer {
+  font-size: 12.5px !important;
+}
+
+/* ---- Department cards ---- */
+.id-department strong {
+  font-size: 15px !important;
+}
+.id-department > span {
+  font-size: 13.5px !important;
+}
+
+/* ---- Buttons ---- */
+.id-button {
+  font-size: 14.5px !important;
+}
+
+/* ---- Needs attention ---- */
+.id-attention-item {
+  font-size: 14px !important;
+}
+
+/* ---- Footer ---- */
+.id-dashboard-footer {
+  font-size: 12px !important;
+}

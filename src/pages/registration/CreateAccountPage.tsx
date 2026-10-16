@@ -1,24 +1,18 @@
 import { useState, useRef, type FormEvent, type InputHTMLAttributes, type ReactNode } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { User, Mail, Phone, Lock, Eye, EyeOff, Award, ChevronRight } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { User, Mail, Lock, Eye, EyeOff, Award, ChevronRight } from 'lucide-react';
 import { AuthShell } from '../../components/AuthShell';
+import { PhoneField } from '../../components/PhoneField';
 import { FLOWS } from '../../features/registration/flows';
 import { useAuth } from '../../hooks/useAuth';
 import {
-  clearStagedCertificates,
-  stagedCertificates,
-  unstageCertificate,
-} from '../../features/registration/stagedCertificates';
-import {
   collectErrors,
-  sanitizePhoneInput,
   validateEmail,
   validateName,
   validatePassword,
-  validatePhone,
+  validatePhoneNumber,
 } from '../../lib/validation';
 import { describeError } from '../../services/api';
-import { uploadCertificate } from '../../services/certifications';
 import {
   registerDeaf,
   registerInterpreter,
@@ -26,19 +20,14 @@ import {
 } from '../../services/registration';
 import './CreateAccountPage.css';
 
-// V2-001 / V2-002 (deaf) and V2-003 (interpreter): the shared sign-up page.
-// Deaf users: name, phone, optional email, password. Interpreters also give a required email and
-// a specialisation, and arrive here after choosing their certificates, which are uploaded as
-// soon as the account exists.
-
 const SPECIALISATIONS: { value: Specialisation; label: string }[] = [
   { value: 'GENERAL', label: 'General' },
   { value: 'MEDICAL', label: 'Medical' },
   { value: 'LEGAL', label: 'Legal' },
 ];
 
-type FieldName = 'name' | 'phone' | 'email' | 'password' | 'terms';
-const FIELD_ORDER: FieldName[] = ['name', 'phone', 'email', 'password', 'terms'];
+type FieldName = 'firstname' | 'lastname' | 'phone' | 'email' | 'password' | 'terms';
+const FIELD_ORDER: FieldName[] = ['firstname', 'lastname', 'phone', 'email', 'password', 'terms'];
 
 function field(
   id: string,
@@ -87,19 +76,21 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
   const navigate = useNavigate();
   const { login } = useAuth();
   const isInterpreter = role === 'interpreter';
-  const [form, setForm] = useState({ name: '', phone: '', email: '', password: '' });
+  const [form, setForm] = useState({
+    firstname: '',
+    lastname: '',
+    phone: '',
+    email: '',
+    password: '',
+  });
   const [agreed, setAgreed] = useState(false);
   const [specialisation, setSpecialisation] = useState<Specialisation>('GENERAL');
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>();
-  // An error shows once the person has left the field, or tried to submit.
   const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
   const [submitted, setSubmitted] = useState(false);
-  // Once the account exists, a retry must only upload what is left, never register again.
-  const [accountCreated, setAccountCreated] = useState(false);
 
-  // Floating video tutorial state
   const [videoDismissed, setVideoDismissed] = useState(false);
   const [videoProgress, setVideoProgress] = useState(0);
   const [videoDuration, setVideoDuration] = useState(0);
@@ -107,76 +98,46 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const set = (name: keyof typeof form) => (e: { target: { value: string } }) =>
-    setForm((f) => ({
-      ...f,
-      [name]: name === 'phone' ? sanitizePhoneInput(e.target.value) : e.target.value,
-    }));
+    setForm((f) => ({ ...f, [name]: e.target.value }));
 
-  // Worked out from the form on every render, so a submit never reads out-of-date results.
   const errors = collectErrors<FieldName>({
-    name: validateName(form.name),
-    phone: validatePhone(form.phone),
-    email: validateEmail(form.email, { required: isInterpreter }),
+    firstname: validateName(form.firstname, 'your first name'),
+    lastname: validateName(form.lastname, 'your last name'),
+    phone: validatePhoneNumber(form.phone),
+    email: validateEmail(form.email, { required: true }),
     password: validatePassword(form.password),
     terms: agreed ? undefined : 'Accept the Terms and Privacy Policy to continue.',
   });
   const shown = (name: FieldName) => (touched[name] || submitted ? errors[name] : undefined);
   const touch = (name: FieldName) => () => setTouched((t) => ({ ...t, [name]: true }));
 
-  // An interpreter who has not chosen certificates (or reloaded the page) starts from that step.
-  if (isInterpreter && !accountCreated && stagedCertificates().length === 0) {
-    return <Navigate to="/register/interpreter" replace />;
-  }
-
-  const uploadStaged = async () => {
-    for (const entry of [...stagedCertificates()]) {
-      await uploadCertificate({
-        file: entry.file as File,
-        type: entry.type,
-        organisation: entry.organisation.trim(),
-      });
-      unstageCertificate(entry.id);
-    }
-    clearStagedCertificates();
-  };
-
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(undefined);
-    if (!accountCreated) {
-      setSubmitted(true);
-      const firstInvalid = FIELD_ORDER.find((name) => errors[name]);
-      if (firstInvalid) {
-        document.getElementById(`ca-${firstInvalid}`)?.focus();
-        return;
-      }
+    setSubmitted(true);
+    const firstInvalid = FIELD_ORDER.find((name) => errors[name]);
+    if (firstInvalid) {
+      document.getElementById(`ca-${firstInvalid}`)?.focus();
+      return;
     }
 
     setSubmitting(true);
-    // State updates are not visible inside this call, so track "created" locally for the catch.
-    let created = accountCreated;
     try {
-      if (!created) {
-        const session = isInterpreter
-          ? await registerInterpreter({ ...form, specialisation })
-          : await registerDeaf(form);
-        login(session);
-        created = true;
-        setAccountCreated(true);
-        if (!isInterpreter) {
-          navigate('/register/welcome', { replace: true });
-          return;
-        }
-      }
-      await uploadStaged();
-      navigate('/register/pending', { replace: true });
+      const registrationData = {
+        name: `${form.firstname.trim()} ${form.lastname.trim()}`,
+        phone: form.phone,
+        email: form.email,
+        password: form.password,
+      };
+      const session = isInterpreter
+        ? await registerInterpreter({ ...registrationData, specialisation })
+        : await registerDeaf(registrationData);
+      login(session);
+      navigate(isInterpreter ? '/register/interpreter/certifications' : '/register/welcome', {
+        replace: true,
+      });
     } catch (err) {
-      const reason = describeError(err);
-      setError(
-        created
-          ? `Your account was created, but a certificate did not upload: ${reason} Try again.`
-          : reason,
-      );
+      setError(describeError(err));
     } finally {
       setSubmitting(false);
     }
@@ -184,11 +145,10 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
 
   return (
     <AuthShell
-      backTo={isInterpreter ? '/register/interpreter' : '/get-started'}
+      backTo="/get-started"
       steps={isInterpreter ? FLOWS.interpreter : FLOWS.deaf}
-      current={isInterpreter ? 3 : 2}
+      current={2}
     >
-      {/* ── Floating Video Tutorial ───────────────────────────── */}
       {!videoDismissed && (
         <div className="ca-video-widget">
           <button
@@ -229,59 +189,76 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
       <h1 className="ca-title">Create your account</h1>
       <p className="ca-subtitle">Watch the video for help in sign language.</p>
 
-      <form onSubmit={onSubmit} noValidate>
-        {field(
-          'ca-name',
-          'Full name',
-          <User size={16} />,
-          {
-            type: 'text',
-            autoComplete: 'name',
-            placeholder: 'Your full name',
-            value: form.name,
-            onChange: set('name'),
-            onBlur: touch('name'),
-            disabled: accountCreated,
-          },
-          shown('name'),
-        )}
-        {field(
-          'ca-phone',
-          'Phone number',
-          <Phone size={16} />,
-          {
-            type: 'tel',
-            inputMode: 'tel',
-            autoComplete: 'tel',
-            placeholder: '+256 772 123 456',
-            maxLength: 20,
-            value: form.phone,
-            onChange: set('phone'),
-            onBlur: touch('phone'),
-            disabled: accountCreated,
-          },
-          shown('phone'),
-        )}
-        {field(
-          'ca-email',
-          isInterpreter ? 'Email address' : 'Email address (optional)',
-          <Mail size={16} />,
-          {
-            type: 'email',
-            autoComplete: 'email',
-            placeholder: 'name@example.com',
-            value: form.email,
-            onChange: set('email'),
-            onBlur: touch('email'),
-            disabled: accountCreated,
-          },
-          shown('email'),
-        )}
-        {!isInterpreter && (
-          <p className="ca-hint">
-            An email lets you reset your password yourself. Without one you will need our help.
-          </p>
-        )}
+      <form onSubmit={onSubmit} noValidate className="ca-form">
+        {/* Row: First name | Last name */}
+        <div className="ca-row">
+          {field(
+            'ca-firstname',
+            'First name',
+            <User size={16} />,
+            {
+              type: 'text',
+              autoComplete: 'given-name',
+              placeholder: 'Your first name',
+              value: form.firstname,
+              onChange: set('firstname'),
+              onBlur: touch('firstname'),
+            },
+            shown('firstname'),
+          )}
+
+          {field(
+            'ca-lastname',
+            'Last name',
+            <User size={16} />,
+            {
+              type: 'text',
+              autoComplete: 'family-name',
+              placeholder: 'Your last name',
+              value: form.lastname,
+              onChange: set('lastname'),
+              onBlur: touch('lastname'),
+            },
+            shown('lastname'),
+          )}
+        </div>
+
+        {/* Row: Phone | Email */}
+        <div className="ca-row">
+          <div className="ca-field">
+            <label className="ca-label" htmlFor="ca-phone">
+              Phone number
+            </label>
+            <PhoneField
+              id="ca-phone"
+              value={form.phone}
+              onChange={(phone) => setForm((f) => ({ ...f, phone }))}
+              onBlur={touch('phone')}
+              invalid={Boolean(shown('phone'))}
+              errorId={shown('phone') ? 'ca-phone-error' : undefined}
+            />
+            {shown('phone') && (
+              <p className="field-error" id="ca-phone-error">
+                {shown('phone')}
+              </p>
+            )}
+          </div>
+
+          {field(
+            'ca-email',
+            'Email address',
+            <Mail size={16} />,
+            {
+              type: 'email',
+              autoComplete: 'email',
+              placeholder: 'name@example.com',
+              value: form.email,
+              onChange: set('email'),
+              onBlur: touch('email'),
+            },
+            shown('email'),
+          )}
+        </div>
 
         {isInterpreter && (
           <div className="ca-field">
@@ -296,7 +273,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
                 id="ca-specialisation"
                 className="ca-input"
                 value={specialisation}
-                disabled={accountCreated}
                 onChange={(e) => setSpecialisation(e.target.value as Specialisation)}
               >
                 {SPECIALISATIONS.map((o) => (
@@ -328,7 +304,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
               value={form.password}
               onChange={set('password')}
               onBlur={touch('password')}
-              disabled={accountCreated}
             />
             <button
               type="button"
@@ -356,7 +331,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
               aria-describedby={shown('terms') ? 'ca-terms-error' : undefined}
               onChange={(e) => setAgreed(e.target.checked)}
               onBlur={touch('terms')}
-              disabled={accountCreated}
             />
             <span>
               I agree to the <a href="/terms">Terms</a> and <a href="/privacy">Privacy Policy</a>
@@ -376,8 +350,7 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
         )}
 
         <button type="submit" className="ca-submit" disabled={submitting}>
-          {submitting ? 'Please wait...' : accountCreated ? 'Try upload again' : 'Create account'}{' '}
-          <ChevronRight size={18} />
+          {submitting ? 'Please wait...' : 'Create account'} <ChevronRight size={18} />
         </button>
       </form>
 

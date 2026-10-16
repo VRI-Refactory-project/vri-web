@@ -33,6 +33,19 @@ export function validatePhone(value: string): string | undefined {
   return undefined;
 }
 
+/**
+ * For the PhoneField, which already hands back a clean +countrycode number (or nothing).
+ * An empty field has only a country code in it, so that counts as nothing typed.
+ */
+export function validatePhoneNumber(value: string): string | undefined {
+  if (!value) return 'Enter your phone number.';
+  const phone = normalizePhone(value);
+  if (!/^\+[1-9]\d{7,14}$/.test(phone)) {
+    return 'That phone number looks too short or too long for the country you chose.';
+  }
+  return undefined;
+}
+
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 export function validateEmail(

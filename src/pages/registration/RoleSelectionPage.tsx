@@ -8,6 +8,7 @@ import type { SelectableRole } from '../../types';
 import deafUserImg from '../../assets/deafuser2.png';
 import interpreterImg from '../../assets/interpreter4.png';
 import institutionImg from '../../assets/institution.png';
+import roleLogo from '../../assets/no_word.png';
 
 import './RoleSelectionPage.css';
 
@@ -59,7 +60,8 @@ export function RoleSelectionPage() {
   };
 
   return (
-    <AuthShell size="wide" bare backTo="/" steps={ROLE_STEP} current={1}>
+    // <AuthShell size="wide" bare backTo="/" steps={ROLE_STEP} current={1}>
+    <AuthShell size="wide" bare backTo="/" steps={ROLE_STEP} current={1} logo={roleLogo}>
       <div className="rs-main">
         <h1 className="rs-title">Who's joining SignConnect?</h1>
         <p className="rs-subtitle">

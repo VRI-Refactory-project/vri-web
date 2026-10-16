@@ -73,7 +73,10 @@ export function LandingPage() {
 
       <section className="landing-hero">
         <div className="landing-hero-left">
-          <h1 className="landing-title">Communication<br></br> Anytime , Anywhere</h1>
+          <h1 className="landing-title">
+            Communication
+            <br /> Anytime, Anywhere
+          </h1>
 
           <p className="landing-subtitle">
             Break down language barriers with instant access to certified sign language interpreters

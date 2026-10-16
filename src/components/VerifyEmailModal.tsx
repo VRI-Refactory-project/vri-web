@@ -11,7 +11,15 @@ const RESEND_WAIT_SECONDS = 60;
  * Pop-up asking the signed-in user to enter the 6-digit code emailed to them. It shows only for
  * an account that has an email address which is not yet verified, and can be put off for now.
  */
-export function VerifyEmailModal() {
+export function VerifyEmailModal({
+  required = false,
+  onSignOut,
+}: {
+  /** True on the full-page step: the pop-up cannot be put off and the resend wait is not applied. */
+  required?: boolean;
+  /** Shown only when `required`, so someone with the wrong account is not stuck on this step. */
+  onSignOut?: () => void;
+}) {
   const { session, updateUser } = useAuth();
   const user = session?.user;
   const [dismissed, setDismissed] = useState(false);
@@ -19,7 +27,7 @@ export function VerifyEmailModal() {
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
   const [busy, setBusy] = useState(false);
-  const [wait, setWait] = useState(RESEND_WAIT_SECONDS);
+  const [wait, setWait] = useState(required ? 0 : RESEND_WAIT_SECONDS);
 
   // The code was just emailed when the account was created, so the first resend waits a minute.
   useEffect(() => {
@@ -61,7 +69,7 @@ export function VerifyEmailModal() {
   };
 
   return (
-    <Modal title="Verify your email" onClose={() => setDismissed(true)}>
+    <Modal title="Verify your email" onClose={required ? undefined : () => setDismissed(true)}>
       <div className="modal__icon">
         <MailCheck size={28} aria-hidden="true" />
       </div>
@@ -93,9 +101,17 @@ export function VerifyEmailModal() {
       <button className="modal__secondary" type="button" onClick={resend} disabled={wait > 0}>
         {wait > 0 ? `Resend code in ${wait}s` : 'Resend code'}
       </button>
-      <button className="modal__secondary" type="button" onClick={() => setDismissed(true)}>
-        Not now
-      </button>
+      {required ? (
+        onSignOut && (
+          <button className="modal__secondary" type="button" onClick={onSignOut}>
+            Use a different account
+          </button>
+        )
+      ) : (
+        <button className="modal__secondary" type="button" onClick={() => setDismissed(true)}>
+          Not now
+        </button>
+      )}
     </Modal>
   );
 }

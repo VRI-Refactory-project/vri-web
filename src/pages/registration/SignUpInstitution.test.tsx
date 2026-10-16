@@ -41,18 +41,9 @@ describe('SignUpInstitution', () => {
     expect(spy).not.toHaveBeenCalled();
   });
 
-  it('never lets letters into the phone field', async () => {
+  it('offers a country picker for the phone number', () => {
     renderPage();
-    const phone = screen.getByLabelText('Phone number') as HTMLInputElement;
-    await userEvent.type(phone, 'jjjj');
-    expect(phone.value).toBe('');
-  });
-
-  it('asks for a country code when the number starts with 0', async () => {
-    renderPage();
-    await userEvent.type(screen.getByLabelText('Phone number'), '0772123456');
-    await userEvent.tab();
-    expect(screen.getByText(/start with your country code/i)).toBeInTheDocument();
+    expect(screen.getByLabelText('Country')).toBeInTheDocument();
   });
 
   it('rejects a work email that is only numbers', async () => {
@@ -79,7 +70,7 @@ describe('SignUpInstitution', () => {
     await userEvent.type(screen.getByLabelText('Institution name'), 'Mulago');
     await userEvent.selectOptions(screen.getByLabelText('Institution type'), 'COURT');
     await userEvent.type(screen.getByLabelText('Your full name'), 'Dr Okello');
-    await userEvent.type(screen.getByLabelText('Phone number'), '+256772123456');
+    await userEvent.type(screen.getByLabelText('Phone number'), '772123456');
     await userEvent.type(screen.getByLabelText('Work email'), 'a@mulago.org');
     await userEvent.type(screen.getByLabelText('Password'), 'secret-pass-1');
     await userEvent.click(screen.getByRole('button', { name: /submit registration/i }));
@@ -96,7 +87,7 @@ describe('SignUpInstitution', () => {
     await userEvent.selectOptions(screen.getByLabelText('Institution type'), 'OTHER');
     await userEvent.type(screen.getByLabelText('Please specify the type'), 'School for the Deaf');
     await userEvent.type(screen.getByLabelText('Your full name'), 'Dr Okello');
-    await userEvent.type(screen.getByLabelText('Phone number'), '+256772123456');
+    await userEvent.type(screen.getByLabelText('Phone number'), '772123456');
     await userEvent.type(screen.getByLabelText('Work email'), 'a@school.org');
     await userEvent.type(screen.getByLabelText('Password'), 'secret-pass-1');
     await userEvent.click(screen.getByRole('button', { name: /submit registration/i }));

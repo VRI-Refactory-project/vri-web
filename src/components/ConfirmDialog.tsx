@@ -10,6 +10,10 @@ interface Props {
   confirmLabel?: string;
   withReason?: boolean;
   reasonPlaceholder?: string;
+  /** Shown under the reason box, for example when the server refused the action. */
+  error?: string;
+  /** Disables the button while the action is being sent. */
+  busy?: boolean;
   onConfirm: (reason?: string) => void;
   onClose: () => void;
 }
@@ -22,6 +26,8 @@ export function ConfirmDialog({
   confirmLabel = 'Done',
   withReason = false,
   reasonPlaceholder = 'Reason for rejection',
+  error = '',
+  busy = false,
   onConfirm,
   onClose,
 }: Props) {
@@ -73,9 +79,16 @@ export function ConfirmDialog({
           />
         )}
 
+        {error && (
+          <p className="cd-error" role="alert">
+            {error}
+          </p>
+        )}
+
         <button
           type="button"
           className={`cd-btn cd-btn--${variant}`}
+          disabled={busy}
           onClick={() => onConfirm(withReason ? reason : undefined)}
         >
           {confirmLabel}
