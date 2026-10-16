@@ -40,7 +40,8 @@ export function AuthShell({
   return (
     <div className="as-page" style={{ backgroundImage: `url(${backgroundImage})` }}>
       <header className="as-header">
-        <Link to="/" className="as-logo">
+        {/* <Link to="/" className="as-logo"> */}
+        <Link to="/" className={`as-logo ${logoOverride ? 'as-logo--custom' : ''}`}>
          <img src={logoOverride ?? logo} alt="SignConnect" />
         </Link>
 

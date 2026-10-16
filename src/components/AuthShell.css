@@ -36,12 +36,16 @@
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 1.25rem 1.5rem;
+  padding: 1.25rem 1.5rem 0.25rem;
+  min-height: 118px;
 }
 
 .as-logo {
   justify-self: start;
-  display: block;
+  display: flex;
+  align-items: center;
+  height: 100px;
+   margin-left: -45px;
 }
 
 /* The transparent logo sits straight on the photo, no box behind it. */
@@ -222,9 +226,9 @@
   width: 100%;
   max-width: 1200px; /* Same as header */
   margin: 0 auto;
-  padding: 0.5rem 1.5rem 3rem; /* Same as header horizontal padding */
+  padding:  0 1.5rem 3rem; /* Same as header horizontal padding */
   display: grid;
-  grid-template-columns: 220px minmax(0, var(--card-width)) 1fr;
+  grid-template-columns: 220px minmax(0, var(--card-width)) ;
   column-gap: 2rem;
   align-items: start;
   align-content: start;
@@ -253,6 +257,7 @@
 }
 
 .as-card {
+  align-self: center;
   background: var(--color-bg-form, #fff);
   border-radius: 20px;
   padding: 2.5rem 2rem;
@@ -332,6 +337,29 @@
   .as-card {
     padding: 1.75rem 1.25rem;
     border-radius: 16px;
+  }
+}
+
+/* Icon-only variant used on pages that pass a `logo` override
+   (e.g. the role selection page). Smaller than the wordmark so the
+   visual weight matches the default logo. */
+.as-logo--custom img {
+  height: 50px;
+  width: auto;
+   margin-left: 65px;
+}
+
+/* Match the reduced height on short / narrow screens, just like the
+   default logo does via the media queries above. */
+@media (max-height: 700px) {
+  .as-logo--custom img {
+    height: 120px;
+  }
+}
+
+@media (max-width: 640px) {
+  .as-logo--custom img {
+    height: 120px;
   }
 }
 
