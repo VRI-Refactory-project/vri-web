@@ -13,4 +13,9 @@ describe('sign-up flows', () => {
       expect(steps[0]).toBe('Choose your role');
     }
   });
+
+  it('has an interpreter create the account before uploading certificates', () => {
+    expect(FLOWS.interpreter[1]).toBe('Create your account');
+    expect(FLOWS.interpreter[2]).toBe('Upload certificates');
+  });
 });

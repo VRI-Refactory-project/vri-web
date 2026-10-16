@@ -2,15 +2,15 @@ import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, Eye, EyeOff } from 'lucide-react';
 import { AuthLayout } from '../../components/Authlayout';
+import { PhoneField } from '../../components/PhoneField';
 import { FLOWS } from '../../features/registration/flows';
 import { useAuth } from '../../hooks/useAuth';
 import {
   collectErrors,
-  sanitizePhoneInput,
   validateEmail,
   validateName,
   validatePassword,
-  validatePhone,
+  validatePhoneNumber,
   validateRequiredText,
 } from '../../lib/validation';
 import { describeError } from '../../services/api';
@@ -57,10 +57,7 @@ export const SignUpInstitution = () => {
   const [submitted, setSubmitted] = useState(false);
 
   const set = (field: keyof typeof form) => (e: { target: { value: string } }) =>
-    setForm((f) => ({
-      ...f,
-      [field]: field === 'phone' ? sanitizePhoneInput(e.target.value) : e.target.value,
-    }));
+    setForm((f) => ({ ...f, [field]: e.target.value }));
 
   const isOther = form.organisationType === 'OTHER';
 
@@ -74,7 +71,7 @@ export const SignUpInstitution = () => {
         )
       : undefined,
     name: validateName(form.name),
-    phone: validatePhone(form.phone),
+    phone: validatePhoneNumber(form.phone),
     email: validateEmail(form.email),
     password: validatePassword(form.password),
   });
@@ -183,15 +180,13 @@ export const SignUpInstitution = () => {
 
           <div className="form-group">
             <label htmlFor="inst-phone">Phone number</label>
-            <input
-              {...props('phone')}
-              type="tel"
-              inputMode="tel"
-              autoComplete="tel"
-              placeholder="+256 772 123 456"
-              maxLength={20}
+            <PhoneField
+              id={inputId('phone')}
               value={form.phone}
-              onChange={set('phone')}
+              onChange={(phone) => setForm((f) => ({ ...f, phone }))}
+              onBlur={touch('phone')}
+              invalid={Boolean(shown('phone'))}
+              errorId={shown('phone') ? `${inputId('phone')}-error` : undefined}
             />
             {message('phone')}
           </div>
