@@ -2,7 +2,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Check, Lock, ShieldCheck, Video } from 'lucide-react';
 import interpreter from '../../assets/interpreter.jpeg';
 import interpreter2 from '../../assets/interpreter2.png';
-import logo from '../../assets/no_bg.png';
+import logoIcon from '../../assets/logo-icon.png';
+import logoWord from '../../assets/logo-wordmark.png';
 import './LandingPage.css';
 
 // Landing page: public marketing entry point, kept to a single screen (no scrolling).
@@ -14,8 +15,9 @@ export function LandingPage() {
   return (
     <div className="landing">
       <header className="landing-header">
-        <Link to="/" className="landing-logo">
-          <img src={logo} alt="SignConnect" className="landing-logo-img" />
+        <Link to="/" className="landing-brand" aria-label="SignConnect home">
+          <img src={logoIcon} alt="" className="landing-brand-icon" />
+          <img src={logoWord} alt="" className="landing-brand-word" />
         </Link>
         <nav className="landing-nav">
           <Link to="/sign-in" className="landing-login">
@@ -34,8 +36,7 @@ export function LandingPage() {
             Secure video interpreting
           </span>
 
-          <h1 className="landing-title">SignConnect</h1>
-          <p className="landing-tagline">Inclusive communication. Anytime. Anywhere.</p>
+          <h1 className="landing-sr">SignConnect</h1>
 
           <p className="landing-subtitle">
             Connect instantly with certified sign-language interpreters, or schedule ahead.
