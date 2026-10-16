@@ -15,9 +15,11 @@ describe('LandingPage', () => {
       </MemoryRouter>,
     );
 
-  it('renders the SignConnect hero heading', () => {
+  it('renders the hero heading', () => {
     renderPage();
-    expect(screen.getByRole('heading', { name: 'SignConnect' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Communication Anytime, Anywhere' }),
+    ).toBeInTheDocument();
   });
 
   it('navigates to /get-started when Get Started is clicked', async () => {
