@@ -20,10 +20,6 @@ import {
 } from '../../services/registration';
 import './CreateAccountPage.css';
 
-// V2-001 / V2-002 (deaf) and V2-003 (interpreter): the shared sign-up page.
-// Deaf users: name, phone, optional email, password. Interpreters also give a required email and
-// a specialisation, and go on to upload their certificates once the account exists.
-
 const SPECIALISATIONS: { value: Specialisation; label: string }[] = [
   { value: 'GENERAL', label: 'General' },
   { value: 'MEDICAL', label: 'Medical' },
@@ -92,11 +88,9 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>();
-  // An error shows once the person has left the field, or tried to submit.
   const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
   const [submitted, setSubmitted] = useState(false);
 
-  // Floating video tutorial state
   const [videoDismissed, setVideoDismissed] = useState(false);
   const [videoProgress, setVideoProgress] = useState(0);
   const [videoDuration, setVideoDuration] = useState(0);
@@ -106,12 +100,11 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
   const set = (name: keyof typeof form) => (e: { target: { value: string } }) =>
     setForm((f) => ({ ...f, [name]: e.target.value }));
 
-  // Worked out from the form on every render, so a submit never reads out-of-date results.
   const errors = collectErrors<FieldName>({
     firstname: validateName(form.firstname, 'your first name'),
     lastname: validateName(form.lastname, 'your last name'),
     phone: validatePhoneNumber(form.phone),
-    email: validateEmail(form.email, { required: isInterpreter }),
+    email: validateEmail(form.email, { required: true }),
     password: validatePassword(form.password),
     terms: agreed ? undefined : 'Accept the Terms and Privacy Policy to continue.',
   });
@@ -140,7 +133,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
         ? await registerInterpreter({ ...registrationData, specialisation })
         : await registerDeaf(registrationData);
       login(session);
-      // Interpreters upload their certificates next; the email check comes after that.
       navigate(isInterpreter ? '/register/interpreter/certifications' : '/register/welcome', {
         replace: true,
       });
@@ -157,7 +149,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
       steps={isInterpreter ? FLOWS.interpreter : FLOWS.deaf}
       current={2}
     >
-      {/* ── Floating Video Tutorial ───────────────────────────── */}
       {!videoDismissed && (
         <div className="ca-video-widget">
           <button
@@ -198,74 +189,76 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
       <h1 className="ca-title">Create your account</h1>
       <p className="ca-subtitle">Watch the video for help in sign language.</p>
 
-      <form onSubmit={onSubmit} noValidate>
-        {field(
-          'ca-firstname',
-          'First name',
-          <User size={16} />,
-          {
-            type: 'text',
-            autoComplete: 'given-name',
-            placeholder: 'Your first name',
-            value: form.firstname,
-            onChange: set('firstname'),
-            onBlur: touch('firstname'),
-          },
-          shown('firstname'),
-        )}
+      <form onSubmit={onSubmit} noValidate className="ca-form">
+        {/* Row: First name | Last name */}
+        <div className="ca-row">
+          {field(
+            'ca-firstname',
+            'First name',
+            <User size={16} />,
+            {
+              type: 'text',
+              autoComplete: 'given-name',
+              placeholder: 'Your first name',
+              value: form.firstname,
+              onChange: set('firstname'),
+              onBlur: touch('firstname'),
+            },
+            shown('firstname'),
+          )}
 
-        {field(
-          'ca-lastname',
-          'Last name',
-          <User size={16} />,
-          {
-            type: 'text',
-            autoComplete: 'family-name',
-            placeholder: 'Your last name',
-            value: form.lastname,
-            onChange: set('lastname'),
-            onBlur: touch('lastname'),
-          },
-          shown('lastname'),
-        )}
-
-        <div className="ca-field">
-          <label className="ca-label" htmlFor="ca-phone">
-            Phone number
-          </label>
-          <PhoneField
-            id="ca-phone"
-            value={form.phone}
-            onChange={(phone) => setForm((f) => ({ ...f, phone }))}
-            onBlur={touch('phone')}
-            invalid={Boolean(shown('phone'))}
-            errorId={shown('phone') ? 'ca-phone-error' : undefined}
-          />
-          {shown('phone') && (
-            <p className="field-error" id="ca-phone-error">
-              {shown('phone')}
-            </p>
+          {field(
+            'ca-lastname',
+            'Last name',
+            <User size={16} />,
+            {
+              type: 'text',
+              autoComplete: 'family-name',
+              placeholder: 'Your last name',
+              value: form.lastname,
+              onChange: set('lastname'),
+              onBlur: touch('lastname'),
+            },
+            shown('lastname'),
           )}
         </div>
-        {field(
-          'ca-email',
-          isInterpreter ? 'Email address' : 'Email address (optional)',
-          <Mail size={16} />,
-          {
-            type: 'email',
-            autoComplete: 'email',
-            placeholder: 'name@example.com',
-            value: form.email,
-            onChange: set('email'),
-            onBlur: touch('email'),
-          },
-          shown('email'),
-        )}
-        {!isInterpreter && (
-          <p className="ca-hint">
-            An email lets you reset your password yourself. Without one you will need our help.
-          </p>
-        )}
+
+        {/* Row: Phone | Email */}
+        <div className="ca-row">
+          <div className="ca-field">
+            <label className="ca-label" htmlFor="ca-phone">
+              Phone number
+            </label>
+            <PhoneField
+              id="ca-phone"
+              value={form.phone}
+              onChange={(phone) => setForm((f) => ({ ...f, phone }))}
+              onBlur={touch('phone')}
+              invalid={Boolean(shown('phone'))}
+              errorId={shown('phone') ? 'ca-phone-error' : undefined}
+            />
+            {shown('phone') && (
+              <p className="field-error" id="ca-phone-error">
+                {shown('phone')}
+              </p>
+            )}
+          </div>
+
+          {field(
+            'ca-email',
+            'Email address',
+            <Mail size={16} />,
+            {
+              type: 'email',
+              autoComplete: 'email',
+              placeholder: 'name@example.com',
+              value: form.email,
+              onChange: set('email'),
+              onBlur: touch('email'),
+            },
+            shown('email'),
+          )}
+        </div>
 
         {isInterpreter && (
           <div className="ca-field">
