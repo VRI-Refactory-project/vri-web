@@ -1,4 +1,5 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { ApprovedInterpreterRoute } from '../components/ApprovedInterpreterRoute';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { Placeholder } from '../components/Placeholder';
 import { LandingPage } from '../pages/landing/LandingPage';
@@ -45,12 +46,18 @@ export const router = createBrowserRouter([
   { path: '/forgot-password', element: <Forgotpassword /> },
   { path: '/reset-password', element: <Resetpassword /> },
   { path: '/recover', element: <Placeholder title="Recover access" story="V2-008" /> },
-  { path: '/register/interpreter', element: <UploadCertificationsPage /> },
+  { path: '/register/interpreter', element: <CreateAccountPage role="interpreter" /> },
   {
-    path: '/register/interpreter/certifications',
+    path: '/register/interpreter/account',
     element: <Navigate to="/register/interpreter" replace />,
   },
-  { path: '/register/interpreter/account', element: <CreateAccountPage role="interpreter" /> },
+  {
+    // Certificates are uploaded right after the account exists and before the email is confirmed.
+    element: <ProtectedRoute allow={['interpreter']} requireVerifiedEmail={false} />,
+    children: [
+      { path: '/register/interpreter/certifications', element: <UploadCertificationsPage /> },
+    ],
+  },
   { path: '/register/pending', element: <PendingReviewPage /> },
   {
     element: <ProtectedRoute allow={['deaf']} />,
@@ -82,16 +89,22 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute allow={['interpreter']} />,
     children: [
       {
-        path: '/dashboard/interpreter',
-        element: <InterpreterLayout />,
+        // Nothing past this point opens until an admin has approved the interpreter.
+        element: <ApprovedInterpreterRoute />,
         children: [
-          { index: true, element: <InterpreterHomePage /> },
-          { path: 'requests', element: <Placeholder title="Requests" story="Sprint 2" /> },
-          { path: 'sessions', element: <Placeholder title="Sessions" story="Sprint 2" /> },
-          { path: 'availability', element: <AvailabilityPage /> },
-          { path: 'wallet', element: <Placeholder title="Wallet" story="Not scheduled" /> },
-          { path: 'profile', element: <InterpreterProfilePage /> },
-          { path: 'settings', element: <Placeholder title="Settings" story="Sprint 2" /> },
+          {
+            path: '/dashboard/interpreter',
+            element: <InterpreterLayout />,
+            children: [
+              { index: true, element: <InterpreterHomePage /> },
+              { path: 'requests', element: <Placeholder title="Requests" story="Sprint 2" /> },
+              { path: 'sessions', element: <Placeholder title="Sessions" story="Sprint 2" /> },
+              { path: 'availability', element: <AvailabilityPage /> },
+              { path: 'wallet', element: <Placeholder title="Wallet" story="Not scheduled" /> },
+              { path: 'profile', element: <InterpreterProfilePage /> },
+              { path: 'settings', element: <Placeholder title="Settings" story="Sprint 2" /> },
+            ],
+          },
         ],
       },
     ],

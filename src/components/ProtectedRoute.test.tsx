@@ -14,7 +14,7 @@ function VerifyStub() {
   return <p>verify email, then {state?.next ?? 'nowhere'}</p>;
 }
 
-function renderAt(session: AuthSession | null) {
+function renderAt(session: AuthSession | null, requireVerifiedEmail = true) {
   sessionStorage.clear();
   if (session) sessionStorage.setItem('vri.session', JSON.stringify(session));
   return render(
@@ -24,7 +24,11 @@ function renderAt(session: AuthSession | null) {
           <Route path="/" element={<p>landing</p>} />
           <Route path="/sign-in" element={<SignInStub />} />
           <Route path="/verify-email" element={<VerifyStub />} />
-          <Route element={<ProtectedRoute allow={['interpreter']} />}>
+          <Route
+            element={
+              <ProtectedRoute allow={['interpreter']} requireVerifiedEmail={requireVerifiedEmail} />
+            }
+          >
             <Route path="/dashboard/interpreter" element={<p>interpreter home</p>} />
           </Route>
         </Routes>
@@ -79,6 +83,11 @@ describe('ProtectedRoute', () => {
 
   it('does not ask when the API does not report verification', () => {
     renderAt(withEmail(undefined));
+    expect(screen.getByText('interpreter home')).toBeInTheDocument();
+  });
+
+  it('lets an unverified email through where verification comes later', () => {
+    renderAt(withEmail(false), false);
     expect(screen.getByText('interpreter home')).toBeInTheDocument();
   });
 });

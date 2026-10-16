@@ -1,0 +1,38 @@
+/* Matches the 10px, #ddd8ec inputs used across the sign-up forms. */
+.phone-field {
+  --PhoneInputCountryFlag-height: 1.1em;
+  --PhoneInputCountrySelectArrow-color: #6b6485;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 0.75rem;
+  border: 1.5px solid #ddd8ec;
+  border-radius: 10px;
+  background: #fafafd;
+}
+.phone-field:focus-within {
+  border-color: #382c77;
+  background: #fff;
+}
+.phone-field--error {
+  border-color: #c0392b;
+}
+.phone-field .PhoneInputInput {
+  flex: 1;
+  min-width: 0;
+  padding: 0.85rem 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+}
+.phone-field .PhoneInputCountry {
+  margin-right: 0;
+}
+.phone-field .PhoneInputCountrySelect:focus + .PhoneInputCountryIcon {
+  outline: 2px solid #382c77;
+  outline-offset: 2px;
+}

@@ -11,6 +11,7 @@ import {
   validatePasswordPresent,
   validatePassword,
   validatePhone,
+  validatePhoneNumber,
   validateRequiredText,
 } from './validation';
 
@@ -167,5 +168,20 @@ describe('sign-in password and recovery code', () => {
     expect(validateCode('')).toBe('Enter the 6-digit code from your email.');
     expect(validateCode('123')).toBe('The code has 6 digits.');
     expect(validateCode('123456')).toBeUndefined();
+  });
+});
+
+describe('validatePhoneNumber', () => {
+  it('asks for a number when the field is empty', () => {
+    expect(validatePhoneNumber('')).toBe('Enter your phone number.');
+  });
+
+  it('accepts a full international number', () => {
+    expect(validatePhoneNumber('+256772123456')).toBeUndefined();
+    expect(validatePhoneNumber('+254712345678')).toBeUndefined();
+  });
+
+  it('rejects a number that is too short', () => {
+    expect(validatePhoneNumber('+25677')).toMatch(/too short or too long/);
   });
 });
