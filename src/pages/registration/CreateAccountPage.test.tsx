@@ -42,13 +42,13 @@ describe('CreateAccountPage', () => {
     sessionStorage.clear();
   });
 
-  it('asks a deaf user for name, phone, optional email and password only', () => {
+  it('asks a deaf user for name, phone, email and password only', () => {
     renderPage();
     expect(screen.getByRole('heading', { name: /create your account/i })).toBeInTheDocument();
     expect(screen.getByLabelText('First name')).toBeInTheDocument();
     expect(screen.getByLabelText('Last name')).toBeInTheDocument();
     expect(screen.getByLabelText('Phone number')).toBeInTheDocument();
-    expect(screen.getByLabelText('Email address (optional)')).toBeInTheDocument();
+    expect(screen.getByLabelText('Email address')).toBeInTheDocument();
     expect(screen.queryByLabelText('Specialisation')).not.toBeInTheDocument();
   });
 
@@ -67,6 +67,7 @@ describe('CreateAccountPage', () => {
       'First name': 'Catherine',
       'Last name': 'Nawagirwa',
       'Phone number': '772123456',
+      'Email address': 'catherine@example.com',
       Password: 'secret-pass-1',
     });
     await userEvent.click(screen.getByRole('checkbox'));
@@ -76,6 +77,7 @@ describe('CreateAccountPage', () => {
       expect.objectContaining({
         name: 'Catherine Nawagirwa',
         phone: '+256772123456',
+        email: 'catherine@example.com',
         password: 'secret-pass-1',
       }),
     );
@@ -90,6 +92,7 @@ describe('CreateAccountPage', () => {
       'First name': 'Catherine',
       'Last name': 'Nawagirwa',
       'Phone number': '772123456',
+      'Email address': 'catherine@example.com',
       Password: 'secret-pass-1',
     });
     await userEvent.click(screen.getByRole('checkbox'));
@@ -97,7 +100,7 @@ describe('CreateAccountPage', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('already exists');
   });
 
-  it('blocks submission without a name, phone or password', async () => {
+  it('blocks submission without a name, phone, email or password', async () => {
     const spy = vi.spyOn(registration, 'registerDeaf');
     renderPage();
     await userEvent.click(screen.getByRole('checkbox'));
@@ -105,6 +108,7 @@ describe('CreateAccountPage', () => {
     expect(screen.getByText('Enter your first name.')).toBeInTheDocument();
     expect(screen.getByText('Enter your last name.')).toBeInTheDocument();
     expect(screen.getByText('Enter your phone number.')).toBeInTheDocument();
+    expect(screen.getByText('Enter your email address.')).toBeInTheDocument();
     expect(screen.getByText('Enter a password.')).toBeInTheDocument();
     expect(spy).not.toHaveBeenCalled();
   });
@@ -133,7 +137,7 @@ describe('CreateAccountPage', () => {
 
   it('rejects an email that is only numbers', async () => {
     renderPage();
-    await userEvent.type(screen.getByLabelText('Email address (optional)'), '12345');
+    await userEvent.type(screen.getByLabelText('Email address'), '12345');
     await userEvent.tab();
     expect(screen.getByText(/valid email/i)).toBeInTheDocument();
   });
@@ -145,6 +149,7 @@ describe('CreateAccountPage', () => {
       'First name': 'Catherine',
       'Last name': 'Nawagirwa',
       'Phone number': '772123456',
+      'Email address': 'catherine@example.com',
       Password: 'secret-pass-1',
     });
     await userEvent.click(screen.getByRole('button', { name: /create account/i }));
