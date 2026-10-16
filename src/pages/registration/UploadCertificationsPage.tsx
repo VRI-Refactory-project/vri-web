@@ -2,10 +2,8 @@ import { useRef, useState, type DragEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthShell } from '../../components/AuthShell';
 import { FLOWS } from '../../features/registration/flows';
-import {
-  stageCertificates,
-  stagedCertificates,
-} from '../../features/registration/stagedCertificates';
+import { describeError } from '../../services/api';
+import { uploadCertificate } from '../../services/certifications';
 import {
   CERTIFICATE_TYPES,
   validateEntry,
@@ -150,22 +148,23 @@ function CertificateForm({
   );
 }
 
-// V2-003: interpreter registration, step 2 of 3. Collects the certificates; they are uploaded
-// after the account is created on the next step.
+// V2-003: interpreter registration, step 3 of 3. The account already exists and the person is
+// signed in, so each certificate is uploaded here. Ones that go through are removed from the
+// list, so a retry only sends what is left. The email check and the review come next.
 export function UploadCertificationsPage() {
   const navigate = useNavigate();
-  const [entries, setEntries] = useState<CertificateEntry[]>(() => {
-    const kept = stagedCertificates();
-    return kept.length > 0 ? kept : [newEntry()];
-  });
+  const [entries, setEntries] = useState<CertificateEntry[]>(() => [newEntry()]);
   const [errors, setErrors] = useState<Record<number, EntryErrors>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [failure, setFailure] = useState<string>();
   const update = (id: number, patch: Partial<CertificateEntry>) => {
     setEntries((list) => list.map((e) => (e.id === id ? { ...e, ...patch } : e)));
     setErrors((prev) => ({ ...prev, [id]: {} }));
   };
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFailure(undefined);
 
     const found: Record<number, EntryErrors> = {};
     entries.forEach((entry) => {
@@ -175,14 +174,26 @@ export function UploadCertificationsPage() {
     setErrors(found);
     if (Object.keys(found).length > 0) return;
 
-    // Nothing is uploaded yet: the account does not exist. The next page creates it and then
-    // uploads these files (see CreateAccountPage).
-    stageCertificates(entries);
-    navigate('/register/interpreter/account');
+    setSubmitting(true);
+    try {
+      for (const entry of entries) {
+        await uploadCertificate({
+          file: entry.file as File,
+          type: entry.type,
+          organisation: entry.organisation.trim(),
+        });
+        setEntries((list) => list.filter((x) => x.id !== entry.id));
+      }
+      navigate('/register/pending', { replace: true });
+    } catch (err) {
+      setFailure(`A certificate did not upload: ${describeError(err)} Try again.`);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
-    <AuthShell backTo="/get-started" steps={FLOWS.interpreter} current={2}>
+    <AuthShell steps={FLOWS.interpreter} current={3}>
       <form className="cert-page__content" onSubmit={onSubmit} noValidate>
         <h1>Verify your certifications</h1>
         <p className="cert-page__subtitle">
@@ -210,8 +221,14 @@ export function UploadCertificationsPage() {
           + Add another certificate
         </button>
 
-        <button type="submit" className="btn btn--primary">
-          Continue
+        {failure && (
+          <p className="form-error" role="alert">
+            {failure}
+          </p>
+        )}
+
+        <button type="submit" className="btn btn--primary" disabled={submitting}>
+          {submitting ? 'Uploading...' : 'Continue'}
         </button>
       </form>
     </AuthShell>

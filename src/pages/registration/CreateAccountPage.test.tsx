@@ -2,12 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from '../../features/auth/AuthProvider';
-import {
-  clearStagedCertificates,
-  stageCertificates,
-} from '../../features/registration/stagedCertificates';
 import { ApiError } from '../../services/api';
-import * as certifications from '../../services/certifications';
 import * as registration from '../../services/registration';
 import type { AuthSession } from '../../types';
 import { CreateAccountPage } from './CreateAccountPage';
@@ -19,7 +14,7 @@ const session = (role: 'deaf' | 'interpreter'): AuthSession => ({
 });
 
 function renderPage(role: 'deaf' | 'interpreter' = 'deaf') {
-  const path = role === 'deaf' ? '/register/deaf' : '/register/interpreter/account';
+  const path = role === 'deaf' ? '/register/deaf' : '/register/interpreter';
   return render(
     <AuthProvider>
       <MemoryRouter initialEntries={[path]}>
@@ -28,8 +23,7 @@ function renderPage(role: 'deaf' | 'interpreter' = 'deaf') {
           <Route path="/get-started" element={<p>role selection</p>} />
           <Route path="/sign-in" element={<p>sign in page</p>} />
           <Route path="/register/welcome" element={<p>welcome step</p>} />
-          <Route path="/register/interpreter" element={<p>choose certificates</p>} />
-          <Route path="/register/pending" element={<p>pending review</p>} />
+          <Route path="/register/interpreter/certifications" element={<p>upload certificates</p>} />
         </Routes>
       </MemoryRouter>
     </AuthProvider>,
@@ -45,7 +39,6 @@ const fill = async (labels: Record<string, string>) => {
 describe('CreateAccountPage', () => {
   afterEach(() => {
     vi.restoreAllMocks();
-    clearStagedCertificates();
     sessionStorage.clear();
   });
 
@@ -73,7 +66,7 @@ describe('CreateAccountPage', () => {
     await fill({
       'First name': 'Catherine',
       'Last name': 'Nawagirwa',
-      'Phone number': '+256772123456',
+      'Phone number': '772123456',
       Password: 'secret-pass-1',
     });
     await userEvent.click(screen.getByRole('checkbox'));
@@ -96,7 +89,7 @@ describe('CreateAccountPage', () => {
     await fill({
       'First name': 'Catherine',
       'Last name': 'Nawagirwa',
-      'Phone number': '+256772123456',
+      'Phone number': '772123456',
       Password: 'secret-pass-1',
     });
     await userEvent.click(screen.getByRole('checkbox'));
@@ -104,21 +97,38 @@ describe('CreateAccountPage', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('already exists');
   });
 
+  it('blocks submission without a name, phone or password', async () => {
+    const spy = vi.spyOn(registration, 'registerDeaf');
+    renderPage();
+    await userEvent.click(screen.getByRole('checkbox'));
+    await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+    expect(screen.getByText('Enter your first name.')).toBeInTheDocument();
+    expect(screen.getByText('Enter your last name.')).toBeInTheDocument();
+    expect(screen.getByText('Enter your phone number.')).toBeInTheDocument();
+    expect(screen.getByText('Enter a password.')).toBeInTheDocument();
+    expect(spy).not.toHaveBeenCalled();
+  });
+
   it('never lets letters into the phone field', async () => {
     renderPage();
     const phone = screen.getByLabelText('Phone number') as HTMLInputElement;
-    await userEvent.type(phone, 'jjjj+256abc772');
-    expect(phone.value).toBe('+256772');
-    await userEvent.clear(phone);
-    await userEvent.type(phone, '+256 772');
-    expect(phone.value).toBe('+256 772');
+    await userEvent.type(phone, 'jjjj772abc123');
+    expect(phone.value.replace(/\s/g, '')).toBe('+256772123');
   });
 
-  it('asks for a country code when the number starts with 0', async () => {
+  it('offers a country picker with flags and changes the calling code with it', async () => {
     renderPage();
-    await userEvent.type(screen.getByLabelText('Phone number'), '0772123456');
+    const country = screen.getByLabelText('Country') as HTMLSelectElement;
+    expect(country.value).toBe('UG');
+    await userEvent.selectOptions(country, 'KE');
+    expect((screen.getByLabelText('Phone number') as HTMLInputElement).value).toMatch(/^\+254/);
+  });
+
+  it('says a number is too short for the country chosen', async () => {
+    renderPage();
+    await userEvent.type(screen.getByLabelText('Phone number'), '77');
     await userEvent.tab();
-    expect(screen.getByText(/start with your country code/i)).toBeInTheDocument();
+    expect(screen.getByText(/too short or too long/i)).toBeInTheDocument();
   });
 
   it('rejects an email that is only numbers', async () => {
@@ -134,7 +144,7 @@ describe('CreateAccountPage', () => {
     await fill({
       'First name': 'Catherine',
       'Last name': 'Nawagirwa',
-      'Phone number': '+256772123456',
+      'Phone number': '772123456',
       Password: 'secret-pass-1',
     });
     await userEvent.click(screen.getByRole('button', { name: /create account/i }));
@@ -142,30 +152,14 @@ describe('CreateAccountPage', () => {
     expect(spy).not.toHaveBeenCalled();
   });
 
-  it('sends an interpreter who has chosen no certificates back to that step', () => {
-    renderPage('interpreter');
-    expect(screen.getByText('choose certificates')).toBeInTheDocument();
-  });
-
   describe('interpreter', () => {
-    const staged = () =>
-      stageCertificates([
-        {
-          id: 1,
-          file: new File(['x'], 'a.pdf', { type: 'application/pdf' }),
-          type: 'Other',
-          organisation: 'UNAD',
-        },
-      ]);
-
     it('requires an email', async () => {
-      staged();
       const spy = vi.spyOn(registration, 'registerInterpreter');
       renderPage('interpreter');
       await fill({
         'First name': 'Catherine',
         'Last name': 'Nawagirwa',
-        'Phone number': '+256772123456',
+        'Phone number': '772123456',
         Password: 'secret-pass-1',
       });
       await userEvent.click(screen.getByRole('checkbox'));
@@ -174,50 +168,22 @@ describe('CreateAccountPage', () => {
       expect(spy).not.toHaveBeenCalled();
     });
 
-    it('registers, uploads the staged certificates, then shows the pending page', async () => {
-      staged();
-      vi.spyOn(registration, 'registerInterpreter').mockResolvedValue(session('interpreter'));
-      const upload = vi
-        .spyOn(certifications, 'uploadCertificate')
-        .mockResolvedValue({} as certifications.CertificationDocument);
-      renderPage('interpreter');
-      await fill({
-        'First name': 'Catherine',
-        'Last name': 'Nawagirwa',
-        'Phone number': '+256772123456',
-        'Email address': 'j@x.org',
-        Password: 'secret-pass-1',
-      });
-      await userEvent.click(screen.getByRole('checkbox'));
-      await userEvent.click(screen.getByRole('button', { name: /create account/i }));
-      await waitFor(() => expect(screen.getByText('pending review')).toBeInTheDocument());
-      expect(upload).toHaveBeenCalledTimes(1);
-    });
-
-    it('keeps the account and retries only the upload when it fails', async () => {
-      staged();
+    it('registers, then moves on to uploading certificates', async () => {
       const register = vi
         .spyOn(registration, 'registerInterpreter')
         .mockResolvedValue(session('interpreter'));
-      const upload = vi
-        .spyOn(certifications, 'uploadCertificate')
-        .mockRejectedValueOnce(new ApiError(500, 'Server error'))
-        .mockResolvedValue({} as certifications.CertificationDocument);
       renderPage('interpreter');
       await fill({
         'First name': 'Catherine',
         'Last name': 'Nawagirwa',
-        'Phone number': '+256772123456',
+        'Phone number': '772123456',
         'Email address': 'j@x.org',
         Password: 'secret-pass-1',
       });
       await userEvent.click(screen.getByRole('checkbox'));
       await userEvent.click(screen.getByRole('button', { name: /create account/i }));
-      expect(await screen.findByRole('alert')).toHaveTextContent('Your account was created');
-      await userEvent.click(screen.getByRole('button', { name: /try upload again/i }));
-      await waitFor(() => expect(screen.getByText('pending review')).toBeInTheDocument());
-      expect(register).toHaveBeenCalledTimes(1);
-      expect(upload).toHaveBeenCalledTimes(2);
+      await waitFor(() => expect(screen.getByText('upload certificates')).toBeInTheDocument());
+      expect(register).toHaveBeenCalledWith(expect.objectContaining({ phone: '+256772123456' }));
     });
   });
 });
