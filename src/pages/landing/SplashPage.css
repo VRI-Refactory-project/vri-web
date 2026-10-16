@@ -10,7 +10,7 @@
 }
 
 .splash-logo-frame {
-  width: min(22rem, 70vw);
+  width: min(50rem, 70vw);
   /* The artwork is 1536 x 1024; this keeps the top 83% (logo + name) and hides the rest. */
   aspect-ratio: 1536 / 850;
   overflow: hidden;
