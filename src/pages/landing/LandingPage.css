@@ -1,26 +1,24 @@
 :root {
   --sc-purple: #ffffff;
   --sc-purple-dark: #382c77;
-  --sc-purple-soft: #382c77;
   --sc-bg: #3b2774;
   --sc-text: #1b1533;
-  --sc-text-muted: #6b6785;
-  --sc-border: #382c77;
-  --sc-radius: 16px;
   --sc-radius-pill: 999px;
-  /* Side padding that grows with the screen: 16px on a phone, 32px from about 1000px up. */
+  /* Side padding that grows with the screen: 16px on a phone, 64px on a wide desktop. */
   --landing-gutter: clamp(1rem, 4vw, 4rem);
 }
 
-/* --- Page shell --- */
+/* --- Page shell: exactly one screen tall, nothing to scroll --- */
 .landing {
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
-  background: var(--sc-bg);
+  overflow: hidden;
   color: #e8e6f0;
-  overflow-x: hidden;
+  background:
+    radial-gradient(60rem 40rem at 85% 10%, rgba(122, 100, 214, 0.45), transparent 60%),
+    radial-gradient(40rem 30rem at 0% 100%, rgba(42, 32, 88, 0.9), transparent 70%), var(--sc-bg);
 }
 
 /* --- Header: the same width as the hero, so the logo and the nav line up with the content --- */
@@ -32,7 +30,8 @@
   width: 100%;
   max-width: 1600px;
   margin: 0 auto;
-  padding: 0.5rem var(--landing-gutter);
+  padding: 0.25rem var(--landing-gutter);
+  box-sizing: border-box;
 }
 
 .landing-logo {
@@ -43,7 +42,7 @@
 
 .landing-logo-img {
   display: block;
-  height: clamp(72px, 10vw, 130px);
+  height: clamp(56px, 9vh, 96px);
   width: auto;
   max-width: 100%;
   object-fit: contain;
@@ -60,32 +59,36 @@
   text-decoration: none;
   font-weight: 500;
   font-size: 0.95rem;
+  padding: 0.5rem 0.25rem;
 }
 
 .landing-login:hover {
-  color: #e8e6f0;
+  text-decoration: underline;
+  text-underline-offset: 0.25rem;
 }
 
 .landing-signup {
-  background: var(--sc-purple);
-  color: #382c77;
-  border: none;
+  background: transparent;
+  color: #fff;
+  border: 1.5px solid rgba(255, 255, 255, 0.7);
   min-height: 44px;
   padding: 0.6rem 1.25rem;
-  border-radius: 16px;
+  border-radius: 14px;
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
 .landing-signup:hover {
-  background: #e8e6f0;
+  background: #fff;
+  color: var(--sc-purple-dark);
 }
 
 /* --- Hero: text left, picture right. It fills the rest of the screen and centres in it. --- */
 .landing-hero {
-  /* Fills what is left of the screen, so the whole page fits without scrolling on a desktop. */
   flex: 1;
   min-height: 0;
   display: grid;
@@ -95,13 +98,14 @@
   width: 100%;
   max-width: 1600px;
   margin: 0 auto;
-  padding: 0 var(--landing-gutter) 1.5rem;
+  padding: 0 var(--landing-gutter) clamp(1rem, 3vh, 2rem);
+  box-sizing: border-box;
 }
 
 .landing-hero-left {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: clamp(0.75rem, 2vh, 1.25rem);
   min-width: 0;
 }
 
@@ -109,9 +113,9 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: #fff;
-  border: 1px solid var(--sc-border);
-  color: #382c77;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #fff;
   padding: 0.4rem 0.9rem;
   border-radius: 9999px;
   font-size: 0.8rem;
@@ -120,20 +124,27 @@
 }
 
 .landing-title {
-  /* Scales with the screen but stops at a size that still fits its column. */
-  font-size: clamp(2.5rem, 7vw, 6.5rem);
-  line-height: 1.05;
+  font-size: clamp(2.75rem, 8.5vh, 6rem);
+  line-height: 1.02;
   font-weight: 800;
   margin: 0;
-  color: var(--sc-purple);
-  letter-spacing: -0.03em;
+  color: #fff;
+  letter-spacing: -0.035em;
   overflow-wrap: anywhere;
 }
 
+.landing-tagline {
+  margin: 0;
+  font-size: clamp(1.05rem, 2.4vh, 1.5rem);
+  font-weight: 600;
+  color: #cfc7f5;
+  letter-spacing: -0.01em;
+}
+
 .landing-subtitle {
-  font-size: clamp(1rem, 1.7vw, 1.4rem);
+  font-size: clamp(0.95rem, 1.6vw, 1.25rem);
   line-height: 1.55;
-  color: #fff;
+  color: #e8e6f0;
   margin: 0;
   max-width: 34rem;
 }
@@ -141,52 +152,65 @@
 .landing-cta {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
   background: #fff;
-  color: #382c77;
+  color: var(--sc-purple-dark);
   border: none;
-  min-height: 48px;
-  padding: 1rem 1.75rem;
-  border-radius: 16px;
+  min-height: 52px;
+  padding: 0.9rem 1.75rem;
+  border-radius: 14px;
   font-size: 1.05rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   width: fit-content;
+  box-shadow: 0 10px 28px rgba(20, 12, 60, 0.35);
   transition:
-    background 0.15s ease,
-    transform 0.15s ease;
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .landing-cta:hover {
-  background: #e8e6f0;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px rgba(20, 12, 60, 0.45);
+}
+
+.landing-cta svg {
+  transition: transform 0.15s ease;
+}
+
+.landing-cta:hover svg {
+  transform: translateX(3px);
 }
 
 .landing-features {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem 2rem;
+  gap: 0.6rem;
   list-style: none;
   padding: 0;
-  margin: 0.5rem 0 0;
+  margin: 0.25rem 0 0;
 }
 
 .landing-features li {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.45rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   color: #fff;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 500;
 }
 
 .landing-features svg {
-  color: var(--sc-purple);
+  color: #cfc7f5;
   flex-shrink: 0;
 }
 
-/* --- Picture side. The small preview and the status pill are placed against the main picture,
-   so they stay attached to it at every width. --- */
+/* --- Picture side. The frame, the small preview and the status pill are placed against the
+   main picture, so they stay attached to it at every width. --- */
 .landing-hero-right {
   position: relative;
   width: fit-content;
@@ -194,27 +218,39 @@
   justify-self: end;
 }
 
+.landing-frame {
+  position: absolute;
+  inset: 0;
+  transform: translate(-1.1rem, 1.1rem);
+  border-radius: 28px;
+  border: 2px solid rgba(207, 199, 245, 0.55);
+  background: linear-gradient(160deg, rgba(122, 100, 214, 0.35), rgba(122, 100, 214, 0.05));
+}
+
 .landing-hero-image {
+  position: relative;
   display: block;
-  height: clamp(360px, calc(100dvh - 210px), 760px);
+  /* Header + padding take about 150px; the rest of the screen is the picture. */
+  height: clamp(320px, calc(100dvh - 190px), 760px);
   width: auto;
   max-width: 100%;
   aspect-ratio: 4 / 5;
   object-fit: cover;
-  border-radius: 24px;
+  border-radius: 28px;
   background: #ddd;
+  box-shadow: 0 24px 60px rgba(14, 8, 46, 0.5);
 }
 
 .landing-pip {
   position: absolute;
-  top: 0.75rem;
-  right: -0.75rem;
-  width: clamp(80px, 26%, 120px);
+  top: 1rem;
+  right: -0.9rem;
+  width: clamp(80px, 26%, 128px);
   aspect-ratio: 1;
-  border-radius: 16px;
+  border-radius: 18px;
   overflow: hidden;
   border: 3px solid #fff;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 22px rgba(14, 8, 46, 0.4);
   background: #ddd;
 }
 
@@ -231,33 +267,63 @@
   bottom: 1.25rem;
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.55rem;
   max-width: calc(100% - 2rem);
   background: #fff;
-  padding: 0.55rem 1rem;
+  padding: 0.6rem 1.05rem;
   border-radius: var(--sc-radius-pill);
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--sc-text);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 22px rgba(14, 8, 46, 0.3);
 }
 
 .landing-status-dot {
-  width: 8px;
-  height: 8px;
+  position: relative;
+  width: 9px;
+  height: 9px;
   flex: none;
   border-radius: 50%;
-  background: var(--sc-purple-soft);
-  box-shadow: 0 0 0 3px #d8d3f0;
+  background: #2fbf71;
 }
 
-/* --- Tablets and phones: one column, picture under the text --- */
+/* The one moving detail: a soft pulse on the "available now" dot. */
+.landing-status-dot::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid #2fbf71;
+  opacity: 0;
+  animation: landing-pulse 2s ease-out infinite;
+}
+
+@keyframes landing-pulse {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+.landing-cta:focus-visible,
+.landing-signup:focus-visible,
+.landing-login:focus-visible,
+.landing-logo:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+/* --- Tablets and phones: text on top, a smaller picture below, still one screen --- */
 @media (max-width: 900px) {
   .landing-hero {
     grid-template-columns: minmax(0, 1fr);
-    gap: 2.5rem;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: clamp(1rem, 3vh, 2rem);
     align-items: start;
-    padding-bottom: 3rem;
   }
 
   .landing-hero-left {
@@ -273,24 +339,29 @@
     justify-content: center;
   }
 
-  .landing-hero {
-    flex: none;
-  }
-
   .landing-hero-right {
-    width: min(100%, 380px);
+    width: auto;
+    height: 100%;
+    min-height: 0;
     justify-self: center;
   }
 
   .landing-hero-image {
-    height: auto;
-    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    width: auto;
+    max-width: min(100%, 340px);
+    aspect-ratio: 4 / 5;
+  }
+
+  .landing-frame {
+    transform: translate(-0.6rem, 0.6rem);
   }
 }
 
 @media (max-width: 480px) {
   .landing-nav {
-    gap: 1rem;
+    gap: 0.75rem;
   }
 
   .landing-signup {
@@ -302,15 +373,159 @@
     justify-content: center;
   }
 
-  /* Keep the preview inside the screen edge on the narrowest phones. */
+  /* On a narrow phone the supporting chips give way to keep one screen. */
+  .landing-features {
+    display: none;
+  }
+
   .landing-pip {
     right: 0.5rem;
   }
 }
 
-/* Short landscape screens (phones turned sideways, small laptops): less empty space above the text. */
+/* Short landscape screens (phones turned sideways, small laptops): the picture goes and the text
+   fills the screen. */
 @media (max-height: 520px) and (min-width: 600px) {
-  .landing-logo-img {
-    height: 56px;
+  .landing-hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .landing-hero-right {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-status-dot::after {
+    animation: none;
+  }
+
+  .landing-cta,
+  .landing-cta svg {
+    transition: none;
+  }
+}
+
+/* --- Colour play: a purple-to-magenta sweep with soft teal and pink glows drifting behind --- */
+.landing {
+  position: relative;
+  isolation: isolate;
+  background: linear-gradient(135deg, #1f1650 0%, #3b2774 38%, #5a33a6 68%, #8e3fb3 100%);
+}
+
+.landing::before,
+.landing::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  border-radius: 50%;
+  filter: blur(70px);
+  pointer-events: none;
+}
+
+.landing::before {
+  width: min(46rem, 70vw);
+  height: min(46rem, 70vw);
+  top: -14rem;
+  left: -12rem;
+  background: radial-gradient(circle, rgba(45, 212, 191, 0.5), transparent 65%);
+  animation: landing-drift-a 18s ease-in-out infinite alternate;
+}
+
+.landing::after {
+  width: min(42rem, 65vw);
+  height: min(42rem, 65vw);
+  right: -10rem;
+  bottom: -14rem;
+  background: radial-gradient(circle, rgba(255, 120, 170, 0.55), transparent 65%);
+  animation: landing-drift-b 22s ease-in-out infinite alternate;
+}
+
+@keyframes landing-drift-a {
+  to {
+    transform: translate(6rem, 4rem) scale(1.15);
+  }
+}
+
+@keyframes landing-drift-b {
+  to {
+    transform: translate(-5rem, -4rem) scale(1.1);
+  }
+}
+
+.landing-title {
+  background: linear-gradient(100deg, #ffffff 15%, #d9ccff 55%, #ffb3d1 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+.landing-tagline {
+  color: #e9defd;
+}
+
+.landing-badge {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #fff;
+  backdrop-filter: blur(8px);
+}
+
+.landing-cta {
+  background: linear-gradient(135deg, #ffd98a 0%, #ffa6c4 100%);
+  color: #2a1b63;
+  box-shadow: 0 10px 30px rgba(255, 140, 180, 0.4);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    filter 0.15s ease;
+}
+
+.landing-cta:hover {
+  background: linear-gradient(135deg, #ffe3a3 0%, #ffb7d0 100%);
+  filter: brightness(1.04);
+  box-shadow: 0 14px 36px rgba(255, 140, 180, 0.55);
+}
+
+.landing-cta:focus-visible,
+.landing-signup:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+.landing-signup {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(8px);
+}
+
+.landing-signup:hover {
+  background: rgba(255, 255, 255, 0.26);
+}
+
+.landing-features li {
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.landing-features svg {
+  color: #7ff0dc;
+}
+
+.landing-hero-image {
+  box-shadow:
+    0 0 0 4px rgba(255, 255, 255, 0.16),
+    0 30px 80px rgba(255, 110, 170, 0.35),
+    0 0 90px rgba(45, 212, 191, 0.25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing::before,
+  .landing::after {
+    animation: none;
   }
 }
