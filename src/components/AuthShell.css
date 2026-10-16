@@ -309,7 +309,7 @@
 /* Short screens (small laptops, phones on their side): smaller logo, less padding. */
 @media (max-height: 700px) {
   .as-logo img {
-    height: 56px;
+    height: 160px;
   }
   .as-header {
     padding-block: 0.75rem;
@@ -324,7 +324,7 @@
     padding: 1rem;
   }
   .as-logo img {
-    height: 56px;
+    height: 160px;
   }
   .as-main {
     padding: 0.25rem 1rem 2rem;
