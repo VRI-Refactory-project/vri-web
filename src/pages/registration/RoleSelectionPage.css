@@ -43,7 +43,7 @@
   color: inherit;
   text-align: left;
   overflow: hidden;
-  height: 420px;
+  height: 460px;
   z-index: 1;
 
   border: none !important;
@@ -84,6 +84,7 @@
 /* --- Background Image Layer --- */
 .rs-card-bg-image {
   position: absolute;
+    bottom: 0;  
   top: 0;
   left: 0;
   width: 100%;
