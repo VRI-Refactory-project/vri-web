@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate} from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { ApprovedInterpreterRoute } from '../components/ApprovedInterpreterRoute';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { Placeholder } from '../components/Placeholder';
