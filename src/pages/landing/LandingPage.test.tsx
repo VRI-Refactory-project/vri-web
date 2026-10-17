@@ -17,8 +17,11 @@ describe('LandingPage', () => {
 
   it('renders the hero heading', () => {
     renderPage();
+
     expect(
-      screen.getByRole('heading', { name: 'Communication Anytime, Anywhere' }),
+      screen.getByRole('heading', {
+        name: 'Inclusive Communication. Anytime, Anywhere',
+      }),
     ).toBeInTheDocument();
   });
 

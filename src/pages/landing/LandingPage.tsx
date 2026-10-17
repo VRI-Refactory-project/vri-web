@@ -1,7 +1,9 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Video, Lock, ArrowRight } from 'lucide-react';
+import { User, Video, Lock, ArrowRight, ShieldCheck } from 'lucide-react';
 import interpreter from '../../assets/interpreter5.jpg';
-import logo from '../../assets/no_bg.png';
+import interpreter2 from '../../assets/interpreter2.png';
+import logoIcon from '../../assets/logo-icon.png';
+import logoWord from '../../assets/logo-wordmark.png';
 import './LandingPage.css';
 
 // Landing page: public marketing entry point.
@@ -58,8 +60,10 @@ export function LandingPage() {
       </svg>
 
       <header className="landing-header">
+        {/* The icon and the word are separate images, so the icon can be bigger than the word. */}
         <Link to="/" className="landing-logo" aria-label="SignConnect home">
-          <img src={logo} alt="SignConnect" className="landing-logo-img" />
+          <img src={logoIcon} alt="" className="landing-logo-icon" />
+          <img src={logoWord} alt="" className="landing-logo-word" />
         </Link>
         <nav className="landing-nav" aria-label="Main">
           <Link to="/sign-in" className="landing-login">
@@ -73,43 +77,46 @@ export function LandingPage() {
 
       <section className="landing-hero">
         <div className="landing-hero-left">
+          <span className="landing-badge">
+            <ShieldCheck size={16} aria-hidden="true" />
+            Secure Video Interpreting
+          </span>
           <h1 className="landing-title">
-            Communication
-            <br /> Anytime, Anywhere
+            Inclusive Communication. <br />
+            Anytime, Anywhere
           </h1>
-
           <p className="landing-subtitle">
-            Break down language barriers with instant access to certified sign language interpreters
-            on demand. SignConnect ensures everyone is heard.
+            Connect instantly with certified sign language interpreters, or schedule
+            ahead.SignConnect ensures everyone is heard.
           </p>
+
+          <button className="landing-cta" onClick={() => navigate('/get-started')}>
+            Get Started
+            <ArrowRight size={22} aria-hidden="true" />
+          </button>
 
           <p className="landing-subtitle">Your partner, where you meet</p>
 
           <ul className="landing-features">
             <li>
               <span className="landing-feature-icon">
-                <User size={20} />
+                <User size={16} aria-hidden="true" />
               </span>
               Verified Interpreters
             </li>
             <li>
               <span className="landing-feature-icon">
-                <Video size={20} />
+                <Video size={16} aria-hidden="true" />
               </span>
               HD Video
             </li>
             <li>
               <span className="landing-feature-icon">
-                <Lock size={20} />
+                <Lock size={16} aria-hidden="true" />
               </span>
               Secure Sessions
             </li>
           </ul>
-
-          <button className="landing-cta" onClick={() => navigate('/get-started')}>
-            Get Started
-            <ArrowRight size={28} />
-          </button>
         </div>
 
         <div className="landing-hero-right">
@@ -124,8 +131,13 @@ export function LandingPage() {
                 src={interpreter}
                 alt="Sign language interpreter"
               />
-              <div className="landing-status-pill">Interpreter available now</div>
-              <p className="landing-caption">Session in progress - inclusive meeting</p>
+              <div className="landing-pip">
+                <img src={interpreter2} alt="Remote user preview" />
+              </div>
+              <div className="landing-status-pill">
+                <span className="landing-status-dot" aria-hidden="true" />
+                Interpreter available now
+              </div>
             </div>
           </div>
         </div>
