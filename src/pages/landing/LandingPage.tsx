@@ -81,12 +81,10 @@ export function LandingPage() {
             <ShieldCheck size={16} aria-hidden="true" />
             Secure Video Interpreting
           </span>
-
           <h1 className="landing-title">
-            Inclusive Communication.
-            <br /> Anytime , Anywhere
+            Inclusive Communication. <br />
+            Anytime, Anywhere
           </h1>
-
           <p className="landing-subtitle">
             Connect instantly with certified sign language interpreters, or schedule
             ahead.SignConnect ensures everyone is heard.

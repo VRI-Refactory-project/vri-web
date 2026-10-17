@@ -15,12 +15,15 @@ describe('LandingPage', () => {
       </MemoryRouter>,
     );
 
-  it('renders the hero heading', () => {
-    renderPage();
-    expect(
-      screen.getByRole('heading', { name: 'Communication Anytime, Anywhere' }),
-    ).toBeInTheDocument();
-  });
+ it('renders the hero heading', () => {
+   renderPage();
+
+ expect(
+   screen.getByRole('heading', {
+     name: 'Inclusive Communication. Anytime, Anywhere',
+   }),
+ ).toBeInTheDocument();
+ });
 
   it('navigates to /get-started when Get Started is clicked', async () => {
     renderPage();
