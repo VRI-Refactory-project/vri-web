@@ -59,7 +59,6 @@ export function InstitutionReviewPage() {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
     fetchInstitutions()
       .then((list) => {
         if (cancelled) return;
