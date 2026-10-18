@@ -36,6 +36,7 @@ import { CreateStaffAccountPage } from '../pages/institution/CreateStaffAccountP
 import { OfflinePage } from '../pages/OfflinePage';
 import { StaffAccountCreatedPage } from '../pages/institution/StaffAccountCreatedPage';
 import { InstitutionDashboardPage } from '../pages/institution/InstitutionDashboardPage';
+import { InstitutionReviewPage } from '../pages/admin/InstitutionReviewPage';
 
 export const router = createBrowserRouter([
   {
@@ -157,6 +158,7 @@ export const router = createBrowserRouter([
               { path: 'verifications', element: <VerificationsPage /> },
               { path: 'verifications/:id', element: <CredentialReviewPage /> },
               { path: 'institutions', element: <InstitutionAccountsPage /> },
+              { path: 'institutions/:id', element: <InstitutionReviewPage /> },
               { path: 'sessions', element: <Placeholder title="Sessions" story="V2-064" /> },
               { path: 'reports', element: <Placeholder title="Reports" story="V2-064" /> },
               { path: 'audit-logs', element: <Placeholder title="Audit Logs" story="V2-064" /> },
