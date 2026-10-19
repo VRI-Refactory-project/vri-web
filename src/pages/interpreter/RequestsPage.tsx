@@ -36,9 +36,7 @@ export default function RequestsPage() {
     if (offers.length === 0) return;
 
     const interval = setInterval(async () => {
-      const pendingOffers = offers.filter(
-        (o) => o.expiresAt && new Date(o.expiresAt) > new Date()
-      );
+      const pendingOffers = offers.filter((o) => o.expiresAt && new Date(o.expiresAt) > new Date());
       if (pendingOffers.length === 0) return;
 
       try {
@@ -46,7 +44,7 @@ export default function RequestsPage() {
           pendingOffers.map(async (offer) => {
             const state = await offersApi.getOfferState(offer.id);
             return { id: offer.id, status: state.status };
-          })
+          }),
         );
 
         setOffers((prev) => {
@@ -170,7 +168,11 @@ function OfferCard({ offer, isProcessing, onAction }: OfferCardProps) {
         </div>
         <div
           className={`offer-badge ${
-            isExpired ? 'offer-badge--expired' : isUrgent ? 'offer-badge--urgent' : 'offer-badge--safe'
+            isExpired
+              ? 'offer-badge--expired'
+              : isUrgent
+                ? 'offer-badge--urgent'
+                : 'offer-badge--safe'
           }`}
         >
           <Clock size={14} />

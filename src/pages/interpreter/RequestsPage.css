@@ -161,7 +161,8 @@
   background: #3b2579;
 }
 
-.requests-loading, .requests-empty {
+.requests-loading,
+.requests-empty {
   text-align: center;
   color: #64748b;
   padding: 40px;
@@ -178,5 +179,3 @@
   background: #ffffff;
   border-radius: 15px;
 }
-
-
