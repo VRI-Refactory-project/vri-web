@@ -95,7 +95,7 @@ export function LandingPage() {
             <ArrowRight size={22} aria-hidden="true" />
           </button>
 
-          <p className="landing-subtitle">Your partner, where you meet</p>
+          <p className="landing-subtitle">Communication for Everyone</p>
 
           <ul className="landing-features">
             <li>
