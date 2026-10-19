@@ -121,21 +121,29 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronDown } from 'lucide-react';
-import { collectErrors, validateEmail, validateName } from '../../lib/validation';
+import { PhoneField } from '../../components/PhoneField';
+import {
+  collectErrors,
+  validateEmail,
+  validateName,
+  validatePhoneNumber,
+} from '../../lib/validation';
+import { describeError } from '../../services/api';
+import { createStaff, DEPARTMENTS } from '../../services/staff';
 import './CreateStaffAccountPage.css';
 
-const DEPARTMENTS = ['Healthcare', 'Reception', 'Social Services', 'IT Support', 'Administration'];
+// The backend's two institution roles (SRS 2.4): Institutional User (Staff) and Institution Admin.
+const ROLES = ['Staff', 'Admin'] as const;
 
-const ROLES = ['Staff', 'Manager', 'Admin'];
-
-type FieldName = 'fullName' | 'email' | 'department' | 'role';
-const FIELD_ORDER: FieldName[] = ['fullName', 'email', 'department', 'role'];
+type FieldName = 'fullName' | 'email' | 'phone' | 'department' | 'role';
+const FIELD_ORDER: FieldName[] = ['fullName', 'email', 'phone', 'department', 'role'];
 
 export function CreateStaffAccountPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
     fullName: '',
     email: '',
+    phone: '',
     department: '',
     role: '',
   });
@@ -153,6 +161,7 @@ export function CreateStaffAccountPage() {
   const errors = collectErrors<FieldName>({
     fullName: validateName(form.fullName, 'the staff member’s full name'),
     email: validateEmail(form.email, { required: true }),
+    phone: validatePhoneNumber(form.phone),
     department: form.department ? undefined : 'Select a department.',
     role: form.role ? undefined : 'Select a role.',
   });
@@ -173,16 +182,20 @@ export function CreateStaffAccountPage() {
 
     setSubmitting(true);
     try {
-      // TODO: replace with your real API call once the backend is connected:
-      // await createStaffAccount(form);
-      //   await new Promise((r) => setTimeout(r, 800));
-      //   navigate('/dashboard/institution/staff');
-      await new Promise((r) => setTimeout(r, 800));
-      navigate('/dashboard/institution/staff/created', {
-        state: { name: form.fullName },
+      // The API emails the person their login details (a temporary password).
+      await createStaff({
+        fullName: form.fullName,
+        email: form.email,
+        phone: form.phone,
+        department: form.department,
+        role: form.role as (typeof ROLES)[number],
       });
-    } catch {
-      setServerError('Could not create the account. Please try again.');
+      navigate('/dashboard/institution/staff/created', {
+        state: { name: form.fullName.trim() },
+      });
+    } catch (err) {
+      // Shows the backend's reason, e.g. a phone number or email already in use.
+      setServerError(describeError(err));
     } finally {
       setSubmitting(false);
     }
@@ -241,6 +254,24 @@ export function CreateStaffAccountPage() {
             {shown('email') && (
               <p className="csa-field-error" id="csa-email-error">
                 {shown('email')}
+              </p>
+            )}
+          </div>
+
+          {/* Phone: required by the backend, it is the account's main sign-in identifier */}
+          <div className="csa-field">
+            <label htmlFor="csa-phone">Phone number</label>
+            <PhoneField
+              id="csa-phone"
+              value={form.phone}
+              onChange={(phone) => setForm((f) => ({ ...f, phone }))}
+              onBlur={touch('phone')}
+              invalid={Boolean(shown('phone'))}
+              errorId={shown('phone') ? 'csa-phone-error' : undefined}
+            />
+            {shown('phone') && (
+              <p className="csa-field-error" id="csa-phone-error">
+                {shown('phone')}
               </p>
             )}
           </div>

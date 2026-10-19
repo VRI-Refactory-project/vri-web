@@ -1,0 +1,283 @@
+/* Staff profile (V2-006). Same colours, radii and type as the staff list and create-staff pages. */
+
+/* ── BACK LINK ────────────────────────────────────────── */
+.sp-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #111827;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  margin-bottom: 16px;
+}
+.sp-back:hover {
+  color: #3b2579;
+}
+
+/* ── HEADER ───────────────────────────────────────────── */
+.sp-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+}
+.sp-header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 4px;
+}
+.sp-header p {
+  color: #6b7280;
+  font-size: 14px;
+  margin: 0;
+}
+.sp-header-status {
+  margin-left: auto;
+}
+.sp-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #ede9fe;
+  color: #3b2579;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ── STATUS BADGES (as on the staff list) ─────────────── */
+.sp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.sp-badge--active {
+  background: #d1fae5;
+  color: #065f46;
+}
+.sp-badge--pending {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+.sp-badge--inactive {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+/* ── CARDS ────────────────────────────────────────────── */
+.sp-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+.sp-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 24px 28px;
+}
+.sp-card--wide {
+  grid-column: 1 / -1;
+}
+.sp-card h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 16px;
+}
+@media (max-width: 900px) {
+  .sp-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── DETAILS ──────────────────────────────────────────── */
+.sp-details {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 12px 16px;
+  margin: 0 0 16px;
+  font-size: 14px;
+}
+.sp-details dt {
+  color: #6b7280;
+  font-weight: 600;
+}
+.sp-details dd {
+  margin: 0;
+  color: #111827;
+  word-break: break-word;
+}
+.sp-note,
+.sp-hint {
+  color: #6b7280;
+  font-size: 12px;
+  margin: 0;
+}
+.sp-muted {
+  color: #6b7280;
+  font-size: 14px;
+  margin: 0 0 16px;
+}
+
+/* ── FORM ─────────────────────────────────────────────── */
+.sp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.sp-field label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+}
+.sp-input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-family: inherit;
+  font-size: 14px;
+  color: #111827;
+  background: #fff;
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.sp-input:focus {
+  border-color: #3b2579;
+  box-shadow: 0 0 0 3px rgba(59, 37, 121, 0.08);
+}
+.sp-input--error,
+.sp-input--error:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+.sp-field-error {
+  font-size: 12px;
+  color: #ef4444;
+  margin: 0;
+  font-weight: 500;
+}
+.sp-select-wrap {
+  position: relative;
+}
+.sp-select-wrap select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 40px;
+  cursor: pointer;
+}
+.sp-select-icon {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  pointer-events: none;
+}
+
+/* ── MESSAGES ─────────────────────────────────────────── */
+.sp-alert {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  margin: 12px 0;
+}
+.sp-success {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  margin: 0 0 12px;
+}
+
+/* ── BUTTONS ──────────────────────────────────────────── */
+.sp-btn {
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.sp-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.sp-btn--primary {
+  background: #3b2579;
+  color: #fff;
+}
+.sp-btn--primary:hover:not(:disabled) {
+  background: #4b34a0;
+  box-shadow: 0 4px 12px rgba(59, 37, 121, 0.25);
+}
+.sp-btn--danger {
+  background: #b91c1c;
+  color: #fff;
+}
+.sp-btn--danger:hover:not(:disabled) {
+  background: #991b1b;
+}
+.sp-btn--danger-outline {
+  background: #fff;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+.sp-btn--danger-outline:hover:not(:disabled) {
+  background: #fef2f2;
+}
+.sp-btn--outline {
+  background: #fff;
+  color: #374151;
+  border-color: #e5e7eb;
+}
+.sp-btn--outline:hover:not(:disabled) {
+  background: #f9fafb;
+}
+
+/* ── REVOKE CONFIRMATION ──────────────────────────────── */
+.sp-confirm {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+.sp-confirm p {
+  margin: 0 0 14px;
+  color: #7f1d1d;
+  font-size: 14px;
+}
+.sp-confirm-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}

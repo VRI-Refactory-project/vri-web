@@ -1,48 +1,18 @@
-import { Search, Plus, ChevronDown, ChevronRight, Check, Clock, Minus } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Search, Plus, ChevronRight, Check, Clock, Minus } from 'lucide-react';
 import './StaffManagementPage.css';
 import { Link } from 'react-router-dom';
+import { describeError } from '../../services/api';
+import {
+  lastActiveLabel,
+  listStaff,
+  type StaffMember,
+  type StaffStatus,
+} from '../../services/staff';
 
-// ── MOCK DATA ─────────────────────────────────────────────
-const staffMembers = [
-  {
-    id: 'sc',
-    initials: 'SC',
-    name: 'Maggie Nanduga',
-    dept: 'Healthcare',
-    role: 'Staff',
-    status: 'Active',
-    lastActive: '5 min ago',
-  },
-  {
-    id: 'mr',
-    initials: 'MR',
-    name: 'Michael Reed',
-    dept: 'Reception',
-    role: 'Staff',
-    status: 'Active',
-    lastActive: '18 min ago',
-  },
-  {
-    id: 'ps',
-    initials: 'PS',
-    name: 'Priya Shah',
-    dept: 'Social Services',
-    role: 'Staff',
-    status: 'Invitation Sent',
-    lastActive: '—',
-  },
-  {
-    id: 'jo',
-    initials: 'JO',
-    name: 'James Otieno',
-    dept: 'IT Support',
-    role: 'Staff',
-    status: 'Inactive',
-    lastActive: '3 days ago',
-  },
-];
+const STATUSES: StaffStatus[] = ['Active', 'Invitation Sent', 'Inactive'];
 
-function statusBadge(status: string) {
+function statusBadge(status: StaffStatus) {
   if (status === 'Active')
     return (
       <span className="sm-badge sm-badge--active">
@@ -63,6 +33,41 @@ function statusBadge(status: string) {
 }
 
 export function StaffManagementPage() {
+  const [staff, setStaff] = useState<StaffMember[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>();
+  const [search, setSearch] = useState('');
+  const [department, setDepartment] = useState('');
+  const [status, setStatus] = useState('');
+
+  useEffect(() => {
+    let active = true;
+    listStaff()
+      .then((rows) => active && setStaff(rows))
+      .catch((err) => active && setError(describeError(err)))
+      .finally(() => active && setLoading(false));
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const departments = useMemo(
+    () => [...new Set(staff.map((s) => s.department).filter(Boolean))].sort(),
+    [staff],
+  );
+
+  const shown = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return staff.filter(
+      (s) =>
+        (!query || s.name.toLowerCase().includes(query) || s.email.toLowerCase().includes(query)) &&
+        (!department || s.department === department) &&
+        (!status || s.status === status),
+    );
+  }, [staff, search, department, status]);
+
+  const count = (value: StaffStatus) => staff.filter((s) => s.status === value).length;
+
   return (
     <>
       {/* Header */}
@@ -82,8 +87,13 @@ export function StaffManagementPage() {
           <UsersIcon />
         </div>
         <div>
-          <strong>42 Staff Members</strong>
-          <span>38 active · 3 invitations pending · 1 inactive</span>
+          <strong>
+            {staff.length} Staff {staff.length === 1 ? 'Member' : 'Members'}
+          </strong>
+          <span>
+            {count('Active')} active · {count('Invitation Sent')} invitations pending ·{' '}
+            {count('Inactive')} inactive
+          </span>
         </div>
       </div>
 
@@ -91,16 +101,39 @@ export function StaffManagementPage() {
       <div className="sm-filters">
         <div className="sm-search">
           <Search size={16} />
-          <input placeholder="Search staff by name or email" />
+          <input
+            placeholder="Search staff by name or email"
+            aria-label="Search staff by name or email"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
-        <div className="sm-select">
-          <span>Department</span>
-          <ChevronDown size={14} />
-        </div>
-        <div className="sm-select">
-          <span>Status</span>
-          <ChevronDown size={14} />
-        </div>
+        <select
+          className="sm-select"
+          aria-label="Department"
+          value={department}
+          onChange={(e) => setDepartment(e.target.value)}
+        >
+          <option value="">Department</option>
+          {departments.map((d) => (
+            <option key={d} value={d}>
+              {d}
+            </option>
+          ))}
+        </select>
+        <select
+          className="sm-select"
+          aria-label="Status"
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+        >
+          <option value="">Status</option>
+          {STATUSES.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Table */}
@@ -113,19 +146,31 @@ export function StaffManagementPage() {
           <span>Last Active</span>
           <span></span>
         </div>
-        {staffMembers.map((person) => (
+        {loading && <p className="sm-message">Loading staff…</p>}
+        {error && (
+          <p className="sm-message sm-message--error" role="alert">
+            {error}
+          </p>
+        )}
+        {!loading && !error && staff.length === 0 && (
+          <p className="sm-message">No staff accounts yet. Create the first one.</p>
+        )}
+        {!loading && !error && staff.length > 0 && shown.length === 0 && (
+          <p className="sm-message">No staff match your search or filters.</p>
+        )}
+        {shown.map((person) => (
           <div key={person.id} className="sm-row">
             <div className="sm-member">
               <span className="sm-avatar">{person.initials}</span>
               <strong>{person.name}</strong>
             </div>
-            <span className="sm-cell">{person.dept}</span>
+            <span className="sm-cell">{person.department || '—'}</span>
             <span className="sm-cell">{person.role}</span>
             <span>{statusBadge(person.status)}</span>
-            <span className="sm-cell sm-muted">{person.lastActive}</span>
-            <button className="sm-view">
+            <span className="sm-cell sm-muted">{lastActiveLabel(person.lastLogin)}</span>
+            <Link to={`/dashboard/institution/staff/${person.id}`} className="sm-view">
               View profile <ChevronRight size={16} />
-            </button>
+            </Link>
           </div>
         ))}
       </div>

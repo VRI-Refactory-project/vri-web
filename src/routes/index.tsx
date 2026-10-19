@@ -35,6 +35,7 @@ import { AdminProfilePage } from '../pages/admin/AdminProfilePage';
 import { CreateStaffAccountPage } from '../pages/institution/CreateStaffAccountPage';
 import { OfflinePage } from '../pages/OfflinePage';
 import { StaffAccountCreatedPage } from '../pages/institution/StaffAccountCreatedPage';
+import { StaffProfilePage } from '../pages/institution/StaffProfilePage';
 import { InstitutionDashboardPage } from '../pages/institution/InstitutionDashboardPage';
 import { InstitutionReviewPage } from '../pages/admin/InstitutionReviewPage';
 import RequestsPage from '../pages/interpreter/RequestsPage';
@@ -139,6 +140,7 @@ export const router = createBrowserRouter([
               { path: 'staff', element: <StaffManagementPage /> },
               { path: 'staff/new', element: <CreateStaffAccountPage /> },
               { path: 'staff/created', element: <StaffAccountCreatedPage /> },
+              { path: 'staff/:id', element: <StaffProfilePage /> },
               { path: 'sessions', element: <Placeholder title="Sessions" story="V2-028" /> },
               { path: 'analytics', element: <Placeholder title="Analytics" story="V2-028" /> },
               { path: 'settings', element: <Placeholder title="Settings" story="V2-028" /> },
