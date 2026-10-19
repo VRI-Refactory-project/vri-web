@@ -1,0 +1,181 @@
+.requests-page {
+  font-family: 'Manrope', sans-serif;
+  background-color: #f6f5fc;
+  padding: 24px;
+  border-radius: 15px;
+  /* Note: Removed min-height: 100vh so it fits cleanly inside your DashboardLayout */
+}
+
+.requests-header h1 {
+  color: #0f172a;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+}
+
+.requests-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #ffffff;
+  padding: 12px 20px;
+  border-radius: 15px;
+  margin-bottom: 24px;
+  color: #64748b;
+  font-size: 14px;
+}
+/* ... keep the rest of your CSS exactly the same ... */
+
+.requests-sort {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 6px 12px;
+  background-color: #ffffff;
+  color: #0f172a;
+  font-family: inherit;
+  outline: none;
+}
+
+.requests-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.offer-card {
+  background: #ffffff;
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.offer-card--expired {
+  opacity: 0.6;
+  filter: grayscale(1);
+  pointer-events: none;
+}
+
+.offer-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.offer-card__title {
+  margin: 0 0 4px 0;
+  color: #0f172a;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.offer-card__institution {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.offer-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.offer-badge--safe {
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+
+.offer-badge--urgent {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.offer-badge--expired {
+  background-color: #f1f5f9;
+  color: #64748b;
+}
+
+.offer-card__details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.offer-detail {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.offer-card__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.offer-card__actions button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.2s;
+}
+
+.offer-card__actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-decline {
+  background: transparent;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
+}
+
+.btn-decline:hover:not(:disabled) {
+  background: #f8fafc;
+}
+
+.btn-accept {
+  background: #4b34a0;
+  border: 1px solid #4b34a0;
+  color: #ffffff;
+}
+
+.btn-accept:hover:not(:disabled) {
+  background: #3b2579;
+}
+
+.requests-loading,
+.requests-empty {
+  text-align: center;
+  color: #64748b;
+  padding: 40px;
+  font-size: 14px;
+}
+
+.requests-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #dc2626;
+  padding: 40px;
+  background: #ffffff;
+  border-radius: 15px;
+}

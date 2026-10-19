@@ -37,6 +37,7 @@ import { OfflinePage } from '../pages/OfflinePage';
 import { StaffAccountCreatedPage } from '../pages/institution/StaffAccountCreatedPage';
 import { InstitutionDashboardPage } from '../pages/institution/InstitutionDashboardPage';
 import { InstitutionReviewPage } from '../pages/admin/InstitutionReviewPage';
+import RequestsPage from '../pages/interpreter/RequestsPage';
 
 export const router = createBrowserRouter([
   {
@@ -114,7 +115,7 @@ export const router = createBrowserRouter([
                 element: <InterpreterLayout />,
                 children: [
                   { index: true, element: <InterpreterHomePage /> },
-                  { path: 'requests', element: <Placeholder title="Requests" story="Sprint 2" /> },
+                  { path: 'requests', element: <RequestsPage /> },
                   { path: 'sessions', element: <Placeholder title="Sessions" story="Sprint 2" /> },
                   { path: 'availability', element: <AvailabilityPage /> },
                   { path: 'wallet', element: <Placeholder title="Wallet" story="Not scheduled" /> },
