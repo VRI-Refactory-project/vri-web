@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import userEvent from '@testing-library/user-event';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { DashboardPage } from './DHH_dashboard';
 
 // Mock useAuth since DashboardLayout reads the current user
@@ -46,6 +47,22 @@ describe('DashboardPage (deaf)', () => {
     renderPage();
     await screen.findByText('No upcoming sessions yet.');
     expect(screen.getByRole('button', { name: /start vri session/i })).toBeInTheDocument();
+  });
+
+  it('opens the start session page from the Start VRI Session button', async () => {
+    render(
+      <MemoryRouter>
+        <Routes>
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/dashboard/deaf/sessions/new" element={<p>Start session page</p>} />
+        </Routes>
+      </MemoryRouter>,
+    );
+    await screen.findByText('No upcoming sessions yet.');
+
+    await userEvent.click(screen.getByRole('button', { name: /start vri session/i }));
+
+    expect(screen.getByText('Start session page')).toBeInTheDocument();
   });
 
   it('shows no sessions when the API has none', async () => {

@@ -7,10 +7,11 @@ import {
   Clock,
   CheckCircle2,
   Star,
-  // Hand,
+  Hand,
 } from 'lucide-react';
 
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { api } from '../../services/api';
 import './DHH_dashboard.css';
@@ -56,6 +57,7 @@ const availableInterpreters = [
 
 export function DashboardPage() {
   const { session } = useAuth();
+  const navigate = useNavigate();
   const firstName = (session?.user.name ?? '').trim().split(/\s+/)[0] ?? '';
   const [sessions, setSessions] = useState<DeafDashboard['sessions'] | null>(null);
 
@@ -96,13 +98,16 @@ export function DashboardPage() {
           <span className="hero-tag">ON DEMAND VRI</span>
           <h2 className="hero-title">Start session now</h2>
           <p className="hero-subtitle">Connect with a verified interpreter in under two minutes.</p>
-          <button className="dash-btn-primary">
+          <button
+            className="dash-btn-primary"
+            onClick={() => navigate('/dashboard/deaf/sessions/new')}
+          >
             <Video size={18} /> Start VRI Session
           </button>
         </div>
-        {/* <div className="hero-illustration">
+        <div className="hero-illustration">
           <Hand size={140} strokeWidth={1.2} />
-        </div> */}
+        </div>
       </section>
 
       {/* Quick Actions */}
