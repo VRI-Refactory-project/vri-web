@@ -113,6 +113,17 @@ describe('StartSessionPage', () => {
     expect(screen.getByRole('button', { name: 'Connect now' })).toBeEnabled();
   });
 
+  it('still says something when the server fails without a message', async () => {
+    // For example a 404 page: there is no JSON, so the API client has no text to pass on.
+    vi.mocked(createSessionRequest).mockRejectedValue(new ApiError(404, ''));
+    renderPage();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Connect now' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Something went wrong');
+    expect(screen.getByRole('button', { name: 'Connect now' })).toBeEnabled();
+  });
+
   it('says so when no interpreter could be found, and lets the person try again', async () => {
     vi.mocked(createSessionRequest).mockResolvedValue(request('QUEUED'));
     vi.mocked(getSessionRequest).mockResolvedValue(request('FAILED'));
