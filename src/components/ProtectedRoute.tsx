@@ -14,11 +14,6 @@ export function ProtectedRoute({
 }) {
   const { session } = useAuth();
   const location = useLocation();
-
-  // TEMP DEV BYPASS: remove before committing
-  if (import.meta.env.DEV && new URLSearchParams(window.location.search).has('dev'))
-    return <Outlet />;
-
   // Remember where the person was going, so signing in again can bring them back to it.
   if (!session) {
     const from = `${location.pathname}${location.search}`;
