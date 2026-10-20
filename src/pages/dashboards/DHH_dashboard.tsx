@@ -8,10 +8,11 @@
 //   Clock,
 //   CheckCircle2,
 //   Star,
-//   AlertCircle, // Added for the emergency button
+//   AlertCircle,
 // } from 'lucide-react';
 
 // import { useEffect, useState } from 'react';
+// import { useNavigate } from 'react-router-dom';
 // import { useAuth } from '../../hooks/useAuth';
 // import { api } from '../../services/api';
 // import './DHH_dashboard.css';
@@ -46,7 +47,7 @@
 //     id: 2,
 //     name: 'Daniel Brooks',
 //     languages: 'USL, English',
-//     rating: 4.5,
+//     rating: 4.9,
 //     specialties: 'Education, Legal',
 //     isAvailable: false,
 //     image: danielImage,
@@ -55,25 +56,65 @@
 
 // export function DashboardPage() {
 //   const { session } = useAuth();
+//   const navigate = useNavigate();
 //   const firstName = (session?.user.name ?? '').trim().split(/\s+/)[0] ?? '';
+  
+//   // --- STATE ---
 //   const [sessions, setSessions] = useState<DeafDashboard['sessions'] | null>(null);
+  
+//   // State for stats (Defaults to 0 until backend is connected)
+//   // const [stats, setStats] = useState({
+//   const [stats, _setStats] = useState({
+//     walletBalance: 0,
+//     monthlySessions: 0,
+//     monthlyMinutes: 0,
+//   });
 
+//   // --- EFFECTS ---
 //   useEffect(() => {
 //     let cancelled = false;
+    
 //     api<DeafDashboard>('/api/v1/dashboard/deaf/').then(
 //       (data) => {
-//         if (!cancelled) setSessions(data.sessions);
+//         if (!cancelled) {
+//           setSessions(data.sessions);
+          
+//           // TODO: When backend is ready, I will uncomment this and replace with actual API fields
+//           // setStats({ 
+//           //   walletBalance: data.wallet_balance || 0,
+//           //   monthlySessions: data.monthly_sessions || 0,
+//           //   monthlyMinutes: data.monthly_minutes || 0
+//           // });
+//         }
 //       },
 //       () => {
 //         if (!cancelled) setSessions([]);
 //       },
 //     );
+    
 //     return () => {
 //       cancelled = true;
 //     };
 //   }, []);
 
 //   const sessionCount = sessions?.length ?? 0;
+
+//     // --- HELPERS ---
+//   const formatCurrency = (amount: number) => {
+//     // 1. Format the number with commas (e.g., 50000 -> "50,000")
+//     const formattedNumber = new Intl.NumberFormat('en-US', {
+//       maximumFractionDigits: 0,
+//     }).format(amount);
+    
+//     // 2. Hardcode the prefix to guarantee it says "UGX"
+//     return `UGX ${formattedNumber}`;
+//   };
+
+//   const formatTime = (totalMinutes: number) => {
+//     const hours = Math.floor(totalMinutes / 60);
+//     const minutes = totalMinutes % 60;
+//     return `${hours}h ${minutes}m`;
+//   };
 
 //   return (
 //     <>
@@ -96,7 +137,6 @@
 //           <h2 className="hero-title">Start session now</h2>
 //           <p className="hero-subtitle">Connect with a verified interpreter in under two minutes.</p>
 
-//           {/* Buttons Group */}
 //           <div className="hero-buttons-group">
 //             <button className="dash-btn-primary">
 //               <Video size={18} /> Start VRI Session
@@ -105,7 +145,7 @@
 //             <button 
 //               className="dash-btn-emergency"
 //               onClick={() => {
-//                 // Add your emergency logic here later
+//                 // TODO: Add emergency logic here
 //                 console.log("Emergency request triggered");
 //               }}
 //             >
@@ -113,6 +153,16 @@
 //             </button>
 //           </div>
 //         </div>
+//           {/* <button
+//             className="dash-btn-primary"
+//             onClick={() => navigate('/dashboard/deaf/sessions/new')}
+//           >
+//             <Video size={18} /> Start VRI Session
+//           </button> */}
+//         {/* </div>
+//         <div className="hero-illustration">
+//           <Hand size={140} strokeWidth={1.2} />
+//         </div> */}
 //       </section>
 
 //       {/* Quick Actions */}
@@ -150,15 +200,19 @@
 //             {sessionCount === 0 ? 'Nothing booked yet' : 'Scheduled with an interpreter'}
 //           </span>
 //         </div>
+
 //         <div className="stat-card">
 //           <span className="stat-label">Wallet</span>
-//           <span className="stat-value">UGX 0</span>
-//           <span className="stat-sub">Available balance (sample)</span>
+//           <span className="stat-value">{formatCurrency(stats.walletBalance)}</span>
+//           <span className="stat-sub">Available balance</span>
 //         </div>
+
 //         <div className="stat-card">
 //           <span className="stat-label">This month</span>
-//           <span className="stat-value">0 sessions</span>
-//           <span className="stat-sub">0h 0m interpreted (sample)</span>
+//           <span className="stat-value">
+//             {stats.monthlySessions} {stats.monthlySessions === 1 ? 'session' : 'sessions'}
+//           </span>
+//           <span className="stat-sub">{formatTime(stats.monthlyMinutes)} interpreted</span>
 //         </div>
 //       </section>
 
@@ -195,7 +249,7 @@
 //       {/* Available Interpreters */}
 //       <section className="dashboard-section">
 //         <div className="section-header">
-//           <h3>Available interpreters (sample)</h3>
+//           <h3>Available interpreters</h3>
 //           <a href="#" className="view-all">
 //             See all <ChevronRight size={16} />
 //           </a>
@@ -228,7 +282,6 @@
 //     </>
 //   );
 // }
-
 
 import {
   Video,
@@ -294,7 +347,8 @@ export function DashboardPage() {
   const [sessions, setSessions] = useState<DeafDashboard['sessions'] | null>(null);
   
   // State for stats (Defaults to 0 until backend is connected)
-  const [stats, setStats] = useState({
+  // Note: _setStats has an underscore to prevent linter errors until it's used
+  const [stats, _setStats] = useState({
     walletBalance: 0,
     monthlySessions: 0,
     monthlyMinutes: 0,
@@ -309,8 +363,8 @@ export function DashboardPage() {
         if (!cancelled) {
           setSessions(data.sessions);
           
-          // TODO: When backend is ready, I will uncomment this and replace with actual API fields
-          // setStats({ 
+          // TODO: When backend is ready, uncomment this and replace with actual API fields
+          // _setStats({ 
           //   walletBalance: data.wallet_balance || 0,
           //   monthlySessions: data.monthly_sessions || 0,
           //   monthlyMinutes: data.monthly_minutes || 0
@@ -329,14 +383,14 @@ export function DashboardPage() {
 
   const sessionCount = sessions?.length ?? 0;
 
-    // --- HELPERS ---
+  // --- HELPERS ---
   const formatCurrency = (amount: number) => {
-    // 1. Format the number with commas (e.g., 50000 -> "50,000")
+    // Format the number with commas (e.g., 50000 -> "50,000")
     const formattedNumber = new Intl.NumberFormat('en-US', {
       maximumFractionDigits: 0,
     }).format(amount);
     
-    // 2. Hardcode the prefix to guarantee it says "UGX"
+    // Hardcode the prefix to guarantee it says "UGX"
     return `UGX ${formattedNumber}`;
   };
 
@@ -368,7 +422,10 @@ export function DashboardPage() {
           <p className="hero-subtitle">Connect with a verified interpreter in under two minutes.</p>
 
           <div className="hero-buttons-group">
-            <button className="dash-btn-primary">
+            <button 
+              className="dash-btn-primary"
+              onClick={() => navigate('/dashboard/deaf/sessions/new')}
+            >
               <Video size={18} /> Start VRI Session
             </button>
             
@@ -383,16 +440,6 @@ export function DashboardPage() {
             </button>
           </div>
         </div>
-          {/* <button
-            className="dash-btn-primary"
-            onClick={() => navigate('/dashboard/deaf/sessions/new')}
-          >
-            <Video size={18} /> Start VRI Session
-          </button> */}
-        {/* </div>
-        <div className="hero-illustration">
-          <Hand size={140} strokeWidth={1.2} />
-        </div> */}
       </section>
 
       {/* Quick Actions */}

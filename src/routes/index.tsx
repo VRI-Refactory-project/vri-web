@@ -68,7 +68,7 @@ export const router = createBrowserRouter([
   { path: '/register/institution', element: <SignUpInstitution /> },
 
   {
-    // element: <ProtectedRoute allow={['deaf']} />,
+    element: <ProtectedRoute allow={['deaf']} />,
     children: [
       {
         path: '/dashboard/deaf',
