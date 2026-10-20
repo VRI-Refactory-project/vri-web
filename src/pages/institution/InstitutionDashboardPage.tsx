@@ -1,4 +1,3 @@
-
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CircleUserRound, Plus } from 'lucide-react';
@@ -63,7 +62,7 @@ export function InstitutionDashboardPage({
     alerts: 0,
     pendingStaff: 0,
     flaggedSessions: 0,
-    weeklyActivity: [0, 0, 0, 0, 0, 0, 0], 
+    weeklyActivity: [0, 0, 0, 0, 0, 0, 0],
     departments: [],
     sessions: [],
   });
@@ -115,8 +114,8 @@ export function InstitutionDashboardPage({
           <strong>{data.activeSessions}</strong>
           {/* Fixed: Added span tag back */}
           <span className="id-kpi-note">
-            {data.activeSessions > 0 
-              ? `Across ${data.departments.length} departments` 
+            {data.activeSessions > 0
+              ? `Across ${data.departments.length} departments`
               : 'No active sessions'}
           </span>
         </article>
@@ -281,7 +280,7 @@ export function InstitutionDashboardPage({
           {data.departments.length === 0 && (
             <p style={{ color: 'gray', padding: '10px 0' }}>No departments added yet.</p>
           )}
-          
+
           {data.departments.map((department) => (
             <button
               type="button"
