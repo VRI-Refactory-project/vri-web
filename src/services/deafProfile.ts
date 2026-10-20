@@ -17,16 +17,14 @@ export interface MyProfile {
   flashAlerts: boolean;
   publicProfile: boolean;
 }
-
 interface ApiMe {
-  id?: number;
   full_name?: string;
   name?: string;
   preferred_name?: string;
   email?: string;
   contact_number?: string | null;
-  phone_number?: string | null;
-  phone?: string | null;
+  phone_number?: string;
+  phone?: string;
   location?: string;
   profile_photo?: string | null;
   photo?: string | null;
@@ -34,12 +32,10 @@ interface ApiMe {
   languages?: string[];
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
+  email_notifications?: boolean;
+  chat_alerts?: boolean;
   flash_alerts?: boolean;
-  vibrate_on_call?: boolean;
-  live_captions?: boolean;
-  large_text?: boolean;
-  preferred_domains?: string[];
-  preferred_contact_mode?: string;
+  public_profile?: boolean;
 }
 
 export async function fetchMyProfile(): Promise<MyProfile> {
@@ -62,10 +58,6 @@ export async function fetchMyProfile(): Promise<MyProfile> {
     chatAlerts: raw.chat_alerts ?? true,
     flashAlerts: raw.flash_alerts ?? true,
     publicProfile: raw.public_profile ?? false,
-    
-    email_notifications?: boolean;
-    chat_alerts?: boolean;
-    public_profile?: boolean;
   };
 }
 
