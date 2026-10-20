@@ -12,6 +12,13 @@ import {
 export const DEFAULT_POLL_MS = 3000;
 
 /**
+ * A message to show for a failed call. Some failures (for example a 404 page, or a server that
+ * sends no text) arrive with an empty message, and an empty message would show nothing at all.
+ */
+const messageFor = (err: unknown) =>
+  describeError(err).trim() || 'Something went wrong. Please try again.';
+
+/**
  * Holds one live-session request: creates it, follows it until it reaches an end state, and lets
  * the person cancel it. The screens read `request.state` and decide what to show.
  */
@@ -38,7 +45,7 @@ export function useSessionRequest(pollMs: number = DEFAULT_POLL_MS) {
         setRequest(next);
         setError(null);
       } catch (err) {
-        if (!cancelled && currentId.current === id) setError(describeError(err));
+        if (!cancelled && currentId.current === id) setError(messageFor(err));
       }
       if (!cancelled) setTick((n) => n + 1);
     }, pollMs);
@@ -56,7 +63,7 @@ export function useSessionRequest(pollMs: number = DEFAULT_POLL_MS) {
       currentId.current = created.id;
       setRequest(created);
     } catch (err) {
-      setError(describeError(err));
+      setError(messageFor(err));
     } finally {
       setBusy(false);
     }
@@ -71,7 +78,7 @@ export function useSessionRequest(pollMs: number = DEFAULT_POLL_MS) {
       currentId.current = null;
       setRequest(null);
     } catch (err) {
-      setError(describeError(err));
+      setError(messageFor(err));
     } finally {
       setBusy(false);
     }
