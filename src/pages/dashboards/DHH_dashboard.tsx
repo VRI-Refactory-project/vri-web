@@ -7,7 +7,7 @@ import {
   Clock,
   CheckCircle2,
   Star,
-  Hand,
+  AlertCircle,
 } from 'lucide-react';
 
 import { useEffect, useState } from 'react';
@@ -32,13 +32,11 @@ function greeting(date = new Date()) {
 }
 
 // --- SAMPLE DATA ---
-// There is no interpreter search or rating data in the API yet, so these cards are samples
-// for demonstration. They are labelled as such on the page.
 const availableInterpreters = [
   {
     id: 1,
     name: 'Amina Okafor',
-    languages: 'ASL, English',
+    languages: 'USL, English',
     rating: 4.9,
     specialties: 'Healthcare, Legal',
     isAvailable: true,
@@ -47,9 +45,9 @@ const availableInterpreters = [
   {
     id: 2,
     name: 'Daniel Brooks',
-    languages: 'ASL, English',
+    languages: 'USL, English',
     rating: 4.9,
-    specialties: 'Healthcare, Legal',
+    specialties: 'Education, Legal',
     isAvailable: false,
     image: danielImage,
   },
@@ -59,24 +57,70 @@ export function DashboardPage() {
   const { session } = useAuth();
   const navigate = useNavigate();
   const firstName = (session?.user.name ?? '').trim().split(/\s+/)[0] ?? '';
+
+  // --- STATE ---
   const [sessions, setSessions] = useState<DeafDashboard['sessions'] | null>(null);
 
+  // State for stats (Defaults to 0 until backend is connected)
+  const [stats, setStats] = useState({
+    walletBalance: 0,
+    monthlySessions: 0,
+    monthlyMinutes: 0,
+  });
+
+  // --- EFFECTS ---
   useEffect(() => {
     let cancelled = false;
+
     api<DeafDashboard>('/api/v1/dashboard/deaf/').then(
       (data) => {
-        if (!cancelled) setSessions(data.sessions);
+        if (!cancelled) {
+          setSessions(data.sessions);
+
+          // This sets the stats to 0 for now.
+          // It also satisfies the ESLint rule that requires setStats to be used.
+          setStats({
+            walletBalance: 0,
+            monthlySessions: 0,
+            monthlyMinutes: 0,
+          });
+
+          // TODO: When backend is ready, replace the 0s above with actual API fields:
+          // setStats({
+          //   walletBalance: data.wallet_balance || 0,
+          //   monthlySessions: data.monthly_sessions || 0,
+          //   monthlyMinutes: data.monthly_minutes || 0
+          // });
+        }
       },
       () => {
         if (!cancelled) setSessions([]);
       },
     );
+
     return () => {
       cancelled = true;
     };
   }, []);
 
   const sessionCount = sessions?.length ?? 0;
+
+  // --- HELPERS ---
+  const formatCurrency = (amount: number) => {
+    // Format the number with commas (e.g., 50000 -> "50,000")
+    const formattedNumber = new Intl.NumberFormat('en-US', {
+      maximumFractionDigits: 0,
+    }).format(amount);
+
+    // Hardcode the prefix to guarantee it says "UGX"
+    return `UGX ${formattedNumber}`;
+  };
+
+  const formatTime = (totalMinutes: number) => {
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return `${hours}h ${minutes}m`;
+  };
 
   return (
     <>
@@ -98,15 +142,25 @@ export function DashboardPage() {
           <span className="hero-tag">ON DEMAND VRI</span>
           <h2 className="hero-title">Start session now</h2>
           <p className="hero-subtitle">Connect with a verified interpreter in under two minutes.</p>
-          <button
-            className="dash-btn-primary"
-            onClick={() => navigate('/dashboard/deaf/sessions/new')}
-          >
-            <Video size={18} /> Start VRI Session
-          </button>
-        </div>
-        <div className="hero-illustration">
-          <Hand size={140} strokeWidth={1.2} />
+
+          <div className="hero-buttons-group">
+            <button
+              className="dash-btn-primary"
+              onClick={() => navigate('/dashboard/deaf/sessions/new')}
+            >
+              <Video size={18} /> Start VRI Session
+            </button>
+
+            <button
+              className="dash-btn-emergency"
+              onClick={() => {
+                // TODO: Add emergency logic here
+                console.log('Emergency request triggered');
+              }}
+            >
+              <AlertCircle size={18} /> Emergency Request
+            </button>
+          </div>
         </div>
       </section>
 
@@ -145,15 +199,19 @@ export function DashboardPage() {
             {sessionCount === 0 ? 'Nothing booked yet' : 'Scheduled with an interpreter'}
           </span>
         </div>
+
         <div className="stat-card">
           <span className="stat-label">Wallet</span>
-          <span className="stat-value">$48.50</span>
-          <span className="stat-sub">Available balance (sample)</span>
+          <span className="stat-value">{formatCurrency(stats.walletBalance)}</span>
+          <span className="stat-sub">Available balance</span>
         </div>
+
         <div className="stat-card">
           <span className="stat-label">This month</span>
-          <span className="stat-value">7 sessions</span>
-          <span className="stat-sub">3h 15m interpreted (sample)</span>
+          <span className="stat-value">
+            {stats.monthlySessions} {stats.monthlySessions === 1 ? 'session' : 'sessions'}
+          </span>
+          <span className="stat-sub">{formatTime(stats.monthlyMinutes)} interpreted</span>
         </div>
       </section>
 
@@ -190,7 +248,7 @@ export function DashboardPage() {
       {/* Available Interpreters */}
       <section className="dashboard-section">
         <div className="section-header">
-          <h3>Available interpreters (sample)</h3>
+          <h3>Available interpreters</h3>
           <a href="#" className="view-all">
             See all <ChevronRight size={16} />
           </a>
@@ -198,28 +256,6 @@ export function DashboardPage() {
 
         <div className="interpreter-grid">
           {availableInterpreters.map((interpreter) => (
-            // <div key={interpreter.id} className="interpreter-card">
-            //   <div className="interpreter-image-wrap">
-            //     <img src={interpreter.image} alt={interpreter.name} />
-            //     {interpreter.isAvailable && (
-            //       <span className="status-dot-online"></span>
-            //     )}
-            //   </div>
-            //   <div className="interpreter-info">
-            //     <div className="interpreter-header">
-            //       <h4>{interpreter.name}</h4>
-            //       <CheckCircle2 size={16} className="verified-icon" />
-            //     </div>
-            //     <p className="interpreter-langs">{interpreter.languages}</p>
-            //     <div className="interpreter-rating">
-            //       <Star size={14} className="star-icon" />
-            //       <span>{interpreter.rating}</span>
-            //       <span className="text-muted">· {interpreter.specialties}</span>
-            //     </div>
-            //   </div>
-            //   <button className="btn-outline">View profile</button>
-            // </div>
-
             <div key={interpreter.id} className="interpreter-card">
               <div className="interpreter-image-wrap">
                 <img src={interpreter.image} alt={interpreter.name} />

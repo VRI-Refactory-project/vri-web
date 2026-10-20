@@ -55,8 +55,8 @@ body {
 
 /* Replaces the old .logo-icon rule */
 .logo-image {
-  width: 150px;
-  height: 150px;
+  width: 2000px;
+  height: 2000px;
   object-fit: contain;
   flex-shrink: 0;
 }
@@ -250,11 +250,45 @@ body {
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  transition: transform 0.2s;
+  /* Changed transition to include background and box-shadow */
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* Added a subtle shadow */
 }
 
-.btn-primary:hover {
-  transform: translateY(-2px);
+/* Fixed the class name typo here */
+.dash-btn-primary:hover {
+  background-color: #f3efff !important; /* Changes to a light purple on hover */
+  transform: translateY(-2px); /* Keeps the slight lift */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); /* Shadow gets a bit deeper */
+}
+
+/* Add this to group the buttons side-by-side */
+.hero-buttons-group {
+  display: flex;
+  align-items: center;
+  gap: 16px; /* Space between the two buttons */
+}
+
+/* The Emergency Button Styling */
+.dash-btn-emergency {
+  background-color: #ef4444; /* Red color for emergency */
+  color: var(--white);
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 6px rgba(239, 68, 68, 0.2); /* Slight red glow */
+}
+
+.dash-btn-emergency:hover {
+  background-color: #dc2626; /* Darker red on hover */
+  transform: translateY(-2px); /* Slight lift effect */
 }
 
 /* .hero-illustration {

@@ -68,7 +68,7 @@ describe('DashboardPage (deaf)', () => {
   it('shows no sessions when the API has none', async () => {
     renderPage();
     expect(await screen.findByText('No upcoming sessions yet.')).toBeInTheDocument();
-    expect(screen.getByText('0 sessions')).toBeInTheDocument();
+    expect(screen.getAllByText('0 sessions')).toHaveLength(2);
     expect(fetchMock.mock.calls[0][0]).toContain('/api/v1/dashboard/deaf/');
     expect(screen.queryByText(/dr\. sarah chen/i)).not.toBeInTheDocument();
   });
