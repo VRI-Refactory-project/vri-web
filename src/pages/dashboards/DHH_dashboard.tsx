@@ -7,7 +7,7 @@ import {
   Clock,
   CheckCircle2,
   Star,
-  Hand,
+  // Hand,
 } from 'lucide-react';
 
 import { useEffect, useState } from 'react';
@@ -100,9 +100,9 @@ export function DashboardPage() {
             <Video size={18} /> Start VRI Session
           </button>
         </div>
-        <div className="hero-illustration">
+        {/* <div className="hero-illustration">
           <Hand size={140} strokeWidth={1.2} />
-        </div>
+        </div> */}
       </section>
 
       {/* Quick Actions */}
