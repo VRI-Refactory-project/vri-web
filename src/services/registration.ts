@@ -14,7 +14,8 @@ export interface DeafRegistration {
   email?: string;
 }
 
-export type Specialisation = 'GENERAL' | 'MEDICAL' | 'LEGAL';
+export type Specialisation =
+  'GENERAL' | 'MEDICAL' | 'LEGAL' | 'EDUCATION' | 'RELIGIOUS' | 'SECURITY' | 'OTHER';
 
 export interface InterpreterRegistration {
   name: string;
