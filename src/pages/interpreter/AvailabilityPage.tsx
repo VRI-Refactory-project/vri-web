@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { describeError } from '../../services/api';
 import { interpreterApi } from '../../services/interpreterApi';
+import { useAuth } from '../../hooks/useAuth';
 import './AvailabilityPage.css';
 
 type DayName = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
@@ -110,6 +111,9 @@ function mapSchedule(payload: AvailabilityPayload): DaySchedule[] {
 }
 
 export function AvailabilityPage() {
+  const { session } = useAuth();
+  const sessionInitial = (session?.user.name ?? 'U').trim().charAt(0).toUpperCase() || 'U';
+
   const [schedule, setSchedule] = useState<DaySchedule[]>(DEFAULT_SCHEDULE);
   const [exceptions, setExceptions] = useState<AvailabilityException[]>([]);
   const [isAvailable, setIsAvailable] = useState(true);
@@ -149,10 +153,6 @@ export function AvailabilityPage() {
       setLoading(false);
     }
   }, []);
-
-  //   useEffect(() => {
-  //     void loadAvailability();
-  //   }, [loadAvailability]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -365,7 +365,7 @@ export function AvailabilityPage() {
           </button>
 
           <span className="availability-user-avatar" aria-label="Signed-in interpreter">
-            A
+            {sessionInitial}
           </span>
 
           <button
