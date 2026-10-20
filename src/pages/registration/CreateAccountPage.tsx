@@ -27,7 +27,7 @@
 //   { value: 'EDUCATION', label: 'Education' },
 //   { value: 'RELIGIOUS', label: 'Religious' },
 //   { value: 'SECURITY', label: 'Security' },
-//   { value: 'OTHER', label: 'Other (please specify)' }, 
+//   { value: 'OTHER', label: 'Other (please specify)' },
 // ];
 
 // type FieldName = 'firstname' | 'lastname' | 'phone' | 'email' | 'password' | 'terms';
@@ -136,8 +136,8 @@
 //       };
 
 //        // Determine what to send for specialisation
-//       const finalSpecialisation = specialisation === 'OTHER' 
-//         ? customSpecialisation.trim() 
+//       const finalSpecialisation = specialisation === 'OTHER'
+//         ? customSpecialisation.trim()
 //         : specialisation;
 
 //       const session = isInterpreter
@@ -319,7 +319,6 @@
 //             )}
 
 //         )}
-        
 
 //         <div className="ca-field">
 //           <label className="ca-label" htmlFor="ca-password">
@@ -397,8 +396,6 @@
 //   );
 // }
 
-
-
 // import { useState, useRef, type FormEvent, type InputHTMLAttributes, type ReactNode } from 'react';
 // import { Link, useNavigate } from 'react-router-dom';
 // import { User, Mail, Lock, Eye, EyeOff, Award, ChevronRight } from 'lucide-react';
@@ -428,7 +425,7 @@
 //   { value: 'EDUCATION', label: 'Education' },
 //   { value: 'RELIGIOUS', label: 'Religious' },
 //   { value: 'SECURITY', label: 'Security' },
-//   { value: 'OTHER', label: 'Other (please specify)' }, 
+//   { value: 'OTHER', label: 'Other (please specify)' },
 // ];
 
 // type FieldName = 'firstname' | 'lastname' | 'phone' | 'email' | 'password' | 'terms';
@@ -537,14 +534,14 @@
 //       };
 
 //       // Determine what to send for specialisation
-//       const finalSpecialisation = specialisation === 'OTHER' 
-//         ? customSpecialisation.trim() 
+//       const finalSpecialisation = specialisation === 'OTHER'
+//         ? customSpecialisation.trim()
 //         : specialisation;
 
 //       const session = isInterpreter
 //         ? await registerInterpreter({ ...registrationData,  specialisation: finalSpecialisation as Specialisation })
 //         : await registerDeaf(registrationData);
-        
+
 //       login(session);
 //       navigate(isInterpreter ? '/register/interpreter/certifications' : '/register/welcome', {
 //         replace: true,
@@ -828,7 +825,7 @@
 //   { value: 'EDUCATION', label: 'Education' },
 //   { value: 'RELIGIOUS', label: 'Religious' },
 //   { value: 'SECURITY', label: 'Security' },
-//   { value: 'OTHER', label: 'Other (please specify)' }, 
+//   { value: 'OTHER', label: 'Other (please specify)' },
 // ];
 
 // type FieldName = 'firstname' | 'lastname' | 'phone' | 'email' | 'password' | 'terms';
@@ -944,15 +941,15 @@
 //       };
 
 //       // 2. Determine what to send
-//       const finalSpecialisation = specialisation === 'OTHER' 
-//         ? customSpecialisation.trim() 
+//       const finalSpecialisation = specialisation === 'OTHER'
+//         ? customSpecialisation.trim()
 //         : specialisation;
 
 //       const session = isInterpreter
 //         // 3. Tell TypeScript to accept it as a Specialisation
 //         ? await registerInterpreter({ ...registrationData, specialisation: finalSpecialisation as Specialisation })
 //         : await registerDeaf(registrationData);
-        
+
 //       login(session);
 //       navigate(isInterpreter ? '/register/interpreter/certifications' : '/register/welcome', {
 //         replace: true,
@@ -1086,7 +1083,7 @@
 //             <label className="ca-label" htmlFor="ca-specialisation">
 //               Specialisation
 //             </label>
-            
+
 //             {/* Added position: relative to the wrapper */}
 //             <div className="ca-input-wrap" style={{ position: 'relative' }}>
 //               <span className="ca-input-icon">
@@ -1113,7 +1110,7 @@
 //                   onChange={(e) => {
 //                     const val = e.target.value as Specialisation;
 //                     setSpecialisation(val);
-//                     if (val !== 'OTHER') setCustomSpecialisation(''); 
+//                     if (val !== 'OTHER') setCustomSpecialisation('');
 //                   }}
 //                 >
 //                   {SPECIALISATIONS.map((o) => (
@@ -1125,20 +1122,20 @@
 //               )}
 
 //               {/* This icon is OUTSIDE the if/else, so it ALWAYS shows on the right */}
-//               <div 
-//                 style={{ 
-//                   position: 'absolute', 
-//                   right: '16px', 
-//                   top: '50%', 
-//                   transform: 'translateY(-50%)', 
-//                   pointerEvents: 'none', 
-//                   color: '#6b7280' 
+//               <div
+//                 style={{
+//                   position: 'absolute',
+//                   right: '16px',
+//                   top: '50%',
+//                   transform: 'translateY(-50%)',
+//                   pointerEvents: 'none',
+//                   color: '#6b7280'
 //                 }}
 //               >
 //                 <ChevronDown size={16} />
 //               </div>
 //             </div>
-            
+
 //             {/* The small "Cancel" link */}
 //             {specialisation === 'OTHER' && (
 //               <button
@@ -1228,8 +1225,6 @@
 //   );
 // }
 
-
-
 // import { useState, useRef, useEffect, type FormEvent, type InputHTMLAttributes, type ReactNode } from 'react';
 // import { Link, useNavigate } from 'react-router-dom';
 // import { User, Mail, Lock, Eye, EyeOff, Award, ChevronRight, ChevronDown } from 'lucide-react';
@@ -1259,7 +1254,7 @@
 //   { value: 'EDUCATION', label: 'Education' },
 //   { value: 'RELIGIOUS', label: 'Religious' },
 //   { value: 'SECURITY', label: 'Security' },
-//   { value: 'OTHER', label: 'Other (please specify)' }, 
+//   { value: 'OTHER', label: 'Other (please specify)' },
 // ];
 
 // type FieldName = 'firstname' | 'lastname' | 'phone' | 'email' | 'password' | 'terms';
@@ -1312,7 +1307,7 @@
 //   const navigate = useNavigate();
 //   const { login } = useAuth();
 //   const isInterpreter = role === 'interpreter';
-  
+
 //   const [form, setForm] = useState({
 //     firstname: '',
 //     lastname: '',
@@ -1321,13 +1316,13 @@
 //     password: '',
 //   });
 //   const [agreed, setAgreed] = useState(false);
-  
+
 //   // Multi-select State
 //   const [specialisations, setSpecialisations] = useState<Specialisation[]>([]);
 //   const [customSpecialisation, setCustomSpecialisation] = useState('');
 //   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 //   const dropdownRef = useRef<HTMLDivElement>(null);
-  
+
 //   const [showPassword, setShowPassword] = useState(false);
 //   const [submitting, setSubmitting] = useState(false);
 //   const [error, setError] = useState<string>();
@@ -1355,9 +1350,9 @@
 //     setForm((f) => ({ ...f, [name]: e.target.value }));
 
 //   const toggleSpecialisation = (value: Specialisation) => {
-//     setSpecialisations((prev) => 
-//       prev.includes(value) 
-//         ? prev.filter((s) => s !== value) 
+//     setSpecialisations((prev) =>
+//       prev.includes(value)
+//         ? prev.filter((s) => s !== value)
 //         : [...prev, value]
 //     );
 //   };
@@ -1411,7 +1406,7 @@
 //       const session = isInterpreter
 //         ? await registerInterpreter({ ...registrationData, specialisation: finalSpecialisation as Specialisation })
 //         : await registerDeaf(registrationData);
-        
+
 //       login(session);
 //       navigate(isInterpreter ? '/register/interpreter/certifications' : '/register/welcome', {
 //         replace: true,
@@ -1555,21 +1550,21 @@
 //             <label className="ca-label">
 //               Specialisation(s)
 //             </label>
-            
+
 //             {/* The Box that looks like an input */}
-//             <div 
-//               className="ca-input-wrap" 
+//             <div
+//               className="ca-input-wrap"
 //               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
 //               style={{ cursor: 'pointer' }}
 //             >
 //               <span className="ca-input-icon">
 //                 <Award size={16} />
 //               </span>
-//               <div 
-//                 className="ca-input" 
-//                 style={{ 
-//                   display: 'flex', 
-//                   alignItems: 'center', 
+//               <div
+//                 className="ca-input"
+//                 style={{
+//                   display: 'flex',
+//                   alignItems: 'center',
 //                   justifyContent: 'space-between',
 //                   whiteSpace: 'nowrap',
 //                   overflow: 'hidden',
@@ -1601,14 +1596,14 @@
 //                 overflowY: 'auto'
 //               }}>
 //                 {SPECIALISATIONS.map((o) => (
-//                   <div 
-//                     key={o.value} 
+//                   <div
+//                     key={o.value}
 //                     onClick={() => toggleSpecialisation(o.value)}
-//                     style={{ 
-//                       display: 'flex', 
-//                       alignItems: 'center', 
+//                     style={{
+//                       display: 'flex',
+//                       alignItems: 'center',
 //                       padding: '10px 12px',
-//                       cursor: 'pointer', 
+//                       cursor: 'pointer',
 //                       fontSize: '14px',
 //                       color: '#374151',
 //                       borderRadius: '4px',
@@ -1717,8 +1712,14 @@
 //   );
 // }
 
-
-import { useState, useRef, useEffect, type FormEvent, type InputHTMLAttributes, type ReactNode } from 'react';
+import {
+  useState,
+  useRef,
+  useEffect,
+  type FormEvent,
+  type InputHTMLAttributes,
+  type ReactNode,
+} from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Mail, Lock, Eye, EyeOff, Award, ChevronRight, ChevronDown } from 'lucide-react';
 import { AuthShell } from '../../components/AuthShell';
@@ -1747,7 +1748,7 @@ const SPECIALISATIONS: { value: Specialisation; label: string }[] = [
   { value: 'EDUCATION', label: 'Education' },
   { value: 'RELIGIOUS', label: 'Religious' },
   { value: 'SECURITY', label: 'Security' },
-  { value: 'OTHER', label: 'Other (please specify)' }, 
+  { value: 'OTHER', label: 'Other (please specify)' },
 ];
 
 type FieldName = 'firstname' | 'lastname' | 'phone' | 'email' | 'password' | 'terms';
@@ -1800,7 +1801,7 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
   const navigate = useNavigate();
   const { login } = useAuth();
   const isInterpreter = role === 'interpreter';
-  
+
   const [form, setForm] = useState({
     firstname: '',
     lastname: '',
@@ -1809,13 +1810,13 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
     password: '',
   });
   const [agreed, setAgreed] = useState(false);
-  
+
   // Multi-select State
   const [specialisations, setSpecialisations] = useState<Specialisation[]>([]);
   const [customSpecialisation, setCustomSpecialisation] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  
+
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>();
@@ -1835,18 +1836,16 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
         setIsDropdownOpen(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const set = (name: keyof typeof form) => (e: { target: { value: string } }) =>
     setForm((f) => ({ ...f, [name]: e.target.value }));
 
   const toggleSpecialisation = (value: Specialisation) => {
-    setSpecialisations((prev) => 
-      prev.includes(value) 
-        ? prev.filter((s) => s !== value) 
-        : [...prev, value]
+    setSpecialisations((prev) =>
+      prev.includes(value) ? prev.filter((s) => s !== value) : [...prev, value],
     );
   };
 
@@ -1897,9 +1896,12 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
         .join(', ');
 
       const session = isInterpreter
-        ? await registerInterpreter({ ...registrationData, specialisation: finalSpecialisation as Specialisation })
+        ? await registerInterpreter({
+            ...registrationData,
+            specialisation: finalSpecialisation as Specialisation,
+          })
         : await registerDeaf(registrationData);
-        
+
       login(session);
       navigate(isInterpreter ? '/register/interpreter/certifications' : '/register/welcome', {
         replace: true,
@@ -1914,8 +1916,7 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
   // Get the text to show inside the dropdown box
   const getSelectedLabel = () => {
     if (specialisations.length === 0) return 'Select specialisation(s)...';
-    return SPECIALISATIONS
-      .filter((o) => specialisations.includes(o.value))
+    return SPECIALISATIONS.filter((o) => specialisations.includes(o.value))
       .map((o) => o.label)
       .join(', ');
   };
@@ -2040,13 +2041,11 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
         {/* CUSTOM MULTI-SELECT DROPDOWN */}
         {isInterpreter && (
           <div className="ca-field" ref={dropdownRef} style={{ position: 'relative' }}>
-            <label className="ca-label">
-              Specialisation(s)
-            </label>
-            
+            <label className="ca-label">Specialisation(s)</label>
+
             {/* The Box that looks like an input */}
-            <div 
-              className="ca-input-wrap" 
+            <div
+              className="ca-input-wrap"
               onClick={() => {
                 // Only open the dropdown if we are not currently typing in "Other"
                 if (!specialisations.includes('OTHER')) {
@@ -2058,7 +2057,7 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
               <span className="ca-input-icon">
                 <Award size={16} />
               </span>
-              
+
               {specialisations.includes('OTHER') ? (
                 /* IF "OTHER" IS SELECTED: Show the text input inside the box */
                 <input
@@ -2072,15 +2071,15 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
                 />
               ) : (
                 /* OTHERWISE: Show the normal dropdown text */
-                <div 
-                  className="ca-input" 
-                  style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
+                <div
+                  className="ca-input"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
                     justifyContent: 'space-between',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
-                    textOverflow: 'ellipsis'
+                    textOverflow: 'ellipsis',
                   }}
                 >
                   <span style={{ color: specialisations.length === 0 ? '#9ca3af' : '#111827' }}>
@@ -2090,14 +2089,14 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
               )}
 
               {/* The Chevron Icon (Always visible on the right) */}
-              <div 
-                style={{ 
-                  position: 'absolute', 
-                  right: '16px', 
-                  top: '50%', 
-                  transform: 'translateY(-50%)', 
-                  pointerEvents: 'none', 
-                  color: '#6b7280' 
+              <div
+                style={{
+                  position: 'absolute',
+                  right: '16px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  pointerEvents: 'none',
+                  color: '#6b7280',
                 }}
               >
                 <ChevronDown size={16} />
@@ -2106,7 +2105,7 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
 
             {/* The Dropdown Menu (Only shows if NOT in "Other" mode) */}
             {isDropdownOpen && !specialisations.includes('OTHER') && (
-              <div 
+              <div
                 style={{
                   position: 'absolute',
                   top: '100%',
@@ -2120,28 +2119,30 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
                   zIndex: 50,
                   boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                   maxHeight: '200px',
-                  overflowY: 'auto'
+                  overflowY: 'auto',
                 }}
-                onClick={(e) => e.stopPropagation()} 
+                onClick={(e) => e.stopPropagation()}
               >
                 {SPECIALISATIONS.map((o) => (
-                  <div 
-                    key={o.value} 
+                  <div
+                    key={o.value}
                     onClick={() => {
                       toggleSpecialisation(o.value);
                       // If they click "Other", close the menu so they can type in the box
-                      if (o.value === 'OTHER') setIsDropdownOpen(false); 
+                      if (o.value === 'OTHER') setIsDropdownOpen(false);
                     }}
-                    style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
                       padding: '10px 12px',
-                      cursor: 'pointer', 
+                      cursor: 'pointer',
                       fontSize: '14px',
                       color: '#374151',
                       borderRadius: '4px',
-                      backgroundColor: specialisations.includes(o.value) ? '#f3f4f6' : 'transparent',
-                      fontWeight: specialisations.includes(o.value) ? '600' : 'normal'
+                      backgroundColor: specialisations.includes(o.value)
+                        ? '#f3f4f6'
+                        : 'transparent',
+                      fontWeight: specialisations.includes(o.value) ? '600' : 'normal',
                     }}
                   >
                     {o.label}
@@ -2155,18 +2156,18 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
               <button
                 type="button"
                 onClick={() => {
-                  setSpecialisations(prev => prev.filter(s => s !== 'OTHER'));
+                  setSpecialisations((prev) => prev.filter((s) => s !== 'OTHER'));
                   setCustomSpecialisation('');
                 }}
-                style={{ 
-                  background: 'none', 
-                  border: 'none', 
-                  color: '#382c77', 
-                  fontSize: '12px', 
-                  cursor: 'pointer', 
-                  textAlign: 'left', 
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#382c77',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                  textAlign: 'left',
                   marginTop: '4px',
-                  fontWeight: 600
+                  fontWeight: 600,
                 }}
               >
                 Back to list
