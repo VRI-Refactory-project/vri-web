@@ -1,0 +1,505 @@
+/* Start a VRI session (deaf user). Colours and type follow the Figma file "VRI revised UIs". */
+.ss-page {
+  max-width: 960px;
+  color: #1d1a30;
+}
+
+.ss-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 0 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #1d1a30;
+  font: inherit;
+  font-size: 16px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ss-back:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.ss-back:focus-visible,
+.ss-btn:focus-visible {
+  outline: 2px solid #4b3a9e;
+  outline-offset: 2px;
+}
+
+.ss-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.ss-subtitle {
+  margin: 4px 0 24px;
+  color: #5a5775;
+  font-size: 15px;
+}
+
+.ss-alert {
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: #fdecec;
+  color: #8a1c1c;
+  font-size: 14px;
+}
+
+.ss-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 20px;
+  align-items: start;
+}
+
+.ss-left {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Connect card */
+.ss-connect {
+  box-sizing: border-box;
+  padding: 24px;
+  border-radius: 16px;
+  background: #4b3a9e;
+  color: #fff;
+}
+
+.ss-connect h2 {
+  margin: 20px 0 4px;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.ss-connect p {
+  margin: 0 0 20px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 14.5px;
+}
+
+.ss-tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+.ss-tile--soft {
+  background: #efedf8;
+  color: #4b3a9e;
+}
+
+/* Buttons */
+.ss-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-sizing: border-box;
+  padding: 0 24px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ss-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.ss-btn--light {
+  height: 44px;
+  background: #fff;
+  color: #4b3a9e;
+}
+
+.ss-btn--outline {
+  height: 38px;
+  padding: 0 18px;
+  border-color: #cfc9e8;
+  border-radius: 10px;
+  background: #fff;
+  color: #4b3a9e;
+  font-size: 13px;
+}
+
+.ss-btn--primary {
+  width: 100%;
+  height: 48px;
+  background: #4b3a9e;
+  color: #fff;
+}
+
+/* Schedule card */
+.ss-schedule {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-sizing: border-box;
+  padding: 20px 24px;
+  border: 1px solid #e3e0f1;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.ss-schedule-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.ss-schedule h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.ss-schedule p {
+  margin: 2px 0 0;
+  color: #5a5775;
+  font-size: 13px;
+}
+
+/* What happens next */
+.ss-next {
+  box-sizing: border-box;
+  padding: 20px;
+  border-radius: 16px;
+  background: #ebe9f6;
+}
+
+.ss-next h2 {
+  margin: 0 0 16px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.ss-next ol {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: #5a5775;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.ss-next li {
+  display: flex;
+  gap: 12px;
+}
+
+.ss-step {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 9999px;
+  background: #fff;
+  color: #4b3a9e;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Interpreter found */
+.ss-found {
+  box-sizing: border-box;
+  max-width: 560px;
+  padding: 24px;
+  border: 1px solid #e3e0f1;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.ss-found-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e3e0f1;
+}
+
+.ss-avatar {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 9999px;
+  background: #ebe9f6;
+  color: #4b3a9e;
+}
+
+.ss-found-who {
+  flex: 1;
+  min-width: 0;
+}
+
+.ss-found-who h2 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.ss-found-who p {
+  margin: 2px 0 0;
+  color: #5a5775;
+  font-size: 13.5px;
+}
+
+.ss-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  background: #e1f3f1;
+  color: #0e7c7b;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ss-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: #0e7c7b;
+}
+
+.ss-facts {
+  display: flex;
+  gap: 40px;
+  margin: 20px 0 24px;
+}
+
+.ss-facts dt {
+  color: #5a5775;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ss-facts dd {
+  margin: 6px 0 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* Waiting for an interpreter */
+.ss-waiting {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  padding: 44px 32px 36px;
+  border: 1px solid #e3e0f1;
+  border-radius: 16px;
+  background: #fff;
+  text-align: center;
+}
+
+.ss-pulse {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  margin-bottom: 36px;
+}
+
+.ss-ring {
+  position: absolute;
+  inset: 0;
+  border: 2px solid #4b3a9e;
+  border-radius: 9999px;
+  opacity: 0;
+  animation: ss-ring 2.4s ease-out infinite;
+}
+
+.ss-ring--late {
+  animation-delay: 1.2s;
+}
+
+.ss-pulse-core {
+  position: absolute;
+  inset: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: #4b3a9e;
+  color: #fff;
+}
+
+.ss-waiting-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.ss-waiting-sub {
+  margin: 6px 0 0;
+  color: #5a5775;
+  font-size: 14px;
+}
+
+.ss-progress {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 420px;
+  margin: 36px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ss-progress-item {
+  position: relative;
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* The line to the next step, drawn from this step's centre. */
+.ss-progress-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 13px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: #d9d5ec;
+}
+
+.ss-progress-item--done:not(:last-child)::after {
+  background: #4b3a9e;
+}
+
+.ss-progress-mark {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid #d9d5ec;
+  border-radius: 9999px;
+  background: #fff;
+  color: #5a5775;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ss-progress-item--done .ss-progress-mark {
+  border-color: #4b3a9e;
+  background: #4b3a9e;
+  color: #fff;
+}
+
+.ss-progress-item--current .ss-progress-mark {
+  border-color: #4b3a9e;
+}
+
+.ss-live {
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  background: #4b3a9e;
+  animation: ss-live 1.4s ease-in-out infinite;
+}
+
+.ss-progress-label {
+  color: #5a5775;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ss-progress-item--done .ss-progress-label {
+  color: #1d1a30;
+}
+
+.ss-progress-item--current .ss-progress-label {
+  color: #4b3a9e;
+}
+
+.ss-btn--outline-lg {
+  height: 44px;
+  margin-top: 36px;
+  border-color: #cfc9e8;
+  background: #fff;
+  color: #4b3a9e;
+}
+
+@keyframes ss-ring {
+  from {
+    transform: scale(0.75);
+    opacity: 0.55;
+  }
+
+  to {
+    transform: scale(1.55);
+    opacity: 0;
+  }
+}
+
+@keyframes ss-live {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ss-ring {
+    animation: none;
+    opacity: 0.25;
+    transform: scale(1.25);
+  }
+
+  .ss-ring--late {
+    display: none;
+  }
+
+  .ss-live {
+    animation: none;
+  }
+}
+
+@media (max-width: 860px) {
+  .ss-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ss-schedule {
+    flex-wrap: wrap;
+  }
+}
