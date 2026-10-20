@@ -1,18 +1,67 @@
 // src/pages/admin/SettingsPage.tsx
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import {
+  fetchAdminPreferences,
+  updateAdminPreferences,
+  type AdminPreferences,
+} from '../../services/adminSettings';
+import { describeError } from '../../services/api';
 import './SettingsPage.css';
 
 export function SettingsPage() {
   const navigate = useNavigate();
   const { session } = useAuth();
-  const name = session?.user.name ?? 'Trudy';
-  const initial = name.trim().charAt(0).toUpperCase() || 'T';
+  const name = session?.user.name ?? 'Administrator';
+  const initial = name.trim().charAt(0).toUpperCase() || 'A';
 
-  const [sessionAlerts, setSessionAlerts] = useState(true);
-  const [verificationAlerts, setVerificationAlerts] = useState(true);
-  const [oneStep, setOneStep] = useState(true);
+  const [prefs, setPrefs] = useState<AdminPreferences>({
+    sessionAlerts: true,
+    verificationAlerts: true,
+    oneStepVerification: true,
+  });
+  const [loaded, setLoaded] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [banner, setBanner] = useState('');
+  const [bannerKind, setBannerKind] = useState<'error' | 'success'>('error');
+
+  useEffect(() => {
+    fetchAdminPreferences()
+      .then((p) => {
+        setPrefs(p);
+        setLoaded(true);
+      })
+      .catch(() => {
+        setBanner('Could not load preferences from the server.');
+        setBannerKind('error');
+      });
+  }, []);
+
+  useEffect(() => {
+    if (!banner || bannerKind !== 'success') return;
+    const t = window.setTimeout(() => setBanner(''), 3500);
+    return () => window.clearTimeout(t);
+  }, [banner, bannerKind]);
+
+  async function toggle<K extends keyof AdminPreferences>(key: K, value: boolean) {
+    const previous = prefs;
+    setPrefs({ ...prefs, [key]: value });
+    setSaving(true);
+    setBanner('');
+    try {
+      const updated = await updateAdminPreferences({ [key]: value });
+      setPrefs(updated);
+      setBanner('Preferences saved.');
+      setBannerKind('success');
+    } catch (err) {
+      setPrefs(previous);
+      setBanner(describeError(err));
+      setBannerKind('error');
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <div className="st-page">
@@ -21,7 +70,15 @@ export function SettingsPage() {
         <p>Manage your administrator profile, notifications and secure access</p>
       </div>
 
-      {/* Administrator profile */}
+      {banner && (
+        <div
+          className={`st-banner ${bannerKind === 'success' ? 'st-banner--success' : 'st-banner--error'}`}
+          role={bannerKind === 'error' ? 'alert' : 'status'}
+        >
+          {banner}
+        </div>
+      )}
+
       <section className="st-card">
         <div className="st-card-head">
           <h2>Administrator profile</h2>
@@ -43,7 +100,6 @@ export function SettingsPage() {
         </div>
       </section>
 
-      {/* Notifications */}
       <section className="st-card">
         <div className="st-card-head">
           <h2>Notifications</h2>
@@ -57,9 +113,10 @@ export function SettingsPage() {
           </div>
           <button
             type="button"
-            className={`st-switch ${sessionAlerts ? 'st-switch--on' : ''}`}
+            className={`st-switch ${prefs.sessionAlerts ? 'st-switch--on' : ''}`}
             aria-label="Toggle session alerts"
-            onClick={() => setSessionAlerts((v) => !v)}
+            disabled={!loaded || saving}
+            onClick={() => void toggle('sessionAlerts', !prefs.sessionAlerts)}
           />
         </div>
 
@@ -70,14 +127,14 @@ export function SettingsPage() {
           </div>
           <button
             type="button"
-            className={`st-switch ${verificationAlerts ? 'st-switch--on' : ''}`}
+            className={`st-switch ${prefs.verificationAlerts ? 'st-switch--on' : ''}`}
             aria-label="Toggle verification alerts"
-            onClick={() => setVerificationAlerts((v) => !v)}
+            disabled={!loaded || saving}
+            onClick={() => void toggle('verificationAlerts', !prefs.verificationAlerts)}
           />
         </div>
       </section>
 
-      {/* Security */}
       <section className="st-card">
         <div className="st-card-head">
           <h2>Security</h2>
@@ -87,12 +144,12 @@ export function SettingsPage() {
         <div className="st-row">
           <div>
             <strong>Password</strong>
-            <p>Last changed 12 days ago</p>
+            <p>Change your administrator password</p>
           </div>
           <button
             type="button"
             className="st-btn st-btn--primary"
-            onClick={() => navigate('/forgot-password')}
+            onClick={() => navigate('/dashboard/admin/profile')}
           >
             Change password
           </button>
@@ -101,13 +158,16 @@ export function SettingsPage() {
         <div className="st-row">
           <div>
             <strong>One-step verification</strong>
-            <p>Enabled for this account</p>
+            <p>
+              {prefs.oneStepVerification ? 'Enabled for this account' : 'Disabled for this account'}
+            </p>
           </div>
           <button
             type="button"
-            className={`st-switch ${oneStep ? 'st-switch--on' : ''}`}
+            className={`st-switch ${prefs.oneStepVerification ? 'st-switch--on' : ''}`}
             aria-label="Toggle one-step verification"
-            onClick={() => setOneStep((v) => !v)}
+            disabled={!loaded || saving}
+            onClick={() => void toggle('oneStepVerification', !prefs.oneStepVerification)}
           />
         </div>
       </section>

@@ -154,3 +154,27 @@
     grid-template-columns: 1fr;
   }
 }
+
+.ap-banner-error {
+  padding: 12px 16px;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #b91c1c;
+  border-radius: 15px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.ap-banner-error {
+  padding: 12px 16px;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #b91c1c;
+  border-radius: 15px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.ap-field--full {
+  grid-column: 1 / -1;
+}

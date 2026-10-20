@@ -58,15 +58,13 @@ const EMPTY_FORM: InstitutionForm = {
   sector: 'Other',
   email: '',
   phone: '',
+  sectorOther: '',
 };
 
 function formatDate(value?: string | null) {
   if (!value) return '—';
-
   const date = new Date(value);
-
   if (Number.isNaN(date.getTime())) return value;
-
   return new Intl.DateTimeFormat('en-GB', {
     day: 'numeric',
     month: 'short',
@@ -80,27 +78,19 @@ function SectorIcon({ sector }: { sector: InstitutionSector }) {
   switch (sector) {
     case 'Healthcare':
       return <Building2 {...common} />;
-
     case 'Education':
       return <GraduationCap {...common} />;
-
     case 'Government':
-    // falls through
     case 'Finance':
       return <Landmark {...common} />;
-
     case 'Legal':
       return <BriefcaseBusiness {...common} />;
-
     case 'Religious':
       return <Church {...common} />;
-
     case 'Security':
       return <ShieldCheck {...common} />;
-
     case 'Manufacturing':
       return <Factory {...common} />;
-
     default:
       return <Building2 {...common} />;
   }
@@ -148,34 +138,45 @@ function InstitutionModal({
           sector: institution.sector,
           email: institution.email,
           phone: institution.phone,
+          sectorOther: '',
         }
       : { ...EMPTY_FORM },
   );
 
-  const [validationError, setValidationError] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   function updateField<K extends keyof InstitutionForm>(field: K, value: InstitutionForm[K]) {
     setForm((current) => ({ ...current, [field]: value }));
+    if (errors[field]) {
+      setErrors((current) => {
+        const next = { ...current };
+        delete next[field];
+        return next;
+      });
+    }
+  }
+
+  function validate(): Record<string, string> {
+    const e: Record<string, string> = {};
+    if (!form.name.trim()) e.name = 'Institution name is required';
+    if (!form.registrationNumber.trim()) e.registrationNumber = 'Registration number is required';
+    if (form.sector === 'Other' && !form.sectorOther?.trim()) {
+      e.sectorOther = 'Please specify the sector';
+    }
+    if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+      e.email = 'Please enter a valid email address';
+    }
+    if (form.phone.trim() && !/^[+0-9 ()-]{7,}$/.test(form.phone.trim())) {
+      e.phone = 'Please enter a valid phone number';
+    }
+    return e;
   }
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setValidationError('');
-
-    if (!form.name.trim()) {
-      setValidationError('Enter the institution name.');
-      return;
-    }
-
-    if (!form.registrationNumber.trim()) {
-      setValidationError('Enter the registration number.');
-      return;
-    }
-
-    if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
-      setValidationError('Enter a valid email address.');
-      return;
-    }
+    const e = validate();
+    setErrors(e);
+    if (Object.keys(e).length > 0) return;
 
     onSave({
       name: form.name.trim(),
@@ -183,6 +184,7 @@ function InstitutionModal({
       sector: form.sector,
       email: form.email.trim(),
       phone: form.phone.trim(),
+      ...(form.sector === 'Other' ? { sectorOther: form.sectorOther?.trim() ?? '' } : {}),
     });
   }
 
@@ -190,9 +192,7 @@ function InstitutionModal({
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape' && !saving) onClose();
     }
-
     window.addEventListener('keydown', onKeyDown);
-
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [onClose, saving]);
 
@@ -218,7 +218,6 @@ function InstitutionModal({
             <h2 id="ia-modal-title">
               {mode === 'edit' ? 'Edit institution details' : 'Add institution'}
             </h2>
-
             <p>
               {mode === 'edit'
                 ? 'Update the organisation information stored on SignConnect.'
@@ -237,53 +236,113 @@ function InstitutionModal({
           </button>
         </header>
 
-        <form onSubmit={submit}>
+        <form onSubmit={submit} noValidate>
           <div className="ia-modal__body">
-            <div className="ia-form-field">
+            <div className={`ia-form-field ${errors.name ? 'ia-form-field--invalid' : ''}`}>
               <label htmlFor="ia-name">Institution name *</label>
               <input
                 id="ia-name"
                 autoFocus
-                required
                 maxLength={160}
                 value={form.name}
                 onChange={(event) => updateField('name', event.target.value)}
                 placeholder="e.g. Mulago Hospital"
+                aria-invalid={errors.name ? true : undefined}
+                aria-describedby={errors.name ? 'ia-name-error' : undefined}
               />
+              {errors.name && (
+                <p className="ia-field-error" id="ia-name-error">
+                  {errors.name}
+                </p>
+              )}
             </div>
 
             <div className="ia-form-grid">
-              <div className="ia-form-field">
+              <div
+                className={`ia-form-field ${errors.registrationNumber ? 'ia-form-field--invalid' : ''}`}
+              >
                 <label htmlFor="ia-reg">Registration number *</label>
                 <input
                   id="ia-reg"
-                  required
                   maxLength={100}
                   value={form.registrationNumber}
                   onChange={(event) => updateField('registrationNumber', event.target.value)}
                   placeholder="e.g. INST-001"
+                  aria-invalid={errors.registrationNumber ? true : undefined}
+                  aria-describedby={errors.registrationNumber ? 'ia-reg-error' : undefined}
                 />
+                {errors.registrationNumber && (
+                  <p className="ia-field-error" id="ia-reg-error">
+                    {errors.registrationNumber}
+                  </p>
+                )}
               </div>
 
-              <div className="ia-form-field">
-                <label htmlFor="ia-sector">Sector *</label>
-                <select
-                  id="ia-sector"
-                  value={form.sector}
-                  onChange={(event) =>
-                    updateField('sector', event.target.value as InstitutionSector)
-                  }
-                >
-                  {SECTORS.map((sector) => (
-                    <option key={sector} value={sector}>
-                      {sector}
-                    </option>
-                  ))}
-                </select>
+              <div
+                className={`ia-form-field ${form.sector === 'Other' && errors.sectorOther ? 'ia-form-field--invalid' : ''}`}
+              >
+                <label htmlFor={form.sector === 'Other' ? 'ia-sector-other' : 'ia-sector'}>
+                  Sector *
+                </label>
+
+                {form.sector === 'Other' ? (
+                  <div className="ia-sector-input-wrap">
+                    <input
+                      id="ia-sector-other"
+                      autoFocus
+                      maxLength={120}
+                      value={form.sectorOther ?? ''}
+                      onChange={(event) => updateField('sectorOther', event.target.value)}
+                      placeholder="Please specify the sector"
+                      aria-invalid={errors.sectorOther ? true : undefined}
+                      aria-describedby={errors.sectorOther ? 'ia-sector-other-error' : undefined}
+                    />
+                    <button
+                      type="button"
+                      className="ia-sector-drop-btn"
+                      aria-label="Pick sector from list"
+                      onClick={() => {
+                        updateField('sector', 'Healthcare');
+                        updateField('sectorOther', '');
+                      }}
+                    >
+                      <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true">
+                        <path
+                          d="M5 8l5 5 5-5"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                ) : (
+                  <select
+                    id="ia-sector"
+                    value={form.sector}
+                    onChange={(event) =>
+                      updateField('sector', event.target.value as InstitutionSector)
+                    }
+                  >
+                    {SECTORS.map((sector) => (
+                      <option key={sector} value={sector}>
+                        {sector}
+                      </option>
+                    ))}
+                  </select>
+                )}
+
+                {form.sector === 'Other' && errors.sectorOther && (
+                  <p className="ia-field-error" id="ia-sector-other-error">
+                    {errors.sectorOther}
+                  </p>
+                )}
               </div>
             </div>
 
-            <div className="ia-form-field">
+            <div className={`ia-form-field ${errors.email ? 'ia-form-field--invalid' : ''}`}>
               <label htmlFor="ia-email">Official email address</label>
               <div className="ia-input-with-icon">
                 <Mail size={16} />
@@ -294,11 +353,18 @@ function InstitutionModal({
                   value={form.email}
                   onChange={(event) => updateField('email', event.target.value)}
                   placeholder="admin@institution.go.ug"
+                  aria-invalid={errors.email ? true : undefined}
+                  aria-describedby={errors.email ? 'ia-email-error' : undefined}
                 />
               </div>
+              {errors.email && (
+                <p className="ia-field-error" id="ia-email-error">
+                  {errors.email}
+                </p>
+              )}
             </div>
 
-            <div className="ia-form-field">
+            <div className={`ia-form-field ${errors.phone ? 'ia-form-field--invalid' : ''}`}>
               <label htmlFor="ia-phone">Contact telephone</label>
               <div className="ia-input-with-icon">
                 <Phone size={16} />
@@ -309,8 +375,15 @@ function InstitutionModal({
                   value={form.phone}
                   onChange={(event) => updateField('phone', event.target.value)}
                   placeholder="+256 700 000000"
+                  aria-invalid={errors.phone ? true : undefined}
+                  aria-describedby={errors.phone ? 'ia-phone-error' : undefined}
                 />
               </div>
+              {errors.phone && (
+                <p className="ia-field-error" id="ia-phone-error">
+                  {errors.phone}
+                </p>
+              )}
             </div>
 
             {mode === 'edit' && institution && (
@@ -323,10 +396,10 @@ function InstitutionModal({
               </div>
             )}
 
-            {(validationError || error) && (
+            {error && (
               <div className="ia-inline-error" role="alert">
                 <AlertCircle size={17} />
-                <span>{validationError || error}</span>
+                <span>{error}</span>
               </div>
             )}
           </div>
@@ -487,7 +560,6 @@ export function InstitutionAccountsPage() {
   const loadInstitutions = useCallback(async () => {
     setLoading(true);
     setLoadError('');
-
     try {
       const records = await fetchInstitutions();
       setInstitutions(records);
@@ -500,11 +572,9 @@ export function InstitutionAccountsPage() {
 
   useEffect(() => {
     let cancelled = false;
-
     const loadInitialInstitutions = async () => {
       try {
         const records = await fetchInstitutions();
-
         if (!cancelled) {
           setInstitutions(records);
         }
@@ -518,9 +588,7 @@ export function InstitutionAccountsPage() {
         }
       }
     };
-
     void loadInitialInstitutions();
-
     return () => {
       cancelled = true;
     };
@@ -538,17 +606,14 @@ export function InstitutionAccountsPage() {
 
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
-
     return institutions.filter((item) => {
       const matchesSearch =
         !query ||
         [item.name, item.registrationNumber, item.sector, item.email, item.phone].some((value) =>
           value.toLowerCase().includes(query),
         );
-
       const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
       const matchesSector = sectorFilter === 'all' || item.sector === sectorFilter;
-
       return matchesSearch && matchesStatus && matchesSector;
     });
   }, [institutions, search, statusFilter, sectorFilter]);
@@ -571,23 +636,18 @@ export function InstitutionAccountsPage() {
   async function saveInstitution(form: InstitutionForm) {
     setSaving(true);
     setActionError('');
-
     try {
       if (modal === 'edit' && selected) {
         const updated = await updateInstitution(selected.id, form);
-
         setInstitutions((current) =>
           current.map((item) => (item.id === selected.id ? updated : item)),
         );
-
         setNotice(`${updated.name} was updated successfully.`);
       } else {
         const created = await createInstitution(form);
-
         setInstitutions((current) => [created, ...current]);
         setNotice(`${created.name} was added and is pending approval.`);
       }
-
       setModal(null);
       setSelected(null);
     } catch (error) {
@@ -599,24 +659,19 @@ export function InstitutionAccountsPage() {
 
   async function confirmStatusChange() {
     if (!selected || !confirmAction) return;
-
     setSaving(true);
     setActionError('');
-
     try {
       const updated = await updateInstitutionStatus(selected.id, confirmAction);
-
       setInstitutions((current) =>
         current.map((item) => (item.id === selected.id ? updated : item)),
       );
-
       const verb =
         confirmAction === 'deactivate'
           ? 'deactivated'
           : confirmAction === 'activate'
             ? 'activated'
             : 'approved';
-
       setNotice(`${updated.name} was ${verb} successfully.`);
       setConfirmAction(null);
       setSelected(null);
@@ -629,9 +684,7 @@ export function InstitutionAccountsPage() {
 
   useEffect(() => {
     if (!notice) return;
-
     const timer = window.setTimeout(() => setNotice(''), 4500);
-
     return () => window.clearTimeout(timer);
   }, [notice]);
 
@@ -723,7 +776,6 @@ export function InstitutionAccountsPage() {
             <h2>Institutional Accounts</h2>
             <p>Manage, approve, edit and deactivate institutional accounts</p>
           </div>
-
           <span className="ia-panel__count">{totals.pending} pending</span>
         </div>
 
@@ -801,7 +853,6 @@ export function InstitutionAccountsPage() {
         {showFilters && (
           <div className="ia-filter-drawer">
             <span>Quick status:</span>
-
             {(['all', 'pending', 'approved', 'deactivated'] as const).map((status) => (
               <button
                 key={status}
@@ -817,7 +868,6 @@ export function InstitutionAccountsPage() {
                   : status.charAt(0).toUpperCase() + status.slice(1)}
               </button>
             ))}
-
             <button
               className="ia-filter-reset"
               type="button"
