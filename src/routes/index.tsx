@@ -35,7 +35,10 @@ import { AdminProfilePage } from '../pages/admin/AdminProfilePage';
 import { CreateStaffAccountPage } from '../pages/institution/CreateStaffAccountPage';
 import { OfflinePage } from '../pages/OfflinePage';
 import { StaffAccountCreatedPage } from '../pages/institution/StaffAccountCreatedPage';
+import { StaffProfilePage } from '../pages/institution/StaffProfilePage';
 import { InstitutionDashboardPage } from '../pages/institution/InstitutionDashboardPage';
+import { InstitutionReviewPage } from '../pages/admin/InstitutionReviewPage';
+import RequestsPage from '../pages/interpreter/RequestsPage';
 
 export const router = createBrowserRouter([
   {
@@ -113,7 +116,7 @@ export const router = createBrowserRouter([
                 element: <InterpreterLayout />,
                 children: [
                   { index: true, element: <InterpreterHomePage /> },
-                  { path: 'requests', element: <Placeholder title="Requests" story="Sprint 2" /> },
+                  { path: 'requests', element: <RequestsPage /> },
                   { path: 'sessions', element: <Placeholder title="Sessions" story="Sprint 2" /> },
                   { path: 'availability', element: <AvailabilityPage /> },
                   { path: 'wallet', element: <Placeholder title="Wallet" story="Not scheduled" /> },
@@ -137,6 +140,7 @@ export const router = createBrowserRouter([
               { path: 'staff', element: <StaffManagementPage /> },
               { path: 'staff/new', element: <CreateStaffAccountPage /> },
               { path: 'staff/created', element: <StaffAccountCreatedPage /> },
+              { path: 'staff/:id', element: <StaffProfilePage /> },
               { path: 'sessions', element: <Placeholder title="Sessions" story="V2-028" /> },
               { path: 'analytics', element: <Placeholder title="Analytics" story="V2-028" /> },
               { path: 'settings', element: <Placeholder title="Settings" story="V2-028" /> },
@@ -157,6 +161,7 @@ export const router = createBrowserRouter([
               { path: 'verifications', element: <VerificationsPage /> },
               { path: 'verifications/:id', element: <CredentialReviewPage /> },
               { path: 'institutions', element: <InstitutionAccountsPage /> },
+              { path: 'institutions/:id', element: <InstitutionReviewPage /> },
               { path: 'sessions', element: <Placeholder title="Sessions" story="V2-064" /> },
               { path: 'reports', element: <Placeholder title="Reports" story="V2-064" /> },
               { path: 'audit-logs', element: <Placeholder title="Audit Logs" story="V2-064" /> },

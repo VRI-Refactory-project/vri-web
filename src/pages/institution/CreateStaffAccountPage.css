@@ -153,3 +153,26 @@
   font-weight: 500;
   margin-bottom: 16px;
 }
+
+/* Phone number (V2-006-WEB-04). PhoneField draws the box; make it match this form's inputs, and
+   stop the input rules above from giving the number inside a second border while it has focus. */
+.csa-field .phone-field {
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  padding: 0 14px;
+}
+.csa-field .phone-field:focus-within {
+  border-color: #3b2579;
+  box-shadow: 0 0 0 3px rgba(59, 37, 121, 0.08);
+}
+.csa-field .phone-field .PhoneInputInput,
+.csa-field .phone-field .PhoneInputInput:focus {
+  border: 0;
+  box-shadow: none;
+  padding: 12px 0;
+}
+.csa-field .phone-field--error,
+.csa-field .phone-field--error:focus-within {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}

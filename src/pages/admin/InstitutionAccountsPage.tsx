@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Building2,
   Check,
@@ -497,9 +498,6 @@ export function InstitutionAccountsPage() {
     }
   }, []);
 
-  // Load the initial records asynchronously and ignore results after unmount.
-  // Keeping the state updates after the await avoids synchronous state updates
-  // in the effect body that trigger react-hooks/set-state-in-effect.
   useEffect(() => {
     let cancelled = false;
 
@@ -891,7 +889,12 @@ export function InstitutionAccountsPage() {
                           <SectorIcon sector={institution.sector} />
                         </div>
                         <div className="ia-institution-cell__text">
-                          <strong>{institution.name}</strong>
+                          <Link
+                            to={`/dashboard/admin/institutions/${institution.id}`}
+                            className="ia-institution-link"
+                          >
+                            <strong>{institution.name}</strong>
+                          </Link>
                           <span>Reg. No: {institution.registrationNumber}</span>
                         </div>
                       </div>
