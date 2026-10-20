@@ -62,6 +62,10 @@ export async function fetchMyProfile(): Promise<MyProfile> {
     chatAlerts: raw.chat_alerts ?? true,
     flashAlerts: raw.flash_alerts ?? true,
     publicProfile: raw.public_profile ?? false,
+    
+    email_notifications?: boolean;
+    chat_alerts?: boolean;
+    public_profile?: boolean;
   };
 }
 
