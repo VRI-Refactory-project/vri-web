@@ -30,10 +30,10 @@
 
 .dl-logo {
   display: block !important;
-  width: 230px !important;      /* Adjust this number to make it bigger/smaller */
-  height: auto !important;      /* 'auto' keeps the image from looking stretched */
+  width: 230px !important; /* Adjust this number to make it bigger/smaller */
+  height: auto !important; /* 'auto' keeps the image from looking stretched */
   max-height: 150px !important; /* Prevents it from getting too tall */
-  margin: 20px auto 20px !important; 
+  margin: 20px auto 20px !important;
   object-fit: contain !important;
 }
 

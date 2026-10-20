@@ -1,4 +1,3 @@
-
 import {
   Video,
   Settings,
@@ -58,10 +57,10 @@ export function DashboardPage() {
   const { session } = useAuth();
   const navigate = useNavigate();
   const firstName = (session?.user.name ?? '').trim().split(/\s+/)[0] ?? '';
-  
+
   // --- STATE ---
   const [sessions, setSessions] = useState<DeafDashboard['sessions'] | null>(null);
-  
+
   // State for stats (Defaults to 0 until backend is connected)
   const [stats, setStats] = useState({
     walletBalance: 0,
@@ -72,22 +71,22 @@ export function DashboardPage() {
   // --- EFFECTS ---
   useEffect(() => {
     let cancelled = false;
-    
+
     api<DeafDashboard>('/api/v1/dashboard/deaf/').then(
       (data) => {
         if (!cancelled) {
           setSessions(data.sessions);
-          
-          // This sets the stats to 0 for now. 
+
+          // This sets the stats to 0 for now.
           // It also satisfies the ESLint rule that requires setStats to be used.
-          setStats({ 
-            walletBalance: 0, 
-            monthlySessions: 0, 
-            monthlyMinutes: 0 
+          setStats({
+            walletBalance: 0,
+            monthlySessions: 0,
+            monthlyMinutes: 0,
           });
-          
+
           // TODO: When backend is ready, replace the 0s above with actual API fields:
-          // setStats({ 
+          // setStats({
           //   walletBalance: data.wallet_balance || 0,
           //   monthlySessions: data.monthly_sessions || 0,
           //   monthlyMinutes: data.monthly_minutes || 0
@@ -98,7 +97,7 @@ export function DashboardPage() {
         if (!cancelled) setSessions([]);
       },
     );
-    
+
     return () => {
       cancelled = true;
     };
@@ -112,7 +111,7 @@ export function DashboardPage() {
     const formattedNumber = new Intl.NumberFormat('en-US', {
       maximumFractionDigits: 0,
     }).format(amount);
-    
+
     // Hardcode the prefix to guarantee it says "UGX"
     return `UGX ${formattedNumber}`;
   };
@@ -145,18 +144,18 @@ export function DashboardPage() {
           <p className="hero-subtitle">Connect with a verified interpreter in under two minutes.</p>
 
           <div className="hero-buttons-group">
-            <button 
+            <button
               className="dash-btn-primary"
               onClick={() => navigate('/dashboard/deaf/sessions/new')}
             >
               <Video size={18} /> Start VRI Session
             </button>
-            
-            <button 
+
+            <button
               className="dash-btn-emergency"
               onClick={() => {
                 // TODO: Add emergency logic here
-                console.log("Emergency request triggered");
+                console.log('Emergency request triggered');
               }}
             >
               <AlertCircle size={18} /> Emergency Request
