@@ -38,7 +38,7 @@ interface ApiMe {
 }
 
 export async function fetchMyProfile(): Promise<MyProfile> {
-  const raw = await api<ApiMe>('/api/v1/accounts/me/');
+  const raw = await api<ApiMe>('/api/v1/auth/deaf-user/me/');
   const fullName = raw.full_name ?? raw.name ?? '';
   const [first = '', ...rest] = fullName.split(' ');
   const last = rest.join(' ');
@@ -76,7 +76,7 @@ export async function updateMyProfile(data: MyProfile): Promise<MyProfile> {
     public_profile: data.publicProfile,
   };
 
-  const raw = await api<ApiMe>('/api/v1/accounts/me/', {
+  const raw = await api<ApiMe>('/api/v1/auth/deaf-user/me/', {
     method: 'PATCH',
     body: JSON.stringify(payload),
   });
@@ -107,7 +107,7 @@ export async function uploadProfilePhoto(file: File): Promise<string | null> {
   form.append('photo', file);
 
   const raw = await api<{ profile_photo?: string; photo?: string; url?: string }>(
-    '/api/v1/accounts/me/photo/',
+    '/api/v1/auth/deaf-user/me/photo/',
     { method: 'POST', body: form },
   );
 
@@ -115,5 +115,5 @@ export async function uploadProfilePhoto(file: File): Promise<string | null> {
 }
 
 export async function removeProfilePhoto(): Promise<void> {
-  await api('/api/v1/accounts/me/photo/', { method: 'DELETE' });
+  await api('/api/v1/auth/deaf-user/me/photo/', { method: 'DELETE' });
 }
