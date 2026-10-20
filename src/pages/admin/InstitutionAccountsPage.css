@@ -1286,3 +1286,177 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Per-field validation */
+.ia-form-field--invalid > input,
+.ia-form-field--invalid > select,
+.ia-form-field--invalid > .ia-input-with-icon {
+  border-color: #d93448;
+  background: #fef5f6;
+}
+
+.ia-form-field--invalid > input:focus,
+.ia-form-field--invalid > select:focus,
+.ia-form-field--invalid > .ia-input-with-icon:focus-within {
+  border-color: #d93448;
+  box-shadow: 0 0 0 3px rgb(217 52 72 / 10%);
+}
+
+.ia-field-error {
+  margin: 4px 0 0;
+  color: #d93448;
+  font-size: 10.5px;
+  font-weight: 550;
+  line-height: 1.4;
+}
+
+/* Per-field validation */
+.ia-form-field--invalid > input,
+.ia-form-field--invalid > select,
+.ia-form-field--invalid > .ia-input-with-icon {
+  border-color: #d93448;
+  background: #fef5f6;
+}
+
+.ia-form-field--invalid > input:focus,
+.ia-form-field--invalid > select:focus,
+.ia-form-field--invalid > .ia-input-with-icon:focus-within {
+  border-color: #d93448;
+  box-shadow: 0 0 0 3px rgb(217 52 72 / 10%);
+}
+
+.ia-field-error {
+  margin: 4px 0 0;
+  color: #d93448;
+  font-size: 10.5px;
+  font-weight: 550;
+  line-height: 1.4;
+}
+
+.ia-sector-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.ia-sector-input-wrap > input {
+  width: 100%;
+  padding-right: 36px;
+  min-height: 42px;
+  border: 1px solid #dfe2ef;
+  border-radius: 9px;
+  background: #fff;
+  color: #302b51;
+  font-size: 12px;
+  padding-left: 12px;
+  padding-block: 10px;
+}
+
+.ia-sector-input-wrap > input::placeholder {
+  color: #a1a6bd;
+}
+
+.ia-sector-input-wrap > input:focus {
+  border-color: #9587d4;
+  outline: 0;
+  box-shadow: 0 0 0 3px rgb(94 75 176 / 9%);
+}
+
+.ia-sector-drop-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #737b9b;
+  cursor: pointer;
+}
+
+.ia-sector-drop-btn:hover {
+  background: #f0edff;
+  color: #382c77;
+}
+
+/* Per-field validation */
+.ia-form-field--invalid > input,
+.ia-form-field--invalid > select,
+.ia-form-field--invalid > .ia-input-with-icon,
+.ia-form-field--invalid > .ia-sector-input-wrap > input {
+  border-color: #d93448;
+  background: #fef5f6;
+}
+
+.ia-form-field--invalid > input:focus,
+.ia-form-field--invalid > select:focus,
+.ia-form-field--invalid > .ia-input-with-icon:focus-within,
+.ia-form-field--invalid > .ia-sector-input-wrap > input:focus {
+  border-color: #d93448;
+  box-shadow: 0 0 0 3px rgb(217 52 72 / 10%);
+}
+
+.ia-field-error {
+  margin: 4px 0 0;
+  color: #d93448;
+  font-size: 10.5px;
+  font-weight: 550;
+  line-height: 1.4;
+}
+
+/* Sector-other inline input with dropdown arrow */
+.ia-sector-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.ia-sector-input-wrap > input {
+  width: 100%;
+  padding: 10px 36px 10px 12px;
+  min-height: 42px;
+  border: 1px solid #dfe2ef;
+  border-radius: 9px;
+  background: #fff;
+  color: #302b51;
+  font-size: 12px;
+}
+
+.ia-sector-input-wrap > input::placeholder {
+  color: #a1a6bd;
+}
+
+.ia-sector-input-wrap > input:focus {
+  border-color: #9587d4;
+  outline: 0;
+  box-shadow: 0 0 0 3px rgb(94 75 176 / 9%);
+}
+
+.ia-sector-drop-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #737b9b;
+  cursor: pointer;
+}
+
+.ia-sector-drop-btn:hover {
+  background: #f0edff;
+  color: #382c77;
+}

@@ -31,6 +31,8 @@ export interface InstitutionForm {
   sector: InstitutionSector;
   email: string;
   phone: string;
+  /** Free-text description used only when sector is 'Other'. */
+  sectorOther?: string;
 }
 
 type RawRecord = Record<string, unknown>;
@@ -164,6 +166,9 @@ function toPayload(form: InstitutionForm) {
     name: form.name,
     registration_number: form.registrationNumber,
     sector: form.sector.toLowerCase(),
+    ...(form.sector === 'Other' && form.sectorOther?.trim()
+      ? { sector_other: form.sectorOther.trim() }
+      : {}),
     email: form.email,
     phone: form.phone,
   };
