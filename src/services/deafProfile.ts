@@ -17,17 +17,18 @@ export interface MyProfile {
   flashAlerts: boolean;
   publicProfile: boolean;
 }
-
 interface ApiMe {
   full_name?: string;
   name?: string;
   preferred_name?: string;
   email?: string;
+  contact_number?: string | null;
   phone_number?: string;
   phone?: string;
   location?: string;
   profile_photo?: string | null;
   photo?: string | null;
+  communication_methods?: string[];
   languages?: string[];
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
@@ -47,10 +48,10 @@ export async function fetchMyProfile(): Promise<MyProfile> {
     lastName: last,
     preferredName: raw.preferred_name ?? first,
     email: raw.email ?? '',
-    phone: raw.phone_number ?? raw.phone ?? '',
+    phone: raw.contact_number ?? raw.phone_number ?? raw.phone ?? '',
     location: raw.location ?? '',
     photoUrl: raw.profile_photo ?? raw.photo ?? null,
-    languages: raw.languages ?? [],
+    languages: raw.communication_methods ?? raw.languages ?? [],
     emergencyName: raw.emergency_contact_name ?? '',
     emergencyPhone: raw.emergency_contact_phone ?? '',
     emailNotifications: raw.email_notifications ?? true,
@@ -65,9 +66,9 @@ export async function updateMyProfile(data: MyProfile): Promise<MyProfile> {
     full_name: `${data.firstName} ${data.lastName}`.trim(),
     preferred_name: data.preferredName,
     email: data.email,
-    phone_number: data.phone,
+    contact_number: data.phone,
     location: data.location,
-    languages: data.languages,
+    communication_methods: data.languages,
     emergency_contact_name: data.emergencyName,
     emergency_contact_phone: data.emergencyPhone,
     email_notifications: data.emailNotifications,
