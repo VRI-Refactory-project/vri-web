@@ -1,6 +1,7 @@
+
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertCircle, Check, CircleUserRound, Info, Plus, UserRound } from 'lucide-react';
+import { CircleUserRound, Plus } from 'lucide-react';
 import './InstitutionDashboardPage.css';
 
 type SessionStatus = 'Live' | 'Ended' | 'Pending';
@@ -36,118 +37,36 @@ interface InstitutionDashboardData {
   sessions: StaffSession[];
 }
 
-const DEMO_DATA: InstitutionDashboardData = {
-  activeSessions: 8,
-  staff: 42,
-  activeStaff: 38,
-  sessionsThisMonth: 186,
-  usageHours: 74.5,
-  usagePlanPercent: 12,
-  alerts: 4,
-  pendingStaff: 3,
-  flaggedSessions: 1,
-  weeklyActivity: [48, 66, 41, 77, 59, 88, 68],
-  departments: [
-    { name: 'Emergency', sessionsToday: 3, active: 1 },
-    { name: 'Radiology', sessionsToday: 2, active: 1 },
-    { name: 'Outpatient', sessionsToday: 2, active: 0 },
-    { name: 'Cardiology', sessionsToday: 1, active: 1 },
-  ],
-  sessions: [
-    {
-      id: 'SES-1001',
-      member: 'Maria Namono',
-      department: 'Emergency',
-      interpreter: 'J. Okello',
-      startTime: '10:42 AM',
-      duration: '12m',
-      status: 'Live',
-    },
-    {
-      id: 'SES-1002',
-      member: 'David Kintu',
-      department: 'Radiology',
-      interpreter: 'S. Auma',
-      startTime: '10:35 AM',
-      duration: '19m',
-      status: 'Live',
-    },
-    {
-      id: 'SES-1003',
-      member: 'Grace Nakato',
-      department: 'Outpatient',
-      interpreter: 'P. Ssali',
-      startTime: '10:50 AM',
-      duration: '4m',
-      status: 'Live',
-    },
-    {
-      id: 'SES-1004',
-      member: 'Peter Wasswa',
-      department: 'Cardiology',
-      interpreter: 'R. Namutebi',
-      startTime: '10:20 AM',
-      duration: '34m',
-      status: 'Live',
-    },
-  ],
-};
-
 const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
-const ALERTS = [
-  {
-    id: 'flagged-session',
-    title: 'Session flagged for review',
-    detail: 'Radiology · James Tumusiime',
-    time: '2h ago',
-    type: 'danger',
-    icon: AlertCircle,
-    action: 'sessions',
-  },
-  {
-    id: 'pending-accounts',
-    title: '3 staff accounts pending activation',
-    detail: 'Awaiting institution approval',
-    time: '4h ago',
-    type: 'info',
-    icon: Info,
-    action: 'staff',
-  },
-  {
-    id: 'interpreter-unavailable',
-    title: 'Interpreter S. Auma marked unavailable',
-    detail: 'Back online tomorrow',
-    time: 'Yesterday',
-    type: 'person',
-    icon: UserRound,
-    action: 'staff',
-  },
-  {
-    id: 'monthly-usage',
-    title: 'Monthly usage at 74.5h',
-    detail: '12% under plan this billing period',
-    time: 'Today',
-    type: 'success',
-    icon: Check,
-    action: 'analytics',
-  },
-] as const;
-
 export interface InstitutionDashboardPageProps {
-  data?: InstitutionDashboardData;
   onCreateStaff?: () => void;
   onViewSession?: (sessionId: string) => void;
 }
 
 export function InstitutionDashboardPage({
-  data = DEMO_DATA,
   onCreateStaff,
   onViewSession,
 }: InstitutionDashboardPageProps) {
   const navigate = useNavigate();
   const [weekly, setWeekly] = useState(true);
   const [search, setSearch] = useState('');
+
+  // State for real data
+  const [data] = useState<InstitutionDashboardData>({
+    activeSessions: 0,
+    staff: 0,
+    activeStaff: 0,
+    sessionsThisMonth: 0,
+    usageHours: 0,
+    usagePlanPercent: 0,
+    alerts: 0,
+    pendingStaff: 0,
+    flaggedSessions: 0,
+    weeklyActivity: [0, 0, 0, 0, 0, 0, 0], 
+    departments: [],
+    sessions: [],
+  });
 
   const filteredSessions = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -170,7 +89,6 @@ export function InstitutionDashboardPage({
       onCreateStaff();
       return;
     }
-
     goTo('staff');
   };
 
@@ -179,7 +97,6 @@ export function InstitutionDashboardPage({
       onViewSession(sessionId);
       return;
     }
-
     navigate(`/dashboard/institution/sessions?sessionId=${encodeURIComponent(sessionId)}`);
   };
 
@@ -196,7 +113,12 @@ export function InstitutionDashboardPage({
         <article className="id-kpi">
           <span className="id-kpi-label">Active sessions</span>
           <strong>{data.activeSessions}</strong>
-          <span className="id-kpi-note">Across 3 departments</span>
+          {/* Fixed: Added span tag back */}
+          <span className="id-kpi-note">
+            {data.activeSessions > 0 
+              ? `Across ${data.departments.length} departments` 
+              : 'No active sessions'}
+          </span>
         </article>
 
         <article className="id-kpi">
@@ -218,6 +140,7 @@ export function InstitutionDashboardPage({
         </article>
       </section>
 
+      {/* Cleaned up Alerts Feed */}
       <section className="id-section">
         <div className="id-section-heading">
           <h2>Alerts feed</h2>
@@ -225,30 +148,9 @@ export function InstitutionDashboardPage({
         </div>
 
         <div className="id-panel id-alerts">
-          {ALERTS.map((alert) => {
-            const Icon = alert.icon;
-
-            return (
-              <button
-                type="button"
-                className="id-alert"
-                key={alert.id}
-                onClick={() => goTo(alert.action)}
-                aria-label={`${alert.title}. ${alert.detail}`}
-              >
-                <span className={`id-alert-icon id-alert-icon--${alert.type}`}>
-                  <Icon size={18} aria-hidden="true" />
-                </span>
-
-                <span className="id-alert-copy">
-                  <strong>{alert.title}</strong>
-                  <small>{alert.detail}</small>
-                </span>
-
-                <span className="id-alert-time">{alert.time}</span>
-              </button>
-            );
-          })}
+          <p style={{ padding: '24px', color: 'var(--text-muted, #6b7280)', textAlign: 'center' }}>
+            No new alerts.
+          </p>
         </div>
       </section>
 
@@ -275,7 +177,8 @@ export function InstitutionDashboardPage({
           aria-label="Session activity for the seven days of the week"
         >
           {data.weeklyActivity.map((value, index) => {
-            const height = weekly ? value : Math.max(12, Math.round(value * 0.65));
+            // Added Math.max to prevent bars from disappearing completely when value is 0
+            const height = weekly ? Math.max(value, 2) : Math.max(12, Math.round(value * 0.65));
 
             return (
               <div className="id-chart-day" key={`${index}-${WEEKDAYS[index]}`}>
@@ -354,7 +257,7 @@ export function InstitutionDashboardPage({
                 {filteredSessions.length === 0 && (
                   <tr>
                     <td colSpan={7} className="id-empty">
-                      No sessions match your search.
+                      {search ? 'No sessions match your search.' : 'No active sessions right now.'}
                     </td>
                   </tr>
                 )}
@@ -375,6 +278,10 @@ export function InstitutionDashboardPage({
         </div>
 
         <div className="id-departments">
+          {data.departments.length === 0 && (
+            <p style={{ color: 'gray', padding: '10px 0' }}>No departments added yet.</p>
+          )}
+          
           {data.departments.map((department) => (
             <button
               type="button"
