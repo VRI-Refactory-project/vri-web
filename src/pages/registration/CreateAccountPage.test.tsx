@@ -193,7 +193,6 @@
 //   });
 // });
 
-
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
@@ -382,22 +381,21 @@ describe('CreateAccountPage', () => {
         Password: 'secret-pass-1',
       });
 
-      //  NEW LOGIC: Open the custom dropdown and select "Medical" 
+      //  NEW LOGIC: Open the custom dropdown and select "Medical"
       await userEvent.click(screen.getByText('Select specialisation(s)...'));
       await userEvent.click(screen.getByText('Medical'));
-     
 
       await userEvent.click(screen.getByRole('checkbox'));
       await userEvent.click(screen.getByRole('button', { name: /create account/i }));
-      
+
       await waitFor(() => expect(screen.getByText('upload certificates')).toBeInTheDocument());
-      
+
       // Added expectation for the specialisation string
       expect(register).toHaveBeenCalledWith(
-        expect.objectContaining({ 
+        expect.objectContaining({
           phone: '+256772123456',
-          specialisation: 'MEDICAL' 
-        })
+          specialisation: 'MEDICAL',
+        }),
       );
     });
   });
