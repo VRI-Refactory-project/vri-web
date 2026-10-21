@@ -93,6 +93,14 @@
   text-decoration: underline;
 }
 
+/* "Sign out" looks like the Login link but is a button. */
+.landing-link-button {
+  background: none;
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
 .landing-signup {
   background: #fff;
   color: #4a21c4;

@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { ApprovedInterpreterRoute } from '../components/ApprovedInterpreterRoute';
+import { GuestOnlyRoute } from '../components/GuestOnlyRoute';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { Placeholder } from '../components/Placeholder';
 import { LandingPage } from '../pages/landing/LandingPage';
@@ -41,15 +42,22 @@ import RequestsPage from '../pages/interpreter/RequestsPage';
 export const router = createBrowserRouter([
   { path: '/', element: <SplashPage /> },
   { path: '/landing', element: <LandingPage /> },
-  { path: '/get-started', element: <RoleSelectionPage /> },
+  {
+    // Choosing an account type and the sign-up forms are for signed-out people only.
+    element: <GuestOnlyRoute />,
+    children: [
+      { path: '/get-started', element: <RoleSelectionPage /> },
+      { path: '/register/deaf', element: <CreateAccountPage /> },
+      { path: '/register/interpreter', element: <CreateAccountPage role="interpreter" /> },
+      { path: '/register/institution', element: <SignUpInstitution /> },
+    ],
+  },
   { path: '/sign-in', element: <SignInPage /> },
   { path: '/verify-email', element: <VerifyEmailPage /> },
   { path: '/offline', element: <OfflinePage /> },
-  { path: '/register/deaf', element: <CreateAccountPage /> },
   { path: '/forgot-password', element: <Forgotpassword /> },
   { path: '/reset-password', element: <Resetpassword /> },
   { path: '/recover', element: <Placeholder title="Recover access" story="V2-008" /> },
-  { path: '/register/interpreter', element: <CreateAccountPage role="interpreter" /> },
   {
     path: '/register/interpreter/account',
     element: <Navigate to="/register/interpreter" replace />,
@@ -66,7 +74,6 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute allow={['deaf']} />,
     children: [{ path: '/register/welcome', element: <WelcomePage /> }],
   },
-  { path: '/register/institution', element: <SignUpInstitution /> },
 
   {
     element: <ProtectedRoute allow={['deaf']} />,

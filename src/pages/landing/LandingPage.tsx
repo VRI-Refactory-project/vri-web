@@ -4,13 +4,20 @@ import interpreter from '../../assets/interpreter5.jpg';
 import interpreter2 from '../../assets/interpreter2.png';
 import logoIcon from '../../assets/logo-icon.png';
 import logoWord from '../../assets/logo-wordmark.png';
+import { dashboardPathFor } from '../../features/auth/roles';
+import { useAuth } from '../../hooks/useAuth';
 import './LandingPage.css';
 
 // Landing page: public marketing entry point.
 // "Get Started" and "Sign Up" both lead into role selection at /get-started.
+// Someone who is still signed in sees "Go to my dashboard" and "Sign out" instead, so it is clear
+// that leaving the dashboard did not sign them out.
 
 export function LandingPage() {
   const navigate = useNavigate();
+  const { session, checking, logout } = useAuth();
+  const signedIn = Boolean(session) && !checking;
+  const dashboard = session ? dashboardPathFor(session.user.role) : '/get-started';
 
   return (
     <div className="landing">
@@ -66,12 +73,25 @@ export function LandingPage() {
           <img src={logoWord} alt="" className="landing-logo-word" />
         </Link>
         <nav className="landing-nav" aria-label="Main">
-          <Link to="/sign-in" className="landing-login">
-            Login
-          </Link>
-          <button className="landing-signup" onClick={() => navigate('/get-started')}>
-            Sign Up
-          </button>
+          {signedIn ? (
+            <>
+              <button type="button" className="landing-login landing-link-button" onClick={logout}>
+                Sign out
+              </button>
+              <button className="landing-signup" onClick={() => navigate(dashboard)}>
+                Go to my dashboard
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/sign-in" className="landing-login">
+                Login
+              </Link>
+              <button className="landing-signup" onClick={() => navigate('/get-started')}>
+                Sign Up
+              </button>
+            </>
+          )}
         </nav>
       </header>
 
@@ -90,8 +110,8 @@ export function LandingPage() {
             ahead.SignConnect ensures everyone is heard.
           </p>
 
-          <button className="landing-cta" onClick={() => navigate('/get-started')}>
-            Get Started
+          <button className="landing-cta" onClick={() => navigate(dashboard)}>
+            {signedIn ? 'Go to my dashboard' : 'Get Started'}
             <ArrowRight size={22} aria-hidden="true" />
           </button>
 
