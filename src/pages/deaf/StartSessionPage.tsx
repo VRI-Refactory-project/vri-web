@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Calendar, Check, ChevronLeft, User, Video } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useSessionRequest } from '../../hooks/useSessionRequest';
 import './StartSessionPage.css';
 
@@ -120,6 +120,9 @@ interface Props {
  */
 export function StartSessionPage({ pollMs }: Props) {
   const { request, error, busy, start, cancel } = useSessionRequest(pollMs);
+  const [params] = useSearchParams();
+  // The dashboard's Emergency Request button opens this page with ?priority=emergency.
+  const emergency = params.get('priority') === 'emergency';
   const state = request?.state;
 
   if (request && state && MATCHED.includes(state)) {
@@ -191,7 +194,11 @@ export function StartSessionPage({ pollMs }: Props) {
         <ChevronLeft size={18} aria-hidden="true" /> Back
       </Link>
       <h1 className="ss-title">Start a VRI session</h1>
-      <p className="ss-subtitle">How would you like to connect?</p>
+      <p className="ss-subtitle">
+        {emergency
+          ? 'Emergency request: you will go to the front of the queue.'
+          : 'How would you like to connect?'}
+      </p>
 
       {error && (
         <p className="ss-alert" role="alert">
@@ -212,7 +219,12 @@ export function StartSessionPage({ pollMs }: Props) {
             </span>
             <h2 id="ss-connect-title">Connect</h2>
             <p>Find an available Ugandan Sign Language interpreter</p>
-            <button type="button" className="ss-btn ss-btn--light" onClick={start} disabled={busy}>
+            <button
+              type="button"
+              className="ss-btn ss-btn--light"
+              onClick={() => start(emergency ? 'EMERGENCY' : undefined)}
+              disabled={busy}
+            >
               Connect now
             </button>
           </section>

@@ -2,6 +2,7 @@ import { INTERPRETER_BASE, INTERPRETER_NAV } from '../../features/interpreter/na
 import { useInterpreterHome } from '../../features/interpreter/homeData';
 import { DashboardLayout } from '../dashboard/DashboardLayout';
 import { VerifyEmailModal } from '../VerifyEmailModal';
+import { IncomingRequestModal } from './IncomingRequestModal';
 import { PendingVerificationModal } from './PendingVerificationModal';
 
 export function InterpreterLayout() {
@@ -16,6 +17,7 @@ export function InterpreterLayout() {
       />
       <VerifyEmailModal />
       <PendingVerificationModal />
+      <IncomingRequestModal />
     </>
   );
 }

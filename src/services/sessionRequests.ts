@@ -33,21 +33,32 @@ export interface SessionRequest {
 /** States after which nothing more will change, so polling can stop. */
 export const FINAL_STATES: SessionRequestState[] = ['FAILED', 'CANCELLED', 'COMPLETED'];
 
-// PROPOSED CONTRACT. These endpoints are what we proposed to the backend (Zipporah, V2-009);
-// change this file, and nothing else, if the final API differs.
-const BASE = '/api/v1/sessions/requests/';
+// The live API (vri-api, V2-022). The screens keep their own state names; this file is the only
+// place that knows the API's field and status names.
+const BASE = '/api/v1/requests/';
+
+/** What the API calls each status, and which screen state it maps to. */
+const STATUS_TO_STATE: Record<string, SessionRequestState> = {
+  PENDING: 'QUEUED',
+  OFFERED: 'OFFERED',
+  ASSIGNED: 'ACCEPTED',
+  CANCELLED: 'CANCELLED',
+  FAILED: 'FAILED',
+};
 
 interface ApiSessionRequest {
   id: number | string;
-  state: SessionRequestState;
+  status: string;
   created_at: string;
+  /** Only filled in once an interpreter has accepted (status ASSIGNED). */
   interpreter?: MatchedInterpreter | null;
 }
 
 function fromApi(raw: ApiSessionRequest): SessionRequest {
   return {
     id: String(raw.id),
-    state: raw.state,
+    // An unknown status is treated as still waiting, so the screen keeps polling.
+    state: STATUS_TO_STATE[raw.status] ?? 'QUEUED',
     createdAt: raw.created_at,
     interpreter: raw.interpreter ?? undefined,
   };
@@ -57,11 +68,17 @@ function fromApi(raw: ApiSessionRequest): SessionRequest {
 const mockEnabled = () => import.meta.env.VITE_MOCK_SESSION_REQUESTS === 'true';
 
 /** Asks for a live video session. The server answers 409 if one is already open. */
-export async function createSessionRequest(): Promise<SessionRequest> {
+export async function createSessionRequest(
+  priority: 'NORMAL' | 'EMERGENCY' = 'NORMAL',
+): Promise<SessionRequest> {
   if (mockEnabled()) return mockCreate();
   const raw = await api<ApiSessionRequest>(BASE, {
     method: 'POST',
-    body: JSON.stringify({ channel: 'VIDEO' }),
+    body: JSON.stringify({
+      specialisation_required: 'GENERAL',
+      priority,
+      request_key: crypto.randomUUID(),
+    }),
   });
   return fromApi(raw);
 }

@@ -6,7 +6,6 @@ import {
   ChevronRight,
   Clock,
   CheckCircle2,
-  Star,
   AlertCircle,
 } from 'lucide-react';
 
@@ -15,8 +14,11 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { api } from '../../services/api';
 import './DHH_dashboard.css';
-import aminaImage from '../../assets/interpreter2.png';
-import danielImage from '../../assets/interpreter3.png';
+import { InterpreterProfileModal } from './InterpreterProfileModal';
+import {
+  getAvailableInterpreters,
+  type AvailableInterpreter,
+} from '../../services/availableInterpreters';
 
 /** The part of GET /api/v1/dashboard/deaf/ this page uses. */
 interface DeafDashboard {
@@ -31,27 +33,13 @@ function greeting(date = new Date()) {
   return 'Good evening';
 }
 
-// --- SAMPLE DATA ---
-const availableInterpreters = [
-  {
-    id: 1,
-    name: 'Amina Okafor',
-    languages: 'USL, English',
-    rating: 4.9,
-    specialties: 'Healthcare, Legal',
-    isAvailable: true,
-    image: aminaImage,
-  },
-  {
-    id: 2,
-    name: 'Daniel Brooks',
-    languages: 'USL, English',
-    rating: 4.9,
-    specialties: 'Education, Legal',
-    isAvailable: false,
-    image: danielImage,
-  },
-];
+const initials = (name: string) =>
+  name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join('');
 
 export function DashboardPage() {
   const { session } = useAuth();
@@ -60,6 +48,10 @@ export function DashboardPage() {
 
   // --- STATE ---
   const [sessions, setSessions] = useState<DeafDashboard['sessions'] | null>(null);
+
+  // null while loading; empty when nobody is available right now.
+  const [interpreters, setInterpreters] = useState<AvailableInterpreter[] | null>(null);
+  const [openProfileId, setOpenProfileId] = useState<number | null>(null);
 
   // State for stats (Defaults to 0 until backend is connected)
   const [stats, setStats] = useState({
@@ -98,6 +90,21 @@ export function DashboardPage() {
       },
     );
 
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    getAvailableInterpreters().then(
+      (list) => {
+        if (!cancelled) setInterpreters(list);
+      },
+      () => {
+        if (!cancelled) setInterpreters([]);
+      },
+    );
     return () => {
       cancelled = true;
     };
@@ -153,10 +160,7 @@ export function DashboardPage() {
 
             <button
               className="dash-btn-emergency"
-              onClick={() => {
-                // TODO: Add emergency logic here
-                console.log('Emergency request triggered');
-              }}
+              onClick={() => navigate('/dashboard/deaf/sessions/new?priority=emergency')}
             >
               <AlertCircle size={18} /> Emergency Request
             </button>
@@ -166,7 +170,7 @@ export function DashboardPage() {
 
       {/* Quick Actions */}
       <section className="quick-actions">
-        <button className="action-card">
+        <button className="action-card" onClick={() => navigate('/dashboard/deaf/schedule')}>
           <div className="action-icon">
             <Calendar size={20} />
           </div>
@@ -176,7 +180,7 @@ export function DashboardPage() {
           </div>
           <ChevronRight size={18} className="action-arrow" />
         </button>
-        <button className="action-card">
+        <button className="action-card" onClick={() => navigate('/dashboard/deaf/accessibility')}>
           <div className="action-icon">
             <Settings size={20} />
           </div>
@@ -254,30 +258,62 @@ export function DashboardPage() {
           </a>
         </div>
 
+        {interpreters !== null && interpreters.length === 0 && (
+          <p className="text-muted">No interpreters are available right now.</p>
+        )}
         <div className="interpreter-grid">
-          {availableInterpreters.map((interpreter) => (
+          {interpreters?.map((interpreter) => (
             <div key={interpreter.id} className="interpreter-card">
               <div className="interpreter-image-wrap">
-                <img src={interpreter.image} alt={interpreter.name} />
-                {interpreter.isAvailable && <span className="status-badge">Available</span>}
+                {interpreter.photoUrl ? (
+                  <img src={interpreter.photoUrl} alt={interpreter.name} />
+                ) : (
+                  <div
+                    aria-hidden="true"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: '#e5e7eb',
+                      color: '#374151',
+                      fontSize: 32,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {initials(interpreter.name)}
+                  </div>
+                )}
+                <span className="status-badge">Available</span>
               </div>
               <div className="interpreter-info">
                 <div className="interpreter-header">
                   <h4>{interpreter.name}</h4>
                   <CheckCircle2 size={16} className="verified-icon" />
                 </div>
-                <p className="interpreter-langs">{interpreter.languages}</p>
+                <p className="interpreter-langs">{interpreter.signLanguages.join(', ')}</p>
                 <div className="interpreter-rating">
-                  <Star size={14} className="star-icon" />
-                  <span>{interpreter.rating}</span>
-                  <span className="text-muted">· {interpreter.specialties}</span>
+                  <span className="text-muted">{interpreter.specialisation}</span>
                 </div>
-                <button className="btn-outline">View profile</button>
+                <button
+                  type="button"
+                  className="btn-outline"
+                  onClick={() => setOpenProfileId(interpreter.id)}
+                >
+                  View profile
+                </button>
               </div>
             </div>
           ))}
         </div>
       </section>
+      {openProfileId !== null && (
+        <InterpreterProfileModal
+          interpreterId={openProfileId}
+          onClose={() => setOpenProfileId(null)}
+        />
+      )}
     </>
   );
 }

@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { ApiError, setAuthToken, setRefreshHandler } from '../../services/api';
-import { refreshAccessToken } from '../../services/auth';
+import { getCurrentUser, refreshAccessToken, revokeSession } from '../../services/auth';
 import type { AuthSession, AuthUser, SelectableRole } from '../../types';
 import { AuthContext } from './authContext';
+import { redirectToSignIn, staysSignedIn } from './leaveDashboard';
 
 const STORAGE_KEY = 'vri.session';
 
@@ -37,7 +38,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<AuthSession | null>(restoreSession);
   const [selectedRole, setSelectedRole] = useState<SelectableRole | null>(null);
   const [sessionExpired, setSessionExpired] = useState(false);
+  // A session found in storage has not been proven yet. Until the server confirms it, treat it as unchecked.
+  const [checking, setChecking] = useState(session !== null);
   const sessionRef = useRef(session);
+  // Counts sign-ins and sign-outs, so a slow check of an old stored session cannot overwrite a newer one.
+  const generation = useRef(0);
 
   const apply = useCallback((next: AuthSession | null) => {
     sessionRef.current = next;
@@ -49,12 +54,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(
     (s: AuthSession) => {
       setSessionExpired(false);
+      generation.current += 1;
       apply(s);
     },
     [apply],
   );
   const logout = useCallback(() => {
     setSessionExpired(false);
+    // Cancel the refresh token on the server too, so a copy of it stops working.
+    const refresh = sessionRef.current?.refreshToken;
+    if (refresh) void revokeSession(refresh);
+    generation.current += 1;
     apply(null);
   }, [apply]);
   const updateUser = useCallback(
@@ -87,17 +97,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => setRefreshHandler(null);
   }, [apply]);
 
+  // Check a session restored from storage with the server before trusting it. This also replaces the
+  // stored name, role and email status with what the server says. A rejected token ends the session;
+  // a network failure does not (the person may just be offline, and the server still guards the data).
+  useEffect(() => {
+    if (!sessionRef.current) {
+      setChecking(false);
+      return;
+    }
+    let cancelled = false;
+    const startedAt = generation.current;
+    const stillCurrent = () => !cancelled && startedAt === generation.current;
+    getCurrentUser()
+      .then((user) => {
+        const current = sessionRef.current;
+        if (stillCurrent() && current) apply({ ...current, user });
+      })
+      .catch((err) => {
+        if (stillCurrent() && err instanceof ApiError && err.status === 401) apply(null);
+      })
+      .finally(() => {
+        if (!cancelled) setChecking(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [apply]);
+
+  // Pressing the browser's Back (or Forward) from a dashboard onto a public page, such as the landing
+  // page, ends the session and shows the sign-in page. Nobody should reach a dashboard again just by
+  // pressing the arrows. Moving between pages inside the dashboards is not affected.
+  useEffect(() => {
+    const onPopState = () => {
+      if (!sessionRef.current || staysSignedIn(window.location.pathname)) return;
+      logout();
+      redirectToSignIn();
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, [logout]);
+
   const value = useMemo(
     () => ({
       session,
       sessionExpired,
+      checking,
       selectedRole,
       selectRole: setSelectedRole,
       login,
       logout,
       updateUser,
     }),
-    [session, sessionExpired, selectedRole, login, logout, updateUser],
+    [session, sessionExpired, checking, selectedRole, login, logout, updateUser],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

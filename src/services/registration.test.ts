@@ -46,18 +46,23 @@ describe('registration services', () => {
     expect(session.token).toBe('a');
   });
 
-  it('sends the email and specialisation for an interpreter', async () => {
+  it('sends the email and specialisations for an interpreter', async () => {
     const fetchMock = mockFetch('interpreter');
     await registerInterpreter({
       name: 'Joel',
       phone: '0772123456',
       email: 'j@x.org',
       password: 'pw',
-      specialisation: 'MEDICAL',
+      specialisations: ['MEDICAL', 'OTHER'],
+      specialisationOther: ' Farming ',
     });
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toContain('/api/v1/auth/register/interpreter/');
-    expect(JSON.parse(init.body)).toMatchObject({ email: 'j@x.org', specialisation: 'MEDICAL' });
+    expect(JSON.parse(init.body)).toMatchObject({
+      email: 'j@x.org',
+      specialisations: ['MEDICAL', 'OTHER'],
+      specialisation_other: 'Farming',
+    });
   });
 
   it('maps organisation fields for an institution', async () => {

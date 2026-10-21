@@ -132,3 +132,7 @@
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+.dropzone__icon {
+  color: #4b34a0;
+}

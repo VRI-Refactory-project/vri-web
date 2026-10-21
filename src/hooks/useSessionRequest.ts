@@ -55,11 +55,11 @@ export function useSessionRequest(pollMs: number = DEFAULT_POLL_MS) {
     };
   }, [id, state, tick, pollMs]);
 
-  const start = useCallback(async () => {
+  const start = useCallback(async (priority?: 'NORMAL' | 'EMERGENCY') => {
     setBusy(true);
     setError(null);
     try {
-      const created = await createSessionRequest();
+      const created = await createSessionRequest(priority);
       currentId.current = created.id;
       setRequest(created);
     } catch (err) {

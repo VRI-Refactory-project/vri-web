@@ -6,6 +6,9 @@ export interface AuthState {
   /** True when the server ended the session (the refresh token expired or was refused), as
    *  opposed to the person signing out. Sign-in uses it to explain why they are back there. */
   sessionExpired?: boolean;
+  /** True while a session restored from browser storage is being checked with the server. Pages
+   *  that need a signed-in user wait for this to end before deciding anything. */
+  checking?: boolean;
   selectedRole: SelectableRole | null;
   selectRole: (role: SelectableRole) => void;
   login: (session: AuthSession) => void;

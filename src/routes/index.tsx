@@ -36,6 +36,7 @@ import { CreateStaffAccountPage } from '../pages/institution/CreateStaffAccountP
 import { OfflinePage } from '../pages/OfflinePage';
 import { StaffAccountCreatedPage } from '../pages/institution/StaffAccountCreatedPage';
 import { InstitutionDashboardPage } from '../pages/institution/InstitutionDashboardPage';
+import RequestsPage from '../pages/interpreter/RequestsPage';
 
 export const router = createBrowserRouter([
   { path: '/', element: <SplashPage /> },
@@ -79,6 +80,14 @@ export const router = createBrowserRouter([
           { index: true, element: <DashboardPage /> },
           { path: 'sessions', element: <Placeholder title="Sessions" story="Sprint 2" /> },
           { path: 'sessions/new', element: <StartSessionPage /> },
+          {
+            path: 'schedule',
+            element: <Placeholder title="Schedule a session" story="Not scheduled" />,
+          },
+          {
+            path: 'accessibility',
+            element: <Placeholder title="Accessibility setup" story="Not scheduled" />,
+          },
           { path: 'messages', element: <Placeholder title="Messages" story="Sprint 2" /> },
           { path: 'wallet', element: <Placeholder title="Wallet" story="Not scheduled" /> },
           { path: 'profile', element: <DeafProfilePage /> },
@@ -100,7 +109,7 @@ export const router = createBrowserRouter([
             element: <InterpreterLayout />,
             children: [
               { index: true, element: <InterpreterHomePage /> },
-              { path: 'requests', element: <Placeholder title="Requests" story="Sprint 2" /> },
+              { path: 'requests', element: <RequestsPage /> },
               { path: 'sessions', element: <Placeholder title="Sessions" story="Sprint 2" /> },
               { path: 'availability', element: <AvailabilityPage /> },
               { path: 'wallet', element: <Placeholder title="Wallet" story="Not scheduled" /> },

@@ -4,7 +4,7 @@ import { offersApi, type InterpreterOffer } from '../../services/offersApi';
 import { describeError } from '../../services/api';
 import './RequestsPage.css';
 
-const RESPONSE_TIMEOUT_SECONDS = 180; // {INTERPRETER_RESPONSE_TIMEOUT}
+const RESPONSE_TIMEOUT_SECONDS = 180;
 
 export default function RequestsPage() {
   const [offers, setOffers] = useState<InterpreterOffer[]>([]);
@@ -12,7 +12,6 @@ export default function RequestsPage() {
   const [error, setError] = useState<string | null>(null);
   const [processingId, setProcessingId] = useState<string | null>(null);
 
-  // WEB-01: Load initial incoming requests
   useEffect(() => {
     let active = true;
     offersApi
@@ -31,28 +30,23 @@ export default function RequestsPage() {
     };
   }, []);
 
-  // WEB-07: Subscribe to offer-state updates (Polling every 5s)
   useEffect(() => {
     if (offers.length === 0) return;
-
     const interval = setInterval(async () => {
-      const pendingOffers = offers.filter((o) => o.expiresAt && new Date(o.expiresAt) > new Date());
-      if (pendingOffers.length === 0) return;
-
+      const pending = offers.filter((o) => new Date(o.expiresAt) > new Date());
+      if (pending.length === 0) return;
       try {
-        const updatedOffers = await Promise.all(
-          pendingOffers.map(async (offer) => {
+        const updated = await Promise.all(
+          pending.map(async (offer) => {
             const state = await offersApi.getOfferState(offer.id);
             return { id: offer.id, status: state.status };
           }),
         );
-
         setOffers((prev) => {
           let changed = false;
           const next = prev.filter((o) => {
-            const update = updatedOffers.find((u) => u.id === o.id);
-            // WEB-05: Remove if no longer active (rerouted, expired, etc.)
-            if (update && update.status !== 'pending') {
+            const update = updated.find((u) => u.id === o.id);
+            if (update && update.status && update.status !== 'pending') {
               changed = true;
               return false;
             }
@@ -61,19 +55,16 @@ export default function RequestsPage() {
           return changed ? next : prev;
         });
       } catch {
-        // Silently fail background polling to avoid UI noise
+        /* silent — background poll */
       }
     }, 5000);
-
     return () => clearInterval(interval);
   }, [offers]);
 
-  // WEB-06: Submit Accept and Decline actions
   const handleAction = async (id: string, action: 'accept' | 'decline') => {
     setProcessingId(id);
     try {
       await offersApi.respondToOffer(id, action);
-      // Remove the offer from the list upon successful response
       setOffers((prev) => prev.filter((o) => o.id !== id));
     } catch (err) {
       alert(describeError(err));
@@ -132,15 +123,12 @@ interface OfferCardProps {
 function OfferCard({ offer, isProcessing, onAction }: OfferCardProps) {
   const [timeLeft, setTimeLeft] = useState(RESPONSE_TIMEOUT_SECONDS);
 
-  // WEB-04: Display the remaining response window
   useEffect(() => {
     const updateTimer = () => {
-      const now = new Date().getTime();
+      const now = Date.now();
       const expiry = new Date(offer.expiresAt).getTime();
-      const diff = Math.max(0, Math.floor((expiry - now) / 1000));
-      setTimeLeft(diff);
+      setTimeLeft(Math.max(0, Math.floor((expiry - now) / 1000)));
     };
-
     updateTimer();
     const timer = setInterval(updateTimer, 1000);
     return () => clearInterval(timer);
@@ -149,12 +137,12 @@ function OfferCard({ offer, isProcessing, onAction }: OfferCardProps) {
   const isExpired = timeLeft === 0;
   const isUrgent = timeLeft < 60;
 
-  const formatTime = (seconds: number) => {
-    const m = Math.floor(seconds / 60)
+  const formatTime = (s: number) => {
+    const m = Math.floor(s / 60)
       .toString()
       .padStart(2, '0');
-    const s = (seconds % 60).toString().padStart(2, '0');
-    return `${m}:${s}`;
+    const r = (s % 60).toString().padStart(2, '0');
+    return `${m}:${r}`;
   };
 
   return (
@@ -163,7 +151,8 @@ function OfferCard({ offer, isProcessing, onAction }: OfferCardProps) {
         <div>
           <h2 className="offer-card__title">{offer.title}</h2>
           <p className="offer-card__institution">
-            {offer.institutionName} · {offer.sector}
+            {offer.institutionName}
+            {offer.sector ? ` · ${offer.sector}` : ''}
           </p>
         </div>
         <div
@@ -176,17 +165,21 @@ function OfferCard({ offer, isProcessing, onAction }: OfferCardProps) {
           }`}
         >
           <Clock size={14} />
-          <span>Waiting {formatTime(timeLeft)}</span>
+          <span>{isExpired ? 'Expired' : `Waiting ${formatTime(timeLeft)}`}</span>
         </div>
       </div>
 
       <div className="offer-card__details">
-        <div className="offer-detail">
-          <Video size={16} /> {offer.language}
-        </div>
-        <div className="offer-detail">
-          <Users size={16} /> {offer.participants}
-        </div>
+        {offer.language && (
+          <div className="offer-detail">
+            <Video size={16} /> {offer.language}
+          </div>
+        )}
+        {offer.participants && (
+          <div className="offer-detail">
+            <Users size={16} /> {offer.participants}
+          </div>
+        )}
       </div>
 
       <div className="offer-card__actions">

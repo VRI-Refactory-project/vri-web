@@ -1,5 +1,6 @@
 import { useRef, useState, type DragEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Upload } from 'lucide-react';
 import { AuthShell } from '../../components/AuthShell';
 import { FLOWS } from '../../features/registration/flows';
 import { describeError } from '../../services/api';
@@ -66,7 +67,7 @@ function CertificateForm({
         onDrop={onDrop}
       >
         <span className="dropzone__icon" aria-hidden="true">
-          ⬆
+          <Upload size={20} />
         </span>
         <p className="dropzone__title">Upload certificate</p>
         {entry.file ? (

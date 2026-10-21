@@ -51,13 +51,13 @@
   padding: clamp(0.75rem, 2vw, 2rem) var(--landing-gutter) 0;
 }
 
-/* Logo: the icon and the word are two images. Change the two heights below to resize them
-   separately. */
 .landing-logo {
   display: flex;
   align-items: center;
   gap: clamp(0.5rem, 1vw, 1rem);
   text-decoration: none;
+  /* Visually nudges the logo down without affecting layout height. */
+  transform: translateY(12px);
 }
 
 .landing-logo-icon {
@@ -196,7 +196,7 @@
   color: #fff;
 }
 
-/* --- Get Started button: white, smaller corners, bounces --- */
+/* --- Get Started button: slides horizontally --- */
 .landing-cta {
   display: inline-flex;
   align-items: center;
@@ -207,41 +207,40 @@
   border-radius: 16px;
   border: none;
   background: #fff;
-  /* Only a soft dark shadow under the button, no glow. */
   box-shadow: 0 10px 24px rgba(20, 5, 60, 0.3);
   color: #4a21c4;
   font-family: inherit;
   font-size: clamp(1.05rem, 1.3vw, 1.3rem);
   font-weight: 700;
   cursor: pointer;
-  /* The button bounces up and down all the time. */
-  animation: landing-bounce 1.5s ease-in-out infinite;
+  /* Slides left and right on the horizontal axis. */
+  animation: landing-slide 3s ease-in-out infinite;
 }
 
-/* Stops bouncing while the mouse is on it, so it is easy to click. */
 .landing-cta:hover {
   animation-play-state: paused;
   background: #e8e1ff;
 }
 
-@keyframes landing-bounce {
-  0%,
-  100% {
-    transform: translateY(0);
+@keyframes landing-slide {
+  0% {
+    transform: translateX(-8px);
   }
   50% {
-    transform: translateY(-12px);
+    transform: translateX(8px);
+  }
+  100% {
+    transform: translateX(-8px);
   }
 }
 
-/* People who turned off motion in their system settings get a still button. */
 @media (prefers-reduced-motion: reduce) {
   .landing-cta {
     animation: none;
   }
 }
 
-/* --- Photo side: soft white halo, glass frame, photo with chip and caption --- */
+/* --- Photo side --- */
 .landing-hero-right {
   position: relative;
   width: 100%;
@@ -257,14 +256,14 @@
 .landing-halo-wide {
   inset: -3.5%;
   border-radius: 56px;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.15);
   filter: blur(30px);
 }
 
 .landing-halo-close {
   inset: -1.2%;
   border-radius: 44px;
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.2);
   filter: blur(12px);
 }
 
@@ -273,12 +272,12 @@
   box-sizing: border-box;
   padding: 14px;
   border-radius: 38px;
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.42), rgba(190, 165, 255, 0.32));
-  border: 2px solid rgba(255, 255, 255, 0.45);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.22), rgba(190, 165, 255, 0.16));
+  border: 2px solid rgba(255, 255, 255, 0.28);
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.5),
-    0 0 22px rgba(255, 255, 255, 0.35),
-    0 0 60px rgba(235, 225, 255, 0.3);
+    0 0 0 1px rgba(255, 255, 255, 0.28),
+    0 0 22px rgba(255, 255, 255, 0.18),
+    0 0 60px rgba(235, 225, 255, 0.15);
 }
 
 .landing-photo {
@@ -289,21 +288,20 @@
   background: #ddd;
 }
 
-/* interpreter5.jpg has a ribbon at the top and a caption at the bottom baked into the picture.
-   The picture is made taller than its frame and moved up, so the frame cuts those two parts off.
-   If a bit of the ribbon or caption still shows, make top more negative (-17%) and height
-   larger (129%). If the woman is cut off too much, make them smaller. */
+/* Image fills the frame; object-position keeps the woman centered horizontally
+   and anchored so her head is fully visible. Nudge to 'center 25%' or 'center 15%'
+   if needed. */
 .landing-hero-image {
   position: absolute;
-  left: 0;
-  top: -15%;
-  width: 100%;
-  height: 125%;
+  left: -6%;
+  top: -10%;
+  width: 122%;
+  height: 122%;
   object-fit: cover;
-  object-position: center;
+  object-position: center 30%;
 }
 
-/* Small preview of the other person, in the top right corner of the photo */
+/* Small preview in the top right corner */
 .landing-pip {
   position: absolute;
   top: 0.9rem;
@@ -324,7 +322,7 @@
   object-fit: cover;
 }
 
-/* White "Interpreter available now" pill, bottom left of the photo */
+/* White "Interpreter available now" pill */
 .landing-status-pill {
   position: absolute;
   left: 1rem;
@@ -351,7 +349,7 @@
   box-shadow: 0 0 0 3px #d8d3f0;
 }
 
-/* --- Tablets and phones: one column, photo under the text --- */
+/* --- Responsive: one column under 900px --- */
 @media (max-width: 900px) {
   .landing-hero {
     grid-template-columns: minmax(0, 1fr);
