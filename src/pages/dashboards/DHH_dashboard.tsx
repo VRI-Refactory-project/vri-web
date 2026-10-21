@@ -85,7 +85,7 @@ export function DashboardPage() {
             monthlyMinutes: 0,
           });
 
-          // TODO: When backend is ready, replace the 0s above with actual API fields:
+          // When backend is ready, I will replace the 0s above with actual API fields:
           // setStats({
           //   walletBalance: data.wallet_balance || 0,
           //   monthlySessions: data.monthly_sessions || 0,
