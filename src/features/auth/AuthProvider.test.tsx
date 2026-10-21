@@ -32,6 +32,10 @@ function Probe() {
 }
 
 function renderProbe() {
+  // A restored session is checked with the server on load, and signing out tells the server. These
+  // tests are about refreshing and signing out, so both calls are stubbed.
+  vi.spyOn(authService, 'getCurrentUser').mockResolvedValue(stored.user);
+  vi.spyOn(authService, 'revokeSession').mockResolvedValue(undefined);
   sessionStorage.setItem('vri.session', JSON.stringify(stored));
   return render(
     <AuthProvider>
