@@ -45,6 +45,21 @@ describe('StartSessionPage', () => {
     expect(createSessionRequest).not.toHaveBeenCalled();
   });
 
+  it('sends an emergency request when opened from the Emergency Request button', async () => {
+    vi.mocked(createSessionRequest).mockResolvedValue(request('QUEUED'));
+    vi.mocked(getSessionRequest).mockResolvedValue(request('QUEUED'));
+    render(
+      <MemoryRouter initialEntries={['/?priority=emergency']}>
+        <StartSessionPage pollMs={10} />
+      </MemoryRouter>,
+    );
+    expect(screen.getByText(/front of the queue/i)).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Connect now' }));
+
+    expect(createSessionRequest).toHaveBeenCalledWith('EMERGENCY');
+  });
+
   it('asks for an interpreter and moves to the waiting screen', async () => {
     vi.mocked(createSessionRequest).mockResolvedValue(request('QUEUED'));
     vi.mocked(getSessionRequest).mockResolvedValue(request('QUEUED'));

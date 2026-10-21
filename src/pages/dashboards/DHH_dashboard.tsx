@@ -153,10 +153,7 @@ export function DashboardPage() {
 
             <button
               className="dash-btn-emergency"
-              onClick={() => {
-                // TODO: Add emergency logic here
-                console.log('Emergency request triggered');
-              }}
+              onClick={() => navigate('/dashboard/deaf/sessions/new?priority=emergency')}
             >
               <AlertCircle size={18} /> Emergency Request
             </button>
@@ -166,7 +163,7 @@ export function DashboardPage() {
 
       {/* Quick Actions */}
       <section className="quick-actions">
-        <button className="action-card">
+        <button className="action-card" onClick={() => navigate('/dashboard/deaf/schedule')}>
           <div className="action-icon">
             <Calendar size={20} />
           </div>
@@ -176,7 +173,7 @@ export function DashboardPage() {
           </div>
           <ChevronRight size={18} className="action-arrow" />
         </button>
-        <button className="action-card">
+        <button className="action-card" onClick={() => navigate('/dashboard/deaf/accessibility')}>
           <div className="action-icon">
             <Settings size={20} />
           </div>
