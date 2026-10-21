@@ -1,8 +1,10 @@
 // src/pages/interpreter/ProfilePage.tsx
-import { useState } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, BadgeCheck, Star, Pencil, Save, X, Plus } from 'lucide-react';
+import { ArrowLeft, BadgeCheck, Star, Pencil, Save, X, Plus, Camera } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { describeError } from '../../services/api';
+import { getMyPhoto, removeMyPhoto, uploadMyPhoto } from '../../services/photos';
 import './ProfilePage.css';
 
 interface InterpreterProfile {
@@ -41,6 +43,53 @@ export function ProfilePage() {
     emergencyName: 'Sarah Okafor',
     emergencyPhone: '+256 771 987 654',
   });
+
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoError, setPhotoError] = useState('');
+  const fileInput = useRef<HTMLInputElement>(null);
+
+  // A failed lookup just leaves the initial showing.
+  useEffect(() => {
+    let cancelled = false;
+    getMyPhoto().then(
+      (url) => {
+        if (!cancelled) setPhotoUrl(url);
+      },
+      () => {},
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function handlePhotoChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setPhotoBusy(true);
+    setPhotoError('');
+    try {
+      setPhotoUrl(await uploadMyPhoto(file));
+    } catch (err) {
+      setPhotoError(describeError(err));
+    } finally {
+      setPhotoBusy(false);
+      if (fileInput.current) fileInput.current.value = '';
+    }
+  }
+
+  async function handlePhotoRemove() {
+    setPhotoBusy(true);
+    setPhotoError('');
+    try {
+      await removeMyPhoto();
+      setPhotoUrl(null);
+    } catch (err) {
+      setPhotoError(describeError(err));
+    } finally {
+      setPhotoBusy(false);
+    }
+  }
 
   const [newLanguage, setNewLanguage] = useState('');
   const [newSpecialisation, setNewSpecialisation] = useState('');
@@ -110,9 +159,47 @@ export function ProfilePage() {
       </div>
 
       {topError && <div className="ip-error">{topError}</div>}
+      {photoError && <div className="ip-error">{photoError}</div>}
 
       <div className="ip-card ip-hero">
-        <span className="ip-avatar">{fullName.trim().charAt(0).toUpperCase() || 'A'}</span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-start' }}>
+          {photoUrl ? (
+            <img
+              src={photoUrl}
+              alt={fullName}
+              style={{ width: 84, height: 84, borderRadius: 15, objectFit: 'cover' }}
+            />
+          ) : (
+            <span className="ip-avatar">{fullName.trim().charAt(0).toUpperCase() || 'A'}</span>
+          )}
+          <input
+            ref={fileInput}
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={(e) => void handlePhotoChange(e)}
+          />
+          <button
+            type="button"
+            className="ip-btn ip-btn--ghost"
+            style={{ padding: '6px 12px', fontSize: 12 }}
+            disabled={photoBusy}
+            onClick={() => fileInput.current?.click()}
+          >
+            <Camera size={13} /> {photoBusy ? 'Working…' : photoUrl ? 'Change photo' : 'Add photo'}
+          </button>
+          {photoUrl && (
+            <button
+              type="button"
+              className="ip-btn ip-btn--ghost"
+              style={{ padding: '6px 12px', fontSize: 12 }}
+              disabled={photoBusy}
+              onClick={() => void handlePhotoRemove()}
+            >
+              <X size={13} /> Remove
+            </button>
+          )}
+        </div>
         <div className="ip-hero-info">
           <div className="ip-name">
             {editing ? (

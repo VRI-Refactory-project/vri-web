@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { api } from '../../services/api';
 import './DHH_dashboard.css';
+import { InterpreterProfileModal } from './InterpreterProfileModal';
 import {
   getAvailableInterpreters,
   type AvailableInterpreter,
@@ -50,6 +51,7 @@ export function DashboardPage() {
 
   // null while loading; empty when nobody is available right now.
   const [interpreters, setInterpreters] = useState<AvailableInterpreter[] | null>(null);
+  const [openProfileId, setOpenProfileId] = useState<number | null>(null);
 
   // State for stats (Defaults to 0 until backend is connected)
   const [stats, setStats] = useState({
@@ -294,11 +296,24 @@ export function DashboardPage() {
                 <div className="interpreter-rating">
                   <span className="text-muted">{interpreter.specialisation}</span>
                 </div>
+                <button
+                  type="button"
+                  className="btn-outline"
+                  onClick={() => setOpenProfileId(interpreter.id)}
+                >
+                  View profile
+                </button>
               </div>
             </div>
           ))}
         </div>
       </section>
+      {openProfileId !== null && (
+        <InterpreterProfileModal
+          interpreterId={openProfileId}
+          onClose={() => setOpenProfileId(null)}
+        />
+      )}
     </>
   );
 }
