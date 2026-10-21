@@ -12,8 +12,10 @@ export function ProtectedRoute({
   /** Off only for steps that come before email verification in a sign-up (certificate upload). */
   requireVerifiedEmail?: boolean;
 }) {
-  const { session } = useAuth();
+  const { session, checking } = useAuth();
   const location = useLocation();
+  // A stored session is only a claim until the server confirms it. Show nothing meanwhile.
+  if (checking) return <p className="route-checking">Checking your session…</p>;
   // Remember where the person was going, so signing in again can bring them back to it.
   if (!session) {
     const from = `${location.pathname}${location.search}`;

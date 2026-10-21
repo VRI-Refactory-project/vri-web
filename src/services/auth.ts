@@ -58,6 +58,21 @@ export const refreshAccessToken = (refresh: string) =>
   });
 
 /**
+ * The signed-in user as the server sees them. Used to check a session that was restored from
+ * browser storage: what is stored there can be edited by anyone, so it is never trusted on its own.
+ */
+export async function getCurrentUser(): Promise<AuthUser> {
+  return toAuthUser(await api<ApiUser>('/api/v1/auth/me/'));
+}
+
+/** Cancels the refresh token on the server. Errors are ignored: the person is signed out here either way. */
+export const revokeSession = (refresh: string) =>
+  api<{ detail: string }>('/api/v1/auth/logout/', {
+    method: 'POST',
+    body: JSON.stringify({ refresh }),
+  }).catch(() => undefined);
+
+/**
  * Account recovery (V2-008), step 1: email a 6-digit code. The API gives the same answer whether
  * or not the account exists, so the page must not claim that an email was definitely sent.
  */

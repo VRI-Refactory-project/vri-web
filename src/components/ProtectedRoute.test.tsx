@@ -1,6 +1,9 @@
 import { render, screen } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { AuthProvider } from '../features/auth/AuthProvider';
+import { ApiError } from '../services/api';
+import * as auth from '../services/auth';
 import type { AuthSession } from '../types';
 import { ProtectedRoute } from './ProtectedRoute';
 
@@ -49,6 +52,14 @@ const withEmail = (verified: boolean | undefined): AuthSession => {
 };
 
 describe('ProtectedRoute', () => {
+  // The server is asked about a stored session before it is trusted. Unless a test says otherwise,
+  // it confirms what is stored.
+  const serverConfirms = (session: AuthSession) =>
+    vi.spyOn(auth, 'getCurrentUser').mockResolvedValue(session.user);
+
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
   afterEach(() => sessionStorage.clear());
 
   it('sends signed-out visitors to sign in', () => {
@@ -61,33 +72,68 @@ describe('ProtectedRoute', () => {
     expect(screen.getByText('sign in page, came from /dashboard/interpreter')).toBeInTheDocument();
   });
 
-  it('sends the wrong role home', () => {
-    renderAt(sessionFor('deaf'));
-    expect(screen.getByText('landing')).toBeInTheDocument();
+  it('sends the wrong role home', async () => {
+    const session = sessionFor('deaf');
+    serverConfirms(session);
+    renderAt(session);
+    expect(await screen.findByText('landing')).toBeInTheDocument();
   });
 
-  it('lets the right role in using a restored session', () => {
+  it('lets the right role in once the server confirms the stored session', async () => {
+    const session = sessionFor('interpreter');
+    serverConfirms(session);
+    renderAt(session);
+    expect(screen.queryByText('interpreter home')).not.toBeInTheDocument();
+    expect(await screen.findByText('interpreter home')).toBeInTheDocument();
+  });
+
+  it('turns away a stored session the server rejects (a made-up or revoked token)', async () => {
+    vi.spyOn(auth, 'getCurrentUser').mockRejectedValue(new ApiError(401, 'Invalid token'));
     renderAt(sessionFor('interpreter'));
-    expect(screen.getByText('interpreter home')).toBeInTheDocument();
+    expect(await screen.findByText(/sign in page/)).toBeInTheDocument();
+    expect(sessionStorage.getItem('vri.session')).toBeNull();
   });
 
-  it('asks for email verification before the dashboard, and remembers where to go next', () => {
-    renderAt(withEmail(false));
-    expect(screen.getByText('verify email, then /dashboard/interpreter')).toBeInTheDocument();
+  it('believes the server about the role, not the stored copy', async () => {
+    // Stored as an interpreter, but the server says this person is deaf.
+    vi.spyOn(auth, 'getCurrentUser').mockResolvedValue(sessionFor('deaf').user);
+    renderAt(sessionFor('interpreter'));
+    expect(await screen.findByText('landing')).toBeInTheDocument();
   });
 
-  it('lets a verified email through', () => {
-    renderAt(withEmail(true));
-    expect(screen.getByText('interpreter home')).toBeInTheDocument();
+  it('keeps the session when the server cannot be reached', async () => {
+    vi.spyOn(auth, 'getCurrentUser').mockRejectedValue(new TypeError('Failed to fetch'));
+    renderAt(sessionFor('interpreter'));
+    expect(await screen.findByText('interpreter home')).toBeInTheDocument();
   });
 
-  it('does not ask when the API does not report verification', () => {
-    renderAt(withEmail(undefined));
-    expect(screen.getByText('interpreter home')).toBeInTheDocument();
+  it('asks for email verification before the dashboard, and remembers where to go next', async () => {
+    const session = withEmail(false);
+    serverConfirms(session);
+    renderAt(session);
+    expect(
+      await screen.findByText('verify email, then /dashboard/interpreter'),
+    ).toBeInTheDocument();
   });
 
-  it('lets an unverified email through where verification comes later', () => {
-    renderAt(withEmail(false), false);
-    expect(screen.getByText('interpreter home')).toBeInTheDocument();
+  it('lets a verified email through', async () => {
+    const session = withEmail(true);
+    serverConfirms(session);
+    renderAt(session);
+    expect(await screen.findByText('interpreter home')).toBeInTheDocument();
+  });
+
+  it('does not ask when the API does not report verification', async () => {
+    const session = withEmail(undefined);
+    serverConfirms(session);
+    renderAt(session);
+    expect(await screen.findByText('interpreter home')).toBeInTheDocument();
+  });
+
+  it('lets an unverified email through where verification comes later', async () => {
+    const session = withEmail(false);
+    serverConfirms(session);
+    renderAt(session, false);
+    expect(await screen.findByText('interpreter home')).toBeInTheDocument();
   });
 });
