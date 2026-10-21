@@ -1742,12 +1742,20 @@ import {
 import './CreateAccountPage.css';
 
 const SPECIALISATIONS: { value: Specialisation; label: string }[] = [
-  { value: 'GENERAL', label: 'General' },
-  { value: 'MEDICAL', label: 'Medical' },
-  { value: 'LEGAL', label: 'Legal' },
-  { value: 'EDUCATION', label: 'Education' },
-  { value: 'RELIGIOUS', label: 'Religious' },
-  { value: 'SECURITY', label: 'Security' },
+  { value: 'GENERAL', label: 'General / everyday' },
+  { value: 'MEDICAL', label: 'Medical / health' },
+  { value: 'LEGAL', label: 'Legal / court' },
+  { value: 'EDUCATION', label: 'Education / school' },
+  { value: 'RELIGIOUS', label: 'Religious / church or mosque' },
+  { value: 'SECURITY', label: 'Police / security' },
+  { value: 'GOVERNMENT', label: 'Government / public services' },
+  { value: 'EMPLOYMENT', label: 'Employment / workplace' },
+  { value: 'FINANCIAL', label: 'Banking / financial' },
+  { value: 'MENTAL_HEALTH', label: 'Mental health / counselling' },
+  { value: 'SOCIAL_SERVICES', label: 'Social services / community' },
+  { value: 'MEDIA', label: 'Media / broadcast' },
+  { value: 'TECHNICAL', label: 'Technical / IT' },
+  { value: 'EVENTS', label: 'Conferences / events' },
   { value: 'OTHER', label: 'Other (please specify)' },
 ];
 
@@ -1890,15 +1898,11 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
         password: form.password,
       };
 
-      // Format selected options as a comma-separated string
-      const finalSpecialisation = specialisations
-        .map((s) => (s === 'OTHER' ? customSpecialisation.trim() : s))
-        .join(', ');
-
       const session = isInterpreter
         ? await registerInterpreter({
             ...registrationData,
-            specialisation: finalSpecialisation as Specialisation,
+            specialisations,
+            specialisationOther: customSpecialisation,
           })
         : await registerDeaf(registrationData);
 
@@ -2118,7 +2122,7 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
                   padding: '8px',
                   zIndex: 50,
                   boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                  maxHeight: '200px',
+                  maxHeight: '260px',
                   overflowY: 'auto',
                 }}
                 onClick={(e) => e.stopPropagation()}

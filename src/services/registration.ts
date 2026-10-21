@@ -14,15 +14,33 @@ export interface DeafRegistration {
   email?: string;
 }
 
+/** Must match the library in the API (apps/interpreters/specialisations.py). */
 export type Specialisation =
-  'GENERAL' | 'MEDICAL' | 'LEGAL' | 'EDUCATION' | 'RELIGIOUS' | 'SECURITY' | 'OTHER';
+  | 'GENERAL'
+  | 'MEDICAL'
+  | 'LEGAL'
+  | 'EDUCATION'
+  | 'RELIGIOUS'
+  | 'SECURITY'
+  | 'GOVERNMENT'
+  | 'EMPLOYMENT'
+  | 'FINANCIAL'
+  | 'MENTAL_HEALTH'
+  | 'SOCIAL_SERVICES'
+  | 'MEDIA'
+  | 'TECHNICAL'
+  | 'EVENTS'
+  | 'OTHER';
 
 export interface InterpreterRegistration {
   name: string;
   phone: string;
   email: string;
   password: string;
-  specialisation?: Specialisation;
+  /** Everything the interpreter covers. */
+  specialisations?: Specialisation[];
+  /** Required by the API when `specialisations` includes OTHER. */
+  specialisationOther?: string;
 }
 
 export type OrganisationType = 'HOSPITAL' | 'COURT' | 'GOVERNMENT' | 'OTHER';
@@ -62,7 +80,8 @@ export const registerInterpreter = (d: InterpreterRegistration) =>
     phone_number: normalizePhone(d.phone),
     email: d.email.trim(),
     password: d.password,
-    ...(d.specialisation ? { specialisation: d.specialisation } : {}),
+    ...(d.specialisations?.length ? { specialisations: d.specialisations } : {}),
+    ...(d.specialisationOther?.trim() ? { specialisation_other: d.specialisationOther.trim() } : {}),
   });
 
 export const registerInstitution = (d: InstitutionRegistration) =>
