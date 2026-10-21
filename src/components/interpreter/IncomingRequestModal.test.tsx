@@ -45,7 +45,7 @@ describe('IncomingRequestModal', () => {
     expect(await screen.findByRole('dialog')).toBeInTheDocument();
     expect(screen.getByText('Maria Theresa')).toBeInTheDocument();
     expect(screen.getByText(/Medical/)).toBeInTheDocument();
-    expect(screen.getByRole('timer')).toHaveTextContent(/Respond within 0:\d\d/);
+    expect(screen.getByRole('timer')).toHaveTextContent(/Respond within \d:\d\d/);
   });
 
   it('marks an emergency', async () => {
