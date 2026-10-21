@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, BadgeCheck, Star, Pencil, Save, X, Plus, Camera } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { SignOutButton } from '../../components/SignOutButton';
 import { describeError } from '../../services/api';
 import { getMyPhoto, removeMyPhoto, uploadMyPhoto } from '../../services/photos';
 import './ProfilePage.css';
@@ -358,6 +359,7 @@ export function ProfilePage() {
           </button>
         )}
       </div>
+      <SignOutButton />
     </div>
   );
 }

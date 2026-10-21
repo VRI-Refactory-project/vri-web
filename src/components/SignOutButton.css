@@ -1,0 +1,27 @@
+.signout-row {
+  margin-top: 16px;
+}
+
+.signout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: 1px solid #d9d4ec;
+  border-radius: 10px;
+  background: #fff;
+  color: #3b2579;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.signout-btn:hover {
+  background: #f6f5fc;
+}
+
+.signout-btn:focus-visible {
+  outline: 2px solid #3b2579;
+  outline-offset: 2px;
+}
