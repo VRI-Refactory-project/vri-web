@@ -68,13 +68,15 @@ function fromApi(raw: ApiSessionRequest): SessionRequest {
 const mockEnabled = () => import.meta.env.VITE_MOCK_SESSION_REQUESTS === 'true';
 
 /** Asks for a live video session. The server answers 409 if one is already open. */
-export async function createSessionRequest(): Promise<SessionRequest> {
+export async function createSessionRequest(
+  priority: 'NORMAL' | 'EMERGENCY' = 'NORMAL',
+): Promise<SessionRequest> {
   if (mockEnabled()) return mockCreate();
   const raw = await api<ApiSessionRequest>(BASE, {
     method: 'POST',
     body: JSON.stringify({
       specialisation_required: 'GENERAL',
-      priority: 'NORMAL',
+      priority,
       request_key: crypto.randomUUID(),
     }),
   });

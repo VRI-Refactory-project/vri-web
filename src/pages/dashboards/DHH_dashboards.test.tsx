@@ -65,6 +65,39 @@ describe('DashboardPage (deaf)', () => {
     expect(screen.getByText('Start session page')).toBeInTheDocument();
   });
 
+  it('opens the start session page as an emergency from the Emergency Request button', async () => {
+    render(
+      <MemoryRouter>
+        <Routes>
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/dashboard/deaf/sessions/new" element={<p>Start session page</p>} />
+        </Routes>
+      </MemoryRouter>,
+    );
+    await screen.findByText('No upcoming sessions yet.');
+
+    await userEvent.click(screen.getByRole('button', { name: /emergency request/i }));
+
+    expect(screen.getByText('Start session page')).toBeInTheDocument();
+  });
+
+  it('opens a page from Accessibility Setup', async () => {
+    render(
+      <MemoryRouter>
+        <Routes>
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/dashboard/deaf/schedule" element={<p>Schedule page</p>} />
+          <Route path="/dashboard/deaf/accessibility" element={<p>Accessibility page</p>} />
+        </Routes>
+      </MemoryRouter>,
+    );
+    await screen.findByText('No upcoming sessions yet.');
+
+    await userEvent.click(screen.getByRole('button', { name: /accessibility setup/i }));
+
+    expect(screen.getByText('Accessibility page')).toBeInTheDocument();
+  });
+
   it('shows no sessions when the API has none', async () => {
     renderPage();
     expect(await screen.findByText('No upcoming sessions yet.')).toBeInTheDocument();

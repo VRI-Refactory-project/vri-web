@@ -80,6 +80,14 @@ export const router = createBrowserRouter([
           { index: true, element: <DashboardPage /> },
           { path: 'sessions', element: <Placeholder title="Sessions" story="Sprint 2" /> },
           { path: 'sessions/new', element: <StartSessionPage /> },
+          {
+            path: 'schedule',
+            element: <Placeholder title="Schedule a session" story="Not scheduled" />,
+          },
+          {
+            path: 'accessibility',
+            element: <Placeholder title="Accessibility setup" story="Not scheduled" />,
+          },
           { path: 'messages', element: <Placeholder title="Messages" story="Sprint 2" /> },
           { path: 'wallet', element: <Placeholder title="Wallet" story="Not scheduled" /> },
           { path: 'profile', element: <DeafProfilePage /> },
