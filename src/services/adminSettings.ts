@@ -17,7 +17,7 @@ interface ApiAdminProfile {
 }
 
 export async function fetchAdminProfile(): Promise<AdminProfile> {
-  const raw = await api<ApiAdminProfile>('/api/v1/accounts/me/');
+  const raw = await api<ApiAdminProfile>('/api/v1/administration/settings/');
   return {
     name: raw.full_name ?? raw.name ?? '',
     email: raw.email ?? '',
@@ -26,7 +26,7 @@ export async function fetchAdminProfile(): Promise<AdminProfile> {
 }
 
 export async function updateAdminProfile(data: AdminProfile): Promise<AdminProfile> {
-  const raw = await api<ApiAdminProfile>('/api/v1/accounts/me/', {
+  const raw = await api<ApiAdminProfile>('/api/v1/administration/settings/', {
     method: 'PATCH',
     body: JSON.stringify({
       full_name: data.name,
@@ -48,7 +48,7 @@ export interface PasswordChange {
 }
 
 export async function changeAdminPassword(data: PasswordChange): Promise<void> {
-  await api('/api/v1/accounts/me/change-password/', {
+  await api('/api/v1/administration/change-password/', {
     method: 'POST',
     body: JSON.stringify({
       current_password: data.currentPassword,
@@ -71,7 +71,7 @@ interface ApiAdminPreferences {
 }
 
 export async function fetchAdminPreferences(): Promise<AdminPreferences> {
-  const raw = await api<ApiAdminPreferences>('/api/v1/accounts/me/preferences/');
+  const raw = await api<ApiAdminPreferences>('/api/v1/administration/settings/');
   return {
     sessionAlerts: raw.session_alerts ?? true,
     verificationAlerts: raw.verification_alerts ?? true,
@@ -88,7 +88,7 @@ export async function updateAdminPreferences(
   if (prefs.oneStepVerification !== undefined)
     body.one_step_verification = prefs.oneStepVerification;
 
-  const raw = await api<ApiAdminPreferences>('/api/v1/accounts/me/preferences/', {
+  const raw = await api<ApiAdminPreferences>('/api/v1/administration/settings/', {
     method: 'PATCH',
     body: JSON.stringify(body),
   });
