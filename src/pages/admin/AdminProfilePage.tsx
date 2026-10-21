@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { SignOutButton } from '../../components/SignOutButton';
 import {
   fetchAdminProfile,
   updateAdminProfile,
@@ -215,6 +216,7 @@ export function AdminProfilePage() {
           <Save size={15} /> {saving ? 'Saving…' : 'Save changes'}
         </button>
       </div>
+      <SignOutButton />
     </div>
   );
 }

@@ -28,6 +28,7 @@ import {
 } from '../../services/deafProfile';
 import { describeError } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
+import { SignOutButton } from '../../components/SignOutButton';
 import './ProfilePage.css';
 
 type FieldErrors = Partial<Record<keyof MyProfile, string>>;
@@ -530,6 +531,7 @@ export function ProfilePage() {
               </button>
             )}
           </div>
+          <SignOutButton />
         </div>
       </div>
     </div>
