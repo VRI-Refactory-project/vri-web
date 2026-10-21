@@ -1,4 +1,5 @@
 import { api } from './api';
+import { photoSrc } from './photos';
 
 /** An interpreter a Deaf user could be connected to right now. */
 export interface AvailableInterpreter {
@@ -25,6 +26,25 @@ export async function getAvailableInterpreters(): Promise<AvailableInterpreter[]
     name: o.name,
     signLanguages: o.sign_languages,
     specialisation: o.specialisation,
-    photoUrl: o.photo_url,
+    photoUrl: photoSrc(o.photo_url),
   }));
+}
+
+/** One interpreter's public profile; the Deaf dashboard opens it from "View profile". */
+export interface InterpreterPublicProfile extends AvailableInterpreter {
+  availableNow: boolean;
+}
+
+export async function getInterpreterProfile(id: number): Promise<InterpreterPublicProfile> {
+  const o = await api<ApiInterpreter & { available_now: boolean }>(
+    `/api/v1/dashboard/deaf/interpreters/${id}/`,
+  );
+  return {
+    id: o.id,
+    name: o.name,
+    signLanguages: o.sign_languages,
+    specialisation: o.specialisation,
+    photoUrl: photoSrc(o.photo_url),
+    availableNow: o.available_now,
+  };
 }

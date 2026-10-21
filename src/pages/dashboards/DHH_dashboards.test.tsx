@@ -31,11 +31,11 @@ const amina = {
 
 /** Answers each endpoint the page calls; the interpreters list is empty unless a test sets it. */
 function respondWith(sessions: unknown[] = [], interpreters: unknown[] = []) {
-  fetchMock.mockImplementation(async (url: string) =>
-    String(url).includes('available-interpreters')
-      ? ok(interpreters)
-      : ok({ user: {}, requests: [], sessions, chats: [] }),
-  );
+  fetchMock.mockImplementation(async (url: string) => {
+    if (String(url).includes('available-interpreters')) return ok(interpreters);
+    if (String(url).includes('/deaf/interpreters/')) return ok({ ...amina, available_now: true });
+    return ok({ user: {}, requests: [], sessions, chats: [] });
+  });
 }
 
 function renderPage() {
@@ -136,6 +136,20 @@ describe('DashboardPage (deaf)', () => {
     expect(screen.getByText('Daniel Brooks')).toBeInTheDocument();
     expect(screen.getAllByText('Available')).toHaveLength(2);
     expect(screen.queryByText(/no interpreters are available/i)).not.toBeInTheDocument();
+  });
+
+  it('opens an interpreter profile from View profile', async () => {
+    respondWith([], [amina]);
+    renderPage();
+    await screen.findByText('Amina Okafor');
+
+    await userEvent.click(screen.getByRole('button', { name: 'View profile' }));
+
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    expect(await screen.findByText('Available now')).toBeInTheDocument();
+    expect(
+      fetchMock.mock.calls.some(([url]) => String(url).includes('/deaf/interpreters/1/')),
+    ).toBe(true);
   });
 
   it('says so when no interpreter is available', async () => {

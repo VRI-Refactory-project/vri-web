@@ -1,5 +1,6 @@
 // src/services/deafProfile.ts
 import { api } from './api';
+import { photoSrc } from './photos';
 
 export interface MyProfile {
   firstName: string;
@@ -50,7 +51,7 @@ export async function fetchMyProfile(): Promise<MyProfile> {
     email: raw.email ?? '',
     phone: raw.contact_number ?? raw.phone_number ?? raw.phone ?? '',
     location: raw.location ?? '',
-    photoUrl: raw.profile_photo ?? raw.photo ?? null,
+    photoUrl: photoSrc(raw.profile_photo ?? raw.photo),
     languages: raw.communication_methods ?? raw.languages ?? [],
     emergencyName: raw.emergency_contact_name ?? '',
     emergencyPhone: raw.emergency_contact_phone ?? '',
@@ -92,7 +93,7 @@ export async function updateMyProfile(data: MyProfile): Promise<MyProfile> {
     email: raw.email ?? data.email,
     phone: raw.phone_number ?? raw.phone ?? data.phone,
     location: raw.location ?? data.location,
-    photoUrl: raw.profile_photo ?? raw.photo ?? data.photoUrl,
+    photoUrl: photoSrc(raw.profile_photo ?? raw.photo) ?? data.photoUrl,
     languages: raw.languages ?? data.languages,
     emergencyName: raw.emergency_contact_name ?? data.emergencyName,
     emergencyPhone: raw.emergency_contact_phone ?? data.emergencyPhone,
@@ -112,7 +113,7 @@ export async function uploadProfilePhoto(file: File): Promise<string | null> {
     { method: 'POST', body: form },
   );
 
-  return raw.profile_photo ?? raw.photo ?? raw.url ?? null;
+  return photoSrc(raw.profile_photo ?? raw.photo ?? raw.url);
 }
 
 export async function removeProfilePhoto(): Promise<void> {
