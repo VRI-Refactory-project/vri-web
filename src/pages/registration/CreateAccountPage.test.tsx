@@ -383,7 +383,7 @@ describe('CreateAccountPage', () => {
 
       //  NEW LOGIC: Open the custom dropdown and select "Medical"
       await userEvent.click(screen.getByText('Select specialisation(s)...'));
-      await userEvent.click(screen.getByText('Medical'));
+      await userEvent.click(screen.getByText('Medical / health'));
 
       await userEvent.click(screen.getByRole('checkbox'));
       await userEvent.click(screen.getByRole('button', { name: /create account/i }));
@@ -394,7 +394,7 @@ describe('CreateAccountPage', () => {
       expect(register).toHaveBeenCalledWith(
         expect.objectContaining({
           phone: '+256772123456',
-          specialisation: 'MEDICAL',
+          specialisations: ['MEDICAL'],
         }),
       );
     });
