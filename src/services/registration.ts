@@ -81,7 +81,9 @@ export const registerInterpreter = (d: InterpreterRegistration) =>
     email: d.email.trim(),
     password: d.password,
     ...(d.specialisations?.length ? { specialisations: d.specialisations } : {}),
-    ...(d.specialisationOther?.trim() ? { specialisation_other: d.specialisationOther.trim() } : {}),
+    ...(d.specialisationOther?.trim()
+      ? { specialisation_other: d.specialisationOther.trim() }
+      : {}),
   });
 
 export const registerInstitution = (d: InstitutionRegistration) =>
