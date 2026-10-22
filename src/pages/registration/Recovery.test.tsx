@@ -67,7 +67,7 @@ describe('account recovery pages (V2-008)', () => {
       </AuthProvider>,
     );
     await userEvent.type(screen.getByLabelText('6-digit code'), '000000');
-    await userEvent.type(screen.getByLabelText('New password'), 'whatever');
+    await userEvent.type(screen.getByLabelText('New password'), 'Whatever-1!');
     await userEvent.click(screen.getByRole('button', { name: /reset password/i }));
     expect(await screen.findByRole('alert')).toHaveTextContent('Invalid or expired code');
     expect(sessionStorage.getItem('vri.session')).toBeNull();

@@ -72,7 +72,7 @@ describe('SignUpInstitution', () => {
     await userEvent.type(screen.getByLabelText('Your full name'), 'Dr Okello');
     await userEvent.type(screen.getByLabelText('Phone number'), '772123456');
     await userEvent.type(screen.getByLabelText('Work email'), 'a@mulago.org');
-    await userEvent.type(screen.getByLabelText('Password'), 'secret-pass-1');
+    await userEvent.type(screen.getByLabelText('Password'), 'Secret-pass-1');
     await userEvent.click(screen.getByRole('button', { name: /submit registration/i }));
     await waitFor(() => expect(screen.getByText('pending review')).toBeInTheDocument());
     expect(spy).toHaveBeenCalledWith(
@@ -89,7 +89,7 @@ describe('SignUpInstitution', () => {
     await userEvent.type(screen.getByLabelText('Your full name'), 'Dr Okello');
     await userEvent.type(screen.getByLabelText('Phone number'), '772123456');
     await userEvent.type(screen.getByLabelText('Work email'), 'a@school.org');
-    await userEvent.type(screen.getByLabelText('Password'), 'secret-pass-1');
+    await userEvent.type(screen.getByLabelText('Password'), 'Secret-pass-1');
     await userEvent.click(screen.getByRole('button', { name: /submit registration/i }));
     await waitFor(() => expect(screen.getByText('pending review')).toBeInTheDocument());
     expect(spy).toHaveBeenCalledWith(

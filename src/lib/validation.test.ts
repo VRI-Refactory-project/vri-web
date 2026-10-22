@@ -13,6 +13,7 @@ import {
   validatePhone,
   validatePhoneNumber,
   validateRequiredText,
+  getPasswordStrength,
 } from './validation';
 
 describe('phone numbers', () => {
@@ -105,14 +106,26 @@ describe('names', () => {
 });
 
 describe('passwords', () => {
-  it('accepts eight or more characters that are not only digits', () => {
-    expect(validatePassword('secret-pass-1')).toBeUndefined();
+  it('accepts a password that meets all three rules', () => {
+    expect(validatePassword('Secret-pass-1')).toBeUndefined();
   });
 
-  it('rejects short and numbers-only passwords', () => {
+  it('rejects an empty, short or rule-breaking password', () => {
     expect(validatePassword('')).toBe('Enter a password.');
-    expect(validatePassword('abc12')).toMatch(/at least 8/);
-    expect(validatePassword('12345678')).toMatch(/only numbers/);
+    expect(validatePassword('Ab-1')).toBe('Use at least 8 characters.');
+    expect(validatePassword('secret-pass-1')).toBe('Add one uppercase letter.');
+    expect(validatePassword('12345678')).toBe('Add one uppercase letter.');
+    expect(validatePassword('Secretpass1')).toBe(
+      'Add one number and one special character, like ! or -.',
+    );
+  });
+
+  it('scores strength from the rules met', () => {
+    expect(getPasswordStrength('').score).toBe(0);
+    expect(getPasswordStrength('abc').label).toBe('Weak');
+    expect(getPasswordStrength('Abcdefgh').label).toBe('Fair');
+    expect(getPasswordStrength('Abcdef1!').label).toBe('Good');
+    expect(getPasswordStrength('Abcdefghij1!').label).toBe('Strong');
   });
 });
 
