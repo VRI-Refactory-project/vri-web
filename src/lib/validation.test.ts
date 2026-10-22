@@ -106,27 +106,27 @@ describe('names', () => {
 });
 
 describe('passwords', () => {
-   it('accepts a password that meets all three rules', () => {
-     expect(validatePassword('Secret-pass-1')).toBeUndefined();
-   });
+  it('accepts a password that meets all three rules', () => {
+    expect(validatePassword('Secret-pass-1')).toBeUndefined();
+  });
 
-   it('rejects an empty, short or rule-breaking password', () => {
-     expect(validatePassword('')).toBe('Enter a password.');
-     expect(validatePassword('Ab-1')).toBe('Use at least 8 characters.');
-     expect(validatePassword('secret-pass-1')).toBe('Add one uppercase letter.');
-     expect(validatePassword('12345678')).toBe('Add one uppercase letter.');
-     expect(validatePassword('Secretpass1')).toBe(
-       'Add one number and one special character, like ! or -.',
-     );
-   });
+  it('rejects an empty, short or rule-breaking password', () => {
+    expect(validatePassword('')).toBe('Enter a password.');
+    expect(validatePassword('Ab-1')).toBe('Use at least 8 characters.');
+    expect(validatePassword('secret-pass-1')).toBe('Add one uppercase letter.');
+    expect(validatePassword('12345678')).toBe('Add one uppercase letter.');
+    expect(validatePassword('Secretpass1')).toBe(
+      'Add one number and one special character, like ! or -.',
+    );
+  });
 
-   it('scores strength from the rules met', () => {
-     expect(getPasswordStrength('').score).toBe(0);
-     expect(getPasswordStrength('abc').label).toBe('Weak');
-     expect(getPasswordStrength('Abcdefgh').label).toBe('Fair');
-     expect(getPasswordStrength('Abcdef1!').label).toBe('Good');
-     expect(getPasswordStrength('Abcdefghij1!').label).toBe('Strong');
-   });
+  it('scores strength from the rules met', () => {
+    expect(getPasswordStrength('').score).toBe(0);
+    expect(getPasswordStrength('abc').label).toBe('Weak');
+    expect(getPasswordStrength('Abcdefgh').label).toBe('Fair');
+    expect(getPasswordStrength('Abcdef1!').label).toBe('Good');
+    expect(getPasswordStrength('Abcdefghij1!').label).toBe('Strong');
+  });
 });
 
 describe('required text and error collection', () => {
