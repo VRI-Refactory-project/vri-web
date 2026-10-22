@@ -41,22 +41,6 @@ export function LandingPage() {
           fillOpacity="0.45"
           filter="url(#sweepBlur)"
         />
-        <path
-          d="M560 945 C860 880 1150 860 1400 770 S1620 680 1720 630"
-          fill="none"
-          stroke="url(#sweepFade)"
-          strokeWidth="3"
-          strokeLinecap="round"
-          filter="url(#lineBlur)"
-        />
-        <path
-          d="M1460 140 C1560 108 1640 112 1710 138"
-          fill="none"
-          stroke="#c4b5fd"
-          strokeOpacity="0.35"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
       </svg>
 
       <header className="landing-header">
