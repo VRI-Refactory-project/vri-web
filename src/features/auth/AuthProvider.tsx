@@ -4,7 +4,6 @@ import { getCurrentUser, refreshAccessToken, revokeSession } from '../../service
 import type { AuthSession, AuthUser, SelectableRole } from '../../types';
 import { AuthContext } from './authContext';
 
-
 const STORAGE_KEY = 'vri.session';
 
 // sessionStorage keeps the user signed in across page reloads but not after the tab is closed.

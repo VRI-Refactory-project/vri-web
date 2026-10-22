@@ -5,7 +5,6 @@ import * as auth from '../../services/auth';
 import type { AuthSession } from '../../types';
 import { AuthProvider } from './AuthProvider';
 
-
 const session: AuthSession = {
   token: 'access-1',
   refreshToken: 'refresh-1',
@@ -17,10 +16,7 @@ function Probe() {
   return <p>{current ? 'signed in' : 'signed out'}</p>;
 }
 
-
 describe('AuthProvider and the browser arrows', () => {
-
-
   beforeEach(async () => {
     vi.restoreAllMocks();
     sessionStorage.setItem('vri.session', JSON.stringify(session));
@@ -39,24 +35,24 @@ describe('AuthProvider and the browser arrows', () => {
     window.history.pushState({}, '', '/');
   });
 
- it('stays signed in when browser navigation reaches a public page', () => {
-   act(() => {
-     window.history.pushState({}, '', '/landing');
-     window.dispatchEvent(new PopStateEvent('popstate'));
-   });
+  it('stays signed in when browser navigation reaches a public page', () => {
+    act(() => {
+      window.history.pushState({}, '', '/landing');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
 
-   expect(screen.getByText('signed in')).toBeInTheDocument();
-   expect(auth.revokeSession).not.toHaveBeenCalled();
-   expect(sessionStorage.getItem('vri.session')).not.toBeNull();
- });
+    expect(screen.getByText('signed in')).toBeInTheDocument();
+    expect(auth.revokeSession).not.toHaveBeenCalled();
+    expect(sessionStorage.getItem('vri.session')).not.toBeNull();
+  });
 
- it('stays signed in when moving between dashboard pages', () => {
-   act(() => {
-     window.history.pushState({}, '', '/dashboard/deaf/profile');
-     window.dispatchEvent(new PopStateEvent('popstate'));
-   });
+  it('stays signed in when moving between dashboard pages', () => {
+    act(() => {
+      window.history.pushState({}, '', '/dashboard/deaf/profile');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
 
-   expect(screen.getByText('signed in')).toBeInTheDocument();
-   expect(auth.revokeSession).not.toHaveBeenCalled();
- });
+    expect(screen.getByText('signed in')).toBeInTheDocument();
+    expect(auth.revokeSession).not.toHaveBeenCalled();
+  });
 });
