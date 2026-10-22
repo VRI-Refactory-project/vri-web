@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, Eye, EyeOff } from 'lucide-react';
 import { AuthLayout } from '../../components/Authlayout';
+import { PasswordStrength } from '../../components/PasswordStrength';
 import { PhoneField } from '../../components/PhoneField';
 import { FLOWS } from '../../features/registration/flows';
 import { useAuth } from '../../hooks/useAuth';
@@ -26,14 +27,23 @@ const TYPES: { value: OrganisationType; label: string }[] = [
 ];
 
 type FieldName =
-  'organisationName' | 'organisationTypeOther' | 'name' | 'phone' | 'email' | 'password';
+  | 'organisationName'
+  | 'organisationTypeOther'
+  | 'name'
+  | 'email'
+  | 'phone'
+  | 'password'
+  | 'confirm';
+
+// Same order as the fields appear on screen, so a failed submit focuses the first one you see.
 const FIELD_ORDER: FieldName[] = [
   'organisationName',
   'organisationTypeOther',
   'name',
-  'phone',
   'email',
+  'phone',
   'password',
+  'confirm',
 ];
 const inputId = (name: FieldName) => `inst-${name}`;
 
@@ -49,6 +59,9 @@ export const SignUpInstitution = () => {
     email: '',
     password: '',
   });
+  // Kept apart from `form` on purpose: `form` is sent to the API as it is, and the API never
+  // needs the confirmation.
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string>();
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -74,6 +87,11 @@ export const SignUpInstitution = () => {
     phone: validatePhoneNumber(form.phone),
     email: validateEmail(form.email),
     password: validatePassword(form.password),
+    confirm: !confirmPassword
+      ? 'Confirm your password.'
+      : confirmPassword !== form.password
+        ? 'Passwords do not match.'
+        : undefined,
   });
   const shown = (name: FieldName) => (touched[name] || submitted ? errors[name] : undefined);
   const touch = (name: FieldName) => () => setTouched((t) => ({ ...t, [name]: true }));
@@ -165,6 +183,7 @@ export const SignUpInstitution = () => {
           </div>
         )}
 
+        {/* Row: Your full name | Work email */}
         <div className="inst-row">
           <div className="form-group">
             <label htmlFor="inst-name">Your full name</label>
@@ -179,21 +198,6 @@ export const SignUpInstitution = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="inst-phone">Phone number</label>
-            <PhoneField
-              id={inputId('phone')}
-              value={form.phone}
-              onChange={(phone) => setForm((f) => ({ ...f, phone }))}
-              onBlur={touch('phone')}
-              invalid={Boolean(shown('phone'))}
-              errorId={shown('phone') ? `${inputId('phone')}-error` : undefined}
-            />
-            {message('phone')}
-          </div>
-        </div>
-
-        <div className="inst-row">
-          <div className="form-group">
             <label htmlFor="inst-email">Work email</label>
             <input
               {...props('email')}
@@ -205,7 +209,24 @@ export const SignUpInstitution = () => {
             />
             {message('email')}
           </div>
+        </div>
 
+        {/* Phone on its own row */}
+        <div className="form-group">
+          <label htmlFor="inst-phone">Phone number</label>
+          <PhoneField
+            id={inputId('phone')}
+            value={form.phone}
+            onChange={(phone) => setForm((f) => ({ ...f, phone }))}
+            onBlur={touch('phone')}
+            invalid={Boolean(shown('phone'))}
+            errorId={shown('phone') ? `${inputId('phone')}-error` : undefined}
+          />
+          {message('phone')}
+        </div>
+
+        {/* Row: Password | Confirm password */}
+        <div className="inst-row">
           <div className="form-group">
             <label htmlFor="inst-password">Password</label>
             <div className="inst-password-wrap">
@@ -229,7 +250,24 @@ export const SignUpInstitution = () => {
             </div>
             {message('password')}
           </div>
+
+          {/* The eye button on the password box shows or hides both boxes */}
+          <div className="form-group">
+            <label htmlFor="inst-confirm">Confirm password</label>
+            <input
+              {...props('confirm')}
+              type={showPassword ? 'text' : 'password'}
+              autoComplete="new-password"
+              placeholder="Re-enter password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+            {message('confirm')}
+          </div>
         </div>
+
+        {/* Strength bars + requirement ticks: appear once a password is typed */}
+        <PasswordStrength password={form.password} />
 
         {error && (
           <p className="form-error" role="alert">
