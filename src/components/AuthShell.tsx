@@ -12,6 +12,7 @@ import './AuthShell.css';
 
 interface AuthShellProps {
   children: ReactNode;
+  className?: string;
   /** The named steps of the flow (see features/registration/flows.ts). Leave out on screens that
    *  are not part of a sign-up flow, such as sign-in and recovery. */
   steps?: readonly string[];
@@ -29,6 +30,7 @@ interface AuthShellProps {
 
 export function AuthShell({
   children,
+  className,
   steps,
   current = 1,
   backTo,
@@ -38,7 +40,10 @@ export function AuthShell({
   logo: logoOverride,
 }: AuthShellProps) {
   return (
-    <div className="as-page" style={{ backgroundImage: `url(${backgroundImage})` }}>
+    <div
+      className={`as-page ${className ?? ''}`.trim()}
+      style={{ backgroundImage: `url(${backgroundImage})` }}
+    >
       <header className="as-header">
         {/* <Link to="/" className="as-logo"> */}
         <Link to="/" className={`as-logo ${logoOverride ? 'as-logo--custom' : ''}`}>

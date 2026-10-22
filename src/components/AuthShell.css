@@ -13,6 +13,12 @@
   background-attachment: fixed;
 }
 
+.as-page--no-scroll {
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+}
+
 /* Dark tint so white cards and controls read clearly on the photo. */
 .as-page::before {
   content: '';
