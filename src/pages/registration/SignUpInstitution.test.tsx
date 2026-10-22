@@ -38,6 +38,7 @@ describe('SignUpInstitution', () => {
     expect(screen.getByText('Enter your phone number.')).toBeInTheDocument();
     expect(screen.getByText('Enter your email address.')).toBeInTheDocument();
     expect(screen.getByText('Enter a password.')).toBeInTheDocument();
+    expect(screen.getByText('Confirm your password.')).toBeInTheDocument();
     expect(spy).not.toHaveBeenCalled();
   });
 
@@ -64,6 +65,32 @@ describe('SignUpInstitution', () => {
     expect(spy).not.toHaveBeenCalled();
   });
 
+  it('shows the strength meter and turns each requirement green as it is met', async () => {
+    renderPage();
+    expect(screen.queryByText('Password Strength')).not.toBeInTheDocument();
+    const password = screen.getByLabelText('Password');
+
+    await userEvent.type(password, 'abcdefgh');
+    expect(screen.getByText('Weak')).toBeInTheDocument();
+    expect(screen.getByText('At least 8 characters')).toHaveClass('pw-rule--ok');
+    expect(screen.getByText('One uppercase letter')).not.toHaveClass('pw-rule--ok');
+
+    await userEvent.type(password, 'A1!');
+    expect(screen.getByText('Good')).toBeInTheDocument();
+    expect(screen.getByText('One uppercase letter')).toHaveClass('pw-rule--ok');
+    expect(screen.getByText('One number & special character')).toHaveClass('pw-rule--ok');
+  });
+
+  it('says when the two passwords do not match', async () => {
+    const spy = vi.spyOn(registration, 'registerInstitution');
+    renderPage();
+    await userEvent.type(screen.getByLabelText('Password'), 'Secret-pass-1');
+    await userEvent.type(screen.getByLabelText('Confirm password'), 'Secret-pass-2');
+    await userEvent.tab();
+    expect(screen.getByText('Passwords do not match.')).toBeInTheDocument();
+    expect(spy).not.toHaveBeenCalled();
+  });
+
   it('registers the institution and shows the pending page', async () => {
     const spy = vi.spyOn(registration, 'registerInstitution').mockResolvedValue(okSession);
     renderPage();
@@ -73,11 +100,14 @@ describe('SignUpInstitution', () => {
     await userEvent.type(screen.getByLabelText('Phone number'), '772123456');
     await userEvent.type(screen.getByLabelText('Work email'), 'a@mulago.org');
     await userEvent.type(screen.getByLabelText('Password'), 'Secret-pass-1');
+    await userEvent.type(screen.getByLabelText('Confirm password'), 'Secret-pass-1');
     await userEvent.click(screen.getByRole('button', { name: /submit registration/i }));
     await waitFor(() => expect(screen.getByText('pending review')).toBeInTheDocument());
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({ organisationName: 'Mulago', organisationType: 'COURT' }),
     );
+    // The confirmation box is for the person only: it must never reach the API.
+    expect(spy.mock.calls[0][0]).not.toHaveProperty('confirmPassword');
   });
 
   it('sends what "Other" means along with the registration', async () => {
@@ -90,6 +120,7 @@ describe('SignUpInstitution', () => {
     await userEvent.type(screen.getByLabelText('Phone number'), '772123456');
     await userEvent.type(screen.getByLabelText('Work email'), 'a@school.org');
     await userEvent.type(screen.getByLabelText('Password'), 'Secret-pass-1');
+    await userEvent.type(screen.getByLabelText('Confirm password'), 'Secret-pass-1');
     await userEvent.click(screen.getByRole('button', { name: /submit registration/i }));
     await waitFor(() => expect(screen.getByText('pending review')).toBeInTheDocument());
     expect(spy).toHaveBeenCalledWith(
