@@ -33,6 +33,7 @@ export function PhoneField({
       international
       withCountryCallingCode
       countryCallingCodeEditable={false}
+      limitMaxLength
       defaultCountry={defaultCountry as never}
       value={value || undefined}
       onChange={(v) => onChange(v ?? '')}
