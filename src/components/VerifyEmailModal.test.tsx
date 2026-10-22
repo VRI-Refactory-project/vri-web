@@ -26,6 +26,14 @@ function renderModal(user: Record<string, unknown>) {
   return updateUser;
 }
 
+/** Types a 6-digit code into the six OTP boxes. */
+async function typeCode(code: string) {
+  const boxes = Array.from({ length: 6 }, (_, i) => screen.getByLabelText(`Digit ${i + 1}`));
+  for (let i = 0; i < code.length; i++) {
+    await userEvent.type(boxes[i], code[i]);
+  }
+}
+
 describe('VerifyEmailModal', () => {
   it('stays hidden when the email is verified or missing', () => {
     renderModal({ email: 'a@b.com', emailVerified: true });
@@ -39,7 +47,7 @@ describe('VerifyEmailModal', () => {
 
   it('asks for a 6-digit code before calling the API', async () => {
     renderModal({ email: 'a@b.com', emailVerified: false });
-    await userEvent.type(screen.getByLabelText(/6-digit code/i), '123');
+    await typeCode('123');
     await userEvent.click(screen.getByRole('button', { name: /verify email/i }));
     expect(screen.getByRole('alert')).toHaveTextContent(/6-digit/i);
     expect(fetchMock).not.toHaveBeenCalled();
@@ -60,7 +68,7 @@ describe('VerifyEmailModal', () => {
       }),
     });
     const updateUser = renderModal({ email: 'a@b.com', emailVerified: false });
-    await userEvent.type(screen.getByLabelText(/6-digit code/i), '123456');
+    await typeCode('123456');
     await userEvent.click(screen.getByRole('button', { name: /verify email/i }));
     await waitFor(() => expect(updateUser).toHaveBeenCalledWith({ emailVerified: true }));
   });
@@ -73,7 +81,7 @@ describe('VerifyEmailModal', () => {
       json: async () => ({ code: ['Invalid or expired code. Request a new one.'] }),
     });
     renderModal({ email: 'a@b.com', emailVerified: false });
-    await userEvent.type(screen.getByLabelText(/6-digit code/i), '000000');
+    await typeCode('000000');
     await userEvent.click(screen.getByRole('button', { name: /verify email/i }));
     expect(await screen.findByRole('alert')).toHaveTextContent(/invalid or expired/i);
   });
