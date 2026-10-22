@@ -54,6 +54,13 @@ describe('CreateAccountPage', () => {
     expect(screen.queryByLabelText('Specialisation')).not.toBeInTheDocument();
   });
 
+  it('stops the phone number at the longest length for the country', async () => {
+    renderPage();
+    const phone = screen.getByLabelText('Phone number') as HTMLInputElement;
+    await userEvent.type(phone, '7721234567890123');
+    expect(phone.value.replace(/\s/g, '')).toBe('+256772123456');
+  });
+
   it('toggles the password field between masked and visible', async () => {
     renderPage();
     const passwordInput = screen.getByLabelText('Password') as HTMLInputElement;
