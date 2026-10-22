@@ -73,12 +73,50 @@ export function validateName(value: string, what = 'your full name'): string | u
   return undefined;
 }
 
+/**
+ * The password rules, in one place. The sign-up page shows these as the green ticks, and
+ * validatePassword below uses the same list, so the two can never disagree.
+ * `error` is the message shown if the rule fails when the form is submitted.
+ */
+export const PASSWORD_RULES = [
+  {
+    id: 'length',
+    label: 'At least 8 characters',
+    error: 'Use at least 8 characters.',
+    test: (p: string) => p.length >= 8,
+  },
+  {
+    id: 'upper',
+    label: 'One uppercase letter',
+    error: 'Add one uppercase letter.',
+    test: (p: string) => /[A-Z]/.test(p),
+  },
+  {
+    id: 'numspecial',
+    label: 'One number & special character',
+    error: 'Add one number and one special character, like ! or -.',
+    test: (p: string) => /\d/.test(p) && /[^A-Za-z0-9]/.test(p),
+  },
+];
+
+/**
+ * Strength for the meter: score is the number of bars to fill (0 to 4).
+ * 0 or 1 rules met = Weak, 2 = Fair, all 3 = Good, all 3 and 12+ characters = Strong.
+ */
+export function getPasswordStrength(password: string): { score: number; label: string } {
+  if (!password) return { score: 0, label: '' };
+  const passed = PASSWORD_RULES.filter((r) => r.test(password)).length;
+  let score = Math.max(1, passed);
+  if (passed === PASSWORD_RULES.length && password.length >= 12) score = 4;
+  const labels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+  return { score, label: labels[score] };
+}
+
 /** For choosing a new password only. Never use this on sign-in: older accounts must still get in. */
 export function validatePassword(value: string): string | undefined {
   if (!value) return 'Enter a password.';
-  if (value.length < 8) return 'Use at least 8 characters.';
-  if (/^\d+$/.test(value)) return 'Add some letters. A password cannot be only numbers.';
-  return undefined;
+  const failed = PASSWORD_RULES.find((r) => !r.test(value));
+  return failed ? failed.error : undefined;
 }
 
 /** A required text field, such as an institution name. */
