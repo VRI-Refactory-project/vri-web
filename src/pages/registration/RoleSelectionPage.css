@@ -5,6 +5,7 @@
 
 .rs-main {
   text-align: center;
+  transform: translateY(-12px);
 }
 
 .rs-title {
@@ -22,7 +23,7 @@
 
 .rs-wordmark {
   display: inline-block;
-  height: 1.5em;
+  height: 1.15em;
   width: auto;
   vertical-align: baseline;
 }
