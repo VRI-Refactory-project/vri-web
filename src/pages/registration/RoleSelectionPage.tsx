@@ -8,6 +8,7 @@ import type { SelectableRole } from '../../types';
 import deafUserImg from '../../assets/deafuser2.png';
 import interpreterImg from '../../assets/interpreter4.png';
 import institutionImg from '../../assets/institution.png';
+import logoWord from '../../assets/logo-wordmark.png';
 import roleLogo from '../../assets/no_word.png';
 
 import './RoleSelectionPage.css';
@@ -61,9 +62,19 @@ export function RoleSelectionPage() {
 
   return (
     // <AuthShell size="wide" bare backTo="/" steps={ROLE_STEP} current={1}>
-    <AuthShell size="wide" bare backTo="/" steps={ROLE_STEP} current={1} logo={roleLogo}>
+    <AuthShell
+      size="wide"
+      bare
+      backTo="/"
+      steps={ROLE_STEP}
+      current={1}
+      logo={roleLogo}
+      className="as-page--no-scroll"
+    >
       <div className="rs-main">
-        <h1 className="rs-title">Who's joining SignConnect?</h1>
+        <h1 className="rs-title">
+          Who's joining <img src={logoWord} alt="SignConnect" className="rs-wordmark" />?
+        </h1>
         <p className="rs-subtitle">
           Pick the one that fits you best. You can add another one later.
         </p>
