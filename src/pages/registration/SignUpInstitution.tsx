@@ -22,7 +22,10 @@ import './AuthPages.css';
 const TYPES: { value: OrganisationType; label: string }[] = [
   { value: 'HOSPITAL', label: 'Hospital or clinic' },
   { value: 'COURT', label: 'Court' },
-  { value: 'GOVERNMENT', label: 'Government office' },
+  { value: 'GOVERNMENT', label: 'Government Office' },
+  { value: 'SCHOOL', label: 'School or Institution' },
+  { value: 'POLICE', label: 'Police Station' },
+  { value: 'CHURCH', label: 'Church' },
   { value: 'OTHER', label: 'Other' },
 ];
 
