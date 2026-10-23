@@ -1,3 +1,4 @@
+
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronRight, Eye, EyeOff } from 'lucide-react';
@@ -161,15 +162,42 @@ export const SignUpInstitution = () => {
           </label>
 
           {isOther ? (
-            <input
-              {...props('organisationTypeOther')}
-              id="inst-organisationTypeOther"
-              type="text"
-              maxLength={100}
-              placeholder="Type your institution type..."
-              value={form.organisationTypeOther}
-              onChange={set('organisationTypeOther')}
-            />
+            <div>
+              <input
+                {...props('organisationTypeOther')}
+                id="inst-organisationTypeOther"
+                type="text"
+                autoFocus
+                maxLength={100}
+                placeholder="Type your institution type..."
+                value={form.organisationTypeOther}
+                onChange={set('organisationTypeOther')}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  setForm((f) => ({
+                    ...f,
+                    organisationType: 'HOSPITAL',
+                    organisationTypeOther: '',
+                  }));
+                  setTouched((t) => ({ ...t, organisationTypeOther: false }));
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#4F46E5',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  padding: '4px 0',
+                  marginTop: '8px',
+                  fontWeight: 600,
+                  textDecoration: 'underline',
+                }}
+              >
+                Back to list
+              </button>
+            </div>
           ) : (
             <select
               id="inst-type"
