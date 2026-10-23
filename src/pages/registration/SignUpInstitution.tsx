@@ -156,35 +156,37 @@ export const SignUpInstitution = () => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="inst-type">Institution type</label>
-          <select
-            id="inst-type"
-            className="form-input"
-            value={form.organisationType}
-            onChange={set('organisationType')}
-          >
-            {TYPES.map((t) => (
-              <option key={t.value} value={t.value}>
-                {t.label}
-              </option>
-            ))}
-          </select>
-        </div>
+          <label htmlFor={isOther ? 'inst-organisationTypeOther' : 'inst-type'}>
+            {isOther ? 'Please specify the type' : 'Institution type'}
+          </label>
 
-        {isOther && (
-          <div className="form-group">
-            <label htmlFor="inst-organisationTypeOther">Please specify the type</label>
+          {isOther ? (
             <input
               {...props('organisationTypeOther')}
+              id="inst-organisationTypeOther"
               type="text"
               maxLength={100}
-              placeholder="For example, a school for the deaf"
+              placeholder="Type your institution type..."
               value={form.organisationTypeOther}
               onChange={set('organisationTypeOther')}
             />
-            {message('organisationTypeOther')}
-          </div>
-        )}
+          ) : (
+            <select
+              id="inst-type"
+              className="form-input"
+              value={form.organisationType}
+              onChange={set('organisationType')}
+            >
+              {TYPES.map((t) => (
+                <option key={t.value} value={t.value}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          )}
+
+          {isOther && message('organisationTypeOther')}
+        </div>
 
         {/* Row: Your full name | Work email */}
         <div className="inst-row">
