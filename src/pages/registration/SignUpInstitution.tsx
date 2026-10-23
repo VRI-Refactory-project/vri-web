@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ChevronRight, Eye, EyeOff } from 'lucide-react';
 import { AuthLayout } from '../../components/Authlayout';
 import { PasswordStrength } from '../../components/PasswordStrength';
@@ -287,6 +287,10 @@ export const SignUpInstitution = () => {
           {submitting ? 'Please wait...' : 'Submit registration'} <ChevronRight size={18} />
         </button>
       </form>
+
+      <p className="ca-footer">
+        Have an account? <Link to="/sign-in">Sign in</Link>
+      </p>
     </AuthLayout>
   );
 };

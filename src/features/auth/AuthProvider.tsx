@@ -3,7 +3,6 @@ import { ApiError, setAuthToken, setRefreshHandler } from '../../services/api';
 import { getCurrentUser, refreshAccessToken, revokeSession } from '../../services/auth';
 import type { AuthSession, AuthUser, SelectableRole } from '../../types';
 import { AuthContext } from './authContext';
-import { redirectToSignIn, staysSignedIn } from './leaveDashboard';
 
 const STORAGE_KEY = 'vri.session';
 
@@ -124,18 +123,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [apply]);
 
-  // Pressing the browser's Back (or Forward) from a dashboard onto a public page, such as the landing
-  // page, ends the session and shows the sign-in page. Nobody should reach a dashboard again just by
-  // pressing the arrows. Moving between pages inside the dashboards is not affected.
-  useEffect(() => {
-    const onPopState = () => {
-      if (!sessionRef.current || staysSignedIn(window.location.pathname)) return;
-      logout();
-      redirectToSignIn();
-    };
-    window.addEventListener('popstate', onPopState);
-    return () => window.removeEventListener('popstate', onPopState);
-  }, [logout]);
+  // The browser's Back and Forward buttons never end a session. A session ends only when the person
+  // presses Sign out, the tab is closed, or the server refuses the token. Signed-in people are kept
+  // off the sign-in and sign-up pages by GuestRoute instead.
 
   const value = useMemo(
     () => ({

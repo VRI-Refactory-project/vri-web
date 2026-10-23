@@ -71,6 +71,11 @@
     background 0.15s ease;
 }
 
+/* Password input: leave room for the eye toggle on the right */
+#ca-password {
+  padding-right: 3rem;
+}
+
 .ca-input:focus {
   border-color: var(--ca-purple);
   background: #fff;
