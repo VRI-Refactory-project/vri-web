@@ -123,6 +123,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [apply]);
 
+  // The browser's Back and Forward buttons never end a session. A session ends only when the person
+  // presses Sign out, the tab is closed, or the server refuses the token. Signed-in people are kept
+  // off the sign-in and sign-up pages by GuestRoute instead.
+
   const value = useMemo(
     () => ({
       session,

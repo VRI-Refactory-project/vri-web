@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { ApprovedInterpreterRoute } from '../components/ApprovedInterpreterRoute';
+import { GuestRoute } from '../components/Guestroute';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { Placeholder } from '../components/Placeholder';
 import { LandingPage } from '../pages/landing/LandingPage';
@@ -39,17 +40,32 @@ import { InstitutionDashboardPage } from '../pages/institution/InstitutionDashbo
 import RequestsPage from '../pages/interpreter/RequestsPage';
 
 export const router = createBrowserRouter([
-  { path: '/', element: <SplashPage /> },
-  { path: '/landing', element: <LandingPage /> },
-  { path: '/get-started', element: <RoleSelectionPage /> },
+  {
+    // Public entry pages: signed-in users should return to their dashboard.
+    element: <GuestRoute />,
+    children: [
+      { path: '/', element: <SplashPage /> },
+      { path: '/landing', element: <LandingPage /> },
+      { path: '/get-started', element: <RoleSelectionPage /> },
+    ],
+  },
+  {
+    // Registration pages: allow a newly registered user to finish the sign-up flow.
+    element: <GuestRoute allowSessionCreatedDuringRoute />,
+    children: [
+      { path: '/register/deaf', element: <CreateAccountPage /> },
+      { path: '/register/interpreter', element: <CreateAccountPage role="interpreter" /> },
+      { path: '/register/institution', element: <SignUpInstitution /> },
+    ],
+  },
+
+  // The sign-in page already sends a signed-in person to their dashboard by itself.
   { path: '/sign-in', element: <SignInPage /> },
   { path: '/verify-email', element: <VerifyEmailPage /> },
   { path: '/offline', element: <OfflinePage /> },
-  { path: '/register/deaf', element: <CreateAccountPage /> },
   { path: '/forgot-password', element: <Forgotpassword /> },
   { path: '/reset-password', element: <Resetpassword /> },
   { path: '/recover', element: <Placeholder title="Recover access" story="V2-008" /> },
-  { path: '/register/interpreter', element: <CreateAccountPage role="interpreter" /> },
   {
     path: '/register/interpreter/account',
     element: <Navigate to="/register/interpreter" replace />,
@@ -66,7 +82,6 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute allow={['deaf']} />,
     children: [{ path: '/register/welcome', element: <WelcomePage /> }],
   },
-  { path: '/register/institution', element: <SignUpInstitution /> },
 
   {
     element: <ProtectedRoute allow={['deaf']} />,
