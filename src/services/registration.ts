@@ -43,7 +43,8 @@ export interface InterpreterRegistration {
   specialisationOther?: string;
 }
 
-export type OrganisationType = 'HOSPITAL' | 'COURT' | 'GOVERNMENT' | 'CHURCH' | 'POLICE' | 'SCHOOL' |'OTHER';
+export type OrganisationType =
+  'HOSPITAL' | 'COURT' | 'GOVERNMENT' | 'CHURCH' | 'POLICE' | 'SCHOOL' | 'OTHER';
 
 export interface InstitutionRegistration {
   name: string;
