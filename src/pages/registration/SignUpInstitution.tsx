@@ -156,35 +156,64 @@ export const SignUpInstitution = () => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="inst-type">Institution type</label>
-          <select
-            id="inst-type"
-            className="form-input"
-            value={form.organisationType}
-            onChange={set('organisationType')}
-          >
-            {TYPES.map((t) => (
-              <option key={t.value} value={t.value}>
-                {t.label}
-              </option>
-            ))}
-          </select>
-        </div>
+          <label htmlFor={isOther ? 'inst-organisationTypeOther' : 'inst-type'}>
+            {isOther ? 'Please specify the type' : 'Institution type'}
+          </label>
 
-        {isOther && (
-          <div className="form-group">
-            <label htmlFor="inst-organisationTypeOther">Please specify the type</label>
-            <input
-              {...props('organisationTypeOther')}
-              type="text"
-              maxLength={100}
-              placeholder="For example, a school for the deaf"
-              value={form.organisationTypeOther}
-              onChange={set('organisationTypeOther')}
-            />
-            {message('organisationTypeOther')}
-          </div>
-        )}
+          {isOther ? (
+            <div>
+              <input
+                {...props('organisationTypeOther')}
+                id="inst-organisationTypeOther"
+                type="text"
+                autoFocus
+                maxLength={100}
+                placeholder="Type your institution type..."
+                value={form.organisationTypeOther}
+                onChange={set('organisationTypeOther')}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  setForm((f) => ({
+                    ...f,
+                    organisationType: 'HOSPITAL',
+                    organisationTypeOther: '',
+                  }));
+                  setTouched((t) => ({ ...t, organisationTypeOther: false }));
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#4F46E5',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  padding: '4px 0',
+                  marginTop: '8px',
+                  fontWeight: 600,
+                  textDecoration: 'underline',
+                }}
+              >
+                Back to list
+              </button>
+            </div>
+          ) : (
+            <select
+              id="inst-type"
+              className="form-input"
+              value={form.organisationType}
+              onChange={set('organisationType')}
+            >
+              {TYPES.map((t) => (
+                <option key={t.value} value={t.value}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          )}
+
+          {isOther && message('organisationTypeOther')}
+        </div>
 
         {/* Row: Your full name | Work email */}
         <div className="inst-row">
