@@ -37,7 +37,7 @@ export interface InstitutionForm {
 
 type RawRecord = Record<string, unknown>;
 
-const BASE = '/api/v1/admin/institutions/';
+const BASE = '/api/v1/administration/institutions/';
 
 function asRecord(value: unknown): RawRecord {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
