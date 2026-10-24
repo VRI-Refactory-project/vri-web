@@ -318,9 +318,6 @@
 //   );
 // }
 
-
-
-
 import {
   Video,
   Settings,
@@ -419,7 +416,7 @@ export function DashboardPage() {
     // 2. Fetch Notifications
     api<NotificationItem[]>('/api/v1/notifications/').then(
       (data) => {
-        if (!cancelled) setNotifications(data);
+        if (!cancelled) setNotifications(Array.isArray(data) ? data : []);
       },
       () => {
         if (!cancelled) setNotifications([]);
@@ -443,8 +440,8 @@ export function DashboardPage() {
 
   const sessionCount = sessions?.length ?? 0;
 
-  // A notification is unread if read_at is null
-  const hasUnread = notifications.some((n) => n.read_at === null);
+  // Safety check added here
+  const hasUnread = Array.isArray(notifications) && notifications.some((n) => n.read_at === null);
 
   // Mark notification as read
   const handleNotificationClick = async (notif: NotificationItem) => {
@@ -726,4 +723,3 @@ export function DashboardPage() {
     </>
   );
 }
-
