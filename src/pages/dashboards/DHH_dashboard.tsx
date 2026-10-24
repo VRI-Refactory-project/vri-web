@@ -420,7 +420,7 @@ export function DashboardPage() {
       },
       () => {
         if (!cancelled) setNotifications([]);
-      }
+      },
     );
 
     // 3. Fetch Available Interpreters
@@ -450,13 +450,13 @@ export function DashboardPage() {
     try {
       // Optimistically update the UI so the red dot disappears instantly
       setNotifications((prev) =>
-        prev.map((n) => (n.id === notif.id ? { ...n, read_at: new Date().toISOString() } : n))
+        prev.map((n) => (n.id === notif.id ? { ...n, read_at: new Date().toISOString() } : n)),
       );
 
       // Call the backend endpoint
       await api(`/api/v1/notifications/${notif.id}/read/`, { method: 'POST' });
     } catch (error) {
-      console.error("Failed to mark notification as read", error);
+      console.error('Failed to mark notification as read', error);
     }
   };
 
@@ -482,11 +482,11 @@ export function DashboardPage() {
           <h1 className="greeting">{[greeting(), firstName].filter(Boolean).join(', ')}</h1>
           <p className="sub-greeting">How can we help you communicate today?</p>
         </div>
-        
+
         {/* Notification Bell & Dropdown */}
         <div style={{ position: 'relative' }}>
-          <button 
-            className="icon-btn notification-btn" 
+          <button
+            className="icon-btn notification-btn"
             onClick={() => setShowNotifications(!showNotifications)}
             aria-label="Toggle notifications"
           >
@@ -496,44 +496,67 @@ export function DashboardPage() {
           </button>
 
           {showNotifications && (
-            <div style={{
-              position: 'absolute',
-              top: '100%',
-              right: 0,
-              marginTop: '8px',
-              width: '320px',
-              backgroundColor: 'white',
-              borderRadius: '12px',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-              border: '1px solid #e5e7eb',
-              zIndex: 50,
-              overflow: 'hidden'
-            }}>
-              <div style={{ padding: '12px 16px', borderBottom: '1px solid #e5e7eb', fontWeight: 600, color: '#111827' }}>
+            <div
+              style={{
+                position: 'absolute',
+                top: '100%',
+                right: 0,
+                marginTop: '8px',
+                width: '320px',
+                backgroundColor: 'white',
+                borderRadius: '12px',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                border: '1px solid #e5e7eb',
+                zIndex: 50,
+                overflow: 'hidden',
+              }}
+            >
+              <div
+                style={{
+                  padding: '12px 16px',
+                  borderBottom: '1px solid #e5e7eb',
+                  fontWeight: 600,
+                  color: '#111827',
+                }}
+              >
                 Notifications
               </div>
-              
+
               <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
                 {notifications.length === 0 ? (
-                  <div style={{ padding: '24px 16px', textAlign: 'center', color: '#6b7280', fontSize: '14px' }}>
+                  <div
+                    style={{
+                      padding: '24px 16px',
+                      textAlign: 'center',
+                      color: '#6b7280',
+                      fontSize: '14px',
+                    }}
+                  >
                     You have no notifications.
                   </div>
                 ) : (
                   notifications.map((notif) => {
                     const isUnread = notif.read_at === null;
-                    
+
                     return (
-                      <div 
-                        key={notif.id} 
+                      <div
+                        key={notif.id}
                         onClick={() => handleNotificationClick(notif)}
-                        style={{ 
-                          padding: '12px 16px', 
-                          borderBottom: '1px solid #f3f4f6', 
-                          cursor: isUnread ? 'pointer' : 'default', 
-                          backgroundColor: isUnread ? '#f8fafc' : 'white' 
+                        style={{
+                          padding: '12px 16px',
+                          borderBottom: '1px solid #f3f4f6',
+                          cursor: isUnread ? 'pointer' : 'default',
+                          backgroundColor: isUnread ? '#f8fafc' : 'white',
                         }}
                       >
-                        <p style={{ margin: 0, fontSize: '14px', color: '#111827', fontWeight: isUnread ? 600 : 400 }}>
+                        <p
+                          style={{
+                            margin: 0,
+                            fontSize: '14px',
+                            color: '#111827',
+                            fontWeight: isUnread ? 600 : 400,
+                          }}
+                        >
                           {notif.title || 'New notification'}
                         </p>
                         <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#6b7280' }}>
