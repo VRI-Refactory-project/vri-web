@@ -352,7 +352,7 @@ interface NotificationItem {
   title: string;
   body: string;
   category?: string;
-  data?: any;
+  data?: Record<string, unknown>;
   read_at: string | null;
   created_at: string;
 }
