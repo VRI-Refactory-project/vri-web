@@ -1,0 +1,88 @@
+.ac-page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 52rem;
+  font-family: 'Manrope', system-ui, sans-serif;
+  color: #0f172a;
+}
+.ac-page h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+}
+.ac-page header p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #64748b;
+}
+.ac-page h2 {
+  margin: 10px 0 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+.ac-card {
+  background: #fff;
+  border: 1px solid #ece9f7;
+  border-radius: 16px;
+  padding: 4px 20px;
+}
+.ac-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid #f1f0f7;
+}
+.ac-row:last-child {
+  border-bottom: 0;
+}
+.ac-row strong {
+  font-size: 15px;
+}
+.ac-row p {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: #64748b;
+}
+.ac-select {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 0;
+  background: #efeafb;
+  color: #3b2579;
+  font: inherit;
+  font-weight: 600;
+}
+.ac-switch {
+  flex: none;
+  width: 52px;
+  height: 30px;
+  padding: 3px;
+  border: 0;
+  border-radius: 999px;
+  background: #e1def0;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.ac-switch span {
+  display: block;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s;
+}
+.ac-switch--on {
+  background: #3b2579;
+}
+.ac-switch--on span {
+  transform: translateX(22px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ac-switch,
+  .ac-switch span {
+    transition: none;
+  }
+}
