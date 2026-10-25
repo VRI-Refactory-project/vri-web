@@ -33,6 +33,10 @@ import { StartSessionPage } from '../pages/deaf/StartSessionPage';
 import { SessionsHubPage } from '../pages/deaf/SessionsHubPage';
 import { SessionHistoryPage } from '../pages/deaf/SessionHistoryPage';
 import { AccessibilityPage } from '../pages/deaf/AccessibilityPage';
+import { WalletPage } from '../pages/deaf/WalletPage';
+import { MessagesPage } from '../pages/deaf/MessagesPage';
+import { SchedulePage } from '../pages/deaf/SchedulePage';
+import { SettingsPage as DeafSettingsPage } from '../pages/deaf/SettingsPage';
 import { LiveSessionPage } from '../pages/session/LiveSessionPage';
 import { ProfilePage as InterpreterProfilePage } from '../pages/interpreter/ProfilePage';
 import { SettingsPage } from '../pages/admin/SettingsPage';
@@ -112,16 +116,16 @@ export const router = createBrowserRouter([
           { path: 'sessions/new', element: <StartSessionPage /> },
           {
             path: 'schedule',
-            element: <Placeholder title="Schedule a session" story="Not scheduled" />,
+            element: <SchedulePage />,
           },
           {
             path: 'accessibility',
             element: <AccessibilityPage />,
           },
-          { path: 'messages', element: <Placeholder title="Messages" story="Sprint 2" /> },
-          { path: 'wallet', element: <Placeholder title="Wallet" story="Not scheduled" /> },
+          { path: 'messages', element: <MessagesPage /> },
+          { path: 'wallet', element: <WalletPage /> },
           { path: 'profile', element: <DeafProfilePage /> },
-          { path: 'settings', element: <Placeholder title="Settings" story="Sprint 2" /> },
+          { path: 'settings', element: <DeafSettingsPage /> },
         ],
       },
     ],
