@@ -1,0 +1,258 @@
+.ls {
+  min-height: 100vh;
+  padding: 1.25rem 1.5rem 2rem;
+  background: #f5f4fb;
+  color: #1b1240;
+  font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.ls--center {
+  align-items: center;
+  justify-content: center;
+}
+.ls-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ls-brand {
+  font-weight: 700;
+  color: #3b2579;
+  font-size: 1.15rem;
+}
+.ls-timer {
+  font-variant-numeric: tabular-nums;
+  color: #3b2579;
+  font-weight: 600;
+}
+.ls-back {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: none;
+  border: 0;
+  color: #1b1240;
+  cursor: pointer;
+  font: inherit;
+}
+.ls-lobby {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(280px, 1fr);
+  gap: 2rem;
+  align-items: center;
+}
+.ls-preview {
+  position: relative;
+}
+.ls-preview .vt {
+  aspect-ratio: 16 / 10;
+}
+.ls-preview-controls {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 1rem;
+  display: flex;
+  justify-content: center;
+}
+.ls-ready h1 {
+  margin: 0 0 0.25rem;
+  font-size: 2rem;
+  color: #1b1240;
+}
+.ls-ready-sub {
+  margin: 0 0 1rem;
+  color: #3b2579;
+}
+.ls-who {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+}
+.ls-verified {
+  background: #12b886;
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.75rem;
+}
+.ls-error {
+  color: #b91c1c;
+  margin: 0.75rem 0 0;
+}
+.ls-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ls-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.ls-btn--primary {
+  background: #3b2579;
+  color: #fff;
+  border: 0;
+}
+.ls-btn--outline {
+  background: #fff;
+  color: #1b1240;
+  border: 1px solid #cfcae6;
+}
+.ls-card {
+  background: #fff;
+  border: 1px solid #dcd8ee;
+  border-radius: 1.25rem;
+  padding: 2.5rem 2rem;
+  max-width: 34rem;
+  width: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+.ls-card h1 {
+  margin: 0.5rem 0 0;
+  font-size: 1.75rem;
+}
+.ls-card p {
+  margin: 0 0 0.75rem;
+}
+.ls-badge {
+  align-self: center;
+  display: grid;
+  place-items: center;
+  width: 5rem;
+  height: 3.5rem;
+  border-radius: 1.75rem;
+  background: #7e6cc3;
+  color: #fff;
+}
+.ls--call .ls-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(200px, 1fr);
+  gap: 1rem;
+  flex: 1;
+}
+.ls-stage > .vt {
+  min-height: 24rem;
+}
+.ls-side {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.ls-side .vt {
+  flex: 1;
+  min-height: 9rem;
+}
+.ls--call .cc {
+  align-self: center;
+}
+.vt {
+  position: relative;
+  margin: 0;
+  border-radius: 1rem;
+  overflow: hidden;
+  background: #3a3556;
+  display: grid;
+  place-items: center;
+}
+.vt--highlight {
+  outline: 2px solid #5b43b5;
+}
+.vt__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.vt__initials {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #cfc8ee;
+}
+.vt--large .vt__initials {
+  font-size: 4rem;
+}
+.vt__name {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  background: #fff;
+  color: #1b1240;
+  border-radius: 999px;
+  padding: 0.2rem 0.7rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.cc {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  background: #2a1b5c;
+  border-radius: 1rem;
+  padding: 0.6rem 1.25rem;
+  box-shadow: 0 8px 24px rgba(42, 27, 92, 0.35);
+}
+.cc__btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  background: none;
+  border: 0;
+  color: #e8e4f8;
+  font: inherit;
+  font-size: 0.7rem;
+  cursor: pointer;
+}
+.cc__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.cc__icon {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: #4a3a86;
+}
+.cc__btn[aria-pressed='true'] .cc__icon {
+  background: #8a7cc8;
+}
+.cc__btn--end .cc__icon {
+  background: #ef4444;
+  width: 3rem;
+  height: 3rem;
+}
+@media (max-width: 800px) {
+  .ls-lobby,
+  .ls--call .ls-stage {
+    grid-template-columns: 1fr;
+  }
+  .ls-side {
+    flex-direction: row;
+  }
+  .cc {
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}

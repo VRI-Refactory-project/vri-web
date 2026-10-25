@@ -30,6 +30,7 @@ import { InstitutionLayout } from '../features/institution/InstitutionLayout';
 import { StaffManagementPage } from '../pages/institution/StaffManagementPage';
 import { ProfilePage as DeafProfilePage } from '../pages/deaf/ProfilePage';
 import { StartSessionPage } from '../pages/deaf/StartSessionPage';
+import { LiveSessionPage } from '../pages/session/LiveSessionPage';
 import { ProfilePage as InterpreterProfilePage } from '../pages/interpreter/ProfilePage';
 import { SettingsPage } from '../pages/admin/SettingsPage';
 import { AdminProfilePage } from '../pages/admin/AdminProfilePage';
@@ -78,6 +79,16 @@ export const router = createBrowserRouter([
     ],
   },
   { path: '/register/pending', element: <PendingReviewPage /> },
+  {
+    element: <ProtectedRoute allow={['deaf']} />,
+    children: [{ path: '/live/deaf/:id', element: <LiveSessionPage viewerRole="deaf" /> }],
+  },
+  {
+    element: <ProtectedRoute allow={['interpreter']} />,
+    children: [
+      { path: '/live/interpreter/:id', element: <LiveSessionPage viewerRole="interpreter" /> },
+    ],
+  },
   {
     element: <ProtectedRoute allow={['deaf']} />,
     children: [{ path: '/register/welcome', element: <WelcomePage /> }],

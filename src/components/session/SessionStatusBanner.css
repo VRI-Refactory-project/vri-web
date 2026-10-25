@@ -1,0 +1,62 @@
+.session-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid #d9d2ee;
+  background: #f4f1fb;
+  color: #2a1b5c;
+}
+.session-status__icon {
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  color: #3b2579;
+}
+.session-status__icon--spin {
+  animation: session-status-spin 1.2s linear infinite;
+}
+.session-status__title {
+  margin: 0;
+  font-weight: 600;
+}
+.session-status__detail {
+  margin: 0.125rem 0 0;
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+.session-status--connected {
+  background: #e8f6ee;
+  border-color: #bfe3cd;
+  color: #14532d;
+}
+.session-status--connected .session-status__icon {
+  color: #15803d;
+}
+.session-status--ended {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  color: #374151;
+}
+.session-status--ended .session-status__icon {
+  color: #6b7280;
+}
+.session-status--problem {
+  background: #fdecec;
+  border-color: #f4bcbc;
+  color: #7f1d1d;
+}
+.session-status--problem .session-status__icon {
+  color: #b91c1c;
+}
+@keyframes session-status-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .session-status__icon--spin {
+    animation: none;
+  }
+}
