@@ -30,6 +30,9 @@ import { InstitutionLayout } from '../features/institution/InstitutionLayout';
 import { StaffManagementPage } from '../pages/institution/StaffManagementPage';
 import { ProfilePage as DeafProfilePage } from '../pages/deaf/ProfilePage';
 import { StartSessionPage } from '../pages/deaf/StartSessionPage';
+import { SessionsHubPage } from '../pages/deaf/SessionsHubPage';
+import { SessionHistoryPage } from '../pages/deaf/SessionHistoryPage';
+import { AccessibilityPage } from '../pages/deaf/AccessibilityPage';
 import { LiveSessionPage } from '../pages/session/LiveSessionPage';
 import { ProfilePage as InterpreterProfilePage } from '../pages/interpreter/ProfilePage';
 import { SettingsPage } from '../pages/admin/SettingsPage';
@@ -104,7 +107,8 @@ export const router = createBrowserRouter([
         ),
         children: [
           { index: true, element: <DashboardPage /> },
-          { path: 'sessions', element: <Placeholder title="Sessions" story="Sprint 2" /> },
+          { path: 'sessions', element: <SessionsHubPage /> },
+          { path: 'sessions/history', element: <SessionHistoryPage /> },
           { path: 'sessions/new', element: <StartSessionPage /> },
           {
             path: 'schedule',
@@ -112,7 +116,7 @@ export const router = createBrowserRouter([
           },
           {
             path: 'accessibility',
-            element: <Placeholder title="Accessibility setup" story="Not scheduled" />,
+            element: <AccessibilityPage />,
           },
           { path: 'messages', element: <Placeholder title="Messages" story="Sprint 2" /> },
           { path: 'wallet', element: <Placeholder title="Wallet" story="Not scheduled" /> },
