@@ -158,10 +158,13 @@ export function StartSessionPage({ pollMs }: Props) {
               <dd>Ugandan Sign Language</dd>
             </div>
           </dl>
-          {/* Joining the call is built with the live-session screens, so the button waits for them. */}
-          <button type="button" className="ss-btn ss-btn--primary" disabled>
+          <Link
+            to={`/live/deaf/${request.id}`}
+            state={{ interpreterName: request.interpreter?.name }}
+            className="ss-btn ss-btn--primary"
+          >
             <Video size={18} aria-hidden="true" /> Connect now
-          </button>
+          </Link>
         </section>
       </div>
     );
