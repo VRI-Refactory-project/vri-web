@@ -23,7 +23,7 @@ export function useLocalMedia() {
   const [stream, setStream] = useState<MediaStream | null>(null);
   // Known straight away, so it is not set from inside the effect below.
   const [error, setError] = useState<string | null>(() =>
-    navigator.mediaDevices?.getUserMedia
+    typeof navigator.mediaDevices?.getUserMedia === 'function'
       ? null
       : 'This browser cannot use a camera. Try a recent version of Chrome, Edge or Firefox.',
   );
