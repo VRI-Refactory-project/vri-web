@@ -1,24 +1,33 @@
 import { User, Mail, Phone, Building2, Briefcase, Pencil } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
 import './InstitutionProfilePage.css';
 
-// Mock data based on your screenshot.
-// In the future, you can replace this with `const { session } = useAuth();`
-const MOCK_PROFILE = {
-  name: 'Sarah Kimuli',
-  role: 'ER Nurse',
-  institution: 'Northside Medical Center',
-  email: 'sarah.kimuli@northsidemedical.org',
-  phone: '+256 700 123 456',
-  status: 'Active',
-  initials: 'SK',
-};
-
 export function InstitutionProfilePage() {
+  const { session } = useAuth();
+
+  // Get the real user data from the auth session
+  const userName = session?.user?.name || 'Loading...';
+  const userEmail = session?.user?.email || 'No email provided';
+  const initials = userName
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((n) => n[0].toUpperCase())
+    .join('');
+
+  // These will eventually come from your backend API
+  const profileData = {
+    role: '—',
+    institution: '—',
+    phone: '—',
+    status: 'Active',
+  };
+
   return (
     <div className="profile-page">
       {/* Top Header */}
       <header className="profile-header">
-        <div>
+        <div className="profile-header-text">
           <h1>Profile</h1>
           <p>View and update your personal information.</p>
         </div>
@@ -29,13 +38,13 @@ export function InstitutionProfilePage() {
 
       {/* Hero Profile Card */}
       <section className="profile-hero-card">
-        <div className="profile-avatar-large">{MOCK_PROFILE.initials}</div>
+        <div className="profile-avatar-large">{initials || 'U'}</div>
         <div className="profile-hero-info">
-          <h2>{MOCK_PROFILE.name}</h2>
+          <h2>{userName}</h2>
           <p>
-            {MOCK_PROFILE.role} · {MOCK_PROFILE.institution}
+            {profileData.role} · {profileData.institution}
           </p>
-          <span className="status-badge-active">{MOCK_PROFILE.status}</span>
+          <span className="status-badge-active">{profileData.status}</span>
         </div>
       </section>
 
@@ -51,7 +60,7 @@ export function InstitutionProfilePage() {
             </div>
             <div className="profile-detail-text">
               <span className="detail-label">FULL NAME</span>
-              <span className="detail-value">{MOCK_PROFILE.name}</span>
+              <span className="detail-value">{userName}</span>
             </div>
           </div>
 
@@ -62,7 +71,7 @@ export function InstitutionProfilePage() {
             </div>
             <div className="profile-detail-text">
               <span className="detail-label">EMAIL</span>
-              <span className="detail-value">{MOCK_PROFILE.email}</span>
+              <span className="detail-value">{userEmail}</span>
             </div>
           </div>
 
@@ -73,7 +82,7 @@ export function InstitutionProfilePage() {
             </div>
             <div className="profile-detail-text">
               <span className="detail-label">PHONE</span>
-              <span className="detail-value">{MOCK_PROFILE.phone}</span>
+              <span className="detail-value">{profileData.phone}</span>
             </div>
           </div>
 
@@ -84,7 +93,7 @@ export function InstitutionProfilePage() {
             </div>
             <div className="profile-detail-text">
               <span className="detail-label">INSTITUTION</span>
-              <span className="detail-value">{MOCK_PROFILE.institution}</span>
+              <span className="detail-value">{profileData.institution}</span>
             </div>
           </div>
 
@@ -95,7 +104,7 @@ export function InstitutionProfilePage() {
             </div>
             <div className="profile-detail-text">
               <span className="detail-label">ROLE</span>
-              <span className="detail-value">{MOCK_PROFILE.role}</span>
+              <span className="detail-value">{profileData.role}</span>
             </div>
           </div>
         </div>
