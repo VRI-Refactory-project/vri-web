@@ -1,0 +1,215 @@
+.institution-sessions-page {
+  padding: 0px 32px 40px 64px;
+  max-width: 1000px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.sessions-header {
+  margin-bottom: 24px;
+}
+
+.sessions-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 8px 0;
+}
+
+.sessions-header p {
+  color: #6b7280;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Metrics Cards */
+.sessions-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.metric-card {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.metric-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.metric-value {
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Controls Bar */
+.sessions-controls {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.search-bar {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0 16px;
+  height: 44px;
+}
+
+.search-icon {
+  color: #9ca3af;
+  margin-right: 12px;
+}
+
+.search-bar input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 14px;
+  color: #111827;
+}
+
+.search-bar input::placeholder {
+  color: #9ca3af;
+}
+
+.filter-btn {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0 20px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.filter-btn:hover {
+  background-color: #f8fafc;
+}
+
+/* Sessions List */
+.sessions-list-container {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.session-row {
+  display: flex;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid #f3f4f6;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.session-row:last-child {
+  border-bottom: none;
+}
+
+.session-row:hover {
+  background-color: #f8fafc;
+}
+
+.session-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  background-color: #f3f4f6;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+}
+
+.session-icon {
+  color: #4f46e5;
+}
+
+.session-details {
+  flex: 1;
+}
+
+.session-details h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 4px 0;
+}
+
+.session-details p {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Status Badges */
+.active-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-right: 24px;
+}
+
+.active-status-badge.live {
+  background-color: #ecfdf5;
+  color: #065f46;
+}
+
+.active-status-badge.connecting {
+  background-color: #fffbeb;
+  color: #92400e;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.status-badge.live .status-dot {
+  background-color: #10b981;
+}
+
+.status-badge.connecting .status-dot {
+  background-color: #f59e0b;
+}
+
+.session-arrow {
+  color: #9ca3af;
+}
+
+.empty-state {
+  padding: 32px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+}

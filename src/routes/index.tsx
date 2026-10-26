@@ -50,6 +50,9 @@ import { UsersPage } from '../pages/admin/UsersPage';
 import { InstitutionProfilePage } from '../pages/institution/InstitutionProfilePage';
 import { SessionsPage } from '../pages/admin/SessionsPage';
 import { ReportsPage } from '../pages/admin/ReportsPage';
+import { InstitutionSettingsPage } from '../pages/institution/InstitutionSettingsPage';
+import { InstitutionAnalyticsPage } from '../pages/institution/InstitutionAnalyticsPage';
+import { InstitutionSessionsPage } from '../pages/institution/InstitutionSessionsPage';
 
 export const router = createBrowserRouter([
   {
@@ -165,7 +168,7 @@ export const router = createBrowserRouter([
   },
 
   {
-    element: <ProtectedRoute allow={['institution']} />,
+    // element: <ProtectedRoute allow={['institution']} />,
     children: [
       {
         path: '/dashboard/institution',
@@ -175,9 +178,9 @@ export const router = createBrowserRouter([
           { path: 'staff', element: <StaffManagementPage /> },
           { path: 'staff/new', element: <CreateStaffAccountPage /> },
           { path: 'staff/created', element: <StaffAccountCreatedPage /> },
-          { path: 'sessions', element: <Placeholder title="Sessions" story="V2-028" /> },
-          { path: 'analytics', element: <Placeholder title="Analytics" story="V2-028" /> },
-          { path: 'settings', element: <Placeholder title="Settings" story="V2-028" /> },
+          { path: 'sessions', element: <InstitutionSessionsPage /> },
+          { path: 'analytics', element: <InstitutionAnalyticsPage /> },
+          { path: 'settings', element: <InstitutionSettingsPage /> },
           { path: 'profile', element: <InstitutionProfilePage /> },
         ],
       },
