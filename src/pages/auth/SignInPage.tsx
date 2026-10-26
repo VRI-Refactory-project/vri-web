@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, Lock, Mail, AlertCircle } from 'lucide-react';
 import { AuthShell } from '../../components/AuthShell';
 import { dashboardPathFor } from '../../features/auth/roles';
@@ -128,20 +128,12 @@ export function LoginPage() {
             className="form-group"
             style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}
           >
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
+            <label
+              htmlFor="password"
+              style={{ fontSize: '14px', fontWeight: 500, color: '#374151' }}
             >
-              <label
-                htmlFor="password"
-                style={{ fontSize: '14px', fontWeight: 500, color: '#374151' }}
-              >
-                Password
-              </label>
-            </div>
+              Password
+            </label>
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
               <Lock
                 size={18}
@@ -186,7 +178,6 @@ export function LoginPage() {
                   padding: '6px',
                   borderRadius: '4px',
                 }}
-                tabIndex={-1}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -213,6 +204,11 @@ export function LoginPage() {
             {isLoading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
+
+        {/* Forgot Password Link */}
+        <Link to="/forgot-password" className="login-forgot-link">
+          Forgot your password?
+        </Link>
       </div>
     </AuthShell>
   );

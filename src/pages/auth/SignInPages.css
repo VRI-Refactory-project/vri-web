@@ -151,3 +151,14 @@
   color: var(--color-primary, #382c77);
   text-decoration: underline;
 }
+
+.signin-password-toggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #6b7280;
+}
