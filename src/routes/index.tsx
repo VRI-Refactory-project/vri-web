@@ -51,6 +51,7 @@ import { OfflineGate } from '../components/OfflineGate';
 import { InstitutionProfilePage } from '../pages/institution/InstitutionProfilePage';
 import { SessionsPage } from '../pages/admin/SessionsPage';
 import { ReportsPage } from '../pages/admin/ReportsPage';
+import { AuditLogsPage } from '../pages/admin/AuditLogsPage';
 
 const appRoutes: RouteObject[] = [
   {
@@ -199,7 +200,7 @@ const appRoutes: RouteObject[] = [
           { path: 'institutions', element: <InstitutionAccountsPage /> },
           { path: 'sessions', element: <SessionsPage /> },
           { path: 'reports', element: <ReportsPage /> },
-          { path: 'audit-logs', element: <Placeholder title="Audit Logs" story="V2-064" /> },
+          { path: 'audit-logs', element: <AuditLogsPage /> },
           { path: 'settings', element: <SettingsPage /> },
           { path: 'profile', element: <AdminProfilePage /> },
         ],
