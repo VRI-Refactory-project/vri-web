@@ -47,6 +47,7 @@ import { StaffAccountCreatedPage } from '../pages/institution/StaffAccountCreate
 import { InstitutionDashboardPage } from '../pages/institution/InstitutionDashboardPage';
 import RequestsPage from '../pages/interpreter/RequestsPage';
 import { UsersPage } from '../pages/admin/UsersPage';
+import { InstitutionProfilePage } from '../pages/institution/InstitutionProfilePage';
 import { SessionsPage } from '../pages/admin/SessionsPage';
 import { ReportsPage } from '../pages/admin/ReportsPage';
 
@@ -110,7 +111,11 @@ export const router = createBrowserRouter([
       {
         path: '/dashboard/deaf',
         element: (
-          <DashboardLayout links={deafNavigation} navLabel="Deaf dashboard" accountTo="/profile" />
+          <DashboardLayout
+            links={deafNavigation}
+            navLabel="Deaf dashboard"
+            accountTo="/dashboard/deaf/profile"
+          />
         ),
         children: [
           { index: true, element: <DashboardPage /> },
@@ -173,6 +178,7 @@ export const router = createBrowserRouter([
           { path: 'sessions', element: <Placeholder title="Sessions" story="V2-028" /> },
           { path: 'analytics', element: <Placeholder title="Analytics" story="V2-028" /> },
           { path: 'settings', element: <Placeholder title="Settings" story="V2-028" /> },
+          { path: 'profile', element: <InstitutionProfilePage /> },
         ],
       },
     ],
