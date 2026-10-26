@@ -4,7 +4,7 @@ import { Eye, EyeOff, Lock, Mail, AlertCircle } from 'lucide-react';
 import { AuthShell } from '../../components/AuthShell';
 import { dashboardPathFor } from '../../features/auth/roles';
 import { useAuth } from '../../hooks/useAuth';
-import './CreateAccountPage.css';
+import './SignInPages.css';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -36,10 +36,14 @@ export function LoginPage() {
       const userRole = user?.role ?? session?.user?.role ?? 'deaf';
       const destination = dashboardPathFor(userRole);
       navigate(destination, { replace: true });
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const apiError = err as {
+        response?: { data?: { detail?: string } };
+        message?: string;
+      };
       const errorMessage =
-        err?.response?.data?.detail ||
-        err?.message ||
+        apiError?.response?.data?.detail ||
+        apiError?.message ||
         'We could not sign you in. Check your connection and try again.';
       setError(errorMessage);
     } finally {
