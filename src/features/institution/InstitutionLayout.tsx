@@ -6,7 +6,7 @@ export function InstitutionLayout() {
     <DashboardLayout
       links={institutionNavigation}
       navLabel="Institution"
-      accountTo="/dashboard/institution/settings"
+      accountTo="/dashboard/institution/profile"
       accountLabel="View account"
     />
   );
