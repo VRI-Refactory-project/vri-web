@@ -1,4 +1,4 @@
-import { User, Mail, Phone, Building2, Briefcase, Pencil, CheckCircle2 } from 'lucide-react';
+import { User, Mail, Phone, Building2, Briefcase, Pencil } from 'lucide-react';
 import './InstitutionProfilePage.css';
 
 // Mock data based on your screenshot.
@@ -22,7 +22,7 @@ export function InstitutionProfilePage() {
           <h1>Profile</h1>
           <p>View and update your personal information.</p>
         </div>
-        <button className="btn-primary">
+        <button className="edit-profile-btn">
           <Pencil size={16} /> Edit Profile
         </button>
       </header>

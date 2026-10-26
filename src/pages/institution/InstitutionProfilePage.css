@@ -1,6 +1,6 @@
 .profile-page {
-  padding: 0px 0 40px 64px;
-  max-width: 800px;
+  padding: 32px;
+  max-width: 1000px;
   width: 100%;
   box-sizing: border-box;
 }
@@ -8,8 +8,14 @@
 .profile-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   margin-bottom: 24px;
+  width: 100%;
+}
+
+.profile-header-text {
+  flex: 1; 
+  padding-right: 24px;
 }
 
 .profile-header h1 {
@@ -25,25 +31,45 @@
   margin: 0;
 }
 
-/* Reuse or adjust this button style to match your theme */
-.btn-primary {
-  background-color: #4f46e5;
+/* --- EDIT PROFILE BUTTON --- */
+.edit-profile-btn {
+  background-color: #382c77;
   color: white;
   border: none;
   border-radius: 8px;
-  padding: 10px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  display: flex;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  min-height: 36px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  
+  /* Smooth transition for the hover effect */
+  transition: all 0.2s ease-in-out; 
+
+  /* Forces the button to only be as wide as its text */
+  width: max-content; 
+  flex-shrink: 0;     
+  align-self: flex-start; 
 }
 
-.btn-primary:hover {
-  background-color: #4338ca;
+/* The Hover Effect */
+.edit-profile-btn:hover {
+  background-color:  #4f46e5; /* Slightly lighter purple on hover */
+  transform: translateY(-1px); /* Lifts the button up */
+  box-shadow: 0 4px 6px -1px rgba(56, 44, 119, 0.3); /* Adds a soft shadow */
 }
+
+/* Click effect */
+.edit-profile-btn:active {
+  transform: translateY(0);
+}
+
+/* --- REST OF THE PAGE --- */
 
 /* Hero Card */
 .profile-hero-card {
@@ -55,6 +81,7 @@
   align-items: center;
   gap: 24px;
   margin-bottom: 24px;
+  width: 100%;
 }
 
 .profile-avatar-large {
@@ -99,6 +126,7 @@
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 24px;
+  width: 100%;
 }
 
 .profile-details-title {

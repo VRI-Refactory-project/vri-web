@@ -159,7 +159,7 @@ export const router = createBrowserRouter([
   },
 
   {
-    // element: <ProtectedRoute allow={['institution']} />,
+    element: <ProtectedRoute allow={['institution']} />,
     children: [
       {
         path: '/dashboard/institution',
