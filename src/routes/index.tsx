@@ -48,6 +48,9 @@ import { InstitutionDashboardPage } from '../pages/institution/InstitutionDashbo
 import RequestsPage from '../pages/interpreter/RequestsPage';
 import { UsersPage } from '../pages/admin/UsersPage';
 import { OfflineGate } from '../components/OfflineGate';
+import { InstitutionProfilePage } from '../pages/institution/InstitutionProfilePage';
+import { SessionsPage } from '../pages/admin/SessionsPage';
+import { ReportsPage } from '../pages/admin/ReportsPage';
 
 const appRoutes: RouteObject[] = [
   {
@@ -109,7 +112,11 @@ const appRoutes: RouteObject[] = [
       {
         path: '/dashboard/deaf',
         element: (
-          <DashboardLayout links={deafNavigation} navLabel="Deaf dashboard" accountTo="/profile" />
+          <DashboardLayout
+            links={deafNavigation}
+            navLabel="Deaf dashboard"
+            accountTo="/dashboard/deaf/profile"
+          />
         ),
         children: [
           { index: true, element: <DashboardPage /> },
@@ -172,6 +179,7 @@ const appRoutes: RouteObject[] = [
           { path: 'sessions', element: <Placeholder title="Sessions" story="V2-028" /> },
           { path: 'analytics', element: <Placeholder title="Analytics" story="V2-028" /> },
           { path: 'settings', element: <Placeholder title="Settings" story="V2-028" /> },
+          { path: 'profile', element: <InstitutionProfilePage /> },
         ],
       },
     ],
@@ -189,8 +197,8 @@ const appRoutes: RouteObject[] = [
           { path: 'verifications', element: <VerificationsPage /> },
           { path: 'verifications/:id', element: <CredentialReviewPage /> },
           { path: 'institutions', element: <InstitutionAccountsPage /> },
-          { path: 'sessions', element: <Placeholder title="Sessions" story="V2-064" /> },
-          { path: 'reports', element: <Placeholder title="Reports" story="V2-064" /> },
+          { path: 'sessions', element: <SessionsPage /> },
+          { path: 'reports', element: <ReportsPage /> },
           { path: 'audit-logs', element: <Placeholder title="Audit Logs" story="V2-064" /> },
           { path: 'settings', element: <SettingsPage /> },
           { path: 'profile', element: <AdminProfilePage /> },
