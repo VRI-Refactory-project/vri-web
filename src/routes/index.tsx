@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter, Navigate, type RouteObject } from 'react-router-dom';
 import { ApprovedInterpreterRoute } from '../components/ApprovedInterpreterRoute';
 import { GuestRoute } from '../components/Guestroute';
 import { ProtectedRoute } from '../components/ProtectedRoute';
@@ -47,8 +47,9 @@ import { StaffAccountCreatedPage } from '../pages/institution/StaffAccountCreate
 import { InstitutionDashboardPage } from '../pages/institution/InstitutionDashboardPage';
 import RequestsPage from '../pages/interpreter/RequestsPage';
 import { UsersPage } from '../pages/admin/UsersPage';
+import { OfflineGate } from '../components/OfflineGate';
 
-export const router = createBrowserRouter([
+const appRoutes: RouteObject[] = [
   {
     // Public entry pages: signed-in users should return to their dashboard.
     element: <GuestRoute />,
@@ -212,4 +213,7 @@ export const router = createBrowserRouter([
     path: '*',
     element: <Placeholder title="Page not found" message="We could not find this page." />,
   },
-]);
+];
+
+// Every route sits inside OfflineGate, so the offline screen can cover any page when the connection drops.
+export const router = createBrowserRouter([{ element: <OfflineGate />, children: appRoutes }]);

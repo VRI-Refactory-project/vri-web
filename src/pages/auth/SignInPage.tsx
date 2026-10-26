@@ -1,7 +1,7 @@
 // src/pages/auth/SignInPage.tsx
 import React, { useState } from 'react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Eye, EyeOff } from 'lucide-react';
 import { AuthLayout } from '../../components/Authlayout';
 import { FieldError } from '../../components/FieldError';
 import { dashboardPathFor } from '../../features/auth/roles';
@@ -30,6 +30,7 @@ function destinationFor(role: Role, from: unknown): string {
 export const SignInPage = () => {
   const [formData, setFormData] = useState({ identifier: '', password: '' });
   const [error, setError] = useState<string>();
+  const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const { session, sessionExpired, login } = useAuth();
   const location = useLocation();
@@ -89,14 +90,24 @@ export const SignInPage = () => {
 
         <div className="form-group">
           <label htmlFor="password">Password</label>
-          <input
-            {...fieldProps('password')}
-            type="password"
-            autoComplete="current-password"
-            placeholder="Enter your password"
-            value={formData.password}
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-          />
+          <div className="password-field">
+            <input
+              {...fieldProps('password')}
+              type={showPassword ? 'text' : 'password'}
+              autoComplete="current-password"
+              placeholder="Enter your password"
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            />
+            <button
+              type="button"
+              className="password-toggle"
+              onClick={() => setShowPassword((prev) => !prev)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
           <FieldError id="password" message={shown('password')} />
         </div>
 
