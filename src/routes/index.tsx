@@ -46,6 +46,7 @@ import { OfflinePage } from '../pages/OfflinePage';
 import { StaffAccountCreatedPage } from '../pages/institution/StaffAccountCreatedPage';
 import { InstitutionDashboardPage } from '../pages/institution/InstitutionDashboardPage';
 import RequestsPage from '../pages/interpreter/RequestsPage';
+import { UsersPage } from '../pages/admin/UsersPage';
 
 export const router = createBrowserRouter([
   {
@@ -183,7 +184,7 @@ export const router = createBrowserRouter([
         element: <AdminLayout />,
         children: [
           { index: true, element: <AdminDashboardPage /> },
-          { path: 'users', element: <Placeholder title="Users" story="V2-064" /> },
+          { path: 'users', element: <UsersPage /> },
           { path: 'verifications', element: <VerificationsPage /> },
           { path: 'verifications/:id', element: <CredentialReviewPage /> },
           { path: 'institutions', element: <InstitutionAccountsPage /> },
