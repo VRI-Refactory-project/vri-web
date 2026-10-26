@@ -1,215 +1,124 @@
+// src/pages/auth/SignInPage.tsx
 import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Eye, EyeOff, Lock, Mail, AlertCircle } from 'lucide-react';
-import { AuthShell } from '../../components/AuthShell';
+import { Link, Navigate, useLocation } from 'react-router-dom';
+import { ChevronRight } from 'lucide-react';
+import { AuthLayout } from '../../components/Authlayout';
+import { FieldError } from '../../components/FieldError';
 import { dashboardPathFor } from '../../features/auth/roles';
 import { useAuth } from '../../hooks/useAuth';
+import {
+  collectErrors,
+  identifierForApi,
+  validateIdentifier,
+  validatePasswordPresent,
+} from '../../lib/validation';
+import { useFieldErrors } from '../../lib/useFieldErrors';
+import { ApiError } from '../../services/api';
+import type { Role } from '../../types';
+import { signIn } from '../../services/auth';
 import './SignInPages.css';
 
-export function LoginPage() {
-  const navigate = useNavigate();
+type FieldName = 'identifier' | 'password';
+const FIELD_ORDER: readonly FieldName[] = ['identifier', 'password'];
+
+/** Back to the page they were sent away from, but only if it belongs to their role's dashboard. */
+function destinationFor(role: Role, from: unknown): string {
+  const home = dashboardPathFor(role);
+  return typeof from === 'string' && (from === home || from.startsWith(`${home}/`)) ? from : home;
+}
+
+export const SignInPage = () => {
+  const [formData, setFormData] = useState({ identifier: '', password: '' });
+  const [error, setError] = useState<string>();
+  const [submitting, setSubmitting] = useState(false);
+  const { session, sessionExpired, login } = useAuth();
   const location = useLocation();
-  const { login, session } = useAuth();
+  const from = (location.state as { from?: string } | null)?.from;
 
-  // Form & UI States
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false); // Toggle password visibility
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  // Sign-in checks the shape of the identifier, but never password strength: an older account
+  // must still be able to get in with the password it already has.
+  const errors = collectErrors<FieldName>({
+    identifier: validateIdentifier(formData.identifier),
+    password: validatePasswordPresent(formData.password),
+  });
+  const { shown, check, fieldProps } = useFieldErrors(errors, FIELD_ORDER, (name) => name);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-
-    // Redirect to offline page if network is disconnected
-    if (!navigator.onLine) {
-      sessionStorage.setItem('previousPath', location.pathname);
-      navigate('/offline', { replace: true });
-      return;
-    }
-
-    setIsLoading(true);
-
+    setError(undefined);
+    if (!check()) return;
+    setSubmitting(true);
     try {
-      const user = await login(email, password);
-      const userRole = user?.role ?? session?.user?.role ?? 'deaf';
-      const destination = dashboardPathFor(userRole);
-      navigate(destination, { replace: true });
-    } catch (err: unknown) {
-      const apiError = err as {
-        response?: { data?: { detail?: string } };
-        message?: string;
-      };
-      const errorMessage =
-        apiError?.response?.data?.detail ||
-        apiError?.message ||
-        'We could not sign you in. Check your connection and try again.';
-      setError(errorMessage);
+      const session = await signIn(identifierForApi(formData.identifier), formData.password);
+      // The redirect below takes them to their dashboard once the session is stored.
+      login(session);
+    } catch (err) {
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : 'We could not sign you in. Check your connection and try again.',
+      );
     } finally {
-      setIsLoading(false);
+      setSubmitting(false);
     }
   };
 
-  return (
-    <AuthShell steps={[]} current={0}>
-      <div className="login-container" style={{ maxWidth: '400px', margin: '0 auto' }}>
-        <h1 className="ca-title">Sign In</h1>
-        <p className="ca-subtitle">Access your VRI platform account</p>
+  // Someone who is already signed in has no use for this form.
+  if (session) return <Navigate to={destinationFor(session.user.role, from)} replace />;
 
-        {/* Error Alert Display */}
+  return (
+    <AuthLayout title="Welcome Back" subtitle="Sign In to continue to SignConnect." backTo="/">
+      <form onSubmit={handleSubmit} noValidate>
+        {sessionExpired && (
+          <p role="status" className="login-notice">
+            Your session has ended. Please sign in again.
+          </p>
+        )}
+        <div className="form-group">
+          <label htmlFor="identifier">Email or phone number</label>
+          <input
+            {...fieldProps('identifier')}
+            type="text"
+            autoComplete="username"
+            placeholder="name@example.com or +256 772 123 456"
+            value={formData.identifier}
+            onChange={(e) => setFormData({ ...formData, identifier: e.target.value })}
+          />
+          <FieldError id="identifier" message={shown('identifier')} />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="password">Password</label>
+          <input
+            {...fieldProps('password')}
+            type="password"
+            autoComplete="current-password"
+            placeholder="Enter your password"
+            value={formData.password}
+            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+          />
+          <FieldError id="password" message={shown('password')} />
+        </div>
+
         {error && (
-          <div
-            className="error-banner"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '12px',
-              borderRadius: '6px',
-              backgroundColor: '#fef2f2',
-              color: '#991b1b',
-              border: '1px solid #fecaca',
-              marginBottom: '16px',
-              fontSize: '14px',
-            }}
-            role="alert"
-          >
-            <AlertCircle size={18} style={{ flexShrink: 0 }} />
-            <span>{error}</span>
-          </div>
+          <p role="alert" className="form-error">
+            {error}
+          </p>
         )}
 
-        <form
-          onSubmit={handleSubmit}
-          style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}
+        <button
+          type="submit"
+          className="btn-primary"
+          style={{ marginTop: '16px' }}
+          disabled={submitting}
         >
-          {/* Email Address Input */}
-          <div
-            className="form-group"
-            style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}
-          >
-            <label htmlFor="email" style={{ fontSize: '14px', fontWeight: 500, color: '#374151' }}>
-              Email address
-            </label>
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <Mail
-                size={18}
-                style={{
-                  position: 'absolute',
-                  left: '12px',
-                  color: '#9ca3af',
-                  pointerEvents: 'none',
-                }}
-              />
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@example.com"
-                required
-                className="input-field"
-                style={{
-                  width: '100%',
-                  paddingLeft: '38px',
-                  paddingRight: '12px',
-                  height: '42px',
-                  borderRadius: '6px',
-                  border: '1px solid #d1d5db',
-                  fontSize: '14px',
-                }}
-              />
-            </div>
-          </div>
+          {submitting ? 'Signing in...' : 'Login'} <ChevronRight size={18} />
+        </button>
+      </form>
 
-          {/* Password Input with Eye Toggle */}
-          <div
-            className="form-group"
-            style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}
-          >
-            <label
-              htmlFor="password"
-              style={{ fontSize: '14px', fontWeight: 500, color: '#374151' }}
-            >
-              Password
-            </label>
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <Lock
-                size={18}
-                style={{
-                  position: 'absolute',
-                  left: '12px',
-                  color: '#9ca3af',
-                  pointerEvents: 'none',
-                }}
-              />
-              <input
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                className="input-field"
-                style={{
-                  width: '100%',
-                  paddingLeft: '38px',
-                  paddingRight: '42px',
-                  height: '42px',
-                  borderRadius: '6px',
-                  border: '1px solid #d1d5db',
-                  fontSize: '14px',
-                }}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                style={{
-                  position: 'absolute',
-                  right: '8px',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: '#6b7280',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '6px',
-                  borderRadius: '4px',
-                }}
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="btn-primary"
-            style={{
-              marginTop: '8px',
-              height: '44px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 600,
-              cursor: isLoading ? 'not-allowed' : 'pointer',
-              opacity: isLoading ? 0.7 : 1,
-            }}
-          >
-            {isLoading ? 'Signing in...' : 'Sign In'}
-          </button>
-        </form>
-
-        {/* Forgot Password Link */}
-        <Link to="/forgot-password" className="login-forgot-link">
-          Forgot your password?
-        </Link>
-      </div>
-    </AuthShell>
+      <Link to="/forgot-password" className="login-forgot-link">
+        Forgot Password?
+      </Link>
+    </AuthLayout>
   );
-}
+};

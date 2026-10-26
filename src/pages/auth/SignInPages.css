@@ -1,24 +1,19 @@
-/* Sign-in page styles. The page frame, logo and Back button live in components/AuthShell. */
-
-.login-container {
-  max-width: 400px;
-  margin: 0 auto;
+/* Sign-in specific bits. The page frame, logo and Back live in components/AuthShell. */
+.login-forgot-link {
+  display: block;
+  text-align: center;
+  margin-top: 16px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
 }
 
-.login-title {
-  margin: 0 0 4px;
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--color-text, #111827);
+.login-forgot-link:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
 }
 
-.login-subtitle {
-  margin: 0 0 24px;
-  font-size: 14px;
-  color: var(--color-text-muted, #6b7280);
-}
-
-/* Notice (e.g. "Password updated") */
 .login-notice {
   margin: 0 0 16px;
   padding: 10px 12px;
@@ -27,138 +22,4 @@
   color: var(--color-primary, #382c77);
   font-size: 13px;
   font-weight: 600;
-}
-
-/* Error banner */
-.login-error {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-  padding: 12px;
-  border: 1px solid #fecaca;
-  border-radius: 6px;
-  background: #fef2f2;
-  color: #991b1b;
-  font-size: 14px;
-}
-
-.login-error svg {
-  flex-shrink: 0;
-}
-
-/* Form */
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.login-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.login-label {
-  font-size: 14px;
-  font-weight: 500;
-  color: #374151;
-}
-
-.login-input-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.login-input-icon {
-  position: absolute;
-  left: 12px;
-  color: #9ca3af;
-  pointer-events: none;
-}
-
-.login-input {
-  width: 100%;
-  height: 42px;
-  padding: 0 12px 0 38px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
-  box-sizing: border-box;
-}
-
-.login-input--password {
-  padding-right: 42px;
-}
-
-.login-input:focus {
-  outline: none;
-  border-color: var(--color-primary, #382c77);
-  box-shadow: 0 0 0 3px rgba(56, 44, 119, 0.15);
-}
-
-/* Show/hide password button */
-.login-toggle {
-  position: absolute;
-  right: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px;
-  border: none;
-  border-radius: 4px;
-  background: none;
-  color: #6b7280;
-  cursor: pointer;
-}
-
-.login-toggle:hover {
-  color: var(--color-primary, #382c77);
-}
-
-/* Submit button */
-.login-submit {
-  height: 44px;
-  margin-top: 8px;
-  border: none;
-  border-radius: 6px;
-  background: var(--color-primary, #382c77);
-  color: #fff;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.login-submit:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-/* Forgot password link */
-.login-forgot-link {
-  display: block;
-  text-align: center;
-  margin-top: 16px;
-  color: var(--color-text-muted, #6b7280);
-  font-size: 13px;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.login-forgot-link:hover {
-  color: var(--color-primary, #382c77);
-  text-decoration: underline;
-}
-
-.signin-password-toggle {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  border: none;
-  background: none;
-  cursor: pointer;
-  color: #6b7280;
 }
