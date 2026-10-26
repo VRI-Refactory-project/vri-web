@@ -49,6 +49,7 @@ import RequestsPage from '../pages/interpreter/RequestsPage';
 import { UsersPage } from '../pages/admin/UsersPage';
 import { SessionsPage } from '../pages/admin/SessionsPage';
 import { ReportsPage } from '../pages/admin/ReportsPage';
+import { AuditLogsPage } from '../pages/admin/AuditLogsPage';
 
 export const router = createBrowserRouter([
   {
@@ -192,7 +193,7 @@ export const router = createBrowserRouter([
           { path: 'institutions', element: <InstitutionAccountsPage /> },
           { path: 'sessions', element: <SessionsPage /> },
           { path: 'reports', element: <ReportsPage /> },
-          { path: 'audit-logs', element: <Placeholder title="Audit Logs" story="V2-064" /> },
+          { path: 'audit-logs', element: <AuditLogsPage /> },
           { path: 'settings', element: <SettingsPage /> },
           { path: 'profile', element: <AdminProfilePage /> },
         ],
