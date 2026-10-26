@@ -51,6 +51,9 @@ import { OfflineGate } from '../components/OfflineGate';
 import { InstitutionProfilePage } from '../pages/institution/InstitutionProfilePage';
 import { SessionsPage } from '../pages/admin/SessionsPage';
 import { ReportsPage } from '../pages/admin/ReportsPage';
+import { InstitutionSettingsPage } from '../pages/institution/InstitutionSettingsPage';
+import { InstitutionAnalyticsPage } from '../pages/institution/InstitutionAnalyticsPage';
+import { InstitutionSessionsPage } from '../pages/institution/InstitutionSessionsPage';
 import { AuditLogsPage } from '../pages/admin/AuditLogsPage';
 
 const appRoutes: RouteObject[] = [
@@ -177,9 +180,9 @@ const appRoutes: RouteObject[] = [
           { path: 'staff', element: <StaffManagementPage /> },
           { path: 'staff/new', element: <CreateStaffAccountPage /> },
           { path: 'staff/created', element: <StaffAccountCreatedPage /> },
-          { path: 'sessions', element: <Placeholder title="Sessions" story="V2-028" /> },
-          { path: 'analytics', element: <Placeholder title="Analytics" story="V2-028" /> },
-          { path: 'settings', element: <Placeholder title="Settings" story="V2-028" /> },
+          { path: 'sessions', element: <InstitutionSessionsPage /> },
+          { path: 'analytics', element: <InstitutionAnalyticsPage /> },
+          { path: 'settings', element: <InstitutionSettingsPage /> },
           { path: 'profile', element: <InstitutionProfilePage /> },
         ],
       },
