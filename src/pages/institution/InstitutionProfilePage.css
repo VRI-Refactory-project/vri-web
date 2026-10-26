@@ -14,7 +14,7 @@
 }
 
 .profile-header-text {
-  flex: 1; 
+  flex: 1;
   padding-right: 24px;
 }
 
@@ -47,19 +47,19 @@
   gap: 8px;
   min-height: 36px;
   cursor: pointer;
-  
+
   /* Smooth transition for the hover effect */
-  transition: all 0.2s ease-in-out; 
+  transition: all 0.2s ease-in-out;
 
   /* Forces the button to only be as wide as its text */
-  width: max-content; 
-  flex-shrink: 0;     
-  align-self: flex-start; 
+  width: max-content;
+  flex-shrink: 0;
+  align-self: flex-start;
 }
 
 /* The Hover Effect */
 .edit-profile-btn:hover {
-  background-color:  #4f46e5; /* Slightly lighter purple on hover */
+  background-color: #4f46e5; /* Slightly lighter purple on hover */
   transform: translateY(-1px); /* Lifts the button up */
   box-shadow: 0 4px 6px -1px rgba(56, 44, 119, 0.3); /* Adds a soft shadow */
 }

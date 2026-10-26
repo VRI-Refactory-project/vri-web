@@ -29,22 +29,20 @@ export function InstitutionProfilePage() {
 
       {/* Hero Profile Card */}
       <section className="profile-hero-card">
-        <div className="profile-avatar-large">
-          {MOCK_PROFILE.initials}
-        </div>
+        <div className="profile-avatar-large">{MOCK_PROFILE.initials}</div>
         <div className="profile-hero-info">
           <h2>{MOCK_PROFILE.name}</h2>
-          <p>{MOCK_PROFILE.role} · {MOCK_PROFILE.institution}</p>
-          <span className="status-badge-active">
-            {MOCK_PROFILE.status}
-          </span>
+          <p>
+            {MOCK_PROFILE.role} · {MOCK_PROFILE.institution}
+          </p>
+          <span className="status-badge-active">{MOCK_PROFILE.status}</span>
         </div>
       </section>
 
       {/* Details Card */}
       <section className="profile-details-card">
         <h3 className="profile-details-title">Personal information</h3>
-        
+
         <div className="profile-details-list">
           {/* Full Name */}
           <div className="profile-detail-row">

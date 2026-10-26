@@ -111,7 +111,11 @@ export const router = createBrowserRouter([
       {
         path: '/dashboard/deaf',
         element: (
-          <DashboardLayout links={deafNavigation} navLabel="Deaf dashboard" accountTo="/dashboard/deaf/profile" />
+          <DashboardLayout
+            links={deafNavigation}
+            navLabel="Deaf dashboard"
+            accountTo="/dashboard/deaf/profile"
+          />
         ),
         children: [
           { index: true, element: <DashboardPage /> },
