@@ -37,12 +37,11 @@ export function InstitutionSessionsPage() {
   const filteredSessions = MOCK_ACTIVE_SESSIONS.filter(
     (session) =>
       session.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      session.interpreter.toLowerCase().includes(searchQuery.toLowerCase())
+      session.interpreter.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
     <div className="institution-sessions-page">
-      
       {/* Header */}
       <header className="sessions-header">
         <h1>Active sessions</h1>
@@ -92,7 +91,7 @@ export function InstitutionSessionsPage() {
               <div className="session-icon-wrapper">
                 <Video size={20} className="session-icon" />
               </div>
-              
+
               {/* Details */}
               <div className="session-details">
                 <h3>{session.location}</h3>
@@ -111,7 +110,6 @@ export function InstitutionSessionsPage() {
           ))
         )}
       </section>
-
     </div>
   );
 }

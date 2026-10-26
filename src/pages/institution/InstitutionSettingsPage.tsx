@@ -11,10 +11,10 @@ export function InstitutionSettingsPage() {
     system: false,
   });
 
-  const [twoFactor, setTwoFactor] = useState(false);
-  
+  //   const [twoFactor, setTwoFactor] = useState(false);
+
   // State to show the success banner
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [showSuccess] = useState(false);
 
   const toggleNotification = (key: keyof typeof notifications) => {
     setNotifications((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -41,7 +41,7 @@ export function InstitutionSettingsPage() {
           <h2>Notifications</h2>
           <p>Choose what you want to be notified about.</p>
         </div>
-        
+
         <div className="settings-list">
           <div className="settings-item">
             <div className="settings-item-info">
@@ -49,10 +49,10 @@ export function InstitutionSettingsPage() {
               <p>Get notified when a session starts, ends or drops.</p>
             </div>
             <label className="toggle-switch">
-              <input 
-                type="checkbox" 
-                checked={notifications.sessionUpdates} 
-                onChange={() => toggleNotification('sessionUpdates')} 
+              <input
+                type="checkbox"
+                checked={notifications.sessionUpdates}
+                onChange={() => toggleNotification('sessionUpdates')}
               />
               <span className="slider"></span>
             </label>
@@ -64,10 +64,10 @@ export function InstitutionSettingsPage() {
               <p>Get notified about new chat messages.</p>
             </div>
             <label className="toggle-switch">
-              <input 
-                type="checkbox" 
-                checked={notifications.chat} 
-                onChange={() => toggleNotification('chat')} 
+              <input
+                type="checkbox"
+                checked={notifications.chat}
+                onChange={() => toggleNotification('chat')}
               />
               <span className="slider"></span>
             </label>
@@ -79,10 +79,10 @@ export function InstitutionSettingsPage() {
               <p>Get notified when an interpreter is scheduled for you.</p>
             </div>
             <label className="toggle-switch">
-              <input 
-                type="checkbox" 
-                checked={notifications.sessionRequests} 
-                onChange={() => toggleNotification('sessionRequests')} 
+              <input
+                type="checkbox"
+                checked={notifications.sessionRequests}
+                onChange={() => toggleNotification('sessionRequests')}
               />
               <span className="slider"></span>
             </label>
@@ -94,10 +94,10 @@ export function InstitutionSettingsPage() {
               <p>Product updates and maintenance notices.</p>
             </div>
             <label className="toggle-switch">
-              <input 
-                type="checkbox" 
-                checked={notifications.system} 
-                onChange={() => toggleNotification('system')} 
+              <input
+                type="checkbox"
+                checked={notifications.system}
+                onChange={() => toggleNotification('system')}
               />
               <span className="slider"></span>
             </label>
@@ -111,7 +111,7 @@ export function InstitutionSettingsPage() {
           <h2>Communication preferences</h2>
           <p>Set how SignConnect communicates with you.</p>
         </div>
-        
+
         <div className="settings-list">
           <div className="settings-item">
             <div className="settings-item-info">
@@ -132,9 +132,12 @@ export function InstitutionSettingsPage() {
           <h2>Security</h2>
           <p>Manage how your account is protected.</p>
         </div>
-        
+
         <div className="settings-list">
-          <div className="settings-item clickable" onClick={() => alert('Change password modal here')}>
+          <div
+            className="settings-item clickable"
+            onClick={() => alert('Change password modal here')}
+          >
             <div className="settings-item-info">
               <h3>Change password</h3>
               <p>Update the password used to sign in.</p>
@@ -150,7 +153,7 @@ export function InstitutionSettingsPage() {
           <h2>Account</h2>
           <p>Manage your session on this device.</p>
         </div>
-        
+
         <div className="settings-list">
           <div className="settings-item clickable" onClick={() => alert('Sign out logic here')}>
             <div className="settings-item-info text-danger">

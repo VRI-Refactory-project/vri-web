@@ -1,0 +1,264 @@
+/* src/pages/admin/AuditLogsPage.css */
+.audit-page {
+  --a-purple: #382c77;
+  --a-purple-dark: #2f236b;
+  --a-text: #242044;
+  --a-muted: #747b9a;
+  --a-border: #e4e7f2;
+  --a-background: #f5f5fc;
+  --a-green: #13836f;
+
+  width: 100%;
+  min-width: 0;
+  padding: 28px 30px 32px;
+  color: var(--a-text);
+  background: var(--a-background);
+  box-sizing: border-box;
+  font-family: 'Manrope', system-ui, sans-serif;
+}
+
+.audit-page *,
+.audit-page *::before,
+.audit-page *::after {
+  box-sizing: border-box;
+}
+
+.audit-page button,
+.audit-page input {
+  font: inherit;
+}
+
+.audit-page button {
+  cursor: pointer;
+}
+
+/* ---------- Header ---------- */
+.audit-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 22px;
+}
+
+.audit-header h1 {
+  margin: 0;
+  color: #211d42;
+  font-size: 26px;
+  font-weight: 750;
+  letter-spacing: -0.6px;
+  line-height: 1.2;
+}
+
+.audit-header p {
+  margin: 6px 0 0;
+  color: #6f7696;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ---------- Buttons ---------- */
+.audit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 650;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease;
+}
+
+.audit-btn--ghost {
+  background: #fff;
+  border-color: #e2e0ee;
+  color: #41366f;
+}
+
+.audit-btn--ghost:hover {
+  border-color: #bcb6e7;
+  background: #f7f6ff;
+}
+
+/* ---------- Panel ---------- */
+.audit-panel {
+  background: #fff;
+  border: 1px solid var(--a-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.audit-panel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 22px 12px;
+}
+
+.audit-panel__head h2 {
+  margin: 0;
+  color: #27234a;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.audit-panel__head p {
+  margin: 4px 0 0;
+  color: #7b82a2;
+  font-size: 12px;
+}
+
+.audit-date-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: var(--a-green);
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ---------- Toolbar ---------- */
+.audit-toolbar {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto;
+  gap: 10px;
+  padding: 0 22px 14px;
+}
+
+.audit-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  border: 1px solid #e2e0ee;
+  border-radius: 9px;
+  background: #fff;
+  color: #8a86a5;
+}
+
+.audit-search:focus-within {
+  border-color: #9589d6;
+  box-shadow: 0 0 0 3px rgb(94 75 176 / 8%);
+}
+
+.audit-search input {
+  flex: 1;
+  min-width: 0;
+  height: 38px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 12.5px;
+  color: #1e293b;
+}
+
+.audit-search input::placeholder {
+  color: #9a96b3;
+}
+
+/* ---------- List ---------- */
+.audit-list {
+  padding: 0 22px 12px;
+  border-top: 1px solid #ececf5;
+}
+
+.audit-list__head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  padding: 12px 0 8px;
+  color: #747a9a;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.audit-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-top: 1px solid #f0eefb;
+}
+
+.audit-row__info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.audit-row__info strong {
+  color: #2d294f;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.audit-row__info small {
+  color: #8189a9;
+  font-size: 11.5px;
+  overflow-wrap: anywhere;
+}
+
+.audit-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.audit-badge--admin {
+  background: #efeafd;
+  color: #382c77;
+}
+
+.audit-badge--system {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
+.audit-badge--institution {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.audit-row__arrow {
+  color: #8a86a5;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.audit-empty {
+  padding: 30px 0;
+  text-align: center;
+  color: #8a86a5;
+  font-size: 13px;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .audit-page {
+    padding: 20px 16px;
+  }
+  .audit-toolbar {
+    grid-template-columns: 1fr;
+  }
+  .audit-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
