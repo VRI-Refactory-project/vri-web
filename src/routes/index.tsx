@@ -47,6 +47,7 @@ import { StaffAccountCreatedPage } from '../pages/institution/StaffAccountCreate
 import { InstitutionDashboardPage } from '../pages/institution/InstitutionDashboardPage';
 import RequestsPage from '../pages/interpreter/RequestsPage';
 import { UsersPage } from '../pages/admin/UsersPage';
+import { SessionsPage } from '../pages/admin/SessionsPage';
 
 export const router = createBrowserRouter([
   {
@@ -188,7 +189,7 @@ export const router = createBrowserRouter([
           { path: 'verifications', element: <VerificationsPage /> },
           { path: 'verifications/:id', element: <CredentialReviewPage /> },
           { path: 'institutions', element: <InstitutionAccountsPage /> },
-          { path: 'sessions', element: <Placeholder title="Sessions" story="V2-064" /> },
+          { path: 'sessions', element: <SessionsPage /> },
           { path: 'reports', element: <Placeholder title="Reports" story="V2-064" /> },
           { path: 'audit-logs', element: <Placeholder title="Audit Logs" story="V2-064" /> },
           { path: 'settings', element: <SettingsPage /> },
