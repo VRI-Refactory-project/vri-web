@@ -1,0 +1,163 @@
+.profile-page {
+  padding: 0px 0 40px 64px;
+  max-width: 800px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.profile-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 8px 0;
+}
+
+.profile-header p {
+  color: #6b7280;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Reuse or adjust this button style to match your theme */
+.btn-primary {
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #4338ca;
+}
+
+/* Hero Card */
+.profile-hero-card {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.profile-avatar-large {
+  width: 80px;
+  height: 80px;
+  background-color: #f3f4f6;
+  color: #374151;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.profile-hero-info h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 4px 0;
+}
+
+.profile-hero-info p {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0 0 12px 0;
+}
+
+.status-badge-active {
+  background-color: #d1fae5;
+  color: #065f46;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Details Card */
+.profile-details-card {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.profile-details-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 24px 0;
+}
+
+.profile-details-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-detail-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.profile-detail-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.profile-detail-row:first-child {
+  padding-top: 0;
+}
+
+.profile-icon-wrap {
+  width: 40px;
+  height: 40px;
+  background-color: #f8fafc;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.profile-detail-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9ca3af;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.detail-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+}
