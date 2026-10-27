@@ -240,3 +240,10 @@ export async function updateInstitutionStatus(
 
   return normalizeInstitution(response);
 }
+
+/** DELETE /api/v1/admin/institutions/{id}/ */
+export async function deleteInstitution(id: string): Promise<void> {
+  await api(`/api/v1/admin/institutions/${encodeURIComponent(id)}/`, {
+    method: 'DELETE',
+  });
+}
