@@ -573,3 +573,20 @@
     display: none;
   }
 }
+
+.reports-empty {
+  padding: 26px 0;
+  text-align: center;
+  color: #8a86a5;
+  font-size: 13px;
+}
+
+.reports-badge--processing {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.reports-badge--failed {
+  background: #fee2e2;
+  color: #b91c1c;
+}
