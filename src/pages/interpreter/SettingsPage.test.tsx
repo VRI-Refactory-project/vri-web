@@ -107,6 +107,62 @@ describe('InterpreterSettingsPage', () => {
     expect(appearance).toHaveDisplayValue('Dark');
   });
 
+  it('has nothing to save or discard until something changes', async () => {
+    renderPage();
+    const discard = screen.getByRole('button', { name: 'Discard changes' });
+    const save = screen.getByRole('button', { name: 'Save preferences' });
+    expect(discard).toBeDisabled();
+    expect(save).toBeDisabled();
+
+    await userEvent.click(screen.getByRole('switch', { name: 'Product updates' }));
+
+    expect(discard).toBeEnabled();
+    expect(save).toBeEnabled();
+  });
+
+  it('discards changes back to the last saved settings', async () => {
+    renderPage();
+    const productUpdates = screen.getByRole('switch', { name: 'Product updates' });
+    const appearance = screen.getByRole('combobox', { name: 'Appearance' });
+    await userEvent.click(productUpdates);
+    await userEvent.selectOptions(appearance, 'Dark');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Discard changes' }));
+
+    expect(productUpdates).toHaveAttribute('aria-checked', 'false');
+    expect(appearance).toHaveDisplayValue('System default');
+    expect(screen.getByRole('button', { name: 'Save preferences' })).toBeDisabled();
+  });
+
+  it('saves the changes and confirms', async () => {
+    renderPage();
+    const productUpdates = screen.getByRole('switch', { name: 'Product updates' });
+    await userEvent.click(productUpdates);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Save preferences' }));
+
+    expect(screen.getByRole('status')).toHaveTextContent('Preferences saved.');
+    expect(productUpdates).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('button', { name: 'Save preferences' })).toBeDisabled();
+  });
+
+  it('discards only what changed since the last save', async () => {
+    renderPage();
+    const productUpdates = screen.getByRole('switch', { name: 'Product updates' });
+    await userEvent.click(productUpdates);
+    await userEvent.click(screen.getByRole('button', { name: 'Save preferences' }));
+
+    await userEvent.click(screen.getByRole('switch', { name: 'Session reminders' }));
+    expect(screen.queryByText('Preferences saved.')).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Discard changes' }));
+
+    expect(productUpdates).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('switch', { name: 'Session reminders' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+  });
+
   it('changes the privacy pill when its switch is turned off', async () => {
     renderPage();
 

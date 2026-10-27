@@ -65,3 +65,28 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* --- Discard / Save, bottom right; the confirmation sits to their left --- */
+.is-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.is-actions .is-notice {
+  margin: 0 auto 0 0;
+}
+
+.is-actions .is-button {
+  padding: 12px 24px;
+  border-radius: 999px;
+}
+
+@media (max-width: 560px) {
+  .is-actions .is-button {
+    flex: 1 1 100%;
+  }
+}

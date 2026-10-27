@@ -38,6 +38,15 @@ export interface InterpreterSettings {
 
 export type SettingsGroup = keyof InterpreterSettings;
 
+/** True when every setting in `a` matches `b`. Used to tell whether there are unsaved changes. */
+export function sameSettings(a: InterpreterSettings, b: InterpreterSettings): boolean {
+  return (Object.keys(a) as SettingsGroup[]).every((group) => {
+    const left: Record<string, unknown> = { ...a[group] };
+    const right: Record<string, unknown> = { ...b[group] };
+    return Object.keys(left).every((key) => left[key] === right[key]);
+  });
+}
+
 export const DEFAULT_SETTINGS: InterpreterSettings = {
   notifications: {
     sessionRequests: true,
