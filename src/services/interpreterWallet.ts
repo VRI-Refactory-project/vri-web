@@ -81,6 +81,17 @@ const SAMPLE: InterpreterWallet = {
   ],
 };
 
+// Dates are stored as "2026-10-10"; reading and showing them in UTC keeps the day from shifting.
+const DATE_FORMAT = new Intl.DateTimeFormat('en-US', {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+
+/** "2026-10-10" becomes "Oct 10, 2026". */
+export const formatTransactionDate = (isoDate: string) => DATE_FORMAT.format(new Date(isoDate));
+
 const walletMocked = () => import.meta.env.VITE_MOCK_INTERPRETER_WALLET === 'true';
 
 /** The interpreter's wallet, or null while payments are not live. */

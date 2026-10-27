@@ -1,7 +1,8 @@
 /* Shared by the pieces of the interpreter Wallet page. Page layout lives in WalletPage.css. */
 
 .iw-page,
-.iw-stat {
+.iw-stat,
+.iw-panel {
   --iw-purple: #3b2579;
   --iw-purple-soft: #ede8fb;
   --iw-text: #1f1640;
@@ -58,4 +59,144 @@
   margin-top: 2px;
   font-size: 22px;
   font-weight: 800;
+}
+
+/* --- The white panel holding Recent activity --- */
+.iw-panel {
+  padding: 20px 24px 24px;
+  border: 1px solid var(--iw-border);
+  border-radius: 16px;
+  background: #fff;
+  font-family: 'Manrope', system-ui, sans-serif;
+  color: var(--iw-text);
+}
+
+.iw-panel-title {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.iw-empty {
+  margin: 16px 0;
+  color: var(--iw-muted);
+  font-size: 14px;
+}
+
+/* --- One transaction --- */
+.iw-tx-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.iw-tx {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 4px;
+  border-top: 1px solid var(--iw-border);
+}
+
+.iw-tx:first-child {
+  border-top: none;
+}
+
+.iw-tx-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+}
+
+.iw-tx-icon--session {
+  background: #e3f6ec;
+  color: #15803d;
+}
+
+.iw-tx-icon--pending {
+  background: #fdf3d8;
+  color: #a16207;
+}
+
+.iw-tx-icon--withdrawal {
+  background: #fde8e8;
+  color: #c0262d;
+}
+
+.iw-tx-icon--bonus {
+  background: #e8eafd;
+  color: #4f46e5;
+}
+
+.iw-tx-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.iw-tx-text strong {
+  font-size: 15px;
+}
+
+.iw-tx-text > span {
+  color: var(--iw-muted);
+  font-size: 13px;
+}
+
+/* --- Status badge --- */
+.iw-badge {
+  flex-shrink: 0;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.iw-badge--completed {
+  background: #e3f6ec;
+  color: #15803d;
+}
+
+.iw-badge--pending {
+  background: #fdf3d8;
+  color: #a16207;
+}
+
+.iw-badge--processing {
+  background: #e0f0fd;
+  color: #1d6fb8;
+}
+
+/* --- Amount: green in, red out --- */
+.iw-amount {
+  flex-shrink: 0;
+  min-width: 90px;
+  color: #15803d;
+  font-weight: 800;
+  text-align: right;
+}
+
+.iw-amount--out {
+  color: #c0262d;
+}
+
+.iw-tx-chevron {
+  flex-shrink: 0;
+  color: #a19cb5;
+}
+
+@media (max-width: 600px) {
+  .iw-tx {
+    flex-wrap: wrap;
+  }
+
+  .iw-tx-chevron {
+    display: none;
+  }
 }
