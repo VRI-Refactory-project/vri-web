@@ -56,6 +56,7 @@ import { InstitutionAnalyticsPage } from '../pages/institution/InstitutionAnalyt
 import { InstitutionSessionsPage } from '../pages/institution/InstitutionSessionsPage';
 import { AuditLogsPage } from '../pages/admin/AuditLogsPage';
 import { ReportCategoryPage } from '../pages/admin/ReportCategoryPage';
+import { InterpreterSettingsPage } from '../pages/interpreter/SettingsPage';
 
 const appRoutes: RouteObject[] = [
   {
@@ -162,7 +163,7 @@ const appRoutes: RouteObject[] = [
               { path: 'availability', element: <AvailabilityPage /> },
               { path: 'wallet', element: <Placeholder title="Wallet" story="Not scheduled" /> },
               { path: 'profile', element: <InterpreterProfilePage /> },
-              { path: 'settings', element: <Placeholder title="Settings" story="Sprint 2" /> },
+              { path: 'settings', element: <InterpreterSettingsPage /> },
             ],
           },
         ],

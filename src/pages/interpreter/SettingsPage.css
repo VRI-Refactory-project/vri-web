@@ -1,0 +1,65 @@
+/* Page layout only. Card, row and switch styles (and the colour variables) are in
+   components/interpreter/settings/settings.css. */
+
+.is-page {
+  padding: 32px;
+  color: var(--is-text);
+}
+
+/* --- Header --- */
+.is-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.is-header h1 {
+  margin: 0 0 6px;
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 800;
+  color: var(--is-text);
+}
+
+.is-header p {
+  margin: 0;
+  font-size: 17px;
+  color: var(--is-muted);
+}
+
+.is-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: 1px solid var(--is-border);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--is-purple);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.is-back:hover {
+  background: #f6f5fc;
+}
+
+.is-back:focus-visible {
+  outline: 2px solid var(--is-purple);
+  outline-offset: 2px;
+}
+
+/* --- Cards: two columns, one on narrow screens --- */
+.is-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .is-grid {
+    grid-template-columns: 1fr;
+  }
+}

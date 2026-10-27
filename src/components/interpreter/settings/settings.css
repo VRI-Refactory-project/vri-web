@@ -1,0 +1,117 @@
+/* Shared by the cards on the interpreter Settings page. Page layout lives in SettingsPage.css. */
+
+.is-page,
+.is-card {
+  --is-purple: #3b2579;
+  --is-purple-soft: #ede8fb;
+  --is-text: #1f1640;
+  --is-muted: #6b6585;
+  --is-border: #e7e3f3;
+  --is-switch-off: #d9d6e3;
+}
+
+/* --- Card --- */
+.is-card {
+  padding: 24px 28px;
+  border: 1px solid var(--is-border);
+  border-radius: 16px;
+  background: #fff;
+  color: var(--is-text);
+}
+
+.is-card-head {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 12px;
+}
+
+.is-card-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  background: var(--is-purple-soft);
+  color: var(--is-purple);
+}
+
+.is-card-head h2 {
+  margin: 0 0 4px;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.is-card-head p {
+  margin: 0;
+  color: var(--is-muted);
+}
+
+/* --- One setting per row, with a line between rows --- */
+.is-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-top: 1px solid var(--is-border);
+}
+
+.is-card-head + .is-row {
+  border-top: none;
+}
+
+.is-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.is-row-text strong {
+  font-size: 16px;
+}
+
+.is-row-text span {
+  font-size: 14px;
+  color: var(--is-muted);
+}
+
+/* --- On/off switch: its look follows aria-checked, so it always matches what screen readers say --- */
+.is-switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 56px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: var(--is-switch-off);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.is-switch[aria-checked='true'] {
+  background: var(--is-purple);
+}
+
+.is-switch-knob {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s ease;
+}
+
+.is-switch[aria-checked='true'] .is-switch-knob {
+  transform: translateX(24px);
+}
+
+.is-switch:focus-visible {
+  outline: 2px solid var(--is-purple);
+  outline-offset: 2px;
+}
