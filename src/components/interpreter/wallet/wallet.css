@@ -1,0 +1,61 @@
+/* Shared by the pieces of the interpreter Wallet page. Page layout lives in WalletPage.css. */
+
+.iw-page,
+.iw-stat {
+  --iw-purple: #3b2579;
+  --iw-purple-soft: #ede8fb;
+  --iw-text: #1f1640;
+  --iw-muted: #6b6585;
+  --iw-border: #ece9f7;
+}
+
+/* --- Summary box --- */
+.iw-stat {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  border: 1px solid var(--iw-border);
+  border-radius: 16px;
+  background: #fff;
+  font-family: 'Manrope', system-ui, sans-serif;
+  color: var(--iw-text);
+}
+
+.iw-stat-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+}
+
+.iw-stat-icon--purple {
+  background: var(--iw-purple-soft);
+  color: var(--iw-purple);
+}
+
+.iw-stat-icon--amber {
+  background: #fdf3d8;
+  color: #a16207;
+}
+
+.iw-stat-icon--violet {
+  background: #f3e8ff;
+  color: #7e22ce;
+}
+
+.iw-stat-label {
+  display: block;
+  font-size: 13px;
+  color: var(--iw-muted);
+}
+
+.iw-stat-value {
+  display: block;
+  margin-top: 2px;
+  font-size: 22px;
+  font-weight: 800;
+}
