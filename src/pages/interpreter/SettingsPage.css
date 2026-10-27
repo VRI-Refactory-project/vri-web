@@ -4,6 +4,8 @@
 .is-page {
   padding: 32px;
   color: var(--is-text);
+  /* The dashboard shell defaults to Plus Jakarta Sans; interpreter pages use Manrope, like the sidebar. */
+  font-family: 'Manrope', system-ui, sans-serif;
 }
 
 /* --- Header --- */

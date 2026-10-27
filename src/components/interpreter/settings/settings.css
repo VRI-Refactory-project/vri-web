@@ -17,6 +17,7 @@
   border-radius: 16px;
   background: #fff;
   color: var(--is-text);
+  font-family: 'Manrope', system-ui, sans-serif;
 }
 
 .is-card-head {
@@ -146,4 +147,106 @@
 .is-switch:focus-visible {
   outline: 2px solid var(--is-purple);
   outline-offset: 2px;
+}
+
+/* --- Buttons: outlined by default, filled for the main action --- */
+.is-button {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: 1.5px solid var(--is-purple);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--is-purple);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.is-button:hover:not(:disabled) {
+  background: #f6f5fc;
+}
+
+.is-button--primary {
+  background: var(--is-purple);
+  color: #fff;
+}
+
+.is-button--primary:hover:not(:disabled) {
+  background: #2e1c63;
+}
+
+.is-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.is-button:focus-visible {
+  outline: 2px solid var(--is-purple);
+  outline-offset: 2px;
+}
+
+/* --- Confirmation shown in a card after an action --- */
+.is-notice {
+  margin: 8px 0 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #e8f6ee;
+  color: #1d6b40;
+  font-size: 14px;
+}
+
+/* --- Change password form (inside the shared Modal) --- */
+.is-form {
+  --is-purple: #3b2579;
+  --is-muted: #6b6585;
+
+  text-align: left;
+}
+
+.is-form-title {
+  margin: 0 0 6px;
+  font-size: 22px;
+}
+
+.is-form-hint {
+  margin: 0 0 16px;
+  color: var(--is-muted);
+  font-size: 14px;
+}
+
+.is-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.is-form-field label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.is-form-field .field-error,
+.is-form-error {
+  margin: 0;
+  color: #b42318;
+  font-size: 13px;
+}
+
+.is-form-error {
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fdecea;
+}
+
+.is-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
 }

@@ -79,6 +79,12 @@ describe('InterpreterSettingsPage', () => {
     expect(screen.getByText("Show when I'm available")).toBeInTheDocument();
   });
 
+  it('shows the security card', () => {
+    renderPage();
+
+    expect(screen.getByRole('region', { name: 'Security' })).toBeInTheDocument();
+  });
+
   it('changes the privacy pill when its switch is turned off', async () => {
     renderPage();
 
