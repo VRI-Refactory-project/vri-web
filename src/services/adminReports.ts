@@ -29,6 +29,18 @@ export interface AdminReportActivity {
   cancelledDeltaPercent: number;
 }
 
+export interface ReportOption {
+  value: string;
+  label: string;
+}
+
+export interface CreateReportPayload {
+  reportType: string;
+  dateRange: string;
+  institution: string;
+  format: 'pdf' | 'excel' | 'csv';
+}
+
 interface ApiStats {
   total_reports?: number;
   total_delta_percent?: number;
@@ -38,7 +50,6 @@ interface ApiStats {
   last_generated_label?: string;
 }
 
-/** GET /api/v1/admin/reports/stats/ */
 export async function fetchAdminReportStats(): Promise<AdminReportStats> {
   const raw = await api<ApiStats>('/api/v1/admin/reports/stats/');
   return {
@@ -83,9 +94,12 @@ function unwrapReports(value: unknown): ApiReport[] {
   return [];
 }
 
-/** GET /api/v1/admin/reports/ */
-export async function fetchAdminReports(): Promise<AdminReport[]> {
-  const raw = await api<unknown>('/api/v1/admin/reports/');
+/** GET /api/v1/admin/reports/  (optionally filtered by category) */
+export async function fetchAdminReports(category?: string): Promise<AdminReport[]> {
+  const path = category
+    ? `/api/v1/admin/reports/?category=${encodeURIComponent(category)}`
+    : '/api/v1/admin/reports/';
+  const raw = await api<unknown>(path);
   return unwrapReports(raw)
     .map(normalizeReport)
     .filter((r) => r.id);
@@ -102,7 +116,6 @@ interface ApiActivity {
   cancelled_delta_percent?: number;
 }
 
-/** GET /api/v1/admin/reports/activity/ */
 export async function fetchAdminReportActivity(): Promise<AdminReportActivity> {
   const raw = await api<ApiActivity>('/api/v1/admin/reports/activity/');
   return {
@@ -115,4 +128,36 @@ export async function fetchAdminReportActivity(): Promise<AdminReportActivity> {
     sessionsCancelled: raw.sessions_cancelled ?? 0,
     cancelledDeltaPercent: raw.cancelled_delta_percent ?? 0,
   };
+}
+
+interface ApiOptions {
+  report_types?: ReportOption[];
+  date_ranges?: ReportOption[];
+  institutions?: ReportOption[];
+}
+
+export async function fetchAdminReportOptions(): Promise<{
+  reportTypes: ReportOption[];
+  dateRanges: ReportOption[];
+  institutions: ReportOption[];
+}> {
+  const raw = await api<ApiOptions>('/api/v1/admin/reports/options/');
+  return {
+    reportTypes: raw.report_types ?? [],
+    dateRanges: raw.date_ranges ?? [],
+    institutions: raw.institutions ?? [],
+  };
+}
+
+export async function createAdminReport(payload: CreateReportPayload): Promise<AdminReport> {
+  const raw = await api<ApiReport>('/api/v1/admin/reports/', {
+    method: 'POST',
+    body: JSON.stringify({
+      report_type: payload.reportType,
+      date_range: payload.dateRange,
+      institution: payload.institution,
+      format: payload.format,
+    }),
+  });
+  return normalizeReport(raw);
 }

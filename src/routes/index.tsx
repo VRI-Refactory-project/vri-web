@@ -55,6 +55,7 @@ import { InstitutionSettingsPage } from '../pages/institution/InstitutionSetting
 import { InstitutionAnalyticsPage } from '../pages/institution/InstitutionAnalyticsPage';
 import { InstitutionSessionsPage } from '../pages/institution/InstitutionSessionsPage';
 import { AuditLogsPage } from '../pages/admin/AuditLogsPage';
+import { ReportCategoryPage } from '../pages/admin/ReportCategoryPage';
 
 const appRoutes: RouteObject[] = [
   {
@@ -203,6 +204,7 @@ const appRoutes: RouteObject[] = [
           { path: 'institutions', element: <InstitutionAccountsPage /> },
           { path: 'sessions', element: <SessionsPage /> },
           { path: 'reports', element: <ReportsPage /> },
+          { path: 'reports/:category', element: <ReportCategoryPage /> },
           { path: 'audit-logs', element: <AuditLogsPage /> },
           { path: 'settings', element: <SettingsPage /> },
           { path: 'profile', element: <AdminProfilePage /> },

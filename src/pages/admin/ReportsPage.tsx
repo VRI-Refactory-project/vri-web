@@ -1,8 +1,8 @@
 // src/pages/admin/ReportsPage.tsx
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Calendar,
-  ChevronDown,
   Download,
   FileText,
   FlaskConical,
@@ -15,12 +15,15 @@ import {
   Wallet,
 } from 'lucide-react';
 import {
+  createAdminReport,
   fetchAdminReportActivity,
+  fetchAdminReportOptions,
   fetchAdminReportStats,
   fetchAdminReports,
   type AdminReport,
   type AdminReportActivity,
   type AdminReportStats,
+  type ReportOption,
 } from '../../services/adminReports';
 import { describeError } from '../../services/api';
 import './ReportsPage.css';
@@ -58,25 +61,51 @@ const CATEGORIES = [
   },
 ];
 
+type FileFormat = 'pdf' | 'excel' | 'csv';
+
 export function ReportsPage() {
   const [stats, setStats] = useState<AdminReportStats | null>(null);
   const [reports, setReports] = useState<AdminReport[] | null>(null);
   const [activity, setActivity] = useState<AdminReportActivity | null>(null);
   const [error, setError] = useState('');
 
+  const [reportTypes, setReportTypes] = useState<ReportOption[]>([]);
+  const [dateRanges, setDateRanges] = useState<ReportOption[]>([]);
+  const [institutions, setInstitutions] = useState<ReportOption[]>([]);
+  const [optionsLoaded, setOptionsLoaded] = useState(false);
+
+  const [reportType, setReportType] = useState('');
+  const [dateRange, setDateRange] = useState('');
+  const [institution, setInstitution] = useState('');
+  const [format, setFormat] = useState<FileFormat>('pdf');
+  const [generating, setGenerating] = useState(false);
+
   useEffect(() => {
     let cancelled = false;
-    Promise.all([fetchAdminReportStats(), fetchAdminReports(), fetchAdminReportActivity()])
-      .then(([s, list, a]) => {
+    Promise.all([
+      fetchAdminReportStats(),
+      fetchAdminReports(),
+      fetchAdminReportActivity(),
+      fetchAdminReportOptions(),
+    ])
+      .then(([s, list, a, options]) => {
         if (cancelled) return;
         setStats(s);
         setReports(list);
         setActivity(a);
+        setReportTypes(options.reportTypes);
+        setDateRanges(options.dateRanges);
+        setInstitutions(options.institutions);
+        setReportType(options.reportTypes[0]?.value ?? '');
+        setDateRange(options.dateRanges[0]?.value ?? '');
+        setInstitution(options.institutions[0]?.value ?? '');
+        setOptionsLoaded(true);
       })
       .catch((err) => {
         if (cancelled) return;
         setError(describeError(err));
         setReports([]);
+        setOptionsLoaded(true);
       });
     return () => {
       cancelled = true;
@@ -85,6 +114,21 @@ export function ReportsPage() {
 
   const loading = reports === null;
   const isEmpty = !loading && reports.length === 0;
+  const canGenerate = Boolean(reportType && dateRange && institution) && !generating;
+
+  const handleGenerate = async () => {
+    if (!canGenerate) return;
+    setGenerating(true);
+    setError('');
+    try {
+      const created = await createAdminReport({ reportType, dateRange, institution, format });
+      setReports((current) => (current ? [created, ...current] : [created]));
+    } catch (err) {
+      setError(describeError(err));
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   return (
     <div className="reports-page">
@@ -164,44 +208,109 @@ export function ReportsPage() {
             <div className="reports-form__grid">
               <label className="reports-field">
                 <span>Report type</span>
-                <button type="button" className="reports-select">
-                  Platform usage <ChevronDown size={14} />
-                </button>
+                <select
+                  className="reports-select"
+                  value={reportType}
+                  onChange={(e) => setReportType(e.target.value)}
+                  disabled={!optionsLoaded || reportTypes.length === 0}
+                >
+                  {reportTypes.length === 0 ? (
+                    <option value="">No options available</option>
+                  ) : (
+                    reportTypes.map((t) => (
+                      <option key={t.value} value={t.value}>
+                        {t.label}
+                      </option>
+                    ))
+                  )}
+                </select>
               </label>
+
               <label className="reports-field">
                 <span>Date range</span>
-                <button type="button" className="reports-select">
-                  Last 30 days <ChevronDown size={14} />
-                </button>
+                <select
+                  className="reports-select"
+                  value={dateRange}
+                  onChange={(e) => setDateRange(e.target.value)}
+                  disabled={!optionsLoaded || dateRanges.length === 0}
+                >
+                  {dateRanges.length === 0 ? (
+                    <option value="">No options available</option>
+                  ) : (
+                    dateRanges.map((d) => (
+                      <option key={d.value} value={d.value}>
+                        {d.label}
+                      </option>
+                    ))
+                  )}
+                </select>
               </label>
+
               <label className="reports-field reports-field--full">
                 <span>Institution</span>
-                <button type="button" className="reports-select">
-                  All institutions <ChevronDown size={14} />
-                </button>
+                <select
+                  className="reports-select"
+                  value={institution}
+                  onChange={(e) => setInstitution(e.target.value)}
+                  disabled={!optionsLoaded || institutions.length === 0}
+                >
+                  {institutions.length === 0 ? (
+                    <option value="">No institutions available</option>
+                  ) : (
+                    institutions.map((i) => (
+                      <option key={i.value} value={i.value}>
+                        {i.label}
+                      </option>
+                    ))
+                  )}
+                </select>
               </label>
             </div>
 
             <div className="reports-field">
               <span>File format</span>
               <div className="reports-pillgroup">
-                <button type="button" className="reports-pill reports-pill--active">
+                <button
+                  type="button"
+                  className={`reports-pill ${format === 'pdf' ? 'reports-pill--active' : ''}`}
+                  onClick={() => setFormat('pdf')}
+                >
                   <FileText size={14} /> PDF
                 </button>
-                <button type="button" className="reports-pill">
+                <button
+                  type="button"
+                  className={`reports-pill ${format === 'excel' ? 'reports-pill--active' : ''}`}
+                  onClick={() => setFormat('excel')}
+                >
                   <FileText size={14} /> Excel
                 </button>
-                <button type="button" className="reports-pill">
+                <button
+                  type="button"
+                  className={`reports-pill ${format === 'csv' ? 'reports-pill--active' : ''}`}
+                  onClick={() => setFormat('csv')}
+                >
                   <FileText size={14} /> CSV
                 </button>
               </div>
             </div>
 
+            {error && (
+              <p className="reports-form-error" role="alert">
+                {error}
+              </p>
+            )}
+
             <div className="reports-actions">
-              <button type="button" className="reports-btn reports-btn--primary">
-                <LineChartIcon size={15} /> Generate report
+              <button
+                type="button"
+                className="reports-btn reports-btn--primary"
+                onClick={() => void handleGenerate()}
+                disabled={!canGenerate}
+              >
+                <LineChartIcon size={15} />
+                {generating ? 'Generating…' : 'Generate report'}
               </button>
-              <button type="button" className="reports-btn reports-btn--ghost">
+              <button type="button" className="reports-btn reports-btn--ghost" disabled>
                 <FlaskConical size={15} /> Preview report
               </button>
             </div>
@@ -231,9 +340,7 @@ export function ReportsPage() {
             {loading ? (
               <p className="reports-empty">Loading reports…</p>
             ) : isEmpty ? (
-              <p className="reports-empty">
-                {error ? `Could not load reports: ${error}` : 'No reports yet.'}
-              </p>
+              <p className="reports-empty">No reports yet.</p>
             ) : (
               reports.map((r) => (
                 <div className="reports-table__row" key={r.id}>
@@ -267,9 +374,11 @@ export function ReportsPage() {
             <div>
               <h2>Platform activity</h2>
             </div>
-            <button type="button" className="reports-select reports-select--small">
-              Last 30 days <ChevronDown size={14} />
-            </button>
+            <select className="reports-select reports-select--small" defaultValue="30d">
+              <option value="7d">Last 7 days</option>
+              <option value="30d">Last 30 days</option>
+              <option value="90d">Last 90 days</option>
+            </select>
           </header>
 
           <div className="reports-activity-stats">
@@ -312,15 +421,17 @@ export function ReportsPage() {
             {CATEGORIES.map((c) => {
               const Icon = c.icon;
               return (
-                <li key={c.id} className="reports-category">
-                  <span className="reports-category__icon">
-                    <Icon size={16} />
-                  </span>
-                  <div className="reports-category__text">
-                    <strong>{c.label}</strong>
-                    <small>{c.hint}</small>
-                  </div>
-                  <span className="reports-category__arrow">›</span>
+                <li key={c.id}>
+                  <Link to={`/dashboard/admin/reports/${c.id}`} className="reports-category">
+                    <span className="reports-category__icon">
+                      <Icon size={16} />
+                    </span>
+                    <div className="reports-category__text">
+                      <strong>{c.label}</strong>
+                      <small>{c.hint}</small>
+                    </div>
+                    <span className="reports-category__arrow">›</span>
+                  </Link>
                 </li>
               );
             })}
