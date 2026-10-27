@@ -50,6 +50,21 @@ export async function signIn(identifier: string, password: string): Promise<Auth
   return toSession(res);
 }
 
+/**
+ * Changes the signed-in person's password. The server signs out every device, this one included,
+ * and returns a fresh session for this one, so the caller must store it (useAuth().login).
+ */
+export async function changePassword(
+  currentPassword: string,
+  newPassword: string,
+): Promise<AuthSession> {
+  const res = await api<LoginResponse>('/api/v1/auth/password/change/', {
+    method: 'POST',
+    body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+  });
+  return toSession(res);
+}
+
 /** Exchanges a refresh token for a new access token. */
 export const refreshAccessToken = (refresh: string) =>
   api<RefreshResponse>('/api/v1/auth/token/refresh/', {
