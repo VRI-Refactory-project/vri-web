@@ -149,6 +149,45 @@
   outline-offset: 2px;
 }
 
+/* --- Dropdown setting: label left, select right, with our own chevron --- */
+.is-select-label {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.is-select {
+  position: relative;
+  flex: 0 1 340px;
+  min-width: 0;
+}
+
+.is-select select {
+  width: 100%;
+  padding: 10px 40px 10px 16px;
+  border: 1px solid var(--is-border);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--is-text);
+  font: inherit;
+  font-size: 15px;
+  appearance: none;
+  cursor: pointer;
+}
+
+.is-select select:focus-visible {
+  outline: 2px solid var(--is-purple);
+  outline-offset: 2px;
+}
+
+.is-select svg {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  color: var(--is-text);
+  pointer-events: none;
+}
+
 /* --- Buttons: outlined by default, filled for the main action --- */
 .is-button {
   display: inline-flex;

@@ -19,10 +19,21 @@ export interface PrivacySettings {
   availabilityVisible: boolean;
 }
 
+export type Appearance = 'system' | 'light' | 'dark';
+
+export interface PreferenceSettings {
+  /** Language of the interface. English is the only one the app has for now. */
+  language: string;
+  /** An IANA time zone, e.g. "Africa/Kampala". */
+  timeZone: string;
+  appearance: Appearance;
+}
+
 /** Every setting on the page, one group per card. */
 export interface InterpreterSettings {
   notifications: NotificationSettings;
   privacy: PrivacySettings;
+  preferences: PreferenceSettings;
 }
 
 export type SettingsGroup = keyof InterpreterSettings;
@@ -36,5 +47,10 @@ export const DEFAULT_SETTINGS: InterpreterSettings = {
   privacy: {
     profileVisible: true,
     availabilityVisible: true,
+  },
+  preferences: {
+    language: 'en',
+    timeZone: 'Africa/Kampala',
+    appearance: 'system',
   },
 };

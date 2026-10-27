@@ -85,6 +85,28 @@ describe('InterpreterSettingsPage', () => {
     expect(screen.getByRole('region', { name: 'Security' })).toBeInTheDocument();
   });
 
+  it('shows the account preferences with the design defaults', () => {
+    renderPage();
+
+    expect(screen.getByRole('region', { name: 'Account preferences' })).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Language' })).toHaveDisplayValue('English');
+    expect(screen.getByRole('combobox', { name: 'Time zone' })).toHaveDisplayValue(
+      '(UTC+03:00) Kampala',
+    );
+    expect(screen.getByRole('combobox', { name: 'Appearance' })).toHaveDisplayValue(
+      'System default',
+    );
+  });
+
+  it('changes a preference', async () => {
+    renderPage();
+    const appearance = screen.getByRole('combobox', { name: 'Appearance' });
+
+    await userEvent.selectOptions(appearance, 'Dark');
+
+    expect(appearance).toHaveDisplayValue('Dark');
+  });
+
   it('changes the privacy pill when its switch is turned off', async () => {
     renderPage();
 
