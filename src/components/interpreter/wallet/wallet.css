@@ -274,3 +274,108 @@
     flex-basis: 100%;
   }
 }
+
+/* --- Payout method and the actions beside it --- */
+.iw-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--iw-border);
+}
+
+.iw-payout {
+  display: flex;
+  flex: 0 1 380px;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--iw-border);
+  border-radius: 12px;
+  background: #fbfaff;
+}
+
+.iw-payout-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--iw-purple-soft);
+  color: var(--iw-purple);
+}
+
+.iw-payout-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  color: var(--iw-muted);
+  font-size: 13px;
+}
+
+.iw-payout-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--iw-text);
+  font-size: 14px;
+}
+
+.iw-actions {
+  display: flex;
+  flex: 0 1 260px;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.iw-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 18px;
+  border: 1.5px solid var(--iw-purple);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--iw-purple);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.iw-button--primary {
+  background: var(--iw-purple);
+  color: #fff;
+}
+
+.iw-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.iw-button:focus-visible {
+  outline: 2px solid var(--iw-purple);
+  outline-offset: 2px;
+}
+
+.iw-actions-hint {
+  margin: 0;
+  color: var(--iw-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+@media (max-width: 700px) {
+  .iw-payout,
+  .iw-actions {
+    flex-basis: 100%;
+  }
+}

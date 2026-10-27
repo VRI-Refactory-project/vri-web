@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, Clock, Coins, CreditCard } from 'lucide-react';
+import { ArrowLeft, Banknote, Clock, Coins, CreditCard, History } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { PayoutMethodCard } from '../../components/interpreter/wallet/PayoutMethodCard';
 import { StatCard } from '../../components/interpreter/wallet/StatCard';
 import { TransactionFilters } from '../../components/interpreter/wallet/TransactionFilters';
 import { TransactionRow } from '../../components/interpreter/wallet/TransactionRow';
@@ -91,6 +92,29 @@ export function InterpreterWalletPage() {
             ))}
           </ul>
         )}
+
+        <div className="iw-footer">
+          <PayoutMethodCard method={wallet?.payoutMethod ?? null} />
+          {/* No payouts backend yet, so both actions stay off and say why. */}
+          <div className="iw-actions">
+            <button
+              type="button"
+              className="iw-button iw-button--primary"
+              disabled
+              aria-describedby="iw-actions-hint"
+            >
+              <Banknote size={18} aria-hidden="true" />
+              Withdraw funds
+            </button>
+            <button type="button" className="iw-button" disabled aria-describedby="iw-actions-hint">
+              <History size={18} aria-hidden="true" />
+              View payout history
+            </button>
+            <p className="iw-actions-hint" id="iw-actions-hint">
+              Withdrawals open once payments are live.
+            </p>
+          </div>
+        </div>
       </section>
     </div>
   );

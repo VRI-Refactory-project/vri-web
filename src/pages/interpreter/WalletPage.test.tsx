@@ -159,4 +159,26 @@ describe('InterpreterWalletPage', () => {
     expect(await screen.findByRole('status')).toHaveTextContent('Payments are not live yet.');
     expect(screen.getAllByText('—')).toHaveLength(3);
   });
+
+  it('shows the payout method', async () => {
+    vi.mocked(getInterpreterWallet).mockResolvedValue({
+      ...WALLET,
+      payoutMethod: { provider: 'Mobile Money (Airtel Money)', lastDigits: '4821', verified: true },
+    });
+    renderPage();
+
+    expect(await screen.findByText('Mobile Money (Airtel Money)')).toBeInTheDocument();
+    expect(screen.getByText('Verified')).toBeInTheDocument();
+  });
+
+  it('keeps withdrawals off until payments are live, and says why', async () => {
+    vi.mocked(getInterpreterWallet).mockResolvedValue(WALLET);
+    renderPage();
+
+    const withdraw = await screen.findByRole('button', { name: 'Withdraw funds' });
+    const history = screen.getByRole('button', { name: 'View payout history' });
+    expect(withdraw).toBeDisabled();
+    expect(history).toBeDisabled();
+    expect(withdraw).toHaveAccessibleDescription('Withdrawals open once payments are live.');
+  });
 });
