@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { Search, SlidersHorizontal, Video, ChevronRight } from 'lucide-react';
 import { api } from '../../services/api';
@@ -16,7 +15,7 @@ interface ActiveSession {
 
 export function InstitutionSessionsPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   // 2. State for data, loading, and errors
   const [sessions, setSessions] = useState<ActiveSession[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,7 +35,7 @@ export function InstitutionSessionsPage() {
       .catch(() => {
         if (!cancelled) {
           // If backend isn't ready, just show empty list for now
-          setSessions([]); 
+          setSessions([]);
           setLoading(false);
         }
       });
@@ -55,9 +54,10 @@ export function InstitutionSessionsPage() {
 
   // 5. Calculate dynamic top metrics based on the real data
   const activeCount = sessions.length;
-  const longestRunning = sessions.length > 0 
-    ? sessions.reduce((max, s) => (s.duration > max ? s.duration : max), '00:00') 
-    : '00:00';
+  const longestRunning =
+    sessions.length > 0
+      ? sessions.reduce((max, s) => (s.duration > max ? s.duration : max), '00:00')
+      : '00:00';
 
   return (
     <div className="institution-sessions-page">
