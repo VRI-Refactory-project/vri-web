@@ -47,6 +47,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Check deployment configuration
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          if [ -z "$DEPLOY_HOST" ]; then
+            echo "::error::DEPLOY_HOST is empty or unavailable."
+            exit 1
+          fi
+
+          if [ -z "$DEPLOY_USER" ]; then
+            echo "::error::DEPLOY_USER is empty or unavailable."
+            exit 1
+          fi
+
+          echo "Deployment host and username are available."
+
       - name: Deploy frontend to DigitalOcean
         uses: appleboy/ssh-action@v1.2.0
         with:
