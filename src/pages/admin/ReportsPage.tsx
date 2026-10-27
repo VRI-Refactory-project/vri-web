@@ -1,7 +1,8 @@
 // src/pages/admin/ReportsPage.tsx
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Calendar,
-  ChevronDown,
   Download,
   FileText,
   FlaskConical,
@@ -13,89 +14,19 @@ import {
   UserRound,
   Wallet,
 } from 'lucide-react';
+import {
+  createAdminReport,
+  fetchAdminReportActivity,
+  fetchAdminReportOptions,
+  fetchAdminReportStats,
+  fetchAdminReports,
+  type AdminReport,
+  type AdminReportActivity,
+  type AdminReportStats,
+  type ReportOption,
+} from '../../services/adminReports';
+import { describeError } from '../../services/api';
 import './ReportsPage.css';
-
-/* ---------------- Static data (API later) ---------------- */
-
-const STATS = [
-  {
-    id: 'total',
-    label: 'Total reports',
-    value: '128',
-    hint: 'vs last 30 days',
-    delta: '+12%',
-    up: true,
-    icon: FileText,
-  },
-  {
-    id: 'month',
-    label: 'Reports this month',
-    value: '24',
-    hint: 'vs last month',
-    delta: '+33%',
-    up: true,
-    icon: Calendar,
-  },
-  {
-    id: 'scheduled',
-    label: 'Scheduled reports',
-    value: '6',
-    hint: 'Scheduled and upcoming',
-    icon: Calendar,
-  },
-  {
-    id: 'last',
-    label: 'Last generated',
-    value: 'Today, 10:42 AM',
-    hint: 'Monthly usage report',
-    icon: Calendar,
-  },
-];
-
-const RECENT = [
-  {
-    id: 'monthly-usage',
-    name: 'Monthly usage report',
-    generated: 'Sep 2026, 10:42 AM',
-    by: 'Admin',
-    status: 'Ready',
-  },
-  {
-    id: 'qa',
-    name: 'Session quality report',
-    generated: 'May 2026, 03:15 PM',
-    by: 'Admin',
-    status: 'Ready',
-  },
-  {
-    id: 'financial',
-    name: 'Financial summary',
-    generated: 'Aug 2026, 11:20 AM',
-    by: 'Admin',
-    status: 'Ready',
-  },
-  {
-    id: 'activity',
-    name: 'User activity report',
-    generated: 'Jul 2026, 09:12 AM',
-    by: 'Admin',
-    status: 'Ready',
-  },
-  {
-    id: 'verification',
-    name: 'Verification report',
-    generated: 'Jun 2026, 02:45 PM',
-    by: 'Admin',
-    status: 'Ready',
-  },
-];
-
-const ACTIVITY_STATS = [
-  { label: 'Users registered', value: '12,824', delta: '+12%' },
-  { label: 'Active sessions', value: '3,421', delta: '+18%' },
-  { label: 'Reports completed', value: '3,824', delta: '+8%' },
-  { label: 'Sessions cancelled', value: '403', delta: '+2%' },
-];
 
 const CATEGORIES = [
   {
@@ -130,44 +61,140 @@ const CATEGORIES = [
   },
 ];
 
-/* ---------------- Component ---------------- */
+type FileFormat = 'pdf' | 'excel' | 'csv';
 
 export function ReportsPage() {
+  const [stats, setStats] = useState<AdminReportStats | null>(null);
+  const [reports, setReports] = useState<AdminReport[] | null>(null);
+  const [activity, setActivity] = useState<AdminReportActivity | null>(null);
+  const [error, setError] = useState('');
+
+  const [reportTypes, setReportTypes] = useState<ReportOption[]>([]);
+  const [dateRanges, setDateRanges] = useState<ReportOption[]>([]);
+  const [institutions, setInstitutions] = useState<ReportOption[]>([]);
+  const [optionsLoaded, setOptionsLoaded] = useState(false);
+
+  const [reportType, setReportType] = useState('');
+  const [dateRange, setDateRange] = useState('');
+  const [institution, setInstitution] = useState('');
+  const [format, setFormat] = useState<FileFormat>('pdf');
+  const [generating, setGenerating] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([
+      fetchAdminReportStats(),
+      fetchAdminReports(),
+      fetchAdminReportActivity(),
+      fetchAdminReportOptions(),
+    ])
+      .then(([s, list, a, options]) => {
+        if (cancelled) return;
+        setStats(s);
+        setReports(list);
+        setActivity(a);
+        setReportTypes(options.reportTypes);
+        setDateRanges(options.dateRanges);
+        setInstitutions(options.institutions);
+        setReportType(options.reportTypes[0]?.value ?? '');
+        setDateRange(options.dateRanges[0]?.value ?? '');
+        setInstitution(options.institutions[0]?.value ?? '');
+        setOptionsLoaded(true);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setError(describeError(err));
+        setReports([]);
+        setOptionsLoaded(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const loading = reports === null;
+  const isEmpty = !loading && reports.length === 0;
+  const canGenerate = Boolean(reportType && dateRange && institution) && !generating;
+
+  const handleGenerate = async () => {
+    if (!canGenerate) return;
+    setGenerating(true);
+    setError('');
+    try {
+      const created = await createAdminReport({ reportType, dateRange, institution, format });
+      setReports((current) => (current ? [created, ...current] : [created]));
+    } catch (err) {
+      setError(describeError(err));
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   return (
     <div className="reports-page">
-      {/* Header */}
       <header className="reports-header">
         <h1>Reports</h1>
         <p>Create and download platform usage, quality and financial reports.</p>
       </header>
 
-      {/* Stat cards */}
       <section className="reports-stats">
-        {STATS.map((s) => {
-          const Icon = s.icon;
-          return (
-            <article className="reports-stat" key={s.id}>
-              <div className="reports-stat__head">
-                <span className="reports-stat__icon">
-                  <Icon size={14} />
-                </span>
-                <span className="reports-stat__label">{s.label}</span>
-              </div>
-              <strong className="reports-stat__value">{s.value}</strong>
-              <small className="reports-stat__hint">
-                {s.delta && (
-                  <span className={s.up ? 'reports-delta reports-delta--up' : 'reports-delta'}>
-                    {s.up ? '↑' : '↓'} {s.delta}
-                  </span>
-                )}
-                <span>{s.hint}</span>
-              </small>
-            </article>
-          );
-        })}
+        <article className="reports-stat">
+          <div className="reports-stat__head">
+            <span className="reports-stat__icon">
+              <FileText size={14} />
+            </span>
+            <span className="reports-stat__label">Total reports</span>
+          </div>
+          <strong className="reports-stat__value">{stats?.totalReports ?? 0}</strong>
+          <small className="reports-stat__hint">
+            <span className="reports-delta reports-delta--up">
+              +{stats?.totalDeltaPercent ?? 0}%
+            </span>{' '}
+            <span>vs last 30 days</span>
+          </small>
+        </article>
+
+        <article className="reports-stat">
+          <div className="reports-stat__head">
+            <span className="reports-stat__icon">
+              <Calendar size={14} />
+            </span>
+            <span className="reports-stat__label">Reports this month</span>
+          </div>
+          <strong className="reports-stat__value">{stats?.reportsThisMonth ?? 0}</strong>
+          <small className="reports-stat__hint">
+            <span className="reports-delta reports-delta--up">
+              +{stats?.monthDeltaPercent ?? 0}%
+            </span>{' '}
+            <span>vs last month</span>
+          </small>
+        </article>
+
+        <article className="reports-stat">
+          <div className="reports-stat__head">
+            <span className="reports-stat__icon">
+              <Calendar size={14} />
+            </span>
+            <span className="reports-stat__label">Scheduled reports</span>
+          </div>
+          <strong className="reports-stat__value">{stats?.scheduledReports ?? 0}</strong>
+          <small className="reports-stat__hint">Scheduled and upcoming</small>
+        </article>
+
+        <article className="reports-stat">
+          <div className="reports-stat__head">
+            <span className="reports-stat__icon">
+              <Calendar size={14} />
+            </span>
+            <span className="reports-stat__label">Last generated</span>
+          </div>
+          <strong className="reports-stat__value" style={{ fontSize: 16 }}>
+            {stats?.lastGeneratedLabel || '—'}
+          </strong>
+          <small className="reports-stat__hint">Monthly usage report</small>
+        </article>
       </section>
 
-      {/* Generate report + Recent reports */}
       <section className="reports-row reports-row--top">
         <article className="reports-panel">
           <header className="reports-panel__head">
@@ -181,46 +208,109 @@ export function ReportsPage() {
             <div className="reports-form__grid">
               <label className="reports-field">
                 <span>Report type</span>
-                <button type="button" className="reports-select">
-                  Platform usage <ChevronDown size={14} />
-                </button>
+                <select
+                  className="reports-select"
+                  value={reportType}
+                  onChange={(e) => setReportType(e.target.value)}
+                  disabled={!optionsLoaded || reportTypes.length === 0}
+                >
+                  {reportTypes.length === 0 ? (
+                    <option value="">No options available</option>
+                  ) : (
+                    reportTypes.map((t) => (
+                      <option key={t.value} value={t.value}>
+                        {t.label}
+                      </option>
+                    ))
+                  )}
+                </select>
               </label>
 
               <label className="reports-field">
                 <span>Date range</span>
-                <button type="button" className="reports-select">
-                  Last 30 days <ChevronDown size={14} />
-                </button>
+                <select
+                  className="reports-select"
+                  value={dateRange}
+                  onChange={(e) => setDateRange(e.target.value)}
+                  disabled={!optionsLoaded || dateRanges.length === 0}
+                >
+                  {dateRanges.length === 0 ? (
+                    <option value="">No options available</option>
+                  ) : (
+                    dateRanges.map((d) => (
+                      <option key={d.value} value={d.value}>
+                        {d.label}
+                      </option>
+                    ))
+                  )}
+                </select>
               </label>
 
               <label className="reports-field reports-field--full">
                 <span>Institution</span>
-                <button type="button" className="reports-select">
-                  All institutions <ChevronDown size={14} />
-                </button>
+                <select
+                  className="reports-select"
+                  value={institution}
+                  onChange={(e) => setInstitution(e.target.value)}
+                  disabled={!optionsLoaded || institutions.length === 0}
+                >
+                  {institutions.length === 0 ? (
+                    <option value="">No institutions available</option>
+                  ) : (
+                    institutions.map((i) => (
+                      <option key={i.value} value={i.value}>
+                        {i.label}
+                      </option>
+                    ))
+                  )}
+                </select>
               </label>
             </div>
 
             <div className="reports-field">
               <span>File format</span>
               <div className="reports-pillgroup">
-                <button type="button" className="reports-pill reports-pill--active">
+                <button
+                  type="button"
+                  className={`reports-pill ${format === 'pdf' ? 'reports-pill--active' : ''}`}
+                  onClick={() => setFormat('pdf')}
+                >
                   <FileText size={14} /> PDF
                 </button>
-                <button type="button" className="reports-pill">
+                <button
+                  type="button"
+                  className={`reports-pill ${format === 'excel' ? 'reports-pill--active' : ''}`}
+                  onClick={() => setFormat('excel')}
+                >
                   <FileText size={14} /> Excel
                 </button>
-                <button type="button" className="reports-pill">
+                <button
+                  type="button"
+                  className={`reports-pill ${format === 'csv' ? 'reports-pill--active' : ''}`}
+                  onClick={() => setFormat('csv')}
+                >
                   <FileText size={14} /> CSV
                 </button>
               </div>
             </div>
 
+            {error && (
+              <p className="reports-form-error" role="alert">
+                {error}
+              </p>
+            )}
+
             <div className="reports-actions">
-              <button type="button" className="reports-btn reports-btn--primary">
-                <LineChartIcon size={15} /> Generate report
+              <button
+                type="button"
+                className="reports-btn reports-btn--primary"
+                onClick={() => void handleGenerate()}
+                disabled={!canGenerate}
+              >
+                <LineChartIcon size={15} />
+                {generating ? 'Generating…' : 'Generate report'}
               </button>
-              <button type="button" className="reports-btn reports-btn--ghost">
+              <button type="button" className="reports-btn reports-btn--ghost" disabled>
                 <FlaskConical size={15} /> Preview report
               </button>
             </div>
@@ -247,99 +337,76 @@ export function ReportsPage() {
               <span>ACTION</span>
             </div>
 
-            {RECENT.map((r) => (
-              <div className="reports-table__row" key={r.id}>
-                <span className="reports-table__name">
-                  <FileText size={14} />
-                  <span>{r.name}</span>
-                </span>
-                <span className="reports-table__muted">{r.generated}</span>
-                <span className="reports-table__muted">{r.by}</span>
-                <span className="reports-badge reports-badge--ready">
-                  <i /> {r.status}
-                </span>
-                <span className="reports-table__actions">
-                  <button type="button" className="reports-icon-btn" aria-label="Download">
-                    <Download size={14} />
-                  </button>
-                  <button type="button" className="reports-icon-btn" aria-label="More">
-                    <MoreVertical size={14} />
-                  </button>
-                </span>
-              </div>
-            ))}
+            {loading ? (
+              <p className="reports-empty">Loading reports…</p>
+            ) : isEmpty ? (
+              <p className="reports-empty">No reports yet.</p>
+            ) : (
+              reports.map((r) => (
+                <div className="reports-table__row" key={r.id}>
+                  <span className="reports-table__name">
+                    <FileText size={14} />
+                    <span>{r.name}</span>
+                  </span>
+                  <span className="reports-table__muted">{r.generatedAt}</span>
+                  <span className="reports-table__muted">{r.generatedBy}</span>
+                  <span className={`reports-badge reports-badge--${r.status}`}>
+                    <i /> {r.status}
+                  </span>
+                  <span className="reports-table__actions">
+                    <button type="button" className="reports-icon-btn" aria-label="Download">
+                      <Download size={14} />
+                    </button>
+                    <button type="button" className="reports-icon-btn" aria-label="More">
+                      <MoreVertical size={14} />
+                    </button>
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         </article>
       </section>
 
-      {/* Platform activity + Report categories */}
       <section className="reports-row reports-row--bottom">
         <article className="reports-panel">
           <header className="reports-panel__head">
             <div>
               <h2>Platform activity</h2>
             </div>
-            <button type="button" className="reports-select reports-select--small">
-              Last 30 days <ChevronDown size={14} />
-            </button>
+            <select className="reports-select reports-select--small" defaultValue="30d">
+              <option value="7d">Last 7 days</option>
+              <option value="30d">Last 30 days</option>
+              <option value="90d">Last 90 days</option>
+            </select>
           </header>
 
           <div className="reports-activity-stats">
-            {ACTIVITY_STATS.map((a) => (
-              <div key={a.label} className="reports-activity-stat">
-                <strong>{a.value}</strong>
-                <small>{a.label}</small>
-                <span className="reports-delta reports-delta--up">{a.delta}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Simple SVG line chart — no library */}
-          <div className="reports-chart">
-            <svg
-              viewBox="0 0 640 180"
-              preserveAspectRatio="none"
-              role="img"
-              aria-label="Sessions completed and cancelled"
-            >
-              <defs>
-                <linearGradient id="activityFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#4b34a0" stopOpacity="0.25" />
-                  <stop offset="100%" stopColor="#4b34a0" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              <path
-                d="M0,120 C60,110 100,90 160,100 C220,110 260,70 320,80 C380,90 420,50 480,60 C540,70 600,40 640,50 L640,180 L0,180 Z"
-                fill="url(#activityFill)"
-              />
-              <path
-                d="M0,120 C60,110 100,90 160,100 C220,110 260,70 320,80 C380,90 420,50 480,60 C540,70 600,40 640,50"
-                stroke="#4b34a0"
-                strokeWidth="2.5"
-                fill="none"
-              />
-              <path
-                d="M0,150 C60,145 100,140 160,142 C220,145 260,135 320,138 C380,142 420,128 480,132 C540,138 600,120 640,126"
-                stroke="#a5a2b5"
-                strokeWidth="2"
-                fill="none"
-                strokeDasharray="4 4"
-              />
-            </svg>
-
-            <div className="reports-chart__legend">
-              <span>
-                <i className="reports-legend-dot reports-legend-dot--done" /> Sessions completed
-              </span>
-              <span>
-                <i className="reports-legend-dot reports-legend-dot--cancel" /> Sessions cancelled
+            <div className="reports-activity-stat">
+              <strong>{activity?.usersRegistered ?? 0}</strong>
+              <small>Users registered</small>
+              <span className="reports-delta reports-delta--up">
+                +{activity?.usersDeltaPercent ?? 0}%
               </span>
             </div>
-
-            <div className="reports-chart__xaxis">
-              {['Sep 1', 'Sep 5', 'Sep 10', 'Sep 15', 'Sep 20', 'Sep 25', 'Sep 30'].map((d) => (
-                <span key={d}>{d}</span>
-              ))}
+            <div className="reports-activity-stat">
+              <strong>{activity?.activeSessions ?? 0}</strong>
+              <small>Active sessions</small>
+              <span className="reports-delta reports-delta--up">
+                +{activity?.sessionsDeltaPercent ?? 0}%
+              </span>
+            </div>
+            <div className="reports-activity-stat">
+              <strong>{activity?.reportsCompleted ?? 0}</strong>
+              <small>Reports completed</small>
+              <span className="reports-delta reports-delta--up">
+                +{activity?.reportsDeltaPercent ?? 0}%
+              </span>
+            </div>
+            <div className="reports-activity-stat">
+              <strong>{activity?.sessionsCancelled ?? 0}</strong>
+              <small>Sessions cancelled</small>
+              <span className="reports-delta">+{activity?.cancelledDeltaPercent ?? 0}%</span>
             </div>
           </div>
         </article>
@@ -350,22 +417,21 @@ export function ReportsPage() {
               <h2>Report categories</h2>
             </div>
           </header>
-
           <ul className="reports-categories">
             {CATEGORIES.map((c) => {
               const Icon = c.icon;
               return (
-                <li key={c.id} className="reports-category">
-                  <span className="reports-category__icon">
-                    <Icon size={16} />
-                  </span>
-                  <div className="reports-category__text">
-                    <strong>{c.label}</strong>
-                    <small>{c.hint}</small>
-                  </div>
-                  <span className="reports-category__arrow" aria-hidden="true">
-                    ›
-                  </span>
+                <li key={c.id}>
+                  <Link to={`/dashboard/admin/reports/${c.id}`} className="reports-category">
+                    <span className="reports-category__icon">
+                      <Icon size={16} />
+                    </span>
+                    <div className="reports-category__text">
+                      <strong>{c.label}</strong>
+                      <small>{c.hint}</small>
+                    </div>
+                    <span className="reports-category__arrow">›</span>
+                  </Link>
                 </li>
               );
             })}

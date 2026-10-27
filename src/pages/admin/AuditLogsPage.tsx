@@ -1,50 +1,36 @@
 // src/pages/admin/AuditLogsPage.tsx
+import { useEffect, useState } from 'react';
 import { Download, Search, SlidersHorizontal } from 'lucide-react';
+import { fetchAdminAuditLogs, type AdminAuditLog } from '../../services/adminAuditLogs';
+import { describeError } from '../../services/api';
 import './AuditLogsPage.css';
 
-type AuditSource = 'Admin' | 'System' | 'Institution';
-
-interface AuditRow {
-  id: string;
-  action: string;
-  meta: string;
-  source: AuditSource;
-}
-
-// Static sample — will come from the API in a follow-up.
-const LOGS: AuditRow[] = [
-  {
-    id: 'approved-interpreter',
-    action: 'Approved interpreter',
-    meta: '06:31 Alex Steven. Daniel Njovu. 192.0.2.4',
-    source: 'Admin',
-  },
-  {
-    id: 'session-ended',
-    action: 'Session ended',
-    meta: '06:18. System. SC-90211. Automated',
-    source: 'System',
-  },
-  {
-    id: 'updated-institution',
-    action: 'Updated institution settings',
-    meta: '05:54. Esther Nalwoga. Mulago hospital. 192.0.2.18',
-    source: 'Institution',
-  },
-  {
-    id: 'rejected-verification',
-    action: 'Rejected verification',
-    meta: '05:22. Alex Steven. Application SC-VI842. 192.0.2.4',
-    source: 'Admin',
-  },
-];
-
-const TODAY_LABEL = 'September 22, 2026';
-
 export function AuditLogsPage() {
+  const [logs, setLogs] = useState<AdminAuditLog[] | null>(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchAdminAuditLogs()
+      .then((data) => {
+        if (!cancelled) setLogs(data);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(describeError(err));
+          setLogs([]);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const loading = logs === null;
+  const isEmpty = !loading && logs.length === 0;
+
   return (
     <div className="audit-page">
-      {/* Header */}
       <header className="audit-header">
         <div>
           <h1>Audit logs</h1>
@@ -56,14 +42,12 @@ export function AuditLogsPage() {
         </button>
       </header>
 
-      {/* Panel */}
       <section className="audit-panel">
         <header className="audit-panel__head">
           <div>
             <h2>Platform activity</h2>
             <p>Secure record of account and system actions</p>
           </div>
-          <span className="audit-date-pill">{TODAY_LABEL}</span>
         </header>
 
         <div className="audit-toolbar">
@@ -83,17 +67,21 @@ export function AuditLogsPage() {
             <span>SOURCE</span>
           </div>
 
-          {LOGS.length === 0 ? (
-            <p className="audit-empty">No activity to show yet.</p>
+          {loading ? (
+            <p className="audit-empty">Loading activity…</p>
+          ) : isEmpty ? (
+            <p className="audit-empty">
+              {error ? `Could not load activity: ${error}` : 'No activity to show yet.'}
+            </p>
           ) : (
-            LOGS.map((row) => (
+            logs.map((row) => (
               <div className="audit-row" key={row.id}>
                 <div className="audit-row__info">
                   <strong>{row.action}</strong>
                   <small>{row.meta}</small>
                 </div>
-                <span className={`audit-badge audit-badge--${row.source.toLowerCase()}`}>
-                  {row.source}
+                <span className={`audit-badge audit-badge--${row.source}`}>
+                  {row.source.charAt(0).toUpperCase() + row.source.slice(1)}
                 </span>
                 <span className="audit-row__arrow" aria-hidden="true">
                   ›

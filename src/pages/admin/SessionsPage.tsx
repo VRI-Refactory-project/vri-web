@@ -1,64 +1,43 @@
 // src/pages/admin/SessionsPage.tsx
+import { useEffect, useState } from 'react';
 import { Search, SlidersHorizontal } from 'lucide-react';
+import {
+  fetchAdminSessionStats,
+  fetchAdminSessions,
+  type AdminSession,
+  type AdminSessionStats,
+} from '../../services/adminSessions';
+import { describeError } from '../../services/api';
 import './SessionsPage.css';
 
-type ConnectionStatus = 'Stable' | 'Review';
-
-interface SessionRow {
-  id: string;
-  sector: string;
-  participants: string;
-  status: string;
-  time: string;
-  connection: ConnectionStatus;
-}
-
-// Static sample — will come from the API in a follow-up.
-const SESSIONS: SessionRow[] = [
-  {
-    id: 'SC-90218',
-    sector: 'Healthcare',
-    participants: 'Amina Okafor',
-    status: 'Live',
-    time: '08:42',
-    connection: 'Stable',
-  },
-  {
-    id: 'SC-90217',
-    sector: 'Education',
-    participants: 'Daniel Njovu',
-    status: 'Live',
-    time: '14:19',
-    connection: 'Stable',
-  },
-  {
-    id: 'SC-90216',
-    sector: 'Legal',
-    participants: 'Grace Nalubega',
-    status: 'Connecting',
-    time: '02:08',
-    connection: 'Review',
-  },
-  {
-    id: 'SC-90215',
-    sector: 'Healthcare',
-    participants: 'Luis Martinez',
-    status: 'Live',
-    time: '21:04',
-    connection: 'Stable',
-  },
-];
-
-const STATS = [
-  { label: 'Live now', value: '84', hint: '79 stable' },
-  { label: 'Connecting', value: '6', hint: 'Average: 1m 56s' },
-  { label: 'Needs attention', value: '2', hint: 'Connection review' },
-];
-
 export function SessionsPage() {
+  const [stats, setStats] = useState<AdminSessionStats | null>(null);
+  const [sessions, setSessions] = useState<AdminSession[] | null>(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([fetchAdminSessionStats(), fetchAdminSessions()])
+      .then(([s, list]) => {
+        if (cancelled) return;
+        setStats(s);
+        setSessions(list);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setError(describeError(err));
+        setSessions([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const loading = sessions === null;
+  const isEmpty = !loading && sessions.length === 0;
+
   return (
     <div className="sessions-page">
-      {/* Header */}
       <header className="sessions-header">
         <div>
           <h1>Activation sessions</h1>
@@ -66,18 +45,26 @@ export function SessionsPage() {
         </div>
       </header>
 
-      {/* Stat cards */}
       <section className="sessions-stats">
-        {STATS.map((s) => (
-          <article className="sessions-stat" key={s.label}>
-            <span className="sessions-stat__label">{s.label}</span>
-            <strong className="sessions-stat__value">{s.value}</strong>
-            <small className="sessions-stat__hint">{s.hint}</small>
-          </article>
-        ))}
+        <article className="sessions-stat">
+          <span className="sessions-stat__label">Live now</span>
+          <strong className="sessions-stat__value">{stats?.liveNow ?? 0}</strong>
+          <small className="sessions-stat__hint">{stats ? `${stats.liveStable} stable` : ''}</small>
+        </article>
+        <article className="sessions-stat">
+          <span className="sessions-stat__label">Connecting</span>
+          <strong className="sessions-stat__value">{stats?.connecting ?? 0}</strong>
+          <small className="sessions-stat__hint">
+            {stats ? `Average: ${stats.connectingAverageSeconds}s` : ''}
+          </small>
+        </article>
+        <article className="sessions-stat">
+          <span className="sessions-stat__label">Needs attention</span>
+          <strong className="sessions-stat__value">{stats?.needsAttention ?? 0}</strong>
+          <small className="sessions-stat__hint">Connection review</small>
+        </article>
       </section>
 
-      {/* Session monitoring card */}
       <section className="sessions-panel">
         <div className="sessions-panel__header">
           <div>
@@ -106,23 +93,27 @@ export function SessionsPage() {
             <span>CONNECTION</span>
           </div>
 
-          {SESSIONS.length === 0 ? (
-            <p className="sessions-empty">No active sessions right now.</p>
+          {loading ? (
+            <p className="sessions-empty">Loading sessions…</p>
+          ) : isEmpty ? (
+            <p className="sessions-empty">
+              {error ? `Could not load sessions: ${error}` : 'No active sessions right now.'}
+            </p>
           ) : (
-            SESSIONS.map((s) => (
+            sessions.map((s) => (
               <div className="sessions-row" key={s.id}>
                 <div className="sessions-row__info">
                   <strong>{s.id}</strong>
                   <small>
-                    {s.sector} · {s.participants} · {s.status} {s.time}
+                    {s.sector} · {s.participant} · {s.status} {s.startedAt}
                   </small>
                 </div>
                 <span
                   className={`sessions-badge ${
-                    s.connection === 'Stable' ? 'sessions-badge--stable' : 'sessions-badge--review'
+                    s.connection === 'stable' ? 'sessions-badge--stable' : 'sessions-badge--review'
                   }`}
                 >
-                  {s.connection}
+                  {s.connection === 'stable' ? 'Stable' : 'Review'}
                 </span>
                 <span className="sessions-row__arrow" aria-hidden="true">
                   ›
