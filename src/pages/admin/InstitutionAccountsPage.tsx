@@ -27,7 +27,6 @@ import {
 } from 'lucide-react';
 import {
   createInstitution,
-  deleteInstitution,
   fetchInstitutions,
   updateInstitution,
   updateInstitutionStatus,
@@ -437,7 +436,7 @@ function InstitutionModal({
 
 interface ConfirmDialogProps {
   institution: Institution;
-  action: 'deactivate' | 'activate' | 'approve' | 'delete';
+  action: 'deactivate' | 'activate' | 'approve';
   saving: boolean;
   error: string;
   onCancel: () => void;
@@ -471,12 +470,6 @@ function ConfirmDialog({
         'This organisation will be marked as approved. Ensure its registration details have been reviewed.',
       button: 'Approve institution',
     },
-    delete: {
-      title: 'Delete this institution permanently?',
-      description:
-        'This will remove the institution from the platform. This action cannot be undone.',
-      button: 'Delete institution',
-    },
   }[action];
 
   return (
@@ -497,8 +490,6 @@ function ConfirmDialog({
             <CircleMinus size={25} />
           ) : action === 'approve' ? (
             <ShieldCheck size={25} />
-          ) : action === 'delete' ? (
-            <Trash2 size={25} />
           ) : (
             <CheckCircle2 size={25} />
           )}
@@ -534,9 +525,7 @@ function ConfirmDialog({
 
           <button
             className={`ia-button ${
-              action === 'deactivate' || action === 'delete'
-                ? 'ia-button--danger'
-                : 'ia-button--primary'
+              action === 'deactivate' ? 'ia-button--danger' : 'ia-button--primary'
             }`}
             type="button"
             disabled={saving}
@@ -561,9 +550,9 @@ export function InstitutionAccountsPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [modal, setModal] = useState<'create' | 'edit' | null>(null);
   const [selected, setSelected] = useState<Institution | null>(null);
-  const [confirmAction, setConfirmAction] = useState<
-    'deactivate' | 'activate' | 'approve' | 'delete' | null
-  >(null);
+  const [confirmAction, setConfirmAction] = useState<'deactivate' | 'activate' | 'approve' | null>(
+    null,
+  );
   const [saving, setSaving] = useState(false);
   const [actionError, setActionError] = useState('');
   const [notice, setNotice] = useState('');
@@ -638,10 +627,7 @@ export function InstitutionAccountsPage() {
     setModal('edit');
   }
 
-  function openConfirm(
-    institution: Institution,
-    action: 'deactivate' | 'activate' | 'approve' | 'delete',
-  ) {
+  function openConfirm(institution: Institution, action: 'deactivate' | 'activate' | 'approve') {
     setSelected(institution);
     setConfirmAction(action);
     setActionError('');
@@ -676,23 +662,17 @@ export function InstitutionAccountsPage() {
     setSaving(true);
     setActionError('');
     try {
-      if (confirmAction === 'delete') {
-        await deleteInstitution(selected.id);
-        setInstitutions((current) => current.filter((item) => item.id !== selected.id));
-        setNotice(`${selected.name} was deleted.`);
-      } else {
-        const updated = await updateInstitutionStatus(selected.id, confirmAction);
-        setInstitutions((current) =>
-          current.map((item) => (item.id === selected.id ? updated : item)),
-        );
-        const verb =
-          confirmAction === 'deactivate'
-            ? 'deactivated'
-            : confirmAction === 'activate'
-              ? 'activated'
-              : 'approved';
-        setNotice(`${updated.name} was ${verb} successfully.`);
-      }
+      const updated = await updateInstitutionStatus(selected.id, confirmAction);
+      setInstitutions((current) =>
+        current.map((item) => (item.id === selected.id ? updated : item)),
+      );
+      const verb =
+        confirmAction === 'deactivate'
+          ? 'deactivated'
+          : confirmAction === 'activate'
+            ? 'activated'
+            : 'approved';
+      setNotice(`${updated.name} was ${verb} successfully.`);
       setConfirmAction(null);
       setSelected(null);
     } catch (error) {
@@ -1045,9 +1025,9 @@ export function InstitutionAccountsPage() {
                         <button
                           className="ia-icon-button ia-row-more ia-row-delete"
                           type="button"
-                          title={`Delete ${institution.name}`}
-                          aria-label={`Delete ${institution.name}`}
-                          onClick={() => openConfirm(institution, 'delete')}
+                          title="Delete (coming soon)"
+                          aria-label={`Delete ${institution.name} (coming soon)`}
+                          disabled
                         >
                           <Trash2 size={17} />
                         </button>
