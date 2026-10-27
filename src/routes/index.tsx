@@ -170,7 +170,7 @@ const appRoutes: RouteObject[] = [
   },
 
   {
-    element: <ProtectedRoute allow={['institution']} />,
+    // element: <ProtectedRoute allow={['institution']} />,
     children: [
       {
         path: '/dashboard/institution',
