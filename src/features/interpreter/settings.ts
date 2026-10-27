@@ -12,9 +12,17 @@ export interface NotificationSettings {
   productUpdates: boolean;
 }
 
+export interface PrivacySettings {
+  /** Clients can find and view the interpreter's profile. */
+  profileVisible: boolean;
+  /** Clients can see when the interpreter is available. */
+  availabilityVisible: boolean;
+}
+
 /** Every setting on the page, one group per card. */
 export interface InterpreterSettings {
   notifications: NotificationSettings;
+  privacy: PrivacySettings;
 }
 
 export type SettingsGroup = keyof InterpreterSettings;
@@ -24,5 +32,9 @@ export const DEFAULT_SETTINGS: InterpreterSettings = {
     sessionRequests: true,
     sessionReminders: true,
     productUpdates: false,
+  },
+  privacy: {
+    profileVisible: true,
+    availabilityVisible: true,
   },
 };

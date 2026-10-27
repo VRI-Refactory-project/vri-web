@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { NotificationsCard } from '../../components/interpreter/settings/NotificationsCard';
+import { PrivacyCard } from '../../components/interpreter/settings/PrivacyCard';
 import { INTERPRETER_BASE } from '../../features/interpreter/navigation';
 import {
   DEFAULT_SETTINGS,
@@ -38,6 +39,7 @@ export function InterpreterSettingsPage() {
           value={settings.notifications}
           onChange={(value) => updateGroup('notifications', value)}
         />
+        <PrivacyCard value={settings.privacy} onChange={(value) => updateGroup('privacy', value)} />
       </div>
     </div>
   );

@@ -32,6 +32,20 @@ describe('ToggleRow', () => {
     expect(screen.getByRole('switch')).toHaveAttribute('aria-checked', 'false');
   });
 
+  it('shows an optional badge beside the switch', () => {
+    render(
+      <ToggleRow
+        title="Profile visibility"
+        description="Let clients find and view your profile."
+        on
+        onToggle={vi.fn()}
+        badge={<span>Visible to clients</span>}
+      />,
+    );
+
+    expect(screen.getByText('Visible to clients')).toBeInTheDocument();
+  });
+
   it('reports a click', async () => {
     const onToggle = vi.fn();
     renderRow(false, onToggle);

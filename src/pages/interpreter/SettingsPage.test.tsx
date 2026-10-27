@@ -62,4 +62,31 @@ describe('InterpreterSettingsPage', () => {
     await userEvent.click(productUpdates);
     expect(productUpdates).toHaveAttribute('aria-checked', 'false');
   });
+
+  it('shows the privacy card with both settings on', () => {
+    renderPage();
+
+    expect(screen.getByRole('region', { name: 'Privacy' })).toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: 'Profile visibility' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    expect(screen.getByRole('switch', { name: 'Availability status' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    expect(screen.getByText('Visible to clients')).toBeInTheDocument();
+    expect(screen.getByText("Show when I'm available")).toBeInTheDocument();
+  });
+
+  it('changes the privacy pill when its switch is turned off', async () => {
+    renderPage();
+
+    await userEvent.click(screen.getByRole('switch', { name: 'Profile visibility' }));
+    expect(screen.getByText('Hidden from clients')).toBeInTheDocument();
+    expect(screen.queryByText('Visible to clients')).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('switch', { name: 'Availability status' }));
+    expect(screen.getByText('Availability hidden')).toBeInTheDocument();
+  });
 });

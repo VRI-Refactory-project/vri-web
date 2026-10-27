@@ -78,6 +78,38 @@
   color: var(--is-muted);
 }
 
+/* Pill (optional) and switch, kept together on the right */
+.is-row-controls {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 16px;
+}
+
+.is-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--is-purple-soft);
+  color: var(--is-purple);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+  .is-row {
+    flex-wrap: wrap;
+  }
+
+  .is-row-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
 /* --- On/off switch: its look follows aria-checked, so it always matches what screen readers say --- */
 .is-switch {
   position: relative;
