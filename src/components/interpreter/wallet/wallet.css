@@ -200,3 +200,77 @@
     display: none;
   }
 }
+
+/* --- Chips and search above Recent activity --- */
+.iw-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.iw-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.iw-chip {
+  padding: 7px 16px;
+  border: none;
+  border-radius: 999px;
+  background: #f1f0f6;
+  color: var(--iw-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.iw-chip:hover {
+  background: #e8e5f3;
+}
+
+.iw-chip[aria-pressed='true'] {
+  background: var(--iw-purple);
+  color: #fff;
+}
+
+.iw-chip:focus-visible {
+  outline: 2px solid var(--iw-purple);
+  outline-offset: 2px;
+}
+
+.iw-search {
+  display: flex;
+  flex: 0 1 260px;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--iw-border);
+  border-radius: 10px;
+  color: var(--iw-muted);
+}
+
+.iw-search:focus-within {
+  border-color: var(--iw-purple);
+}
+
+.iw-search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--iw-text);
+  font: inherit;
+  font-size: 13px;
+}
+
+@media (max-width: 600px) {
+  .iw-search {
+    flex-basis: 100%;
+  }
+}

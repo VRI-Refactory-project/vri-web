@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, Clock, Coins, CreditCard } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { StatCard } from '../../components/interpreter/wallet/StatCard';
+import { TransactionFilters } from '../../components/interpreter/wallet/TransactionFilters';
 import { TransactionRow } from '../../components/interpreter/wallet/TransactionRow';
 import { INTERPRETER_BASE } from '../../features/interpreter/navigation';
 import { getInterpreterWallet, type InterpreterWallet } from '../../services/interpreterWallet';
-import { whole } from '../../services/wallet';
+import { filterTransactions, whole, type TxFilter } from '../../services/wallet';
 import './WalletPage.css';
 
 /** The interpreter's earnings, transactions and payouts. */
@@ -13,6 +14,8 @@ export function InterpreterWalletPage() {
   const navigate = useNavigate();
   // undefined while loading, null while payments are not live
   const [wallet, setWallet] = useState<InterpreterWallet | null | undefined>(undefined);
+  const [filter, setFilter] = useState<TxFilter>('all');
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -25,7 +28,14 @@ export function InterpreterWalletPage() {
   }, []);
 
   const amount = (n: number | undefined) => (n === undefined ? '—' : whole(n));
-  const transactions = wallet?.transactions ?? [];
+  const allTransactions = useMemo(() => wallet?.transactions ?? [], [wallet]);
+  const transactions = useMemo(
+    () => filterTransactions(allTransactions, filter, search),
+    [allTransactions, filter, search],
+  );
+  // Filtering found nothing, but there is history: say so, rather than "no transactions yet".
+  const emptyMessage =
+    allTransactions.length === 0 ? 'No transactions yet.' : 'No transactions match your filter.';
 
   return (
     <div className="iw-page">
@@ -63,11 +73,17 @@ export function InterpreterWalletPage() {
       </div>
 
       <section className="iw-panel" aria-labelledby="iw-activity-title">
+        <TransactionFilters
+          filter={filter}
+          onFilterChange={setFilter}
+          search={search}
+          onSearchChange={setSearch}
+        />
         <h2 className="iw-panel-title" id="iw-activity-title">
           Recent Activity
         </h2>
         {transactions.length === 0 ? (
-          <p className="iw-empty">No transactions yet.</p>
+          <p className="iw-empty">{emptyMessage}</p>
         ) : (
           <ul className="iw-tx-list">
             {transactions.map((transaction) => (

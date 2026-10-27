@@ -2,7 +2,11 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { getInterpreterWallet, type InterpreterWallet } from '../../services/interpreterWallet';
+import {
+  getInterpreterWallet,
+  type InterpreterTransaction,
+  type InterpreterWallet,
+} from '../../services/interpreterWallet';
 import { InterpreterWalletPage } from './WalletPage';
 
 // Keep the real helpers (date formatting); only the data source is replaced.
@@ -18,6 +22,39 @@ const WALLET: InterpreterWallet = {
   payoutMethod: null,
   transactions: [],
 };
+
+const ACTIVITY: InterpreterTransaction[] = [
+  {
+    id: '1',
+    title: 'Session payment',
+    detail: 'Client: Acme Corp',
+    date: '2026-10-10',
+    amount: 120,
+    kind: 'earning',
+    status: 'Completed',
+    icon: 'session',
+  },
+  {
+    id: '2',
+    title: 'Pending session payment',
+    detail: 'Client: Global Health Org',
+    date: '2026-10-09',
+    amount: 85,
+    kind: 'pending',
+    status: 'Pending',
+    icon: 'pending',
+  },
+  {
+    id: '3',
+    title: 'Withdrawal',
+    detail: 'Mobile Money (**** 4821)',
+    date: '2026-10-07',
+    amount: -200,
+    kind: 'withdrawal',
+    status: 'Processing',
+    icon: 'withdrawal',
+  },
+];
 
 const renderPage = () =>
   render(
@@ -59,37 +96,53 @@ describe('InterpreterWalletPage', () => {
   });
 
   it('lists recent activity', async () => {
-    vi.mocked(getInterpreterWallet).mockResolvedValue({
-      ...WALLET,
-      transactions: [
-        {
-          id: '1',
-          title: 'Session payment',
-          detail: 'Client: Acme Corp',
-          date: '2026-10-10',
-          amount: 120,
-          kind: 'earning',
-          status: 'Completed',
-          icon: 'session',
-        },
-        {
-          id: '2',
-          title: 'Withdrawal',
-          detail: 'Mobile Money (**** 4821)',
-          date: '2026-10-07',
-          amount: -200,
-          kind: 'withdrawal',
-          status: 'Processing',
-          icon: 'withdrawal',
-        },
-      ],
-    });
+    vi.mocked(getInterpreterWallet).mockResolvedValue({ ...WALLET, transactions: ACTIVITY });
     renderPage();
 
     const activity = screen.getByRole('region', { name: 'Recent Activity' });
-    expect(await within(activity).findAllByRole('listitem')).toHaveLength(2);
+    expect(await within(activity).findAllByRole('listitem')).toHaveLength(3);
     expect(within(activity).getByText('Session payment')).toBeInTheDocument();
     expect(within(activity).getByText('- $200.00')).toBeInTheDocument();
+  });
+
+  it('shows only the chosen kind of transaction', async () => {
+    vi.mocked(getInterpreterWallet).mockResolvedValue({ ...WALLET, transactions: ACTIVITY });
+    renderPage();
+    await screen.findByText('Session payment');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Withdrawals' }));
+
+    expect(screen.getByRole('button', { name: 'Withdrawals' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.getAllByRole('listitem')).toHaveLength(1);
+    expect(screen.getByText('Withdrawal')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'All' }));
+    expect(screen.getAllByRole('listitem')).toHaveLength(3);
+  });
+
+  it('searches titles and details', async () => {
+    vi.mocked(getInterpreterWallet).mockResolvedValue({ ...WALLET, transactions: ACTIVITY });
+    renderPage();
+    await screen.findByText('Session payment');
+
+    await userEvent.type(screen.getByRole('searchbox', { name: 'Search transactions' }), 'global');
+
+    expect(screen.getAllByRole('listitem')).toHaveLength(1);
+    expect(screen.getByText('Pending session payment')).toBeInTheDocument();
+  });
+
+  it('says when nothing matches, instead of claiming there is no history', async () => {
+    vi.mocked(getInterpreterWallet).mockResolvedValue({ ...WALLET, transactions: ACTIVITY });
+    renderPage();
+    await screen.findByText('Session payment');
+
+    await userEvent.type(screen.getByRole('searchbox', { name: 'Search transactions' }), 'zzz');
+
+    expect(screen.getByText('No transactions match your filter.')).toBeInTheDocument();
+    expect(screen.queryByText('No transactions yet.')).not.toBeInTheDocument();
   });
 
   it('says when there is no activity yet', async () => {
