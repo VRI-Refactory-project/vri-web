@@ -615,9 +615,24 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
           </p>
         )}
 
-        <button type="submit" className="ca-submit" disabled={submitting}>
+        {/* <button type="submit" className="ca-submit" disabled={submitting}>
           {submitting ? 'Please wait...' : 'Create account'} <ChevronRight size={18} />
+        </button> */}
+
+        <button 
+          type="submit" 
+          className={isInterpreter ? 'ca-submit ca-submit--interpreter' : 'ca-submit'} 
+          disabled={submitting}
+        >
+          {submitting 
+            ? 'Please wait...' 
+            : isInterpreter 
+              ? 'Next' // The Interpreter text
+              : 'Create account'             // The Deaf user text
+          } 
+          <ChevronRight size={18} />
         </button>
+
       </form>
 
       <p className="ca-footer">
