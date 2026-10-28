@@ -59,6 +59,7 @@ import { InstitutionSessionsPage } from '../pages/institution/InstitutionSession
 import { AuditLogsPage } from '../pages/admin/AuditLogsPage';
 import { ReportCategoryPage } from '../pages/admin/ReportCategoryPage';
 import { InterpreterSettingsPage } from '../pages/interpreter/SettingsPage';
+import { InterpreterWalletPage } from '../pages/interpreter/WalletPage';
 
 const appRoutes: RouteObject[] = [
   {
@@ -163,7 +164,7 @@ const appRoutes: RouteObject[] = [
               { path: 'requests', element: <RequestsPage /> },
               { path: 'sessions', element: <InterpreterSessionsPage /> },
               { path: 'availability', element: <AvailabilityPage /> },
-              { path: 'wallet', element: <Placeholder title="Wallet" story="Not scheduled" /> },
+              { path: 'wallet', element: <InterpreterWalletPage /> },
               { path: 'profile', element: <InterpreterProfilePage /> },
               { path: 'settings', element: <InterpreterSettingsPage /> },
             ],
