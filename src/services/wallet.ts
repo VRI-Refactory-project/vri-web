@@ -64,7 +64,12 @@ export const whole = (n: number) => `$ ${n.toLocaleString('en-US')}`;
 
 export type TxFilter = 'all' | 'earnings' | 'withdrawals' | 'pending';
 
-export function filterTransactions(list: Transaction[], filter: TxFilter, search: string) {
+/** Generic so a list of richer transactions (e.g. the interpreter's, with dates) keeps its type. */
+export function filterTransactions<T extends Transaction>(
+  list: T[],
+  filter: TxFilter,
+  search: string,
+): T[] {
   const q = search.trim().toLowerCase();
   return list.filter((t) => {
     if (filter === 'earnings' && t.kind !== 'earning') return false;

@@ -1,0 +1,71 @@
+/* Page layout only. The pieces (summary boxes, list, payout) and the colour variables are in
+   components/interpreter/wallet/wallet.css. No padding: the dashboard frame (.dl-main) spaces it. */
+
+.iw-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  color: var(--iw-text);
+  font-family: 'Manrope', system-ui, sans-serif;
+}
+
+/* --- Header --- */
+.iw-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.iw-header h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.iw-header p {
+  margin: 4px 0 0;
+  font-size: 15px;
+  color: var(--iw-muted);
+}
+
+.iw-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 4px;
+  border: none;
+  background: none;
+  color: var(--iw-text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.iw-back:hover {
+  color: var(--iw-purple);
+}
+
+.iw-back:focus-visible {
+  outline: 2px solid var(--iw-purple);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* --- "Not live yet" message --- */
+.iw-notice {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #fdf3d8;
+  color: #7a5200;
+  font-size: 14px;
+}
+
+/* --- Three summary boxes in a row, stacking on narrow screens --- */
+.iw-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
