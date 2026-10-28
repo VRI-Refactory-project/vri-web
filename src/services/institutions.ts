@@ -37,7 +37,6 @@ export interface InstitutionForm {
 
 type RawRecord = Record<string, unknown>;
 
-// Real base URL — from the backend API docs.
 const BASE = '/api/v1/administration/institutions/';
 
 function asRecord(value: unknown): RawRecord {
@@ -174,13 +173,11 @@ function toPayload(form: InstitutionForm) {
 
 /* ---------- Read ---------- */
 
-/** GET /api/v1/administration/institutions/ */
 export async function fetchInstitutions(): Promise<Institution[]> {
   const response = await api<unknown>(BASE);
   return unwrapList(response).map(normalizeInstitution);
 }
 
-/** GET /api/v1/administration/institutions/{id}/ */
 export async function fetchInstitution(id: string): Promise<Institution> {
   const response = await api<unknown>(`${BASE}${encodeURIComponent(id)}/`);
   return normalizeInstitution(response);
@@ -188,7 +185,6 @@ export async function fetchInstitution(id: string): Promise<Institution> {
 
 /* ---------- Create / update ---------- */
 
-/** POST /api/v1/administration/institutions/ (if the backend supports admin creation) */
 export async function createInstitution(form: InstitutionForm): Promise<Institution> {
   const response = await api<unknown>(BASE, {
     method: 'POST',
@@ -197,7 +193,6 @@ export async function createInstitution(form: InstitutionForm): Promise<Institut
   return normalizeInstitution(response);
 }
 
-/** PATCH /api/v1/administration/institutions/{id}/ */
 export async function updateInstitution(id: string, form: InstitutionForm): Promise<Institution> {
   const response = await api<unknown>(`${BASE}${encodeURIComponent(id)}/`, {
     method: 'PATCH',
@@ -208,7 +203,6 @@ export async function updateInstitution(id: string, form: InstitutionForm): Prom
 
 /* ---------- Status actions ---------- */
 
-/** POST /api/v1/administration/institutions/{id}/approve/ */
 export async function approveInstitution(id: string): Promise<Institution> {
   const response = await api<unknown>(`${BASE}${encodeURIComponent(id)}/approve/`, {
     method: 'POST',
@@ -216,7 +210,6 @@ export async function approveInstitution(id: string): Promise<Institution> {
   return normalizeInstitution(response);
 }
 
-/** POST /api/v1/administration/institutions/{id}/reject/ */
 export async function rejectInstitution(id: string): Promise<Institution> {
   const response = await api<unknown>(`${BASE}${encodeURIComponent(id)}/reject/`, {
     method: 'POST',
@@ -224,7 +217,6 @@ export async function rejectInstitution(id: string): Promise<Institution> {
   return normalizeInstitution(response);
 }
 
-/** POST /api/v1/administration/institutions/{id}/deactivate/ */
 export async function deactivateInstitution(id: string): Promise<Institution> {
   const response = await api<unknown>(`${BASE}${encodeURIComponent(id)}/deactivate/`, {
     method: 'POST',
@@ -232,16 +224,21 @@ export async function deactivateInstitution(id: string): Promise<Institution> {
   return normalizeInstitution(response);
 }
 
-/**
- * Kept for backward-compatibility with the accounts page — maps action to the right endpoint.
- * Once the delete endpoint is live, add deleteInstitution() separately.
- */
+/* ---------- Delete ---------- */
+
+/** DELETE /api/v1/administration/institutions/{id}/ */
+export async function deleteInstitution(id: string): Promise<void> {
+  await api(`${BASE}${encodeURIComponent(id)}/`, {
+    method: 'DELETE',
+  });
+}
+
+/* ---------- Compatibility helper ---------- */
+
 export async function updateInstitutionStatus(
   id: string,
   action: 'approve' | 'activate' | 'deactivate',
 ): Promise<Institution> {
-  if (action === 'approve') return approveInstitution(id);
-  // "activate" is not an explicit endpoint yet — treat it as approve.
-  if (action === 'activate') return approveInstitution(id);
+  if (action === 'approve' || action === 'activate') return approveInstitution(id);
   return deactivateInstitution(id);
 }
