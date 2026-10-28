@@ -29,9 +29,25 @@ describe('SignUpInstitution', () => {
     sessionStorage.clear();
   });
 
+  it('disables the submit button until the terms are agreed to', async () => {
+    renderPage();
+    const submitButton = screen.getByRole('button', { name: /submit registration/i });
+    expect(submitButton).toBeDisabled();
+
+    // The checkbox doesn't have a label text linked to it in the same way, so we find it by role
+    const checkbox = screen.getByRole('checkbox');
+    await userEvent.click(checkbox);
+
+    expect(submitButton).not.toBeDisabled();
+  });
+
   it('shows what is missing next to each field before submitting', async () => {
     const spy = vi.spyOn(registration, 'registerInstitution');
     renderPage();
+
+    // NEW: Check the box so the button becomes enabled
+    await userEvent.click(screen.getByRole('checkbox'));
+
     await userEvent.click(screen.getByRole('button', { name: /submit registration/i }));
     expect(screen.getByText('Enter the institution name.')).toBeInTheDocument();
     expect(screen.getByText('Enter your full name.')).toBeInTheDocument();
@@ -60,6 +76,10 @@ describe('SignUpInstitution', () => {
     expect(screen.queryByLabelText('Please specify the type')).not.toBeInTheDocument();
     await userEvent.selectOptions(screen.getByLabelText('Institution type'), 'OTHER');
     expect(screen.getByLabelText('Please specify the type')).toBeInTheDocument();
+
+    // NEW: Check the box so the button becomes enabled
+    await userEvent.click(screen.getByRole('checkbox'));
+
     await userEvent.click(screen.getByRole('button', { name: /submit registration/i }));
     expect(screen.getByText('Tell us what kind of institution this is.')).toBeInTheDocument();
     expect(spy).not.toHaveBeenCalled();
@@ -101,6 +121,10 @@ describe('SignUpInstitution', () => {
     await userEvent.type(screen.getByLabelText('Work email'), 'a@mulago.org');
     await userEvent.type(screen.getByLabelText('Password'), 'Secret-pass-1');
     await userEvent.type(screen.getByLabelText('Confirm password'), 'Secret-pass-1');
+
+    // NEW: Check the box so the button becomes enabled
+    await userEvent.click(screen.getByRole('checkbox'));
+
     await userEvent.click(screen.getByRole('button', { name: /submit registration/i }));
     await waitFor(() => expect(screen.getByText('pending review')).toBeInTheDocument());
     expect(spy).toHaveBeenCalledWith(
@@ -121,6 +145,10 @@ describe('SignUpInstitution', () => {
     await userEvent.type(screen.getByLabelText('Work email'), 'a@school.org');
     await userEvent.type(screen.getByLabelText('Password'), 'Secret-pass-1');
     await userEvent.type(screen.getByLabelText('Confirm password'), 'Secret-pass-1');
+
+    // NEW: Check the box so the button becomes enabled
+    await userEvent.click(screen.getByRole('checkbox'));
+
     await userEvent.click(screen.getByRole('button', { name: /submit registration/i }));
     await waitFor(() => expect(screen.getByText('pending review')).toBeInTheDocument());
     expect(spy).toHaveBeenCalledWith(
