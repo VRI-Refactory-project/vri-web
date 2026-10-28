@@ -94,6 +94,54 @@ describe('InterpreterSessionsPage', () => {
     expect(within(panel).queryByRole('columnheader', { name: /interpreter/i })).toBeNull();
   });
 
+  it('searches by name', async () => {
+    vi.mocked(getInterpreterSessions).mockResolvedValue(SESSIONS);
+    renderPage();
+    await screen.findByText('Mulago Hospital');
+
+    await userEvent.type(
+      screen.getByRole('searchbox', { name: 'Search sessions by name' }),
+      'mulago',
+    );
+
+    expect(screen.getAllByRole('row')).toHaveLength(2);
+    expect(within(screen.getByRole('table')).getByText('Mulago Hospital')).toBeInTheDocument();
+  });
+
+  it('shows only the chosen status', async () => {
+    vi.mocked(getInterpreterSessions).mockResolvedValue(SESSIONS);
+    renderPage();
+    await screen.findByText('Mulago Hospital');
+
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Filter' }), 'Completed');
+
+    const table = screen.getByRole('table');
+    expect(within(table).getAllByRole('row')).toHaveLength(2);
+    expect(within(table).queryByText('Micheal Kiggundu')).not.toBeInTheDocument();
+  });
+
+  it('says when nothing matches, instead of claiming there are no sessions', async () => {
+    vi.mocked(getInterpreterSessions).mockResolvedValue(SESSIONS);
+    renderPage();
+    await screen.findByText('Mulago Hospital');
+
+    await userEvent.type(screen.getByRole('searchbox', { name: 'Search sessions by name' }), 'zzz');
+
+    expect(screen.getByText('No sessions match your search or filter.')).toBeInTheDocument();
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+  });
+
+  it('keeps Reschedule and Join off until booking is live, and says why', async () => {
+    vi.mocked(getInterpreterSessions).mockResolvedValue(SESSIONS);
+    renderPage();
+
+    const join = await screen.findByRole('button', { name: 'Join when ready' });
+    const reschedule = screen.getByRole('button', { name: 'Reschedule' });
+    expect(join).toBeDisabled();
+    expect(reschedule).toBeDisabled();
+    expect(join).toHaveAccessibleDescription('Joining and rescheduling open once booking is live.');
+  });
+
   it('leaves out the Up next card when nothing is coming up', async () => {
     vi.mocked(getInterpreterSessions).mockResolvedValue([SESSIONS[0]]);
     renderPage();

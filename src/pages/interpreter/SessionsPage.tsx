@@ -1,15 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { SessionFilters } from '../../components/interpreter/sessions/SessionFilters';
 import { SessionRow } from '../../components/interpreter/sessions/SessionRow';
 import { UpNextCard } from '../../components/interpreter/sessions/UpNextCard';
 import { INTERPRETER_BASE } from '../../features/interpreter/navigation';
 import {
   countLabel,
+  filterSessions,
   getInterpreterSessions,
   nextSession,
   orderSessions,
   type InterpreterSession,
+  type SessionFilter,
 } from '../../services/interpreterSessions';
 import './SessionsPage.css';
 
@@ -20,6 +23,8 @@ export function InterpreterSessionsPage() {
   const [sessions, setSessions] = useState<InterpreterSession[] | null | undefined>(undefined);
   // Read once per load, so every label on the page agrees on what "now" is.
   const [now, setNow] = useState(() => new Date());
+  const [filter, setFilter] = useState<SessionFilter>('all');
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -35,6 +40,10 @@ export function InterpreterSessionsPage() {
 
   const all = useMemo(() => orderSessions(sessions ?? []), [sessions]);
   const upNext = useMemo(() => nextSession(all), [all]);
+  const shown = useMemo(() => filterSessions(all, filter, search), [all, filter, search]);
+  // Filtering found nothing, but there are sessions: say so, rather than "no sessions yet".
+  const emptyMessage =
+    all.length === 0 ? 'No sessions yet.' : 'No sessions match your search or filter.';
 
   return (
     <div className="isn-page">
@@ -62,9 +71,15 @@ export function InterpreterSessionsPage() {
           <h2 className="isn-panel-title" id="isn-list-title">
             {countLabel(all)}
           </h2>
+          <SessionFilters
+            filter={filter}
+            onFilterChange={setFilter}
+            search={search}
+            onSearchChange={setSearch}
+          />
         </div>
-        {all.length === 0 ? (
-          <p className="isn-empty">No sessions yet.</p>
+        {shown.length === 0 ? (
+          <p className="isn-empty">{emptyMessage}</p>
         ) : (
           <div className="isn-table-wrap">
             <table className="isn-table">
@@ -77,7 +92,7 @@ export function InterpreterSessionsPage() {
                 </tr>
               </thead>
               <tbody>
-                {all.map((session) => (
+                {shown.map((session) => (
                   <SessionRow key={session.id} session={session} now={now} />
                 ))}
               </tbody>

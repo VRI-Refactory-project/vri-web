@@ -3,6 +3,7 @@ import {
   countLabel,
   dateTile,
   dayLabel,
+  filterSessions,
   formatDuration,
   nextSession,
   orderSessions,
@@ -70,6 +71,13 @@ describe('interpreter sessions helpers', () => {
     expect(formatDuration(60)).toBe('1 hr');
     expect(formatDuration(90)).toBe('1 hr 30 mins');
     expect(formatDuration(121)).toBe('2 hrs 1 min');
+  });
+
+  it('filters by status and searches names', () => {
+    const ids = (list: InterpreterSession[]) => list.map((s) => s.id);
+    expect(ids(filterSessions(SESSIONS, 'upcoming', ''))).toEqual(['later', 'soon']);
+    expect(ids(filterSessions(SESSIONS, 'all', '  PERSON OLD '))).toEqual(['old']);
+    expect(ids(filterSessions(SESSIONS, 'completed', 'soon'))).toEqual([]);
   });
 
   it('counts upcoming and completed, leaving out zeros', () => {

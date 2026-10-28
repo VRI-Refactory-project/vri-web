@@ -6,6 +6,13 @@
 
 export type SessionStatus = 'upcoming' | 'completed';
 
+export const STATUS_LABEL: Record<SessionStatus, string> = {
+  upcoming: 'Yet to start',
+  completed: 'Completed',
+};
+
+export type SessionFilter = 'all' | SessionStatus;
+
 export interface InterpreterSession {
   id: string;
   /** Who the session is with: a Deaf person or an institution. */
@@ -76,6 +83,18 @@ export function orderSessions(sessions: InterpreterSession[]): InterpreterSessio
   upcoming.sort((a, b) => a.start.localeCompare(b.start));
   past.sort((a, b) => b.start.localeCompare(a.start));
   return [...upcoming, ...past];
+}
+
+/** Keep the sessions with this status whose name contains the search, ignoring case. */
+export function filterSessions(
+  sessions: InterpreterSession[],
+  filter: SessionFilter,
+  search: string,
+): InterpreterSession[] {
+  const q = search.trim().toLowerCase();
+  return sessions.filter(
+    (s) => (filter === 'all' || s.status === filter) && s.withName.toLowerCase().includes(q),
+  );
 }
 
 /** "Today", "Tomorrow" or "Oct 13". */
