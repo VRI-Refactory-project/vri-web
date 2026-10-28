@@ -22,6 +22,8 @@ import { AuthShell } from '../../components/AuthShell';
 import { PhoneField } from '../../components/PhoneField';
 import { FLOWS } from '../../features/registration/flows';
 import { useAuth } from '../../hooks/useAuth';
+import { LegalModal } from '../../components/LegalModal';
+import { TermsContent, PrivacyContent } from '../../components/LegalContent';
 import {
   PASSWORD_RULES,
   collectErrors,
@@ -59,7 +61,6 @@ const SPECIALISATIONS: { value: Specialisation; label: string }[] = [
 
 type FieldName = 'firstname' | 'lastname' | 'email' | 'phone' | 'password' | 'confirm' | 'terms';
 
-// Same order as the fields appear on screen, so a failed submit focuses the first one you see.
 const FIELD_ORDER: FieldName[] = [
   'firstname',
   'lastname',
@@ -128,6 +129,10 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
   });
   const [agreed, setAgreed] = useState(false);
 
+  // Modal states
+  const [showTerms, setShowTerms] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
+
   // Multi-select State
   const [specialisations, setSpecialisations] = useState<Specialisation[]>([]);
   const [customSpecialisation, setCustomSpecialisation] = useState('');
@@ -146,7 +151,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
   const [currentTime, setCurrentTime] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -166,7 +170,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
     );
   };
 
-  // Recalculated on every keystroke: drives the strength bars and the green ticks.
   const strength = getPasswordStrength(form.password);
 
   const errors = collectErrors<FieldName>({
@@ -208,7 +211,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
 
     setSubmitting(true);
     try {
-      // confirmPassword is deliberately left out: the API never needs it.
       const registrationData = {
         name: `${form.firstname.trim()} ${form.lastname.trim()}`,
         phone: form.phone,
@@ -235,7 +237,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
     }
   };
 
-  // Get the text to show inside the dropdown box
   const getSelectedLabel = () => {
     if (specialisations.length === 0) return 'Select specialisation(s)...';
     return SPECIALISATIONS.filter((o) => specialisations.includes(o.value))
@@ -290,7 +291,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
       <p className="ca-subtitle">Watch the video for help in sign language.</p>
 
       <form onSubmit={onSubmit} noValidate className="ca-form">
-        {/* Row: First name | Last name */}
         <div className="ca-row">
           {field(
             'ca-firstname',
@@ -323,7 +323,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
           )}
         </div>
 
-        {/* Email on its own row */}
         {field(
           'ca-email',
           'Email address',
@@ -339,7 +338,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
           shown('email'),
         )}
 
-        {/* Phone on its own row */}
         <div className="ca-field">
           <label className="ca-label" htmlFor="ca-phone">
             Phone number
@@ -359,16 +357,13 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
           )}
         </div>
 
-        {/* CUSTOM MULTI-SELECT DROPDOWN */}
         {isInterpreter && (
           <div className="ca-field" ref={dropdownRef} style={{ position: 'relative' }}>
             <label className="ca-label">Specialisation(s)</label>
 
-            {/* The Box that looks like an input */}
             <div
               className="ca-input-wrap"
               onClick={() => {
-                // Only open the dropdown if we are not currently typing in "Other"
                 if (!specialisations.includes('OTHER')) {
                   setIsDropdownOpen(!isDropdownOpen);
                 }
@@ -380,7 +375,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
               </span>
 
               {specialisations.includes('OTHER') ? (
-                /* IF "OTHER" IS SELECTED: Show the text input inside the box */
                 <input
                   type="text"
                   className="ca-input"
@@ -388,10 +382,9 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
                   value={customSpecialisation}
                   onChange={(e) => setCustomSpecialisation(e.target.value)}
                   autoFocus
-                  style={{ paddingRight: '40px' }} // Make room for the icon
+                  style={{ paddingRight: '40px' }}
                 />
               ) : (
-                /* OTHERWISE: Show the normal dropdown text */
                 <div
                   className="ca-input"
                   style={{
@@ -409,7 +402,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
                 </div>
               )}
 
-              {/* The Chevron Icon (Always visible on the right) */}
               <div
                 style={{
                   position: 'absolute',
@@ -424,7 +416,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
               </div>
             </div>
 
-            {/* The Dropdown Menu (Only shows if NOT in "Other" mode) */}
             {isDropdownOpen && !specialisations.includes('OTHER') && (
               <div
                 style={{
@@ -449,7 +440,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
                     key={o.value}
                     onClick={() => {
                       toggleSpecialisation(o.value);
-                      // If they click "Other", close the menu so they can type in the box
                       if (o.value === 'OTHER') setIsDropdownOpen(false);
                     }}
                     style={{
@@ -472,7 +462,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
               </div>
             )}
 
-            {/* A small button to go back to the list if they made a mistake */}
             {specialisations.includes('OTHER') && (
               <button
                 type="button"
@@ -497,7 +486,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
           </div>
         )}
 
-        {/* Row: Password | Confirm password */}
         <div className="ca-row">
           <div className="ca-field">
             <label className="ca-label" htmlFor="ca-password">
@@ -535,7 +523,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
             )}
           </div>
 
-          {/* One eye button (above) shows or hides both password boxes */}
           {field(
             'ca-confirm',
             'Confirm password',
@@ -552,7 +539,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
           )}
         </div>
 
-        {/* Strength bars + requirement ticks: appear once the person starts typing a password */}
         {form.password && (
           <>
             <div className="pw-strength">
@@ -599,7 +585,38 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
               onBlur={touch('terms')}
             />
             <span>
-              I agree to the <a href="/terms">Terms</a> and <a href="/privacy">Privacy Policy</a>
+              I agree to the{' '}
+              <button
+                type="button"
+                onClick={() => setShowTerms(true)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--ca-purple)',
+                  padding: 0,
+                  font: 'inherit',
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                }}
+              >
+                Terms
+              </button>{' '}
+              and{' '}
+              <button
+                type="button"
+                onClick={() => setShowPrivacy(true)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--ca-purple)',
+                  padding: 0,
+                  font: 'inherit',
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                }}
+              >
+                Privacy Policy
+              </button>
             </span>
           </label>
           {shown('terms') && (
@@ -623,6 +640,15 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
       <p className="ca-footer">
         Have an account? <Link to="/sign-in">Sign in</Link>
       </p>
+
+      {/* Legal Modals */}
+      <LegalModal isOpen={showTerms} onClose={() => setShowTerms(false)} title="Terms of Service">
+        <TermsContent />
+      </LegalModal>
+
+      <LegalModal isOpen={showPrivacy} onClose={() => setShowPrivacy(false)} title="Privacy Policy">
+        <PrivacyContent role={isInterpreter ? 'interpreter' : 'deaf'} />
+      </LegalModal>
     </AuthShell>
   );
 }
