@@ -1,71 +1,131 @@
-/* Page layout only. The pieces (summary boxes, list, payout) and the colour variables are in
-   components/interpreter/wallet/wallet.css. No padding: the dashboard frame (.dl-main) spaces it. */
 
-.iw-page {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  color: var(--iw-text);
+/* Interpreter Settings page.
+   Page layout and typography only.
+   Card, row, switch styles, and colour variables are defined in
+   components/interpreter/settings/settings.css.
+   No page padding: the dashboard frame (.dl-main) handles spacing. */
+
+.is-page {
+  color: var(--is-text);
   font-family: 'Manrope', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 /* --- Header --- */
-.iw-header {
+.is-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
+  margin-bottom: 24px;
 }
 
-.iw-header h1 {
-  margin: 0;
+.is-header h1 {
+  margin: 0 0 6px;
   font-size: 28px;
-  font-weight: 800;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--is-text);
 }
 
-.iw-header p {
-  margin: 4px 0 0;
-  font-size: 15px;
-  color: var(--iw-muted);
+.is-header p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--is-muted);
 }
 
-.iw-back {
+/* --- Back button --- */
+.is-back {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 4px;
-  border: none;
-  background: none;
-  color: var(--iw-text);
-  font: inherit;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: 1px solid var(--is-border);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--is-purple);
+  font-family: inherit;
   font-size: 14px;
   font-weight: 600;
+  line-height: 1.5;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
-.iw-back:hover {
-  color: var(--iw-purple);
+.is-back:hover {
+  background: #f6f5fc;
 }
 
-.iw-back:focus-visible {
-  outline: 2px solid var(--iw-purple);
+.is-back:focus-visible {
+  outline: 2px solid var(--is-purple);
   outline-offset: 2px;
-  border-radius: 6px;
 }
 
-/* --- "Not live yet" message --- */
-.iw-notice {
-  margin: 0;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: #fdf3d8;
-  color: #7a5200;
-  font-size: 14px;
-}
-
-/* --- Three summary boxes in a row, stacking on narrow screens --- */
-.iw-stats {
+/* --- Settings cards: two columns, one on narrow screens --- */
+.is-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
+}
+
+/* --- Bottom actions --- */
+.is-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.is-actions .is-notice {
+  margin: 0 auto 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.is-actions .is-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* Keep disabled actions visually distinct. */
+.is-actions .is-button:disabled {
+  cursor: not-allowed;
+}
+
+/* --- Responsive layout --- */
+@media (max-width: 900px) {
+  .is-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .is-header {
+    gap: 12px;
+  }
+
+  .is-header h1 {
+    font-size: 26px;
+  }
+
+  .is-actions {
+    gap: 10px;
+  }
+
+  .is-actions .is-button {
+    flex: 1 1 100%;
+  }
 }
