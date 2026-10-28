@@ -40,6 +40,7 @@ import { SchedulePage } from '../pages/deaf/SchedulePage';
 import { SettingsPage as DeafSettingsPage } from '../pages/deaf/SettingsPage';
 import { LiveSessionPage } from '../pages/session/LiveSessionPage';
 import { ProfilePage as InterpreterProfilePage } from '../pages/interpreter/ProfilePage';
+import { InterpreterSessionsPage } from '../pages/interpreter/SessionsPage';
 import { SettingsPage } from '../pages/admin/SettingsPage';
 import { AdminProfilePage } from '../pages/admin/AdminProfilePage';
 import { CreateStaffAccountPage } from '../pages/institution/CreateStaffAccountPage';
@@ -161,7 +162,7 @@ const appRoutes: RouteObject[] = [
             children: [
               { index: true, element: <InterpreterHomePage /> },
               { path: 'requests', element: <RequestsPage /> },
-              { path: 'sessions', element: <Placeholder title="Sessions" story="Sprint 2" /> },
+              { path: 'sessions', element: <InterpreterSessionsPage /> },
               { path: 'availability', element: <AvailabilityPage /> },
               { path: 'wallet', element: <InterpreterWalletPage /> },
               { path: 'profile', element: <InterpreterProfilePage /> },
