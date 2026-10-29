@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import {
   Bell,
@@ -17,10 +16,31 @@ import './InterpreterHomePage.css';
 
 const calendarDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const calendarNumbers = [
-  null, null, null, null,
-  5, 6, 7, 8, 9, 10, 11,
-  12, 13, 14, 15, 16, 17, 18,
-  19, 20, 21, 22, 23, 24, 25,
+  null,
+  null,
+  null,
+  null,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  24,
+  25,
 ];
 
 export function InterpreterHomePage() {
@@ -29,11 +49,9 @@ export function InterpreterHomePage() {
 
   return (
     <div className="ih-page">
-      
       {/* TOP NAVIGATION BAR */}
       <header className="ih-topbar">
         <div className="ih-topbar-actions">
-          
           {/* Bell Icon with Red Dot */}
           <button className="ih-icon-btn relative" aria-label="Notifications">
             <Bell size={20} className="ih-icon" />
@@ -66,14 +84,14 @@ export function InterpreterHomePage() {
               </h1>
               <p className="ih-banner-sub">Bridging communication. Expanding access.</p>
               <p className="ih-banner-desc">
-                You're making a difference. Every connection helps someone get the support they need.
+                You're making a difference. Every connection helps someone get the support they
+                need.
               </p>
             </div>
           </section>
 
           {/* Stats Row */}
           <div className="ih-stats-row">
-            
             <div className="ih-stat-box">
               <div className="ih-stat-header">
                 <Clock size={20} className="ih-icon-blue" />
@@ -100,7 +118,6 @@ export function InterpreterHomePage() {
               <h2>0</h2>
               <p>Unread messages</p>
             </div>
-
           </div>
 
           {/* Middle Grid: Next Session & Activity */}
@@ -109,7 +126,7 @@ export function InterpreterHomePage() {
               <div className="ih-section-header">
                 <h3>Next session</h3>
                 <Link to="#" className="ih-section-link">
-                   View all <ChevronRight size={14} />
+                  View all <ChevronRight size={14} />
                 </Link>
               </div>
 
@@ -130,7 +147,7 @@ export function InterpreterHomePage() {
 
                 <div className="ih-next-details">
                   <p>
-                   <Calendar size={14} className="ih-meta-icon" /> Today, 10:30 AM - 11:00 AM
+                    <Calendar size={14} className="ih-meta-icon" /> Today, 10:30 AM - 11:00 AM
                   </p>
                 </div>
 
@@ -145,7 +162,7 @@ export function InterpreterHomePage() {
               </div>
             </section>
 
-                        <section className="ih-section">
+            <section className="ih-section">
               <div className="ih-section-header">
                 <h3>
                   <Clock size={18} className="ih-section-icon" /> Recent activity
@@ -153,10 +170,13 @@ export function InterpreterHomePage() {
               </div>
 
               <div className="ih-card ih-activity-card">
-                
                 <div className="ih-timeline-item">
                   <div className="ih-timeline-marker bg-green"></div>
-                  <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80" alt="James" className="ih-timeline-avatar" />
+                  <img
+                    src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80"
+                    alt="James"
+                    className="ih-timeline-avatar"
+                  />
                   <div className="ih-timeline-content">
                     <p>You accepted James Carter's connection request</p>
                     <span className="ih-time-label">2 hours ago</span>
@@ -165,7 +185,11 @@ export function InterpreterHomePage() {
 
                 <div className="ih-timeline-item">
                   <div className="ih-timeline-marker bg-purple"></div>
-                  <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80" alt="Priya" className="ih-timeline-avatar" />
+                  <img
+                    src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80"
+                    alt="Priya"
+                    className="ih-timeline-avatar"
+                  />
                   <div className="ih-timeline-content">
                     <p>Priya Sharma sent you a connection request</p>
                     <span className="ih-time-label">4 hours ago</span>
@@ -174,7 +198,11 @@ export function InterpreterHomePage() {
 
                 <div className="ih-timeline-item">
                   <div className="ih-timeline-marker bg-purple"></div>
-                  <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80" alt="Alex" className="ih-timeline-avatar" />
+                  <img
+                    src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80"
+                    alt="Alex"
+                    className="ih-timeline-avatar"
+                  />
                   <div className="ih-timeline-content">
                     <p>Alex Johnson accepted your connection request</p>
                     <span className="ih-time-label">Yesterday</span>
@@ -183,7 +211,11 @@ export function InterpreterHomePage() {
 
                 <div className="ih-timeline-item">
                   <div className="ih-timeline-marker bg-purple"></div>
-                  <img src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=100&q=80" alt="Grace" className="ih-timeline-avatar" />
+                  <img
+                    src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=100&q=80"
+                    alt="Grace"
+                    className="ih-timeline-avatar"
+                  />
                   <div className="ih-timeline-content">
                     <p>You started a chat with Grace Nsubuga</p>
                     <span className="ih-time-label">Yesterday</span>
@@ -192,13 +224,16 @@ export function InterpreterHomePage() {
 
                 <div className="ih-timeline-item">
                   <div className="ih-timeline-marker bg-blue"></div>
-                  <img src="https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?auto=format&fit=crop&w=100&q=80" alt="Daniel" className="ih-timeline-avatar" />
+                  <img
+                    src="https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?auto=format&fit=crop&w=100&q=80"
+                    alt="Daniel"
+                    className="ih-timeline-avatar"
+                  />
                   <div className="ih-timeline-content">
                     <p>You received a connection request from Daniel Ochieng</p>
                     <span className="ih-time-label">2 days ago</span>
                   </div>
                 </div>
-
               </div>
             </section>
           </div>
@@ -208,7 +243,7 @@ export function InterpreterHomePage() {
             <div className="ih-section-header">
               <h3>Upcoming sessions</h3>
               <Link to="#" className="ih-section-link">
-                  View all <ChevronRight size={14} />
+                View all <ChevronRight size={14} />
               </Link>
             </div>
 
@@ -356,7 +391,3 @@ export function InterpreterHomePage() {
     </div>
   );
 }
-
-
-
-

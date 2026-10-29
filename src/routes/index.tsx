@@ -166,7 +166,7 @@ const appRoutes: RouteObject[] = [
   },
 
   {
-    // element: <ProtectedRoute allow={['institution']} />,
+    element: <ProtectedRoute allow={['institution']} />,
     children: [
       {
         // TEMPORARY FRONTEND FIX: Force institutions to the pending page
