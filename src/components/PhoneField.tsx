@@ -126,7 +126,7 @@ function SearchableCountrySelect({
         aria-haspopup="listbox"
         aria-expanded={open}
         disabled={disabled || readOnly}
-        tabIndex={tabIndex}
+        tabIndex={typeof tabIndex === 'number' ? tabIndex : undefined}
         onFocus={onFocus}
         onClick={() => {
           if (disabled || readOnly) return;
