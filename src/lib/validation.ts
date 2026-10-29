@@ -3,6 +3,8 @@
 // or undefined when the value is fine. The API checks the same rules again, so these exist to
 // help people fix a mistake before they send, not to protect the server.
 
+import { isValidPhoneNumber } from 'react-phone-number-input';
+
 export const PHONE_EXAMPLE = '+256772123456';
 
 /** Remove the spaces and dashes people type for readability. This is what the API receives. */
@@ -20,29 +22,42 @@ export function sanitizePhoneInput(value: string): string {
   return (cleaned.startsWith('+') ? '+' : '') + rest;
 }
 
-/** A phone number must start with + and a country code, then digits only (international format). */
+
+/** Validates international phone numbers used by sign-in and recovery. */
 export function validatePhone(value: string): string | undefined {
   const phone = normalizePhone(value);
+
   if (!phone) return 'Enter your phone number.';
+
   if (!phone.startsWith('+')) {
     return `Start with your country code, for example ${PHONE_EXAMPLE}.`;
   }
+
   if (!/^\+[1-9]\d{7,14}$/.test(phone)) {
     return `Use a country code and digits only, for example ${PHONE_EXAMPLE}.`;
   }
+
+  if (!isValidPhoneNumber(phone)) {
+    return 'Enter a valid phone number for the country code you chose.';
+  }
+
   return undefined;
 }
 
-/**
- * For the PhoneField, which already hands back a clean +countrycode number (or nothing).
- * An empty field has only a country code in it, so that counts as nothing typed.
- */
+/** Validates the complete international number returned by PhoneField. */
 export function validatePhoneNumber(value: string): string | undefined {
   if (!value) return 'Enter your phone number.';
+
   const phone = normalizePhone(value);
+
   if (!/^\+[1-9]\d{7,14}$/.test(phone)) {
     return 'That phone number looks too short or too long for the country you chose.';
   }
+
+  if (!isValidPhoneNumber(phone)) {
+    return 'Enter a valid phone number for the country you chose.';
+  }
+
   return undefined;
 }
 

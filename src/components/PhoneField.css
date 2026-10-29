@@ -1,7 +1,9 @@
-/* Matches the 10px, #ddd8ec inputs used across the sign-up forms. */
+
+/* Sign Connect phone field */
 .phone-field {
   --PhoneInputCountryFlag-height: 1.1em;
   --PhoneInputCountrySelectArrow-color: #6b6485;
+
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -11,14 +13,23 @@
   border: 1.5px solid #ddd8ec;
   border-radius: 10px;
   background: #fafafd;
+  color: #1b1533;
+  font-family: 'Manrope', system-ui, sans-serif;
 }
+
 .phone-field:focus-within {
   border-color: #382c77;
   background: #fff;
 }
+
 .phone-field--error {
   border-color: #c0392b;
 }
+
+.phone-field--error:focus-within {
+  border-color: #c0392b;
+}
+
 .phone-field .PhoneInputInput {
   flex: 1;
   min-width: 0;
@@ -29,17 +40,20 @@
   font: inherit;
   color: inherit;
 }
+
 .phone-field .PhoneInputCountry {
   margin-right: 0;
+  font-family: 'Manrope', system-ui, sans-serif;
 }
+
 .phone-field .PhoneInputCountrySelect:focus + .PhoneInputCountryIcon {
   outline: 2px solid #382c77;
   outline-offset: 2px;
 }
 
-/* Country dropdown — match the input font exactly */
-.phone-field .PhoneInputCountry select,
-.phone-field .PhoneInputCountry select option,
+/* Country selector typography */
+.phone-field .PhoneInputCountrySelect,
+.phone-field .PhoneInputCountrySelect option,
 .phone-field select,
 .phone-field select option {
   font-family: 'Manrope', system-ui, sans-serif !important;
@@ -47,4 +61,14 @@
   font-weight: 400 !important;
   letter-spacing: 0 !important;
   color: #1b1533;
+}
+
+.phone-field .PhoneInputInput:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.phone-field:has(.PhoneInputInput:disabled) {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
