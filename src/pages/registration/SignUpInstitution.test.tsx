@@ -11,7 +11,8 @@ const renderPage = () =>
       <MemoryRouter initialEntries={['/register/institution']}>
         <Routes>
           <Route path="/register/institution" element={<SignUpInstitution />} />
-          <Route path="/register/pending" element={<p>pending review</p>} />
+          {/* CHANGED: Route to /verify-email instead of /register/pending */}
+          <Route path="/verify-email" element={<p>verify email page</p>} />
         </Routes>
       </MemoryRouter>
     </AuthProvider>,
@@ -111,7 +112,7 @@ describe('SignUpInstitution', () => {
     expect(spy).not.toHaveBeenCalled();
   });
 
-  it('registers the institution and shows the pending page', async () => {
+  it('registers the institution and goes to the verify email page', async () => {
     const spy = vi.spyOn(registration, 'registerInstitution').mockResolvedValue(okSession);
     renderPage();
     await userEvent.type(screen.getByLabelText('Institution name'), 'Mulago');
@@ -126,7 +127,10 @@ describe('SignUpInstitution', () => {
     await userEvent.click(screen.getByRole('checkbox'));
 
     await userEvent.click(screen.getByRole('button', { name: /submit registration/i }));
-    await waitFor(() => expect(screen.getByText('pending review')).toBeInTheDocument());
+
+    // CHANGED: Look for the verify email page instead of pending review
+    await waitFor(() => expect(screen.getByText('verify email page')).toBeInTheDocument());
+
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({ organisationName: 'Mulago', organisationType: 'COURT' }),
     );
@@ -150,7 +154,10 @@ describe('SignUpInstitution', () => {
     await userEvent.click(screen.getByRole('checkbox'));
 
     await userEvent.click(screen.getByRole('button', { name: /submit registration/i }));
-    await waitFor(() => expect(screen.getByText('pending review')).toBeInTheDocument());
+
+    // CHANGED: Look for the verify email page instead of pending review
+    await waitFor(() => expect(screen.getByText('verify email page')).toBeInTheDocument());
+
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({
         organisationType: 'OTHER',
