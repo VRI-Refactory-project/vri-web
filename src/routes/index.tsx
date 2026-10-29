@@ -9,6 +9,7 @@ import { RoleSelectionPage } from '../pages/registration/RoleSelectionPage';
 import { Forgotpassword } from '../pages/registration/Forgotpassword';
 import { Resetpassword } from '../pages/registration/Resetpassword';
 import { SignUpInstitution } from '../pages/registration/SignUpInstitution';
+import { UploadInstitutionLicense } from '../pages/registration/UploadInstitutionLicense'; // ADDED IMPORT
 import { VerifyEmailPage } from '../pages/auth/VerifyEmailPage';
 import { SignInPage } from '../pages/auth/SignInPage';
 import { CreateAccountPage } from '../pages/registration/CreateAccountPage';
@@ -63,7 +64,6 @@ import { InterpreterWalletPage } from '../pages/interpreter/WalletPage';
 
 const appRoutes: RouteObject[] = [
   {
-    // Public entry pages: signed-in users should return to their dashboard.
     element: <GuestRoute />,
     children: [
       { path: '/', element: <SplashPage /> },
@@ -72,16 +72,16 @@ const appRoutes: RouteObject[] = [
     ],
   },
   {
-    // Registration pages: allow a newly registered user to finish the sign-up flow.
     element: <GuestRoute allowSessionCreatedDuringRoute />,
     children: [
       { path: '/register/deaf', element: <CreateAccountPage /> },
       { path: '/register/interpreter', element: <CreateAccountPage role="interpreter" /> },
       { path: '/register/institution', element: <SignUpInstitution /> },
+      // ADDED ROUTE
+      { path: '/register/institution/upload-license', element: <UploadInstitutionLicense /> },
     ],
   },
 
-  // The sign-in page already sends a signed-in person to their dashboard by itself.
   { path: '/sign-in', element: <SignInPage /> },
   { path: '/verify-email', element: <VerifyEmailPage /> },
   { path: '/offline', element: <OfflinePage /> },
@@ -93,7 +93,6 @@ const appRoutes: RouteObject[] = [
     element: <Navigate to="/register/interpreter" replace />,
   },
   {
-    // Certificates are uploaded right after the account exists and before the email is confirmed.
     element: <ProtectedRoute allow={['interpreter']} requireVerifiedEmail={false} />,
     children: [
       { path: '/register/interpreter/certifications', element: <UploadCertificationsPage /> },
@@ -153,7 +152,6 @@ const appRoutes: RouteObject[] = [
     element: <ProtectedRoute allow={['interpreter']} />,
     children: [
       {
-        // Nothing past this point opens until an admin has approved the interpreter.
         element: <ApprovedInterpreterRoute />,
         children: [
           {
@@ -215,7 +213,6 @@ const appRoutes: RouteObject[] = [
           { path: 'profile', element: <AdminProfilePage /> },
         ],
       },
-
       {
         path: '/admin/interpreters',
         element: <Placeholder title="Interpreter review" story="V2-045" />,
@@ -234,5 +231,4 @@ const appRoutes: RouteObject[] = [
   },
 ];
 
-// Every route sits inside OfflineGate, so the offline screen can cover any page when the connection drops.
 export const router = createBrowserRouter([{ element: <OfflineGate />, children: appRoutes }]);
