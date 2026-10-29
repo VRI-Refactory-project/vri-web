@@ -1,3 +1,4 @@
+// src/services/institutions.ts
 import { api } from './api';
 
 export type InstitutionStatus = 'approved' | 'pending' | 'deactivated';
@@ -31,7 +32,6 @@ export interface InstitutionForm {
   sector: InstitutionSector;
   email: string;
   phone: string;
-  /** Free-text description used only when sector is 'Other'. */
   sectorOther?: string;
 }
 
@@ -93,7 +93,8 @@ function normalizeStatus(record: RawRecord): InstitutionStatus {
     rawStatus === 'deactivated' ||
     rawStatus === 'inactive' ||
     rawStatus === 'disabled' ||
-    rawStatus === 'suspended'
+    rawStatus === 'suspended' ||
+    rawStatus === 'rejected'
   ) {
     return 'deactivated';
   }
@@ -150,14 +151,10 @@ function normalizeInstitution(value: unknown): Institution {
 
 function unwrapList(value: unknown): unknown[] {
   if (Array.isArray(value)) return value;
-
   const record = asRecord(value);
-
-  // Supports common Django REST Framework pagination and list wrappers.
   for (const key of ['results', 'institutions', 'data', 'items']) {
     if (Array.isArray(record[key])) return record[key] as unknown[];
   }
-
   return [];
 }
 
@@ -174,76 +171,74 @@ function toPayload(form: InstitutionForm) {
   };
 }
 
-/**
- * Retrieve institution records from the authenticated admin API.
- *
- * Expected response:
- * - a list of records, or
- * - a DRF paginated response containing { results: [...] }.
- */
+/* ---------- Read ---------- */
+
 export async function fetchInstitutions(): Promise<Institution[]> {
   const response = await api<unknown>(BASE);
   return unwrapList(response).map(normalizeInstitution);
 }
 
-/**
- * Create an institutional account.
- * The backend should create it in pending status and enforce permissions.
- */
+export async function fetchInstitution(id: string): Promise<Institution> {
+  const response = await api<unknown>(`${BASE}${encodeURIComponent(id)}/`);
+  return normalizeInstitution(response);
+}
+
+/* ---------- Create / update ---------- */
+
 export async function createInstitution(form: InstitutionForm): Promise<Institution> {
   const response = await api<unknown>(BASE, {
     method: 'POST',
     body: JSON.stringify(toPayload(form)),
   });
-
   return normalizeInstitution(response);
 }
 
-/**
- * Edit institution details without silently changing its status.
- */
 export async function updateInstitution(id: string, form: InstitutionForm): Promise<Institution> {
   const response = await api<unknown>(`${BASE}${encodeURIComponent(id)}/`, {
     method: 'PATCH',
     body: JSON.stringify(toPayload(form)),
   });
-
   return normalizeInstitution(response);
 }
 
-/**
- * Change institution approval/access status.
- *
- * The API should validate transitions and enforce administrator permissions.
- * If your backend uses a different status field or action endpoint, update this
- * request to match that backend contract.
- */
+/* ---------- Status actions ---------- */
+
+export async function approveInstitution(id: string): Promise<Institution> {
+  const response = await api<unknown>(`${BASE}${encodeURIComponent(id)}/approve/`, {
+    method: 'POST',
+  });
+  return normalizeInstitution(response);
+}
+
+export async function rejectInstitution(id: string): Promise<Institution> {
+  const response = await api<unknown>(`${BASE}${encodeURIComponent(id)}/reject/`, {
+    method: 'POST',
+  });
+  return normalizeInstitution(response);
+}
+
+export async function deactivateInstitution(id: string): Promise<Institution> {
+  const response = await api<unknown>(`${BASE}${encodeURIComponent(id)}/deactivate/`, {
+    method: 'POST',
+  });
+  return normalizeInstitution(response);
+}
+
+/* ---------- Delete ---------- */
+
+/** DELETE /api/v1/administration/institutions/{id}/ */
+export async function deleteInstitution(id: string): Promise<void> {
+  await api(`${BASE}${encodeURIComponent(id)}/`, {
+    method: 'DELETE',
+  });
+}
+
+/* ---------- Compatibility helper ---------- */
+
 export async function updateInstitutionStatus(
   id: string,
   action: 'approve' | 'activate' | 'deactivate',
 ): Promise<Institution> {
-  const status: InstitutionStatus =
-    action === 'deactivate'
-      ? 'deactivated'
-      : action === 'activate' || action === 'approve'
-        ? 'approved'
-        : 'pending';
-
-  const response = await api<unknown>(`${BASE}${encodeURIComponent(id)}/`, {
-    method: 'PATCH',
-    body: JSON.stringify({
-      status,
-      is_active: status === 'approved',
-      is_approved: status === 'approved',
-    }),
-  });
-
-  return normalizeInstitution(response);
-}
-
-/** DELETE /api/v1/admin/institutions/{id}/ */
-export async function deleteInstitution(id: string): Promise<void> {
-  await api(`/api/v1/admin/institutions/${encodeURIComponent(id)}/`, {
-    method: 'DELETE',
-  });
+  if (action === 'approve' || action === 'activate') return approveInstitution(id);
+  return deactivateInstitution(id);
 }

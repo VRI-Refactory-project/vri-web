@@ -22,6 +22,8 @@ import { AuthShell } from '../../components/AuthShell';
 import { PhoneField } from '../../components/PhoneField';
 import { FLOWS } from '../../features/registration/flows';
 import { useAuth } from '../../hooks/useAuth';
+import { LegalModal } from '../../components/LegalModal';
+import { TermsContent, PrivacyContent } from '../../components/LegalContent';
 import {
   PASSWORD_RULES,
   collectErrors,
@@ -32,6 +34,7 @@ import {
   validatePhoneNumber,
 } from '../../lib/validation';
 import { describeError } from '../../services/api';
+import { checkEmailAvailability } from '../../services/emailAvailability';
 import {
   registerDeaf,
   registerInterpreter,
@@ -59,6 +62,8 @@ const SPECIALISATIONS: { value: Specialisation; label: string }[] = [
 
 type FieldName = 'firstname' | 'lastname' | 'email' | 'phone' | 'password' | 'confirm' | 'terms';
 
+type EmailAvailability = 'idle' | 'checking' | 'available' | 'taken' | 'failed';
+
 // Same order as the fields appear on screen, so a failed submit focuses the first one you see.
 const FIELD_ORDER: FieldName[] = [
   'firstname',
@@ -78,13 +83,16 @@ function field(
   error?: string,
 ) {
   const errorId = `${id}-error`;
+
   return (
     <div className="ca-field">
       <label className="ca-label" htmlFor={id}>
         {label}
       </label>
+
       <div className="ca-input-wrap">
         <span className="ca-input-icon">{icon}</span>
+
         <input
           id={id}
           className={error ? 'ca-input ca-input--error' : 'ca-input'}
@@ -93,6 +101,7 @@ function field(
           {...input}
         />
       </div>
+
       {error && (
         <p className="field-error" id={errorId}>
           {error}
@@ -104,8 +113,10 @@ function field(
 
 function formatTime(seconds: number) {
   if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
+
   const m = Math.floor(seconds / 60);
   const s = Math.floor(seconds % 60);
+
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
@@ -126,9 +137,14 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
     password: '',
     confirmPassword: '',
   });
+
   const [agreed, setAgreed] = useState(false);
 
-  // Multi-select State
+  // Legal modal state.
+  const [showTerms, setShowTerms] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
+
+  // Interpreter specialisation multi-select state.
   const [specialisations, setSpecialisations] = useState<Specialisation[]>([]);
   const [customSpecialisation, setCustomSpecialisation] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -140,20 +156,30 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
   const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
   const [submitted, setSubmitted] = useState(false);
 
+  // Email availability result, stored together with the address it was fetched for,
+  // plus a request identity that changes whenever the email field changes.
+  const [emailCheck, setEmailCheck] = useState<{ email: string; status: EmailAvailability }>({
+    email: '',
+    status: 'idle',
+  });
+  const emailRequestId = useRef(0);
+
   const [videoDismissed, setVideoDismissed] = useState(false);
   const [videoProgress, setVideoProgress] = useState(0);
   const [videoDuration, setVideoDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Close dropdown when clicking outside
+  // Close the specialisation dropdown when clicking outside.
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
       }
     }
+
     document.addEventListener('mousedown', handleClickOutside);
+
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
@@ -166,7 +192,48 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
     );
   };
 
-  // Recalculated on every keystroke: drives the strength bars and the green ticks.
+  // Recheck email availability after the user pauses typing.
+  // The request ID prevents an older response from replacing a newer result.
+  useEffect(() => {
+    const email = form.email.trim();
+    const requestId = ++emailRequestId.current;
+
+    if (!email || validateEmail(email, { required: true })) {
+      return;
+    }
+
+    const timeout = window.setTimeout(async () => {
+      setEmailCheck({ email, status: 'checking' });
+
+      try {
+        const available = await checkEmailAvailability(email);
+
+        if (emailRequestId.current === requestId) {
+          setEmailCheck({ email, status: available ? 'available' : 'taken' });
+        }
+      } catch {
+        if (emailRequestId.current === requestId) {
+          setEmailCheck({ email, status: 'failed' });
+        }
+      }
+    }, 500);
+
+    return () => {
+      window.clearTimeout(timeout);
+
+      // Invalidate an in-flight request when the email changes or the page unmounts.
+      if (emailRequestId.current === requestId) {
+        emailRequestId.current += 1;
+      }
+    };
+  }, [form.email]);
+
+  // A result only counts for the address it was fetched for. Once the email changes, an
+  // earlier "taken" or "available" answer is ignored without resetting state inside the effect.
+  const emailAvailability: EmailAvailability =
+    emailCheck.email === form.email.trim() ? emailCheck.status : 'idle';
+
+  // Recalculated on every keystroke: drives the strength bars and green ticks.
   const strength = getPasswordStrength(form.password);
 
   const errors = collectErrors<FieldName>({
@@ -182,8 +249,14 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
         : undefined,
     terms: agreed ? undefined : 'Accept the Terms and Privacy Policy to continue.',
   });
+
   const shown = (name: FieldName) => (touched[name] || submitted ? errors[name] : undefined);
+
   const touch = (name: FieldName) => () => setTouched((t) => ({ ...t, [name]: true }));
+
+  const emailError =
+    shown('email') ||
+    (emailAvailability === 'taken' ? 'This email is already registered.' : undefined);
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -201,18 +274,63 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
     }
 
     const firstInvalid = FIELD_ORDER.find((name) => errors[name]);
+
     if (firstInvalid) {
       document.getElementById(`ca-${firstInvalid}`)?.focus();
       return;
     }
 
+    // Do not submit an address that we already know is registered.
+    if (emailAvailability === 'taken') {
+      setTouched((t) => ({ ...t, email: true }));
+      document.getElementById('ca-email')?.focus();
+      return;
+    }
+
     setSubmitting(true);
+
+    // The address this attempt is for, and the request identity at the moment of submitting.
+    // The identity changes every time the email field changes, so it tells us afterwards
+    // whether the person edited the email while the check below was still running.
+    const submittedEmail = form.email.trim();
+    const submitRequestId = emailRequestId.current;
+
     try {
+      // Recheck at submission time so we don't rely only on a potentially old result.
+      // If the check fails due to a network/server issue, registration still gets the
+      // final opportunity to validate the email.
+      let available: boolean | undefined;
+
+      try {
+        available = await checkEmailAvailability(submittedEmail);
+      } catch {
+        available = undefined;
+      }
+
+      // The email changed while we were waiting. Stop here rather than register the old
+      // address; the person can submit again with what is now in the field.
+      if (emailRequestId.current !== submitRequestId) {
+        return;
+      }
+
+      if (available === undefined) {
+        setEmailCheck({ email: submittedEmail, status: 'failed' });
+      } else {
+        setEmailCheck({ email: submittedEmail, status: available ? 'available' : 'taken' });
+
+        if (!available) {
+          setTouched((t) => ({ ...t, email: true }));
+          document.getElementById('ca-email')?.focus();
+          return;
+        }
+      }
+
+      // The backend still does the final duplicate-email check when it creates the account.
       // confirmPassword is deliberately left out: the API never needs it.
       const registrationData = {
         name: `${form.firstname.trim()} ${form.lastname.trim()}`,
         phone: form.phone,
-        email: form.email,
+        email: submittedEmail,
         password: form.password,
       };
 
@@ -225,6 +343,7 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
         : await registerDeaf(registrationData);
 
       login(session);
+
       navigate(isInterpreter ? '/register/interpreter/certifications' : '/register/welcome', {
         replace: true,
       });
@@ -235,9 +354,10 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
     }
   };
 
-  // Get the text to show inside the dropdown box
+  // Get the text to show inside the dropdown box.
   const getSelectedLabel = () => {
     if (specialisations.length === 0) return 'Select specialisation(s)...';
+
     return SPECIALISATIONS.filter((o) => specialisations.includes(o.value))
       .map((o) => o.label)
       .join(', ');
@@ -259,6 +379,7 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
           >
             ×
           </button>
+
           <video
             ref={videoRef}
             className="ca-video"
@@ -270,15 +391,20 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
             onLoadedMetadata={(e) => setVideoDuration(e.currentTarget.duration)}
             onTimeUpdate={(e) => {
               const v = e.currentTarget;
+
               if (v.duration) setVideoProgress((v.currentTime / v.duration) * 100);
+
               setCurrentTime(v.currentTime);
             }}
           />
+
           <div className="ca-video-caption">Watch the video for help in sign language</div>
+
           <div className="ca-video-controls">
             <span className="ca-video-time">
               {formatTime(currentTime)} / {formatTime(videoDuration)}
             </span>
+
             <div className="ca-video-progress">
               <div className="ca-video-progress-fill" style={{ width: `${videoProgress}%` }} />
             </div>
@@ -290,7 +416,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
       <p className="ca-subtitle">Watch the video for help in sign language.</p>
 
       <form onSubmit={onSubmit} noValidate className="ca-form">
-        {/* Row: First name | Last name */}
         <div className="ca-row">
           {field(
             'ca-firstname',
@@ -319,11 +444,12 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
               onChange: set('lastname'),
               onBlur: touch('lastname'),
             },
+
             shown('lastname'),
           )}
         </div>
 
-        {/* Email on its own row */}
+        {/* Email field: keep validation and duplicate-email warnings. */}
         {field(
           'ca-email',
           'Email address',
@@ -336,14 +462,15 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
             onChange: set('email'),
             onBlur: touch('email'),
           },
-          shown('email'),
+          emailError,
         )}
 
-        {/* Phone on its own row */}
+        {/* Phone on its own row. Existing phone validation is preserved. */}
         <div className="ca-field">
           <label className="ca-label" htmlFor="ca-phone">
             Phone number
           </label>
+
           <PhoneField
             id="ca-phone"
             value={form.phone}
@@ -352,6 +479,7 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
             invalid={Boolean(shown('phone'))}
             errorId={shown('phone') ? 'ca-phone-error' : undefined}
           />
+
           {shown('phone') && (
             <p className="field-error" id="ca-phone-error">
               {shown('phone')}
@@ -359,16 +487,14 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
           )}
         </div>
 
-        {/* CUSTOM MULTI-SELECT DROPDOWN */}
+        {/* Custom multi-select dropdown. */}
         {isInterpreter && (
           <div className="ca-field" ref={dropdownRef} style={{ position: 'relative' }}>
             <label className="ca-label">Specialisation(s)</label>
 
-            {/* The Box that looks like an input */}
             <div
               className="ca-input-wrap"
               onClick={() => {
-                // Only open the dropdown if we are not currently typing in "Other"
                 if (!specialisations.includes('OTHER')) {
                   setIsDropdownOpen(!isDropdownOpen);
                 }
@@ -380,7 +506,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
               </span>
 
               {specialisations.includes('OTHER') ? (
-                /* IF "OTHER" IS SELECTED: Show the text input inside the box */
                 <input
                   type="text"
                   className="ca-input"
@@ -388,10 +513,9 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
                   value={customSpecialisation}
                   onChange={(e) => setCustomSpecialisation(e.target.value)}
                   autoFocus
-                  style={{ paddingRight: '40px' }} // Make room for the icon
+                  style={{ paddingRight: '40px' }}
                 />
               ) : (
-                /* OTHERWISE: Show the normal dropdown text */
                 <div
                   className="ca-input"
                   style={{
@@ -403,13 +527,16 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
                     textOverflow: 'ellipsis',
                   }}
                 >
-                  <span style={{ color: specialisations.length === 0 ? '#9ca3af' : '#111827' }}>
+                  <span
+                    style={{
+                      color: specialisations.length === 0 ? '#9ca3af' : '#111827',
+                    }}
+                  >
                     {getSelectedLabel()}
                   </span>
                 </div>
               )}
 
-              {/* The Chevron Icon (Always visible on the right) */}
               <div
                 style={{
                   position: 'absolute',
@@ -424,7 +551,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
               </div>
             </div>
 
-            {/* The Dropdown Menu (Only shows if NOT in "Other" mode) */}
             {isDropdownOpen && !specialisations.includes('OTHER') && (
               <div
                 style={{
@@ -449,7 +575,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
                     key={o.value}
                     onClick={() => {
                       toggleSpecialisation(o.value);
-                      // If they click "Other", close the menu so they can type in the box
                       if (o.value === 'OTHER') setIsDropdownOpen(false);
                     }}
                     style={{
@@ -472,7 +597,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
               </div>
             )}
 
-            {/* A small button to go back to the list if they made a mistake */}
             {specialisations.includes('OTHER') && (
               <button
                 type="button"
@@ -497,16 +621,17 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
           </div>
         )}
 
-        {/* Row: Password | Confirm password */}
         <div className="ca-row">
           <div className="ca-field">
             <label className="ca-label" htmlFor="ca-password">
               Password
             </label>
+
             <div className="ca-input-wrap">
               <span className="ca-input-icon">
                 <Lock size={16} />
               </span>
+
               <input
                 id="ca-password"
                 className={shown('password') ? 'ca-input ca-input--error' : 'ca-input'}
@@ -519,6 +644,7 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
                 onChange={set('password')}
                 onBlur={touch('password')}
               />
+
               <button
                 type="button"
                 className="ca-input-toggle"
@@ -528,6 +654,7 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
+
             {shown('password') && (
               <p className="field-error" id="ca-password-error">
                 {shown('password')}
@@ -535,7 +662,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
             )}
           </div>
 
-          {/* One eye button (above) shows or hides both password boxes */}
           {field(
             'ca-confirm',
             'Confirm password',
@@ -552,7 +678,7 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
           )}
         </div>
 
-        {/* Strength bars + requirement ticks: appear once the person starts typing a password */}
+        {/* Password strength and requirement ticks. */}
         {form.password && (
           <>
             <div className="pw-strength">
@@ -560,6 +686,7 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
                 <span>Password Strength</span>
                 <span className={`pw-strength-label pw-s${strength.score}`}>{strength.label}</span>
               </div>
+
               <div className="pw-bars" aria-hidden="true">
                 {[1, 2, 3, 4].map((i) => (
                   <div
@@ -574,6 +701,7 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
 
             <div className="pw-rules">
               <p className="pw-rules-title">Password Requirements</p>
+
               {PASSWORD_RULES.map((rule) => (
                 <div
                   key={rule.id}
@@ -598,10 +726,43 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
               onChange={(e) => setAgreed(e.target.checked)}
               onBlur={touch('terms')}
             />
+
             <span>
-              I agree to the <a href="/terms">Terms</a> and <a href="/privacy">Privacy Policy</a>
+              I agree to the{' '}
+              <button
+                type="button"
+                onClick={() => setShowTerms(true)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--ca-purple)',
+                  padding: 0,
+                  font: 'inherit',
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                }}
+              >
+                Terms
+              </button>{' '}
+              and{' '}
+              <button
+                type="button"
+                onClick={() => setShowPrivacy(true)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--ca-purple)',
+                  padding: 0,
+                  font: 'inherit',
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                }}
+              >
+                Privacy Policy
+              </button>
             </span>
           </label>
+
           {shown('terms') && (
             <p className="field-error" id="ca-terms-error">
               {shown('terms')}
@@ -623,6 +784,15 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
       <p className="ca-footer">
         Have an account? <Link to="/sign-in">Sign in</Link>
       </p>
+
+      {/* Legal Modals */}
+      <LegalModal isOpen={showTerms} onClose={() => setShowTerms(false)} title="Terms of Service">
+        <TermsContent />
+      </LegalModal>
+
+      <LegalModal isOpen={showPrivacy} onClose={() => setShowPrivacy(false)} title="Privacy Policy">
+        <PrivacyContent role={isInterpreter ? 'interpreter' : 'deaf'} />
+      </LegalModal>
     </AuthShell>
   );
 }

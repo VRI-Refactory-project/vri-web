@@ -5,22 +5,30 @@ import { needsEmailVerification } from '../../features/auth/emailGate';
 import { useAuth } from '../../hooks/useAuth';
 import './VerifyEmailPage.css';
 
-/** Only same-site paths are accepted as the place to continue to. */
 const safePath = (value: unknown): string | null =>
   typeof value === 'string' && value.startsWith('/') && !value.startsWith('//') ? value : null;
 
-/**
- * The step between creating or signing in to an account and the dashboard: enter the code that was
- * emailed. It cannot be skipped. Once the email is confirmed (or if there is nothing to confirm)
- * the person continues to the page they were heading to.
- */
 export function VerifyEmailPage() {
   const { session, logout } = useAuth();
   const location = useLocation();
-  const next = safePath((location.state as { next?: unknown } | null)?.next);
+
+  const storedNext = sessionStorage.getItem('nextAfterVerification');
+  const stateNext = safePath((location.state as { next?: unknown } | null)?.next);
+  let next = safePath(storedNext) ?? stateNext;
 
   if (!session) return <Navigate to="/sign-in" replace />;
+
   if (!needsEmailVerification(session.user)) {
+    // If no destination is found, but they are an institution, send to upload page.
+    if (!next && session.user.role === 'institution') {
+      next = '/register/institution/upload-license';
+    }
+
+    sessionStorage.removeItem('nextAfterVerification');
+
+    // Send them to their destination.
+    // If it's an institution and no next was set, it goes to upload-license.
+    // If it's a deaf user, it goes to their dashboard.
     return <Navigate to={next ?? dashboardPathFor(session.user.role)} replace />;
   }
 

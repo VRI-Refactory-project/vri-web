@@ -1,0 +1,291 @@
+/* Shared by the cards on the interpreter Settings page. Page layout lives in SettingsPage.css. */
+
+.is-page,
+.is-card {
+  --is-purple: #3b2579;
+  --is-purple-soft: #ede8fb;
+  --is-text: #1f1640;
+  --is-muted: #6b6585;
+  --is-border: #e7e3f3;
+  --is-switch-off: #d9d6e3;
+}
+
+/* --- Card --- */
+.is-card {
+  padding: 24px 28px;
+  border: 1px solid var(--is-border);
+  border-radius: 16px;
+  background: #fff;
+  color: var(--is-text);
+  font-family: 'Manrope', system-ui, sans-serif;
+}
+
+.is-card-head {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 12px;
+}
+
+.is-card-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  background: var(--is-purple-soft);
+  color: var(--is-purple);
+}
+
+.is-card-head h2 {
+  margin: 0 0 4px;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.is-card-head p {
+  margin: 0;
+  color: var(--is-muted);
+}
+
+/* --- One setting per row, with a line between rows --- */
+.is-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-top: 1px solid var(--is-border);
+}
+
+.is-card-head + .is-row {
+  border-top: none;
+}
+
+.is-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.is-row-text strong {
+  font-size: 16px;
+}
+
+.is-row-text span {
+  font-size: 14px;
+  color: var(--is-muted);
+}
+
+/* Pill (optional) and switch, kept together on the right */
+.is-row-controls {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 16px;
+}
+
+.is-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--is-purple-soft);
+  color: var(--is-purple);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+  .is-row {
+    flex-wrap: wrap;
+  }
+
+  .is-row-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+/* --- On/off switch: its look follows aria-checked, so it always matches what screen readers say --- */
+.is-switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 56px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: var(--is-switch-off);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.is-switch[aria-checked='true'] {
+  background: var(--is-purple);
+}
+
+.is-switch-knob {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s ease;
+}
+
+.is-switch[aria-checked='true'] .is-switch-knob {
+  transform: translateX(24px);
+}
+
+.is-switch:focus-visible {
+  outline: 2px solid var(--is-purple);
+  outline-offset: 2px;
+}
+
+/* --- Dropdown setting: label left, select right, with our own chevron --- */
+.is-select-label {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.is-select {
+  position: relative;
+  flex: 0 1 340px;
+  min-width: 0;
+}
+
+.is-select select {
+  width: 100%;
+  padding: 10px 40px 10px 16px;
+  border: 1px solid var(--is-border);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--is-text);
+  font: inherit;
+  font-size: 15px;
+  appearance: none;
+  cursor: pointer;
+}
+
+.is-select select:focus-visible {
+  outline: 2px solid var(--is-purple);
+  outline-offset: 2px;
+}
+
+.is-select svg {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  color: var(--is-text);
+  pointer-events: none;
+}
+
+/* --- Buttons: outlined by default, filled for the main action --- */
+.is-button {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: 1.5px solid var(--is-purple);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--is-purple);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.is-button:hover:not(:disabled) {
+  background: #f6f5fc;
+}
+
+.is-button--primary {
+  background: var(--is-purple);
+  color: #fff;
+}
+
+.is-button--primary:hover:not(:disabled) {
+  background: #2e1c63;
+}
+
+.is-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.is-button:focus-visible {
+  outline: 2px solid var(--is-purple);
+  outline-offset: 2px;
+}
+
+/* --- Confirmation shown in a card after an action --- */
+.is-notice {
+  margin: 8px 0 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #e8f6ee;
+  color: #1d6b40;
+  font-size: 14px;
+}
+
+/* --- Change password form (inside the shared Modal) --- */
+.is-form {
+  --is-purple: #3b2579;
+  --is-muted: #6b6585;
+
+  text-align: left;
+}
+
+.is-form-title {
+  margin: 0 0 6px;
+  font-size: 22px;
+}
+
+.is-form-hint {
+  margin: 0 0 16px;
+  color: var(--is-muted);
+  font-size: 14px;
+}
+
+.is-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.is-form-field label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.is-form-field .field-error,
+.is-form-error {
+  margin: 0;
+  color: #b42318;
+  font-size: 13px;
+}
+
+.is-form-error {
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fdecea;
+}
+
+.is-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}

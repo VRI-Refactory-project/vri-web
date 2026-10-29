@@ -1,0 +1,93 @@
+/* Page layout only. Card, row and switch styles (and the colour variables) are in
+   components/interpreter/settings/settings.css. */
+
+/* No padding here: the dashboard frame (.dl-main) already spaces the content, like the other pages. */
+.is-page {
+  color: var(--is-text);
+  /* The dashboard shell defaults to Plus Jakarta Sans; interpreter pages use Manrope, like the sidebar. */
+  font-family: 'Manrope', system-ui, sans-serif;
+}
+
+/* --- Header --- */
+.is-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.is-header h1 {
+  margin: 0 0 6px;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--is-text);
+}
+
+.is-header p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--is-muted);
+}
+
+.is-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: 1px solid var(--is-border);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--is-purple);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.is-back:hover {
+  background: #f6f5fc;
+}
+
+.is-back:focus-visible {
+  outline: 2px solid var(--is-purple);
+  outline-offset: 2px;
+}
+
+/* --- Cards: two columns, one on narrow screens --- */
+.is-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .is-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Discard / Save, bottom right; the confirmation sits to their left --- */
+.is-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.is-actions .is-notice {
+  margin: 0 auto 0 0;
+}
+
+.is-actions .is-button {
+  padding: 12px 24px;
+  border-radius: 999px;
+}
+
+@media (max-width: 560px) {
+  .is-actions .is-button {
+    flex: 1 1 100%;
+  }
+}
