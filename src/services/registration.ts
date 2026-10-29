@@ -99,3 +99,21 @@ export const registerInstitution = (d: InstitutionRegistration) =>
       ? { organisation_type_other: d.organisationTypeOther.trim() }
       : {}),
   });
+
+// --- NEW: Institution License Upload ---
+
+export interface InstitutionLicensePayload {
+  licenseType: string;
+  issuingAuthority: string;
+  license: File;
+}
+
+export async function uploadInstitutionLicense(data: FormData): Promise<void> {
+  await api('/api/v1/institutions/upload-license/', {
+    method: 'POST',
+    body: data,
+    // Note: Do NOT set Content-Type header manually here.
+    // The browser automatically sets it to multipart/form-data with the correct boundary
+    // when you pass a FormData object as the body.
+  });
+}

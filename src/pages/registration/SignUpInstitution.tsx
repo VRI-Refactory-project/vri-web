@@ -20,7 +20,6 @@ import { describeError } from '../../services/api';
 import { registerInstitution, type OrganisationType } from '../../services/registration';
 import './AuthPages.css';
 
-// The person who registers an institution becomes its admin (backend creates both).
 const TYPES: { value: OrganisationType; label: string }[] = [
   { value: 'HOSPITAL', label: 'Hospital or clinic' },
   { value: 'COURT', label: 'Court' },
@@ -40,7 +39,6 @@ type FieldName =
   | 'password'
   | 'confirm';
 
-// Same order as the fields appear on screen, so a failed submit focuses the first one you see.
 const FIELD_ORDER: FieldName[] = [
   'organisationName',
   'organisationTypeOther',
@@ -64,19 +62,16 @@ export const SignUpInstitution = () => {
     email: '',
     password: '',
   });
-  // Kept apart from `form` on purpose: `form` is sent to the API as it is, and the API never
-  // needs the confirmation.
+
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string>();
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Legal & Terms state
   const [agreed, setAgreed] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
 
-  // An error shows once the person has left the field, or tried to submit.
   const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
   const [submitted, setSubmitted] = useState(false);
 
@@ -85,7 +80,6 @@ export const SignUpInstitution = () => {
 
   const isOther = form.organisationType === 'OTHER';
 
-  // Worked out from the form on every render, so a submit never reads out-of-date results.
   const errors = collectErrors<FieldName>({
     organisationName: validateRequiredText(form.organisationName, 'Enter the institution name.'),
     organisationTypeOther: isOther
@@ -107,7 +101,6 @@ export const SignUpInstitution = () => {
   const shown = (name: FieldName) => (touched[name] || submitted ? errors[name] : undefined);
   const touch = (name: FieldName) => () => setTouched((t) => ({ ...t, [name]: true }));
 
-  // Shared props for a text input: error styling, accessibility links and the blur handler.
   const props = (name: FieldName) => ({
     id: inputId(name),
     className: shown(name) ? 'form-input form-input--error' : 'form-input',
@@ -133,8 +126,14 @@ export const SignUpInstitution = () => {
     }
     setSubmitting(true);
     try {
+      // Assuming registerInstitution logs the user in automatically (as you had before)
       login(await registerInstitution(form));
-      navigate('/register/pending', { replace: true });
+
+      // Route to verify email, passing the next destination
+      navigate('/verify-email', {
+        replace: true,
+        state: { next: '/register/institution/upload-license' },
+      });
     } catch (err) {
       setError(describeError(err));
     } finally {
@@ -223,7 +222,6 @@ export const SignUpInstitution = () => {
           {isOther && message('organisationTypeOther')}
         </div>
 
-        {/* Row: Your full name | Work email */}
         <div className="inst-row">
           <div className="form-group">
             <label htmlFor="inst-name">Your full name</label>
@@ -251,7 +249,6 @@ export const SignUpInstitution = () => {
           </div>
         </div>
 
-        {/* Phone on its own row */}
         <div className="form-group">
           <label htmlFor="inst-phone">Phone number</label>
           <PhoneField
@@ -265,7 +262,6 @@ export const SignUpInstitution = () => {
           {message('phone')}
         </div>
 
-        {/* Row: Password | Confirm password */}
         <div className="inst-row">
           <div className="form-group">
             <label htmlFor="inst-password">Password</label>
@@ -291,7 +287,6 @@ export const SignUpInstitution = () => {
             {message('password')}
           </div>
 
-          {/* The eye button on the password box shows or hides both boxes */}
           <div className="form-group">
             <label htmlFor="inst-confirm">Confirm password</label>
             <input
@@ -306,10 +301,8 @@ export const SignUpInstitution = () => {
           </div>
         </div>
 
-        {/* Strength bars + requirement ticks: appear once a password is typed */}
         <PasswordStrength password={form.password} />
 
-        {/* Terms and Privacy Checkbox */}
         <div className="form-group" style={{ marginTop: '16px' }}>
           <label className="ca-terms">
             <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
@@ -370,7 +363,6 @@ export const SignUpInstitution = () => {
         Have an account? <Link to="/sign-in">Sign in</Link>
       </p>
 
-      {/* Legal Modals */}
       <LegalModal isOpen={showTerms} onClose={() => setShowTerms(false)} title="Terms of Service">
         <TermsContent />
       </LegalModal>
