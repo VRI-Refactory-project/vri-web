@@ -194,10 +194,9 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
     const email = form.email.trim();
     const requestId = ++emailRequestId.current;
 
-    if (!email || validateEmail(email, { required: true })) {
-      setEmailAvailability('idle');
-      return;
-    }
+  if (!email || validateEmail(email, { required: true })) {
+    return;
+  }
 
     const timeout = window.setTimeout(async () => {
       setEmailAvailability('checking');
