@@ -156,8 +156,12 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
   const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
   const [submitted, setSubmitted] = useState(false);
 
-  // Email availability state and request identity.
-  const [emailAvailability, setEmailAvailability] = useState<EmailAvailability>('idle');
+  // Email availability result, stored together with the address it was fetched for,
+  // plus a request identity that changes whenever the email field changes.
+  const [emailCheck, setEmailCheck] = useState<{ email: string; status: EmailAvailability }>({
+    email: '',
+    status: 'idle',
+  });
   const emailRequestId = useRef(0);
 
   const [videoDismissed, setVideoDismissed] = useState(false);
@@ -199,17 +203,17 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
     }
 
     const timeout = window.setTimeout(async () => {
-      setEmailAvailability('checking');
+      setEmailCheck({ email, status: 'checking' });
 
       try {
         const available = await checkEmailAvailability(email);
 
         if (emailRequestId.current === requestId) {
-          setEmailAvailability(available ? 'available' : 'taken');
+          setEmailCheck({ email, status: available ? 'available' : 'taken' });
         }
       } catch {
         if (emailRequestId.current === requestId) {
-          setEmailAvailability('failed');
+          setEmailCheck({ email, status: 'failed' });
         }
       }
     }, 500);
@@ -223,6 +227,11 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
       }
     };
   }, [form.email]);
+
+  // A result only counts for the address it was fetched for. Once the email changes, an
+  // earlier "taken" or "available" answer is ignored without resetting state inside the effect.
+  const emailAvailability: EmailAvailability =
+    emailCheck.email === form.email.trim() ? emailCheck.status : 'idle';
 
   // Recalculated on every keystroke: drives the strength bars and green ticks.
   const strength = getPasswordStrength(form.password);
@@ -280,29 +289,48 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
 
     setSubmitting(true);
 
+    // The address this attempt is for, and the request identity at the moment of submitting.
+    // The identity changes every time the email field changes, so it tells us afterwards
+    // whether the person edited the email while the check below was still running.
+    const submittedEmail = form.email.trim();
+    const submitRequestId = emailRequestId.current;
+
     try {
       // Recheck at submission time so we don't rely only on a potentially old result.
       // If the check fails due to a network/server issue, registration still gets the
       // final opportunity to validate the email.
-      try {
-        const available = await checkEmailAvailability(form.email.trim());
+      let available: boolean | undefined;
 
-        setEmailAvailability(available ? 'available' : 'taken');
+      try {
+        available = await checkEmailAvailability(submittedEmail);
+      } catch {
+        available = undefined;
+      }
+
+      // The email changed while we were waiting. Stop here rather than register the old
+      // address; the person can submit again with what is now in the field.
+      if (emailRequestId.current !== submitRequestId) {
+        return;
+      }
+
+      if (available === undefined) {
+        setEmailCheck({ email: submittedEmail, status: 'failed' });
+      } else {
+        setEmailCheck({ email: submittedEmail, status: available ? 'available' : 'taken' });
 
         if (!available) {
           setTouched((t) => ({ ...t, email: true }));
           document.getElementById('ca-email')?.focus();
           return;
         }
-      } catch {
-        setEmailAvailability('failed');
       }
 
+      // The backend still does the final duplicate-email check when it creates the account.
       // confirmPassword is deliberately left out: the API never needs it.
       const registrationData = {
         name: `${form.firstname.trim()} ${form.lastname.trim()}`,
         phone: form.phone,
-        email: form.email.trim(),
+        email: submittedEmail,
         password: form.password,
       };
 
