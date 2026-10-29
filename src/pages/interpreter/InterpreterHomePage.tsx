@@ -1,169 +1,15 @@
-// import { Link } from 'react-router-dom';
-// import { Check } from 'lucide-react';
-// import { useAuth } from '../../hooks/useAuth';
-// import {
-//   reasonText,
-//   useAvailability,
-//   useInterpreterHome,
-// } from '../../features/interpreter/homeData';
-// import './InterpreterHomePage.css';
-
-// const BASE = '/dashboard/interpreter';
-
-// function greeting(date = new Date()) {
-//   const hour = date.getHours();
-//   if (hour < 12) return 'Good morning';
-//   if (hour < 18) return 'Good afternoon';
-//   return 'Good evening';
-// }
-
-// function StatCard(props: {
-//   label: string;
-//   value: string | number;
-//   note: string;
-//   to: string;
-//   cta: string;
-// }) {
-//   return (
-//     <section className="ih-card ih-stat" aria-label={props.label}>
-//       <div>
-//         <p className="ih-stat-label">{props.label}</p>
-//         <p className="ih-stat-value">{props.value}</p>
-//         <p className="ih-note">{props.note}</p>
-//       </div>
-//       <Link className="ih-link" to={props.to}>
-//         {props.cta} →
-//       </Link>
-//     </section>
-//   );
-// }
-
-// export function InterpreterHomePage() {
-//   const { session } = useAuth();
-//   const { data } = useInterpreterHome();
-//   const { available, reason, setAvailable, loading, saving, error } = useAvailability();
-//   const reasonNote = available ? reasonText(reason) : '';
-//   const name = session?.user.name ?? '';
-//   const firstName = name.trim().split(/\s+/)[0] ?? '';
-//   const initial = name.trim().charAt(0).toUpperCase() || '?';
-
-//   return (
-//     <div className="ih">
-//       <header className="ih-header">
-//         <div>
-//           <h1 className="ih-title">{[greeting(), firstName].filter(Boolean).join(' ')}</h1>
-//           <p className="ih-sub">Here&apos;s what&apos;s happening today!</p>
-//         </div>
-//         <span className="ih-badge" aria-hidden="true">
-//           {initial}
-//         </span>
-//       </header>
-
-//       <section className="ih-card ih-status" aria-label="Availability status">
-//         <span className={available ? 'ih-dot ih-dot--on' : 'ih-dot'} aria-hidden="true" />
-//         <div className="ih-status-text">
-//           <h2 className={available ? 'ih-status-title ih-status-title--on' : 'ih-status-title'}>
-//             {available ? 'Available' : 'Unavailable'}
-//           </h2>
-//           <p className="ih-status-note" role="status">
-//             {available
-//               ? 'You are available to receive interpreting requests'
-//               : 'You will not receive interpreting requests'}
-//           </p>
-//           {reasonNote && <p className="ih-status-note">{reasonNote}</p>}
-//           {error && (
-//             <p className="ih-error" role="alert">
-//               {error}
-//             </p>
-//           )}
-//         </div>
-//         <button
-//           type="button"
-//           role="switch"
-//           aria-checked={available}
-//           aria-label="Available for interpreting requests"
-//           className={available ? 'ih-switch ih-switch--on' : 'ih-switch'}
-//           disabled={loading || saving}
-//           onClick={() => void setAvailable(!available)}
-//         >
-//           <span className="ih-switch-knob" />
-//         </button>
-//       </section>
-
-//       <div className="ih-stats">
-//         <StatCard
-//           label="Available requests"
-//           value={data.availableRequests}
-//           note="Waiting for interpreter"
-//           to={`${BASE}/requests`}
-//           cta="View requests"
-//         />
-//         <StatCard
-//           label="Today's Sessions"
-//           value={data.todaysSessions}
-//           note="Upcoming sessions"
-//           to={`${BASE}/sessions`}
-//           cta="View sessions"
-//         />
-//         {data.pendingEarnings && (
-//           <StatCard
-//             label="Pending Earnings"
-//             value={data.pendingEarnings}
-//             note="Sample figure, not real money"
-//             to={`${BASE}/wallet`}
-//             cta="Open wallet"
-//           />
-//         )}
-//       </div>
-
-//       {data.recentSessions.length > 0 && (
-//         <ul className="ih-recent" aria-label="Recent sessions">
-//           {data.recentSessions.map((s) => (
-//             <li key={s.id} className="ih-card ih-session">
-//               <span className="ih-check" aria-hidden="true">
-//                 <Check size={14} />
-//               </span>
-//               <div className="ih-session-text">
-//                 <p className="ih-session-done">Session completed</p>
-//                 <p className="ih-session-title">{s.title}</p>
-//                 <p className="ih-session-client">Client: {s.client}</p>
-//               </div>
-//               <time className="ih-session-time">{s.time}</time>
-//             </li>
-//           ))}
-//         </ul>
-//       )}
-
-//       {data.nextSession && (
-//         <section className="ih-card ih-reminder" aria-label="Reminder">
-//           <div>
-//             <h2 className="ih-reminder-title">Reminder</h2>
-//             <p className="ih-reminder-text">
-//               Your next interpreting session starts at {data.nextSession.startsAt}. Please test your
-//               camera and internet connection 10 minutes before joining.
-//             </p>
-//           </div>
-//           <Link className="ih-button" to={`${BASE}/sessions`}>
-//             View calendar
-//           </Link>
-//         </section>
-//       )}
-//     </div>
-//   );
-// }
-
 
 import { Link } from 'react-router-dom';
 import {
   Bell,
-  Calendar,
   ChevronDown,
+  Calendar,
   ChevronLeft,
   ChevronRight,
   Clock,
   MessageSquare,
-  SlidersHorizontal,
-  Users,
+  // SlidersHorizontal,
+  // Users,
   Video,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
@@ -223,49 +69,38 @@ export function InterpreterHomePage() {
                 You're making a difference. Every connection helps someone get the support they need.
               </p>
             </div>
-
-            <div className="ih-banner-image-wrap">
-              {/* Replace this image with your actual asset if you have it locally */}
-              <img
-                src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1000&q=80"
-                alt="Interpreter signing"
-              />
-            </div>
           </section>
 
           {/* Stats Row */}
           <div className="ih-stats-row">
+            
             <div className="ih-stat-box">
-              <Users size={20} className="ih-icon-purple" />
-              <h2>12</h2>
-              <p>Total connections</p>
-            </div>
-
-            <div className="ih-stat-box">
-              <Clock size={20} className="ih-icon-blue" />
+              <div className="ih-stat-header">
+                <Clock size={20} className="ih-icon-blue" />
+                <span className="ih-trend trend-green">+2 new</span>
+              </div>
               <h2>5</h2>
               <p>Pending requests</p>
             </div>
 
             <div className="ih-stat-box">
-              <Calendar size={20} className="ih-icon-purple" />
+              <div className="ih-stat-header">
+                <Calendar size={20} className="ih-icon-purple" />
+                <span className="ih-trend trend-purple">+1 today</span>
+              </div>
               <h2>3</h2>
               <p>This week&apos;s sessions</p>
             </div>
 
             <div className="ih-stat-box">
-              <MessageSquare size={20} className="ih-icon-teal" />
+              <div className="ih-stat-header">
+                <MessageSquare size={20} className="ih-icon-teal" />
+                <span className="ih-trend trend-muted">All read</span>
+              </div>
               <h2>0</h2>
               <p>Unread messages</p>
             </div>
 
-            <div className="ih-stat-box ih-profile-completion">
-              <div className="ih-icon-purple ih-profile-icon">
-                <SlidersHorizontal size={20} />
-              </div>
-              <p>Profile not complete</p>
-              <Link to="#">View details →</Link>
-            </div>
           </div>
 
           {/* Middle Grid: Next Session & Activity */}
@@ -274,7 +109,7 @@ export function InterpreterHomePage() {
               <div className="ih-section-header">
                 <h3>Next session</h3>
                 <Link to="#" className="ih-section-link">
-                  View all <span aria-hidden="true">→</span>
+                   View all <ChevronRight size={14} />
                 </Link>
               </div>
 
@@ -295,10 +130,7 @@ export function InterpreterHomePage() {
 
                 <div className="ih-next-details">
                   <p>
-                    <span aria-hidden="true">📅</span> Today, 10:30 AM - 11:00 AM
-                  </p>
-                  <p>
-                    <Video size={14} className="ih-meta-icon" /> Video call
+                   <Calendar size={14} className="ih-meta-icon" /> Today, 10:30 AM - 11:00 AM
                   </p>
                 </div>
 
@@ -313,43 +145,60 @@ export function InterpreterHomePage() {
               </div>
             </section>
 
-            <section className="ih-section">
+                        <section className="ih-section">
               <div className="ih-section-header">
-                <h3>Recent activity</h3>
+                <h3>
+                  <Clock size={18} className="ih-section-icon" /> Recent activity
+                </h3>
               </div>
 
               <div className="ih-card ih-activity-card">
-                <div className="ih-activity-item">
-                  <span className="ih-activity-dot ih-dot-purple" aria-hidden="true" />
-                  <div>
-                    <p>You accepted James Carter&apos;s connection request</p>
+                
+                <div className="ih-timeline-item">
+                  <div className="ih-timeline-marker bg-green"></div>
+                  <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80" alt="James" className="ih-timeline-avatar" />
+                  <div className="ih-timeline-content">
+                    <p>You accepted James Carter's connection request</p>
                     <span className="ih-time-label">2 hours ago</span>
                   </div>
                 </div>
 
-                <div className="ih-activity-item">
-                  <span className="ih-activity-dot ih-dot-purple" aria-hidden="true" />
-                  <div>
+                <div className="ih-timeline-item">
+                  <div className="ih-timeline-marker bg-purple"></div>
+                  <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80" alt="Priya" className="ih-timeline-avatar" />
+                  <div className="ih-timeline-content">
                     <p>Priya Sharma sent you a connection request</p>
                     <span className="ih-time-label">4 hours ago</span>
                   </div>
                 </div>
 
-                <div className="ih-activity-item">
-                  <span className="ih-activity-dot ih-dot-blue" aria-hidden="true" />
-                  <div>
+                <div className="ih-timeline-item">
+                  <div className="ih-timeline-marker bg-purple"></div>
+                  <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80" alt="Alex" className="ih-timeline-avatar" />
+                  <div className="ih-timeline-content">
                     <p>Alex Johnson accepted your connection request</p>
                     <span className="ih-time-label">Yesterday</span>
                   </div>
                 </div>
 
-                <div className="ih-activity-item">
-                  <span className="ih-activity-dot ih-dot-blue" aria-hidden="true" />
-                  <div>
+                <div className="ih-timeline-item">
+                  <div className="ih-timeline-marker bg-purple"></div>
+                  <img src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=100&q=80" alt="Grace" className="ih-timeline-avatar" />
+                  <div className="ih-timeline-content">
                     <p>You started a chat with Grace Nsubuga</p>
                     <span className="ih-time-label">Yesterday</span>
                   </div>
                 </div>
+
+                <div className="ih-timeline-item">
+                  <div className="ih-timeline-marker bg-blue"></div>
+                  <img src="https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?auto=format&fit=crop&w=100&q=80" alt="Daniel" className="ih-timeline-avatar" />
+                  <div className="ih-timeline-content">
+                    <p>You received a connection request from Daniel Ochieng</p>
+                    <span className="ih-time-label">2 days ago</span>
+                  </div>
+                </div>
+
               </div>
             </section>
           </div>
@@ -359,7 +208,7 @@ export function InterpreterHomePage() {
             <div className="ih-section-header">
               <h3>Upcoming sessions</h3>
               <Link to="#" className="ih-section-link">
-                View all <span aria-hidden="true">→</span>
+                  View all <ChevronRight size={14} />
               </Link>
             </div>
 
@@ -378,27 +227,6 @@ export function InterpreterHomePage() {
                 </div>
                 <div className="ih-list-time">
                   <p>Today, 2:00 PM - 2:30 PM</p>
-                  <p className="ih-meta ih-meta-inline">
-                    <Video size={12} className="ih-meta-icon" /> Video call
-                  </p>
-                </div>
-                <ChevronRight size={18} className="ih-chevron" />
-              </div>
-
-              <div className="ih-list-item">
-                <img
-                  src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=200&q=80"
-                  alt="Alex Johnson"
-                  className="ih-avatar-md"
-                />
-                <div className="ih-list-info">
-                  <h4>
-                    Alex Johnson <span className="ih-badge-verified">✓</span>
-                  </h4>
-                  <p className="ih-meta">Deaf User • Nairobi, Kenya</p>
-                </div>
-                <div className="ih-list-time">
-                  <p>Tomorrow, 9:00 AM - 9:30 AM</p>
                   <p className="ih-meta ih-meta-inline">
                     <Video size={12} className="ih-meta-icon" /> Video call
                   </p>
@@ -428,10 +256,6 @@ export function InterpreterHomePage() {
               </div>
             </div>
           </section>
-
-          <div className="ih-quote-banner">
-            <p>“Access is not a favour, it&apos;s a right.”</p>
-          </div>
         </div>
 
         {/* RIGHT SIDEBAR */}
@@ -532,3 +356,7 @@ export function InterpreterHomePage() {
     </div>
   );
 }
+
+
+
+

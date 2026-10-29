@@ -113,7 +113,7 @@ const appRoutes: RouteObject[] = [
   },
 
   {
-    // element: <ProtectedRoute allow={['deaf']} />,
+    element: <ProtectedRoute allow={['deaf']} />,
     children: [
       {
         path: '/dashboard/deaf',
@@ -147,11 +147,11 @@ const appRoutes: RouteObject[] = [
   },
 
   {
-    // element: <ProtectedRoute allow={['interpreter']} />,
+    element: <ProtectedRoute allow={['interpreter']} />,
     children: [
       {
         // Nothing past this point opens until an admin has approved the interpreter.
-        // element: <ApprovedInterpreterRoute />,
+        element: <ApprovedInterpreterRoute />,
         children: [
           {
             path: '/dashboard/interpreter',
@@ -192,7 +192,7 @@ const appRoutes: RouteObject[] = [
   },
 
   {
-    // element: <ProtectedRoute allow={['admin']} />,
+    element: <ProtectedRoute allow={['admin']} />,
     children: [
       {
         path: '/dashboard/admin',

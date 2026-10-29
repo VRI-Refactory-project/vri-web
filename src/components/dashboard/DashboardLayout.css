@@ -2,10 +2,13 @@
   display: grid;
   grid-template-columns: 235px 1fr;
   min-height: 100vh;
-  background: #f6f5fc;
+  /* Moved the background here so it covers the whole right side perfectly */
+  background: #f6f5fc; 
   font-family: 'Plus Jakarta Sans', 'Manrope', system-ui, sans-serif;
   color: #0f172a;
 }
+
+
 
 .dl-sidebar {
   position: sticky;
@@ -132,22 +135,28 @@
   font-size: 13px;
 }
 
+
 .dl-main {
   display: flex;
+  flex: 1; 
   flex-direction: column;
   box-sizing: border-box;
   min-width: 0;
   padding: 54px 68px 54px 33px;
-    /* background-color: #0a3055; */
-   /* background: linear-gradient(130deg, #D9C2F7 0%, #EAD6FF 40%, #FFF7E8 75%, #FFDCEE 100%); */
- /* background: linear-gradient(135deg, #F8F7FF 0%, #EAE5FA 100%);
-   box-shadow: 0 8px 24px rgba(75, 27, 130, 0.12); */
-/* Mobile device frames (stronger for showcase pop) */
-box-shadow: 0 18px 42px rgba(75, 27, 130, 0.18);
-/* Primary purple button hover */
-box-shadow: 0 10px 26px rgba(75, 27, 130, 0.28);
 
-background-image: url('../../assets/background_image.png');
+  background-image: 
+   linear-gradient(rgba(248, 247, 252, 0.55), rgba(248, 247, 252, 0.55)),
+    url('../../assets/suit.png');
+
+  /* 2. Make it cover the area without stretching or repeating */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+
+  /* 3. Cleaned up the duplicate box-shadows */
+  box-shadow: 0 18px 42px rgba(75, 27, 130, 0.18);
+
 
 
 }
@@ -156,6 +165,7 @@ background-image: url('../../assets/background_image.png');
 @media (max-width: 860px) {
   .dl-shell {
     grid-template-columns: 1fr;
+    background-image: url('../../assets/suit.png');
   }
 
   .dl-sidebar {
