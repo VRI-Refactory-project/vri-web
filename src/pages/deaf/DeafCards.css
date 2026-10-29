@@ -1,0 +1,54 @@
+/* One card look for every Deaf page, so pages don't each invent their own.
+   Use `dc-card` for main content (lists, forms) and add `dc-card--soft` for light, see-through cards
+   (stats, shortcuts). Add `dc-card--clickable` when the whole card is a button or link. */
+
+/* The content column of a Deaf page: centred, and narrow enough that cards don't stretch. */
+.dc-page {
+  width: 100%;
+  max-width: 1050px;
+  margin-inline: auto;
+}
+
+.dc-card {
+  box-sizing: border-box;
+  padding: 20px;
+  border: 1px solid rgba(56, 44, 119, 0.08);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(31, 22, 64, 0.04);
+}
+
+/* Faint purple tint that lets the page show through, instead of solid white. */
+.dc-card--soft {
+  border-color: rgba(255, 255, 255, 0.7);
+  background: rgba(237, 232, 251, 0.55);
+  box-shadow: none;
+  backdrop-filter: blur(8px);
+}
+
+.dc-card--clickable {
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    transform 0.2s;
+}
+
+.dc-card--clickable:hover {
+  border-color: rgba(56, 44, 119, 0.35);
+  box-shadow: 0 6px 18px rgba(31, 22, 64, 0.08);
+  transform: translateY(-1px);
+}
+
+.dc-card--clickable:focus-visible {
+  outline: 2px solid #382c77;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dc-card--clickable,
+  .dc-card--clickable:hover {
+    transition: none;
+    transform: none;
+  }
+}

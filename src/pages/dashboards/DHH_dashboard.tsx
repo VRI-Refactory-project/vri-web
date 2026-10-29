@@ -13,6 +13,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { api } from '../../services/api';
+import '../deaf/DeafCards.css';
 import './DHH_dashboard.css';
 import { InterpreterProfileModal } from './InterpreterProfileModal';
 import {
@@ -155,7 +156,7 @@ export function DashboardPage() {
   };
 
   return (
-    <>
+    <div className="dc-page">
       {/* Header */}
       <header className="dashboard-header">
         <div>
@@ -279,7 +280,11 @@ export function DashboardPage() {
 
       {/* Quick Actions */}
       <section className="quick-actions">
-        <button className="action-card" onClick={() => navigate('/dashboard/deaf/schedule')}>
+        <button
+          type="button"
+          className="action-card dc-card dc-card--soft dc-card--clickable"
+          onClick={() => navigate('/dashboard/deaf/schedule')}
+        >
           <div className="action-icon">
             <Calendar size={20} />
           </div>
@@ -289,7 +294,11 @@ export function DashboardPage() {
           </div>
           <ChevronRight size={18} className="action-arrow" />
         </button>
-        <button className="action-card" onClick={() => navigate('/dashboard/deaf/accessibility')}>
+        <button
+          type="button"
+          className="action-card dc-card dc-card--soft dc-card--clickable"
+          onClick={() => navigate('/dashboard/deaf/accessibility')}
+        >
           <div className="action-icon">
             <Settings size={20} />
           </div>
@@ -303,7 +312,7 @@ export function DashboardPage() {
 
       {/* Stats Grid */}
       <section className="stats-grid">
-        <div className="stat-card">
+        <div className="stat-card dc-card dc-card--soft">
           <span className="stat-label">Upcoming</span>
           <span className="stat-value">
             {sessionCount} {sessionCount === 1 ? 'session' : 'sessions'}
@@ -313,13 +322,13 @@ export function DashboardPage() {
           </span>
         </div>
 
-        <div className="stat-card">
+        <div className="stat-card dc-card dc-card--soft">
           <span className="stat-label">Wallet</span>
           <span className="stat-value">{formatCurrency(stats.walletBalance)}</span>
           <span className="stat-sub">Available balance</span>
         </div>
 
-        <div className="stat-card">
+        <div className="stat-card dc-card dc-card--soft">
           <span className="stat-label">This month</span>
           <span className="stat-value">
             {stats.monthlySessions} {stats.monthlySessions === 1 ? 'session' : 'sessions'}
@@ -342,7 +351,7 @@ export function DashboardPage() {
             <p className="text-muted">No upcoming sessions yet.</p>
           )}
           {sessions?.map((item, index) => (
-            <div key={String(item.id ?? index)} className="session-card">
+            <div key={String(item.id ?? index)} className="session-card dc-card">
               <div className="session-details">
                 <h4>{String(item.interpreter_name ?? 'Interpreter session')}</h4>
                 <p>
@@ -372,7 +381,7 @@ export function DashboardPage() {
         )}
         <div className="interpreter-grid">
           {interpreters?.map((interpreter) => (
-            <div key={interpreter.id} className="interpreter-card">
+            <div key={interpreter.id} className="interpreter-card dc-card">
               <div className="interpreter-image-wrap">
                 {interpreter.photoUrl ? (
                   <img src={interpreter.photoUrl} alt={interpreter.name} />
@@ -423,6 +432,6 @@ export function DashboardPage() {
           onClose={() => setOpenProfileId(null)}
         />
       )}
-    </>
+    </div>
   );
 }
