@@ -9,7 +9,7 @@ import { RoleSelectionPage } from '../pages/registration/RoleSelectionPage';
 import { Forgotpassword } from '../pages/registration/Forgotpassword';
 import { Resetpassword } from '../pages/registration/Resetpassword';
 import { SignUpInstitution } from '../pages/registration/SignUpInstitution';
-import { UploadInstitutionLicense } from '../pages/registration/UploadInstitutionLicense'; // ADDED IMPORT
+import { UploadInstitutionLicense } from '../pages/registration/UploadInstitutionLicense';
 import { VerifyEmailPage } from '../pages/auth/VerifyEmailPage';
 import { SignInPage } from '../pages/auth/SignInPage';
 import { CreateAccountPage } from '../pages/registration/CreateAccountPage';
@@ -74,7 +74,6 @@ const appRoutes: RouteObject[] = [
       { path: '/register/deaf', element: <CreateAccountPage /> },
       { path: '/register/interpreter', element: <CreateAccountPage role="interpreter" /> },
       { path: '/register/institution', element: <SignUpInstitution /> },
-      // ADDED ROUTE
       { path: '/register/institution/upload-license', element: <UploadInstitutionLicense /> },
     ],
   },
@@ -128,14 +127,8 @@ const appRoutes: RouteObject[] = [
           { path: 'sessions', element: <SessionsHubPage /> },
           { path: 'sessions/history', element: <SessionHistoryPage /> },
           { path: 'sessions/new', element: <StartSessionPage /> },
-          {
-            path: 'schedule',
-            element: <SchedulePage />,
-          },
-          {
-            path: 'accessibility',
-            element: <AccessibilityPage />,
-          },
+          { path: 'schedule', element: <SchedulePage /> },
+          { path: 'accessibility', element: <AccessibilityPage /> },
           { path: 'messages', element: <MessagesPage /> },
           { path: 'wallet', element: <WalletPage /> },
           { path: 'profile', element: <DeafProfilePage /> },
@@ -173,17 +166,24 @@ const appRoutes: RouteObject[] = [
     element: <ProtectedRoute allow={['institution']} />,
     children: [
       {
-        path: '/dashboard/institution',
-        element: <InstitutionLayout />,
+        // TEMPORARY FRONTEND FIX: Force institutions to the pending page
+        // until the backend adds the "isApproved" check.
+        element: <Navigate to="/register/pending" replace />,
         children: [
-          { index: true, element: <InstitutionDashboardPage /> },
-          { path: 'staff', element: <StaffManagementPage /> },
-          { path: 'staff/new', element: <CreateStaffAccountPage /> },
-          { path: 'staff/created', element: <StaffAccountCreatedPage /> },
-          { path: 'sessions', element: <InstitutionSessionsPage /> },
-          { path: 'analytics', element: <InstitutionAnalyticsPage /> },
-          { path: 'settings', element: <InstitutionSettingsPage /> },
-          { path: 'profile', element: <InstitutionProfilePage /> },
+          {
+            path: '/dashboard/institution',
+            element: <InstitutionLayout />,
+            children: [
+              { index: true, element: <InstitutionDashboardPage /> },
+              { path: 'staff', element: <StaffManagementPage /> },
+              { path: 'staff/new', element: <CreateStaffAccountPage /> },
+              { path: 'staff/created', element: <StaffAccountCreatedPage /> },
+              { path: 'sessions', element: <InstitutionSessionsPage /> },
+              { path: 'analytics', element: <InstitutionAnalyticsPage /> },
+              { path: 'settings', element: <InstitutionSettingsPage /> },
+              { path: 'profile', element: <InstitutionProfilePage /> },
+            ],
+          },
         ],
       },
     ],
