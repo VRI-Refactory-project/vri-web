@@ -1,4 +1,3 @@
-
 import { render, screen } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -77,10 +76,10 @@ describe('InterpreterHomePage', () => {
   it('greets the signed-in interpreter by first name', () => {
     renderHome();
     // Changed the regex to allow the emoji at the beginning of the text
-        expect(
-      screen.getByRole('heading', { 
-        level: 1, 
-        name: (name) => name.includes('Good morning') && name.includes('Amina') 
+    expect(
+      screen.getByRole('heading', {
+        level: 1,
+        name: (name) => name.includes('Good morning') && name.includes('Amina'),
       }),
     ).toBeInTheDocument();
   });
@@ -115,7 +114,7 @@ describe('InterpreterHomePage', () => {
   it('shows the availability toggle button', async () => {
     mockProfile(true);
     renderHome();
-    
+
     // Since the button is currently static in the UI, we just check if it renders
     const toggle = screen.getByRole('button', { name: /toggle availability/i });
     expect(toggle).toBeInTheDocument();
@@ -124,10 +123,10 @@ describe('InterpreterHomePage', () => {
 
   it('shows the request and session counts with links to their pages', () => {
     renderHome();
-    
+
     expect(screen.getByText('Pending requests')).toBeInTheDocument();
     expect(screen.getByText("This week's sessions")).toBeInTheDocument();
-    
+
     const viewAllLinks = screen.getAllByRole('link', { name: /view all/i });
     expect(viewAllLinks.length).toBeGreaterThan(0);
   });
