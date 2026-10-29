@@ -1,40 +1,55 @@
-import { useState } from 'react';
+import { useRef, useState, type DragEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UploadCloud, ChevronRight, FileText, X } from 'lucide-react';
-import { AuthLayout } from '../../components/Authlayout';
+import { Upload } from 'lucide-react';
+import { AuthShell } from '../../components/AuthShell';
 import { FLOWS } from '../../features/registration/flows';
 import { describeError } from '../../services/api';
 import { uploadInstitutionLicense } from '../../services/registration';
+import './UploadCertificationsPage.css'; // Reusing the exact same CSS as the interpreter page
 
 export const UploadInstitutionLicense = () => {
   const navigate = useNavigate();
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const [file, setFile] = useState<File | null>(null);
   const [licenseType, setLicenseType] = useState('BUSINESS_LICENSE');
   const [issuingAuthority, setIssuingAuthority] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string>();
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0];
-    if (selected) {
-      const validTypes = ['application/pdf', 'image/jpeg', 'image/png'];
-      if (!validTypes.includes(selected.type)) {
-        setError('Invalid format. Please upload PDF, JPG, or PNG. Word and ZIP files are blocked.');
-        return;
-      }
-      if (selected.size > 10 * 1024 * 1024) {
-        setError('File is too large. Maximum size is 10MB.');
-        return;
-      }
-      setFile(selected);
-      setError(undefined);
+  const [dragging, setDragging] = useState(false);
+  const [fileError, setFileError] = useState<string>();
+  const [error, setError] = useState<string>();
+  const [submitting, setSubmitting] = useState(false);
+
+  // Replicating the interpreter's file validation exactly
+  const accept = (selected: File | undefined) => {
+    if (!selected) return;
+
+    const validTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+    if (!validTypes.includes(selected.type)) {
+      setFileError('Invalid format. Please upload PDF, JPG, or PNG.');
+      setFile(null);
+      return;
     }
+    if (selected.size > 10 * 1024 * 1024) {
+      setFileError('File is too large. Maximum size is 10MB.');
+      setFile(null);
+      return;
+    }
+
+    setFileError(undefined);
+    setFile(selected);
+  };
+
+  const onDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setDragging(false);
+    accept(e.dataTransfer.files[0]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file) return setError('Please upload a document.');
-    if (!issuingAuthority.trim()) return setError('Please enter the issuing authority.');
+    if (!file) return setError('Upload your license document.');
+    if (!issuingAuthority.trim()) return setError('Enter the issuing authority.');
 
     setSubmitting(true);
     setError(undefined);
@@ -54,96 +69,90 @@ export const UploadInstitutionLicense = () => {
   };
 
   return (
-    <AuthLayout
-      title="Upload your license"
-      subtitle="Upload your institution's operating license or accreditation for verification."
-      backTo="/get-started"
-      steps={FLOWS.institution}
-      current={3}
-    >
-      <form onSubmit={handleSubmit} className="inst-form">
-        <div className="form-group">
-          <label>Institution Document</label>
-          {!file ? (
-            <div
-              style={{
-                border: '2px dashed #cbd5e1',
-                borderRadius: '12px',
-                padding: '32px',
-                textAlign: 'center',
-                backgroundColor: '#f8fafc',
-                cursor: 'pointer',
-              }}
-              onClick={() => document.getElementById('file-upload')?.click()}
-            >
-              <UploadCloud size={32} color="#382c77" style={{ margin: '0 auto 12px' }} />
-              <p style={{ margin: '0 0 8px', fontWeight: 600, color: '#1e293b' }}>
-                Click to browse or drag and drop
-              </p>
-              <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>
-                PDF, JPG, or PNG (Max 10MB)
-              </p>
-              <input
-                id="file-upload"
-                type="file"
-                accept=".pdf, .jpg, .jpeg, .png"
-                style={{ display: 'none' }}
-                onChange={handleFileChange}
-              />
-            </div>
-          ) : (
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '16px',
-                border: '1px solid #e2e8f0',
-                borderRadius: '12px',
-                backgroundColor: '#f8fafc',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <FileText size={24} color="#382c77" />
-                <span style={{ fontSize: '14px', fontWeight: 500, color: '#1e293b' }}>
-                  {file.name}
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setFile(null)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444' }}
-              >
-                <X size={20} />
-              </button>
-            </div>
-          )}
-        </div>
+    <AuthShell steps={FLOWS.institution} current={3}>
+      <form className="cert-page__content" onSubmit={handleSubmit} noValidate>
+        <h1>Upload your license</h1>
+        <p className="cert-page__subtitle">
+          Upload your institution's operating license or accreditation for verification.
+        </p>
 
-        <div className="form-group">
-          <label>Document type *</label>
-          <select
-            className="form-input"
-            value={licenseType}
-            onChange={(e) => setLicenseType(e.target.value)}
+        <fieldset className="cert-card">
+          <legend className="visually-hidden">Institution License</legend>
+
+          {/* Exact same dropzone structure as the interpreter page */}
+          <div
+            className={`dropzone${dragging ? ' dropzone--active' : ''}`}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragging(true);
+            }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={onDrop}
           >
-            <option value="BUSINESS_LICENSE">Business Operating License</option>
-            <option value="HOSPITAL_ACCREDITATION">Hospital Accreditation</option>
-            <option value="GOV_APPROVAL">Government Approval</option>
-            <option value="OTHER">Other</option>
-          </select>
-        </div>
+            <span className="dropzone__icon" aria-hidden="true">
+              <Upload size={20} />
+            </span>
+            <p className="dropzone__title">Upload license document</p>
 
-        <div className="form-group">
-          <label>Issuing authority *</label>
-          <input
-            type="text"
-            className="form-input"
-            placeholder="e.g., Ministry of Health, URSB"
-            value={issuingAuthority}
-            onChange={(e) => setIssuingAuthority(e.target.value)}
-          />
-        </div>
+            {file ? (
+              <p className="dropzone__file">{file.name}</p>
+            ) : (
+              <>
+                <p className="dropzone__hint">Drag and drop your file here</p>
+                <p className="dropzone__hint">or</p>
+              </>
+            )}
+
+            <button
+              type="button"
+              className="btn btn--outline"
+              onClick={() => inputRef.current?.click()}
+            >
+              {file ? 'Replace file' : 'Browse files'}
+            </button>
+
+            <input
+              ref={inputRef}
+              type="file"
+              className="visually-hidden"
+              accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+              onChange={(e) => accept(e.target.files?.[0])}
+            />
+
+            <p className="dropzone__limits">PDF, JPG or PNG, 10 MB max</p>
+
+            {fileError && (
+              <p className="field-error" role="alert">
+                {fileError}
+              </p>
+            )}
+          </div>
+
+          <div className="field">
+            <label htmlFor="license-type">Document type *</label>
+            <select
+              id="license-type"
+              value={licenseType}
+              onChange={(e) => setLicenseType(e.target.value)}
+            >
+              <option value="BUSINESS_LICENSE">Business Operating License</option>
+              <option value="HOSPITAL_ACCREDITATION">Hospital Accreditation</option>
+              <option value="GOV_APPROVAL">Government Approval</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </div>
+
+          <div className="field">
+            <label htmlFor="issuing-authority">Issuing authority *</label>
+            <input
+              id="issuing-authority"
+              type="text"
+              placeholder="e.g., Ministry of Health, URSB"
+              value={issuingAuthority}
+              onChange={(e) => setIssuingAuthority(e.target.value)}
+            />
+          </div>
+        </fieldset>
 
         {error && (
           <p className="form-error" role="alert">
@@ -151,15 +160,10 @@ export const UploadInstitutionLicense = () => {
           </p>
         )}
 
-        <button
-          type="submit"
-          className="btn-primary"
-          style={{ marginTop: '16px' }}
-          disabled={submitting}
-        >
-          {submitting ? 'Uploading...' : 'Submit for Review'} <ChevronRight size={18} />
+        <button type="submit" className="btn btn--primary" disabled={submitting}>
+          {submitting ? 'Uploading...' : 'Submit for Review'}
         </button>
       </form>
-    </AuthLayout>
+    </AuthShell>
   );
 };
