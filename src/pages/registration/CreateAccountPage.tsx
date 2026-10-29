@@ -444,11 +444,12 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
               onChange: set('lastname'),
               onBlur: touch('lastname'),
             },
+
             shown('lastname'),
           )}
         </div>
 
-        {/* Email field with live availability feedback. */}
+        {/* Email field: keep validation and duplicate-email warnings. */}
         {field(
           'ca-email',
           'Email address',
@@ -462,36 +463,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
             onBlur: touch('email'),
           },
           emailError,
-        )}
-
-        {!shown('email') && emailAvailability === 'checking' && (
-          <p
-            className="ca-field-hint"
-            role="status"
-            style={{ marginTop: '-8px', fontSize: '13px', color: '#6b7280' }}
-          >
-            Checking email availability…
-          </p>
-        )}
-
-        {!shown('email') && emailAvailability === 'available' && (
-          <p
-            className="ca-field-success"
-            role="status"
-            style={{ marginTop: '-8px', fontSize: '13px', color: '#15803d' }}
-          >
-            Email is available.
-          </p>
-        )}
-
-        {!shown('email') && emailAvailability === 'failed' && (
-          <p
-            className="ca-field-hint"
-            role="status"
-            style={{ marginTop: '-8px', fontSize: '13px', color: '#6b7280' }}
-          >
-            Could not check email availability. We’ll verify it when you continue.
-          </p>
         )}
 
         {/* Phone on its own row. Existing phone validation is preserved. */}
