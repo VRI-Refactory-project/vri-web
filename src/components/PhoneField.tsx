@@ -222,7 +222,7 @@ export function PhoneField({
       countrySelectProps={{ 'aria-label': 'Country' }}
       numberInputProps={{
         id,
-        autoComplete: 'tel-national',
+        autoComplete: 'off',
         'aria-invalid': invalid ? true : undefined,
         'aria-describedby': errorId,
       }}
