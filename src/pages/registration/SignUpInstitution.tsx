@@ -62,7 +62,6 @@ export const SignUpInstitution = () => {
     email: '',
     password: '',
   });
-
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string>();
   const [submitting, setSubmitting] = useState(false);
@@ -126,14 +125,11 @@ export const SignUpInstitution = () => {
     }
     setSubmitting(true);
     try {
-      // Assuming registerInstitution logs the user in automatically (as you had before)
       login(await registerInstitution(form));
 
-      // Route to verify email, passing the next destination
-      navigate('/verify-email', {
-        replace: true,
-        state: { next: '/register/institution/upload-license' },
-      });
+      // Save the destination for after the OTP is verified
+      sessionStorage.setItem('nextAfterVerification', '/register/institution/upload-license');
+      navigate('/verify-email', { replace: true });
     } catch (err) {
       setError(describeError(err));
     } finally {

@@ -9,18 +9,20 @@ import './VerifyEmailPage.css';
 const safePath = (value: unknown): string | null =>
   typeof value === 'string' && value.startsWith('/') && !value.startsWith('//') ? value : null;
 
-/**
- * The step between creating or signing in to an account and the dashboard: enter the code that was
- * emailed. It cannot be skipped. Once the email is confirmed (or if there is nothing to confirm)
- * the person continues to the page they were heading to.
- */
 export function VerifyEmailPage() {
   const { session, logout } = useAuth();
   const location = useLocation();
-  const next = safePath((location.state as { next?: unknown } | null)?.next);
+
+  const storedNext = sessionStorage.getItem('nextAfterVerification');
+  const stateNext = safePath((location.state as { next?: unknown } | null)?.next);
+  const next = safePath(storedNext) ?? stateNext;
 
   if (!session) return <Navigate to="/sign-in" replace />;
+
   if (!needsEmailVerification(session.user)) {
+    if (next) {
+      sessionStorage.removeItem('nextAfterVerification');
+    }
     return <Navigate to={next ?? dashboardPathFor(session.user.role)} replace />;
   }
 

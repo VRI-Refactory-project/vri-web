@@ -11,7 +11,6 @@ const renderPage = () =>
       <MemoryRouter initialEntries={['/register/institution']}>
         <Routes>
           <Route path="/register/institution" element={<SignUpInstitution />} />
-          {/* CHANGED: Route to /verify-email instead of /register/pending */}
           <Route path="/verify-email" element={<p>verify email page</p>} />
         </Routes>
       </MemoryRouter>
@@ -35,7 +34,6 @@ describe('SignUpInstitution', () => {
     const submitButton = screen.getByRole('button', { name: /submit registration/i });
     expect(submitButton).toBeDisabled();
 
-    // The checkbox doesn't have a label text linked to it in the same way, so we find it by role
     const checkbox = screen.getByRole('checkbox');
     await userEvent.click(checkbox);
 
@@ -46,7 +44,6 @@ describe('SignUpInstitution', () => {
     const spy = vi.spyOn(registration, 'registerInstitution');
     renderPage();
 
-    // NEW: Check the box so the button becomes enabled
     await userEvent.click(screen.getByRole('checkbox'));
 
     await userEvent.click(screen.getByRole('button', { name: /submit registration/i }));
@@ -78,7 +75,6 @@ describe('SignUpInstitution', () => {
     await userEvent.selectOptions(screen.getByLabelText('Institution type'), 'OTHER');
     expect(screen.getByLabelText('Please specify the type')).toBeInTheDocument();
 
-    // NEW: Check the box so the button becomes enabled
     await userEvent.click(screen.getByRole('checkbox'));
 
     await userEvent.click(screen.getByRole('button', { name: /submit registration/i }));
@@ -123,18 +119,15 @@ describe('SignUpInstitution', () => {
     await userEvent.type(screen.getByLabelText('Password'), 'Secret-pass-1');
     await userEvent.type(screen.getByLabelText('Confirm password'), 'Secret-pass-1');
 
-    // NEW: Check the box so the button becomes enabled
     await userEvent.click(screen.getByRole('checkbox'));
 
     await userEvent.click(screen.getByRole('button', { name: /submit registration/i }));
 
-    // CHANGED: Look for the verify email page instead of pending review
     await waitFor(() => expect(screen.getByText('verify email page')).toBeInTheDocument());
 
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({ organisationName: 'Mulago', organisationType: 'COURT' }),
     );
-    // The confirmation box is for the person only: it must never reach the API.
     expect(spy.mock.calls[0][0]).not.toHaveProperty('confirmPassword');
   });
 
@@ -150,12 +143,10 @@ describe('SignUpInstitution', () => {
     await userEvent.type(screen.getByLabelText('Password'), 'Secret-pass-1');
     await userEvent.type(screen.getByLabelText('Confirm password'), 'Secret-pass-1');
 
-    // NEW: Check the box so the button becomes enabled
     await userEvent.click(screen.getByRole('checkbox'));
 
     await userEvent.click(screen.getByRole('button', { name: /submit registration/i }));
 
-    // CHANGED: Look for the verify email page instead of pending review
     await waitFor(() => expect(screen.getByText('verify email page')).toBeInTheDocument());
 
     expect(spy).toHaveBeenCalledWith(
