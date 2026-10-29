@@ -1,4 +1,26 @@
 .verify-page {
   min-height: 100vh;
-  background: #f4f3fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+
+  /* ADDED: Background image */
+  background-image: url('../../assets/background_image.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* ADDED: Logo positioning */
+.verify-logo {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  z-index: 10;
+}
+
+.verify-logo img {
+  height: 48px; /* Adjust if the logo needs to be bigger or smaller */
+  width: auto;
 }
