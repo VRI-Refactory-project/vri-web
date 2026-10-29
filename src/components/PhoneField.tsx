@@ -196,6 +196,7 @@ interface PhoneFieldProps {
   defaultCountry?: string;
 }
 
+
 export function PhoneField({
   id,
   value,
@@ -209,7 +210,7 @@ export function PhoneField({
   return (
     <PhoneInput
       international
-      withCountryCallingCode
+      withCountryCallingCode={false}
       countryCallingCodeEditable={false}
       limitMaxLength
       defaultCountry={defaultCountry as CountryCode}
@@ -222,7 +223,7 @@ export function PhoneField({
       countrySelectProps={{ 'aria-label': 'Country' }}
       numberInputProps={{
         id,
-        autoComplete: 'tel',
+        autoComplete: 'tel-national',
         'aria-invalid': invalid ? true : undefined,
         'aria-describedby': errorId,
       }}
