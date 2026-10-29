@@ -1,34 +1,47 @@
 /* src/components/LegalContent.css */
 
-/* 1. The dark overlay behind the popup */
+/* 1. The overlay behind the popup (Lighter opacity + Playful background) */
 .legal-modal-backdrop {
   position: fixed;
   inset: 0;
-  background-color: rgba(15, 23, 42, 0.7);
+  /* Lighter tint (0.45) so the form behind is visible, with the doodle pattern */
+  background-image:
+    linear-gradient(rgba(20, 15, 45, 0.45), rgba(20, 15, 45, 0.45)), url('/doodle-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   padding: 20px;
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(2px); /* Slight blur so the text is readable */
   animation: fadeIn 0.2s ease-out;
 }
 
 /* 2. The popup box itself */
 .legal-modal-content {
-  background: white;
+  background: #ffffff;
   border-radius: 20px;
   width: 100%;
-  max-width: 700px; /* Slightly wider for better reading */
+  max-width: 700px;
   max-height: 85vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   animation: slideUp 0.3s ease-out;
-  overflow: hidden; /* Keeps the rounded corners clean */
+  overflow: hidden;
+  /* FORCE MANROPE FONT HERE */
+  font-family:
+    'Manrope',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
 }
 
-/* 3. The Header (Brand Color) */
+/* 3. The Header */
 .legal-modal-header {
   display: flex;
   justify-content: space-between;
@@ -57,11 +70,14 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  transition: background 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
 .legal-modal-close:hover {
   background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
 }
 
 /* 5. The Scrollable Body */
@@ -73,9 +89,9 @@
   line-height: 1.7;
 }
 
-/* 6. Hide the scrollbar but keep it functional */
+/* 6. Thin, modern scrollbar */
 .legal-modal-body::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 .legal-modal-body::-webkit-scrollbar-track {
   background: transparent;
@@ -83,18 +99,20 @@
 .legal-modal-body::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 10px;
+  border: 2px solid white;
 }
 .legal-modal-body::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
 
-/* 7. Typography inside the content */
+/* 7. Typography inside the content (BRAND COLOR TITLES) */
 .legal-content h3 {
-  color: #1e293b;
-  font-size: 1.1rem;
-  font-weight: 700;
+  color: #382c77; /* Brand indigo color for titles */
+  font-size: 1.15rem;
+  font-weight: 800; /* Extra bold looks best in Manrope */
   margin-top: 28px;
   margin-bottom: 12px;
+  letter-spacing: -0.01em;
 }
 
 .legal-content h3:first-child {
@@ -103,6 +121,7 @@
 
 .legal-content p {
   margin-bottom: 16px;
+  font-weight: 500;
 }
 
 /* 8. Animations */
@@ -118,7 +137,7 @@
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(20px) scale(0.98);
+    transform: translateY(30px) scale(0.98);
   }
   to {
     opacity: 1;
