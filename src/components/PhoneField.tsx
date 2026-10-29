@@ -208,14 +208,12 @@ export function PhoneField({
 }: PhoneFieldProps) {
   return (
     <PhoneInput
-      country={defaultCountry as CountryCode}
-      international
-      withCountryCallingCode={false}
+      defaultCountry={defaultCountry as CountryCode}
       countryCallingCodeEditable={false}
       limitMaxLength
-      defaultCountry={defaultCountry as CountryCode}
+      international={false}
       value={value || undefined}
-      onChange={(v) => onChange(v ?? '')}
+      onChange={(nextValue) => onChange(nextValue ?? '')}
       onBlur={onBlur}
       disabled={disabled}
       className={invalid ? 'phone-field phone-field--error' : 'phone-field'}
