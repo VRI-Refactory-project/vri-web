@@ -22,7 +22,6 @@ export function sanitizePhoneInput(value: string): string {
   return (cleaned.startsWith('+') ? '+' : '') + rest;
 }
 
-
 /** Validates international phone numbers used by sign-in and recovery. */
 export function validatePhone(value: string): string | undefined {
   const phone = normalizePhone(value);
