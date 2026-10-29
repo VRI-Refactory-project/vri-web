@@ -58,7 +58,7 @@ describe('CreateAccountPage', () => {
     renderPage();
     const phone = screen.getByLabelText('Phone number') as HTMLInputElement;
     await userEvent.type(phone, '7721234567890123');
-    expect(phone.value.replace(/\s/g, '')).toBe('+256772123456');
+    expect(phone.value.replace(/\s/g, '')).toBe('772123456');
   });
 
   it('toggles the password field between masked and visible', async () => {
@@ -129,15 +129,26 @@ describe('CreateAccountPage', () => {
     renderPage();
     const phone = screen.getByLabelText('Phone number') as HTMLInputElement;
     await userEvent.type(phone, 'jjjj772abc123');
-    expect(phone.value.replace(/\s/g, '')).toBe('+256772123');
+    expect(phone.value.replace(/\s/g, '')).toBe('772123');
   });
 
   it('offers a country picker with flags and changes the calling code with it', async () => {
     renderPage();
+
     const country = screen.getByLabelText('Country') as HTMLSelectElement;
+    const phone = screen.getByLabelText('Phone number') as HTMLInputElement;
+
     expect(country.value).toBe('UG');
+
+    // The calling code belongs to the country selector, not the input.
+    expect(phone.value).toBe('');
+    expect(document.querySelector('.country-picker__calling-code')?.textContent).toBe('+256');
+
     await userEvent.selectOptions(country, 'KE');
-    expect((screen.getByLabelText('Phone number') as HTMLInputElement).value).toMatch(/^\+254/);
+
+    expect(country.value).toBe('KE');
+    expect(document.querySelector('.country-picker__calling-code')?.textContent).toBe('+254');
+    expect(phone.value).toBe('');
   });
 
   it('says a number is too short for the country chosen', async () => {
