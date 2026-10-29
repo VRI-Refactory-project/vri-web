@@ -13,16 +13,24 @@ export function VerifyEmailPage() {
   const { session, logout } = useAuth();
   const location = useLocation();
 
+  // 1. Try to get the next path from sessionStorage or location state
   const storedNext = sessionStorage.getItem('nextAfterVerification');
   const stateNext = safePath((location.state as { next?: unknown } | null)?.next);
-  const next = safePath(storedNext) ?? stateNext;
+  let next = safePath(storedNext) ?? stateNext;
 
   if (!session) return <Navigate to="/sign-in" replace />;
 
+  // 2. Once the email is verified (or if it didn't need verification)
   if (!needsEmailVerification(session.user)) {
-    if (next) {
-      sessionStorage.removeItem('nextAfterVerification');
+    // 3. FALLBACK: If no next path was found, but this is an institution,
+    //    assume they need to upload their license.
+    if (!next && session.user.role === 'institution') {
+      next = '/register/institution/upload-license';
     }
+
+    // 4. Clear the storage so it doesn't interfere next time
+    sessionStorage.removeItem('nextAfterVerification');
+
     return <Navigate to={next ?? dashboardPathFor(session.user.role)} replace />;
   }
 
