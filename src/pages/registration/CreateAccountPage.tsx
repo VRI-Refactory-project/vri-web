@@ -22,6 +22,8 @@ import { AuthShell } from '../../components/AuthShell';
 import { PhoneField } from '../../components/PhoneField';
 import { FLOWS } from '../../features/registration/flows';
 import { useAuth } from '../../hooks/useAuth';
+import { LegalModal } from '../../components/LegalModal';
+import { TermsContent, PrivacyContent } from '../../components/LegalContent';
 import {
   PASSWORD_RULES,
   collectErrors,
@@ -138,7 +140,11 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
 
   const [agreed, setAgreed] = useState(false);
 
-  // Multi-select state.
+  // Legal modal state.
+  const [showTerms, setShowTerms] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
+
+  // Interpreter specialisation multi-select state.
   const [specialisations, setSpecialisations] = useState<Specialisation[]>([]);
   const [customSpecialisation, setCustomSpecialisation] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -383,7 +389,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
       <p className="ca-subtitle">Watch the video for help in sign language.</p>
 
       <form onSubmit={onSubmit} noValidate className="ca-form">
-        {/* Row: First name | Last name */}
         <div className="ca-row">
           {field(
             'ca-firstname',
@@ -572,7 +577,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
                     key={o.value}
                     onClick={() => {
                       toggleSpecialisation(o.value);
-
                       if (o.value === 'OTHER') setIsDropdownOpen(false);
                     }}
                     style={{
@@ -619,7 +623,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
           </div>
         )}
 
-        {/* Row: Password | Confirm password */}
         <div className="ca-row">
           <div className="ca-field">
             <label className="ca-label" htmlFor="ca-password">
@@ -727,7 +730,38 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
             />
 
             <span>
-              I agree to the <a href="/terms">Terms</a> and <a href="/privacy">Privacy Policy</a>
+              I agree to the{' '}
+              <button
+                type="button"
+                onClick={() => setShowTerms(true)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--ca-purple)',
+                  padding: 0,
+                  font: 'inherit',
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                }}
+              >
+                Terms
+              </button>{' '}
+              and{' '}
+              <button
+                type="button"
+                onClick={() => setShowPrivacy(true)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--ca-purple)',
+                  padding: 0,
+                  font: 'inherit',
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                }}
+              >
+                Privacy Policy
+              </button>
             </span>
           </label>
 
@@ -752,6 +786,15 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
       <p className="ca-footer">
         Have an account? <Link to="/sign-in">Sign in</Link>
       </p>
+
+      {/* Legal Modals */}
+      <LegalModal isOpen={showTerms} onClose={() => setShowTerms(false)} title="Terms of Service">
+        <TermsContent />
+      </LegalModal>
+
+      <LegalModal isOpen={showPrivacy} onClose={() => setShowPrivacy(false)} title="Privacy Policy">
+        <PrivacyContent role={isInterpreter ? 'interpreter' : 'deaf'} />
+      </LegalModal>
     </AuthShell>
   );
 }
