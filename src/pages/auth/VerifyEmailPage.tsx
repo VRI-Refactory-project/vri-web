@@ -34,6 +34,11 @@ export function VerifyEmailPage() {
 
   return (
     <main className="verify-page">
+      {/* ONLY ADDED: The Logo */}
+      <div className="verify-logo">
+        <img src="/logo-icon.png" alt="SignConnect" />
+      </div>
+
       <VerifyEmailModal required onSignOut={logout} />
     </main>
   );
