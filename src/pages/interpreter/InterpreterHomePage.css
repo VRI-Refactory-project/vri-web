@@ -698,9 +698,8 @@
 
 .ih-calendar-card {
   padding: 16px 16px 14px;
-    background: #f4efff; 
-    border:  1px solid #e8e1f3; 
-
+  background: #f4efff;
+  border: 1px solid #e8e1f3;
 }
 
 .ih-calendar-card h3 {
@@ -714,7 +713,7 @@
 }
 
 .ih-calendar-icon {
-   color: #6e4ad8
+  color: #6e4ad8;
 }
 
 .ih-cal-header {
@@ -741,7 +740,7 @@
 }
 
 .ih-cal-header button:hover {
-  color: #382c77; 
+  color: #382c77;
 }
 
 .ih-cal-grid {
@@ -783,7 +782,7 @@
   padding: 14px 12px 10px;
   border-radius: 12px;
   background: #ffffff;
-  box-shadow: 0 4px 15px rgba(109, 40, 217, 0.05); 
+  box-shadow: 0 4px 15px rgba(109, 40, 217, 0.05);
   border: 1px solid #f1edf9;
 }
 
