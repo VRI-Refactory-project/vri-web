@@ -21,8 +21,8 @@
 }
 
 .verify-logo img {
-  height: 120px; 
+  height: 120px;
   width: auto;
   /* THIS IS THE MAGIC LINE: It turns any dark logo completely white */
-  filter: brightness(0) invert(1); 
+  filter: brightness(0) invert(1);
 }
