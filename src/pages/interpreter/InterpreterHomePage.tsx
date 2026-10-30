@@ -1,3 +1,4 @@
+
 import { Link } from 'react-router-dom';
 import {
   Bell,
@@ -7,40 +8,19 @@ import {
   ChevronRight,
   Clock,
   MessageSquare,
-  // SlidersHorizontal,
-  // Users,
   Video,
+  Sun,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import './InterpreterHomePage.css';
+import bannerImage from '../../assets/suit.png'; // Make sure this path is correct
 
 const calendarDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const calendarNumbers = [
-  null,
-  null,
-  null,
-  null,
-  5,
-  6,
-  7,
-  8,
-  9,
-  10,
-  11,
-  12,
-  13,
-  14,
-  15,
-  16,
-  17,
-  18,
-  19,
-  20,
-  21,
-  22,
-  23,
-  24,
-  25,
+  null, null, null, null,
+  5, 6, 7, 8, 9, 10, 11,
+  12, 13, 14, 15, 16, 17, 18,
+  19, 20, 21, 22, 23, 24, 25,
 ];
 
 export function InterpreterHomePage() {
@@ -49,16 +29,15 @@ export function InterpreterHomePage() {
 
   return (
     <div className="ih-page">
+      
       {/* TOP NAVIGATION BAR */}
       <header className="ih-topbar">
         <div className="ih-topbar-actions">
-          {/* Bell Icon with Red Dot */}
           <button className="ih-icon-btn relative" aria-label="Notifications">
             <Bell size={20} className="ih-icon" />
             <span className="ih-notification-dot"></span>
           </button>
 
-          {/* Profile Info */}
           <div className="ih-user-profile">
             <img
               src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80"
@@ -75,18 +54,32 @@ export function InterpreterHomePage() {
       </header>
 
       <div className="ih-content-wrapper">
-        <div className="ih-main-column">
+        
+        {/* MAIN CONTENT AREA */}
+        <div className="ih-main-section">
+          
           {/* Welcome Banner */}
           <section className="ih-banner" aria-label="Greeting">
             <div className="ih-banner-text">
               <h1>
-                <span className="ih-sun-icon">☀</span> Good morning, {firstName}
+                <span className="ih-sun-icon">
+                  <Sun size={24} />
+                </span> 
+                Good morning, {firstName}
               </h1>
               <p className="ih-banner-sub">Bridging communication. Expanding access.</p>
               <p className="ih-banner-desc">
-                You're making a difference. Every connection helps someone get the support they
-                need.
+                You're making a difference. Every connection helps someone get the support they need.
               </p>
+            </div>
+
+            {/* NEW: Image Container */}
+            <div className="ih-banner-image-container">
+              <img 
+                src={bannerImage} // <--- CHANGED TO USE YOUR LOCAL IMAGE
+                alt="Sign language interpreter" 
+                className="ih-banner-image"
+              />
             </div>
           </section>
 
@@ -120,180 +113,209 @@ export function InterpreterHomePage() {
             </div>
           </div>
 
-          {/* Middle Grid: Next Session & Activity */}
-          <div className="ih-middle-grid">
-            <section className="ih-section">
-              <div className="ih-section-header">
-                <h3>Next session</h3>
-                <Link to="#" className="ih-section-link">
-                  View all <ChevronRight size={14} />
-                </Link>
-              </div>
+          {/* THE NEW ALIGNMENT GRID */}
+          <div className="ih-dashboard-split">
+            
+            {/* LEFT COLUMN: Next Session & Upcoming */}
+            <div className="ih-split-left">
+              
+              {/* Next session */}
+              <section className="ih-section">
+                <div className="ih-next-session-wrapper">
+                  
+                  <div className="ih-section-header">
+                    <h3>
+                      <Calendar size={18} className="ih-section-icon" /> Next session
+                    </h3>
+                    <Link to="#" className="ih-section-link">
+                      View all <ChevronRight size={14} />
+                    </Link>
+                  </div>
 
-              <div className="ih-card ih-next-session-card">
-                <div className="ih-next-header">
-                  <img
-                    src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80"
-                    alt="James Carter"
-                    className="ih-avatar-md"
-                  />
-                  <div>
-                    <h4>
-                      James Carter <span className="ih-badge-verified">✓</span>
-                    </h4>
-                    <p className="ih-meta">Deaf User • Kampala, Uganda</p>
+                  <div className="ih-next-session-content">
+                    <div className="ih-next-header">
+                      <img
+                        src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80"
+                        alt="James Carter"
+                        className="ih-avatar-md"
+                      />
+                      <div>
+                        <h4>
+                          James Carter <span className="ih-badge-verified">✓</span>
+                        </h4>
+                        <p className="ih-meta">Deaf User • Kampala, Uganda</p>
+                      </div>
+                      <ChevronRight size={18} className="ih-chevron" style={{ marginLeft: 'auto' }} />
+                    </div>
+
+                    <div className="ih-next-details">
+                      <p>
+                        <Calendar size={14} className="ih-meta-icon" /> Today, 10:30 AM - 11:00 AM
+                      </p>
+                      <p>
+                        <Video size={14} className="ih-meta-icon" /> Video call
+                      </p>
+                    </div>
+
+                    <div className="ih-next-actions">
+                      <button className="ih-btn-primary" type="button">
+                        Join session
+                      </button>
+                      <button className="ih-btn-secondary" type="button">
+                        View details
+                      </button>
+                    </div>
                   </div>
                 </div>
+              </section>
 
-                <div className="ih-next-details">
-                  <p>
-                    <Calendar size={14} className="ih-meta-icon" /> Today, 10:30 AM - 11:00 AM
-                  </p>
-                </div>
+              {/* Upcoming Sessions */}
+              <section className="ih-section">
+                <div className="ih-next-session-wrapper">
+                  
+                  <div className="ih-section-header">
+                    <h3>
+                      <Calendar size={18} className="ih-section-icon" /> Upcoming sessions
+                    </h3>
+                    <Link to="#" className="ih-section-link">
+                      View all <ChevronRight size={14} />
+                    </Link>
+                  </div>
 
-                <div className="ih-next-actions">
-                  <button className="ih-btn-primary" type="button">
-                    Join session
-                  </button>
-                  <button className="ih-btn-secondary" type="button">
-                    View details
-                  </button>
-                </div>
-              </div>
-            </section>
+                  <div className="ih-list-card-transparent">
+                    <div className="ih-list-item">
+                      <img
+                        src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80"
+                        alt="Priya Sharma"
+                        className="ih-avatar-md"
+                      />
+                      <div className="ih-list-info">
+                        <h4>
+                          Priya Sharma <span className="ih-badge-verified">✓</span>
+                        </h4>
+                        <p className="ih-meta">Interpreter • Kampala, Uganda</p>
+                      </div>
+                      <div className="ih-list-time">
+                        <p>Today, 2:00 PM - 2:30 PM</p>
+                        <p className="ih-meta-inline">
+                          <Video size={12} className="ih-meta-icon" /> Video call
+                        </p>
+                      </div>
+                      <ChevronRight size={18} className="ih-chevron" />
+                    </div>
 
-            <section className="ih-section">
-              <div className="ih-section-header">
-                <h3>
-                  <Clock size={18} className="ih-section-icon" /> Recent activity
-                </h3>
-              </div>
-
-              <div className="ih-card ih-activity-card">
-                <div className="ih-timeline-item">
-                  <div className="ih-timeline-marker bg-green"></div>
-                  <img
-                    src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80"
-                    alt="James"
-                    className="ih-timeline-avatar"
-                  />
-                  <div className="ih-timeline-content">
-                    <p>You accepted James Carter's connection request</p>
-                    <span className="ih-time-label">2 hours ago</span>
+                    <div className="ih-list-item ih-list-item-last">
+                      <img
+                        src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=200&q=80"
+                        alt="Grace Nsubuga"
+                        className="ih-avatar-md"
+                      />
+                      <div className="ih-list-info">
+                        <h4>
+                          Grace Nsubuga <span className="ih-badge-verified">✓</span>
+                        </h4>
+                        <p className="ih-meta">Interpreter • Entebbe, Uganda</p>
+                      </div>
+                      <div className="ih-list-time">
+                        <p>Tomorrow, 4:00 PM - 4:30 PM</p>
+                        <p className="ih-meta-inline">
+                          <Video size={12} className="ih-meta-icon" /> Video call
+                        </p>
+                      </div>
+                      <ChevronRight size={18} className="ih-chevron" />
+                    </div>
                   </div>
                 </div>
+              </section>
+            </div>
 
-                <div className="ih-timeline-item">
-                  <div className="ih-timeline-marker bg-purple"></div>
-                  <img
-                    src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80"
-                    alt="Priya"
-                    className="ih-timeline-avatar"
-                  />
-                  <div className="ih-timeline-content">
-                    <p>Priya Sharma sent you a connection request</p>
-                    <span className="ih-time-label">4 hours ago</span>
+            {/* RIGHT COLUMN: Recent Activity */}
+            <div className="ih-split-right">
+              <section className="ih-section">
+                
+                {/* Wrapper that holds the header and the list */}
+                <div className="ih-activity-wrapper">
+                  
+                  <div className="ih-section-header" style={{ marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid #f1edf9' }}>
+                    <h3>
+                      <Clock size={18} className="ih-section-icon" /> Recent activity
+                    </h3>
+                  </div>
+
+                  <div className="ih-activity-card" style={{ padding: 0, boxShadow: 'none', background: 'transparent' }}>
+                    <div className="ih-timeline-item">
+                      <div className="ih-timeline-marker bg-green"></div>
+                      <img
+                        src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80"
+                        alt="James"
+                        className="ih-timeline-avatar"
+                      />
+                      <div className="ih-timeline-content">
+                        <p>You accepted James Carter's connection request</p>
+                        <span className="ih-time-label">2 hours ago</span>
+                      </div>
+                    </div>
+
+                    <div className="ih-timeline-item">
+                      <div className="ih-timeline-marker bg-purple"></div>
+                      <img
+                        src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80"
+                        alt="Priya"
+                        className="ih-timeline-avatar"
+                      />
+                      <div className="ih-timeline-content">
+                        <p>Priya Sharma sent you a connection request</p>
+                        <span className="ih-time-label">4 hours ago</span>
+                      </div>
+                    </div>
+
+                    <div className="ih-timeline-item">
+                      <div className="ih-timeline-marker bg-purple"></div>
+                      <img
+                        src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80"
+                        alt="Alex"
+                        className="ih-timeline-avatar"
+                      />
+                      <div className="ih-timeline-content">
+                        <p>Alex Johnson accepted your connection request</p>
+                        <span className="ih-time-label">Yesterday</span>
+                      </div>
+                    </div>
+
+                    <div className="ih-timeline-item">
+                      <div className="ih-timeline-marker bg-purple"></div>
+                      <img
+                        src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=100&q=80"
+                        alt="Grace"
+                        className="ih-timeline-avatar"
+                      />
+                      <div className="ih-timeline-content">
+                        <p>You started a chat with Grace Nsubuga</p>
+                        <span className="ih-time-label">Yesterday</span>
+                      </div>
+                    </div>
+
+                    <div className="ih-timeline-item">
+                      <div className="ih-timeline-marker bg-blue"></div>
+                      <img
+                        src="https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?auto=format&fit=crop&w=100&q=80"
+                        alt="Daniel"
+                        className="ih-timeline-avatar"
+                      />
+                      <div className="ih-timeline-content">
+                        <p>You received a connection request from Daniel Ochieng</p>
+                        <span className="ih-time-label">2 days ago</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
+              </section>
+            </div>
 
-                <div className="ih-timeline-item">
-                  <div className="ih-timeline-marker bg-purple"></div>
-                  <img
-                    src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80"
-                    alt="Alex"
-                    className="ih-timeline-avatar"
-                  />
-                  <div className="ih-timeline-content">
-                    <p>Alex Johnson accepted your connection request</p>
-                    <span className="ih-time-label">Yesterday</span>
-                  </div>
-                </div>
-
-                <div className="ih-timeline-item">
-                  <div className="ih-timeline-marker bg-purple"></div>
-                  <img
-                    src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=100&q=80"
-                    alt="Grace"
-                    className="ih-timeline-avatar"
-                  />
-                  <div className="ih-timeline-content">
-                    <p>You started a chat with Grace Nsubuga</p>
-                    <span className="ih-time-label">Yesterday</span>
-                  </div>
-                </div>
-
-                <div className="ih-timeline-item">
-                  <div className="ih-timeline-marker bg-blue"></div>
-                  <img
-                    src="https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?auto=format&fit=crop&w=100&q=80"
-                    alt="Daniel"
-                    className="ih-timeline-avatar"
-                  />
-                  <div className="ih-timeline-content">
-                    <p>You received a connection request from Daniel Ochieng</p>
-                    <span className="ih-time-label">2 days ago</span>
-                  </div>
-                </div>
-              </div>
-            </section>
           </div>
-
-          {/* Upcoming Sessions */}
-          <section className="ih-section ih-upcoming-section">
-            <div className="ih-section-header">
-              <h3>Upcoming sessions</h3>
-              <Link to="#" className="ih-section-link">
-                View all <ChevronRight size={14} />
-              </Link>
-            </div>
-
-            <div className="ih-card ih-list-card">
-              <div className="ih-list-item">
-                <img
-                  src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80"
-                  alt="Priya Sharma"
-                  className="ih-avatar-md"
-                />
-                <div className="ih-list-info">
-                  <h4>
-                    Priya Sharma <span className="ih-badge-verified">✓</span>
-                  </h4>
-                  <p className="ih-meta">Interpreter • Kampala, Uganda</p>
-                </div>
-                <div className="ih-list-time">
-                  <p>Today, 2:00 PM - 2:30 PM</p>
-                  <p className="ih-meta ih-meta-inline">
-                    <Video size={12} className="ih-meta-icon" /> Video call
-                  </p>
-                </div>
-                <ChevronRight size={18} className="ih-chevron" />
-              </div>
-
-              <div className="ih-list-item ih-list-item-last">
-                <img
-                  src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=200&q=80"
-                  alt="Grace Nsubuga"
-                  className="ih-avatar-md"
-                />
-                <div className="ih-list-info">
-                  <h4>
-                    Grace Nsubuga <span className="ih-badge-verified">✓</span>
-                  </h4>
-                  <p className="ih-meta">Interpreter • Entebbe, Uganda</p>
-                </div>
-                <div className="ih-list-time">
-                  <p>Tomorrow, 4:00 PM - 4:30 PM</p>
-                  <p className="ih-meta ih-meta-inline">
-                    <Video size={12} className="ih-meta-icon" /> Video call
-                  </p>
-                </div>
-                <ChevronRight size={18} className="ih-chevron" />
-              </div>
-            </div>
-          </section>
         </div>
 
-        {/* RIGHT SIDEBAR */}
+        {/* RIGHT SIDEBAR (Availability & Calendar) */}
         <aside className="ih-right-column">
           <div className="ih-card ih-availability-card">
             <div className="ih-availability-row">
