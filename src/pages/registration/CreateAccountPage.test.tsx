@@ -4,8 +4,13 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from '../../features/auth/AuthProvider';
 import { ApiError } from '../../services/api';
 import * as registration from '../../services/registration';
+import { checkEmailAvailability } from '../../services/emailAvailability';
 import type { AuthSession } from '../../types';
 import { CreateAccountPage } from './CreateAccountPage';
+
+vi.mock('../../services/emailAvailability', () => ({
+  checkEmailAvailability: vi.fn(),
+}));
 
 const session = (role: 'deaf' | 'interpreter'): AuthSession => ({
   token: 't',
@@ -37,6 +42,9 @@ const fill = async (labels: Record<string, string>) => {
 };
 
 describe('CreateAccountPage', () => {
+  beforeEach(() => {
+    vi.mocked(checkEmailAvailability).mockResolvedValue(true);
+  });
   afterEach(() => {
     vi.restoreAllMocks();
     sessionStorage.clear();
@@ -275,7 +283,7 @@ describe('CreateAccountPage', () => {
         'Confirm password': 'Secret-pass-1',
       });
 
-      //  NEW LOGIC: Open the custom dropdown and select "Medical"
+      // Open the custom dropdown and select "Medical"
       await userEvent.click(screen.getByText('Select specialisation(s)...'));
       await userEvent.click(screen.getByText('Medical / health'));
 
@@ -284,7 +292,6 @@ describe('CreateAccountPage', () => {
 
       await waitFor(() => expect(screen.getByText('upload certificates')).toBeInTheDocument());
 
-      // Added expectation for the specialisation string
       expect(register).toHaveBeenCalledWith(
         expect.objectContaining({
           phone: '+256772123456',
@@ -292,5 +299,50 @@ describe('CreateAccountPage', () => {
         }),
       );
     });
+  });
+
+  it('clears the duplicate-email warning when the user enters a different available email', async () => {
+    const user = userEvent.setup();
+
+    vi.mocked(checkEmailAvailability)
+      .mockResolvedValueOnce(false) // First email is already registered.
+      .mockResolvedValue(true); // Replacement email is available.
+
+    const registerSpy = vi.spyOn(registration, 'registerDeaf').mockResolvedValue(session('deaf'));
+
+    renderPage();
+
+    await fill({
+      'First name': 'Catherine',
+      'Last name': 'Nawagirwa',
+      'Phone number': '772123456',
+      'Email address': 'shadia@gmail.com',
+      Password: 'Secret-pass-1',
+      'Confirm password': 'Secret-pass-1',
+    });
+
+    expect(await screen.findByText('This email is already registered.')).toBeInTheDocument();
+
+    const emailInput = screen.getByLabelText('Email address');
+
+    await user.clear(emailInput);
+    await user.type(emailInput, 'honeyva256@gmail.com');
+
+    await waitFor(() => {
+      expect(screen.queryByText('This email is already registered.')).not.toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole('checkbox'));
+    await user.click(screen.getByRole('button', { name: /create account/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('welcome step')).toBeInTheDocument();
+    });
+
+    expect(registerSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        email: 'honeyva256@gmail.com',
+      }),
+    );
   });
 });
