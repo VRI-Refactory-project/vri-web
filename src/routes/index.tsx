@@ -142,10 +142,10 @@ const appRoutes: RouteObject[] = [
   },
 
   {
-    // element: <ProtectedRoute allow={['interpreter']} />,
+    element: <ProtectedRoute allow={['interpreter']} />,
     children: [
       {
-        // element: <ApprovedInterpreterRoute />,
+        element: <ApprovedInterpreterRoute />,
         children: [
           {
             path: '/dashboard/interpreter',
