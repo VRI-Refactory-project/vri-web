@@ -6,7 +6,7 @@ import { useAuth } from '../../hooks/useAuth';
 import './VerifyEmailPage.css';
 
 // IMPORT THE LOGO HERE (from src/assets)
-import logoIcon from '../../assets/logo-icon.png';
+import logoIcon from '../../assets/no_bg.png';
 
 const safePath = (value: unknown): string | null =>
   typeof value === 'string' && value.startsWith('/') && !value.startsWith('//') ? value : null;
