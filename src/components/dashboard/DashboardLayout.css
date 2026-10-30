@@ -149,10 +149,9 @@
   /* background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-attachment: fixed; */ 
+  background-attachment: fixed; */
 
-  background: linear-gradient(135deg, #FDFBF7 0%, #EBE5F7 35%, #C8B8F0 65%, #B8D4F0 100%);
-
+  background: linear-gradient(135deg, #fdfbf7 0%, #ebe5f7 35%, #c8b8f0 65%, #b8d4f0 100%);
 
   /* 3. Cleaned up the duplicate box-shadows */
   box-shadow: 0 18px 42px rgba(75, 27, 130, 0.18);

@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import {
   Bell,
@@ -17,10 +16,31 @@ import bannerImage from '../../assets/suit.png'; // Make sure this path is corre
 
 const calendarDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const calendarNumbers = [
-  null, null, null, null,
-  5, 6, 7, 8, 9, 10, 11,
-  12, 13, 14, 15, 16, 17, 18,
-  19, 20, 21, 22, 23, 24, 25,
+  null,
+  null,
+  null,
+  null,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  24,
+  25,
 ];
 
 export function InterpreterHomePage() {
@@ -29,7 +49,6 @@ export function InterpreterHomePage() {
 
   return (
     <div className="ih-page">
-      
       {/* TOP NAVIGATION BAR */}
       <header className="ih-topbar">
         <div className="ih-topbar-actions">
@@ -54,30 +73,29 @@ export function InterpreterHomePage() {
       </header>
 
       <div className="ih-content-wrapper">
-        
         {/* MAIN CONTENT AREA */}
         <div className="ih-main-section">
-          
           {/* Welcome Banner */}
           <section className="ih-banner" aria-label="Greeting">
             <div className="ih-banner-text">
               <h1>
                 <span className="ih-sun-icon">
                   <Sun size={24} />
-                </span> 
+                </span>
                 Good morning, {firstName}
               </h1>
               <p className="ih-banner-sub">Bridging communication. Expanding access.</p>
               <p className="ih-banner-desc">
-                You're making a difference. Every connection helps someone get the support they need.
+                You're making a difference. Every connection helps someone get the support they
+                need.
               </p>
             </div>
 
             {/* NEW: Image Container */}
             <div className="ih-banner-image-container">
-              <img 
+              <img
                 src={bannerImage} // <--- CHANGED TO USE YOUR LOCAL IMAGE
-                alt="Sign language interpreter" 
+                alt="Sign language interpreter"
                 className="ih-banner-image"
               />
             </div>
@@ -115,14 +133,11 @@ export function InterpreterHomePage() {
 
           {/* THE NEW ALIGNMENT GRID */}
           <div className="ih-dashboard-split">
-            
             {/* LEFT COLUMN: Next Session & Upcoming */}
             <div className="ih-split-left">
-              
               {/* Next session */}
               <section className="ih-section">
                 <div className="ih-next-session-wrapper">
-                  
                   <div className="ih-section-header">
                     <h3>
                       <Calendar size={18} className="ih-section-icon" /> Next session
@@ -145,7 +160,11 @@ export function InterpreterHomePage() {
                         </h4>
                         <p className="ih-meta">Deaf User • Kampala, Uganda</p>
                       </div>
-                      <ChevronRight size={18} className="ih-chevron" style={{ marginLeft: 'auto' }} />
+                      <ChevronRight
+                        size={18}
+                        className="ih-chevron"
+                        style={{ marginLeft: 'auto' }}
+                      />
                     </div>
 
                     <div className="ih-next-details">
@@ -172,7 +191,6 @@ export function InterpreterHomePage() {
               {/* Upcoming Sessions */}
               <section className="ih-section">
                 <div className="ih-next-session-wrapper">
-                  
                   <div className="ih-section-header">
                     <h3>
                       <Calendar size={18} className="ih-section-icon" /> Upcoming sessions
@@ -232,17 +250,25 @@ export function InterpreterHomePage() {
             {/* RIGHT COLUMN: Recent Activity */}
             <div className="ih-split-right">
               <section className="ih-section">
-                
                 {/* Wrapper that holds the header and the list */}
                 <div className="ih-activity-wrapper">
-                  
-                  <div className="ih-section-header" style={{ marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid #f1edf9' }}>
+                  <div
+                    className="ih-section-header"
+                    style={{
+                      marginBottom: '16px',
+                      paddingBottom: '12px',
+                      borderBottom: '1px solid #f1edf9',
+                    }}
+                  >
                     <h3>
                       <Clock size={18} className="ih-section-icon" /> Recent activity
                     </h3>
                   </div>
 
-                  <div className="ih-activity-card" style={{ padding: 0, boxShadow: 'none', background: 'transparent' }}>
+                  <div
+                    className="ih-activity-card"
+                    style={{ padding: 0, boxShadow: 'none', background: 'transparent' }}
+                  >
                     <div className="ih-timeline-item">
                       <div className="ih-timeline-marker bg-green"></div>
                       <img
@@ -311,7 +337,6 @@ export function InterpreterHomePage() {
                 </div>
               </section>
             </div>
-
           </div>
         </div>
 
