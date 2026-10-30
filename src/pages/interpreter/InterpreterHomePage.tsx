@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import './InterpreterHomePage.css';
-import bannerImage from '../../assets/suit.png'; // Make sure this path is correct
+import bannerImage from '../../assets/suit.png';
 
 const calendarDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const calendarNumbers = [

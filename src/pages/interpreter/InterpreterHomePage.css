@@ -296,7 +296,7 @@
 .ih-section-header h3 {
   margin: 0;
   color: #1c2436;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 800;
   gap: 10px;
   display: flex;
@@ -698,6 +698,8 @@
 
 .ih-calendar-card {
   padding: 16px 16px 14px;
+  background: #f4efff;
+  border: 1px solid #e8e1f3;
 }
 
 .ih-calendar-card h3 {
@@ -711,7 +713,7 @@
 }
 
 .ih-calendar-icon {
-  color: #4d3d74;
+  color: #6e4ad8;
 }
 
 .ih-cal-header {
@@ -730,11 +732,15 @@
   justify-content: center;
   width: 26px;
   height: 26px;
-  border: 1px solid #e7e3f0;
+  border: none;
   border-radius: 8px;
-  background: #fff;
+  background: transparent;
   color: #4b5563;
   cursor: pointer;
+}
+
+.ih-cal-header button:hover {
+  color: #382c77;
 }
 
 .ih-cal-grid {
@@ -746,7 +752,7 @@
 }
 
 .ih-cal-day-name {
-  color: #9198a5;
+  color: #6d28d9;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -775,7 +781,9 @@
 .ih-today-schedule {
   padding: 14px 12px 10px;
   border-radius: 12px;
-  background: #f6f8fb;
+  background: #ffffff;
+  box-shadow: 0 4px 15px rgba(109, 40, 217, 0.05);
+  border: 1px solid #f1edf9;
 }
 
 .ih-today-schedule h4 {
@@ -842,7 +850,7 @@
   margin-top: 14px;
   border: none;
   border-radius: 10px;
-  background: #f2ecff;
+  background: #ffffff;
   color: #6e4ad8;
   padding: 11px 14px;
   font-size: 12px;
