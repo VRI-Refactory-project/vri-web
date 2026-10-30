@@ -4,7 +4,7 @@
   min-height: 100vh;
   /* Moved the background here so it covers the whole right side perfectly */
   background: #f6f5fc;
-  font-family: 'Plus Jakarta Sans', 'Manrope', system-ui, sans-serif;
+  font-family: 'Manrope', 'Plus Jakarta Sans', system-ui, sans-serif;
   color: #0f172a;
 }
 
