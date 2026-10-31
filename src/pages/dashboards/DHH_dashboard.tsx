@@ -15,6 +15,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { api } from '../../services/api';
 import './DHH_dashboard.css';
 import { InterpreterProfileModal } from './InterpreterProfileModal';
+import bannerImage from '../../assets/suit.png'; 
 import {
   getAvailableInterpreters,
   type AvailableInterpreter,
@@ -275,6 +276,15 @@ export function DashboardPage() {
             </button>
           </div>
         </div>
+
+         <div className="hero-image-container">
+          <img 
+            src={bannerImage} 
+            alt="Interpreter" 
+            className="hero-banner-image"
+          />
+        </div>
+        
       </section>
 
       {/* Quick Actions */}

@@ -114,7 +114,7 @@ const appRoutes: RouteObject[] = [
   },
 
   {
-    element: <ProtectedRoute allow={['deaf']} />,
+    // element: <ProtectedRoute allow={['deaf']} />,
     children: [
       {
         path: '/dashboard/deaf',
