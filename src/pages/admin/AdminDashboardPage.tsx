@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   MapPin,
   Lightbulb,
+   LogOut,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import {
@@ -52,7 +53,7 @@ function todayLabel() {
 }
 
 export function AdminDashboardPage() {
-  const { session } = useAuth();
+  const { session,logout } = useAuth();
   const name = session?.user.name ?? 'Admin';
   const role = session?.user.role ?? 'admin';
   const initial = name.trim().charAt(0).toUpperCase() || '?';
@@ -69,6 +70,28 @@ export function AdminDashboardPage() {
   const [query, setQuery] = useState('');
   const [bellOpen, setBellOpen] = useState(false);
   const bellRef = useRef<HTMLDivElement | null>(null);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement | null>(null);
+
+
+  useEffect(() => {
+    if (!userDropdownOpen) return;
+    const onClickOutside = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, [userDropdownOpen]);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (err) {
+      console.error('Logout failed:', err);
+    }
+  };
 
   useEffect(() => {
     fetchAdminSummary()
@@ -195,14 +218,30 @@ export function AdminDashboardPage() {
             )}
           </div>
 
-          <button type="button" className="ad-user">
-            <span className="ad-avatar">{initial}</span>
-            <span className="ad-user-text">
-              <strong>{name}</strong>
-              <small>{role.charAt(0).toUpperCase() + role.slice(1)}</small>
-            </span>
-            <ChevronDown size={14} />
-          </button>
+          <div className="ad-user-menu-wrap" ref={userMenuRef}>
+            <button
+              type="button"
+              className={`ad-user ${userDropdownOpen ? 'active' : ''}`}
+              onClick={() => setUserDropdownOpen((v) => !v)}
+            >
+              <span className="ad-avatar">{initial}</span>
+              <span className="ad-user-text">
+                <strong>{name}</strong>
+                <small>{role.charAt(0).toUpperCase() + role.slice(1)}</small>
+              </span>
+              <ChevronDown size={14} className={`ad-chevron ${userDropdownOpen ? 'rotate' : ''}`} />
+            </button>
+
+            {userDropdownOpen && (
+              <div className="ad-user-dropdown">
+                <button type="button" className="ad-dropdown-item logout" onClick={handleLogout}>
+                  <LogOut size={15} />
+                  <span>Log Out</span>
+                </button>
+              </div>
+            )}
+          </div>
+
         </div>
       </div>
 
