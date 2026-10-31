@@ -321,7 +321,11 @@ describe('CreateAccountPage', () => {
       'Confirm password': 'Secret-pass-1',
     });
 
-    expect(await screen.findByText('This email is already registered.')).toBeInTheDocument();
+    expect(
+      await screen.findByText(
+        'This email already exists. Sign in instead, or use a different email.',
+      ),
+    ).toBeInTheDocument();
 
     const emailInput = screen.getByLabelText('Email address');
 
@@ -329,7 +333,9 @@ describe('CreateAccountPage', () => {
     await user.type(emailInput, 'honeyva256@gmail.com');
 
     await waitFor(() => {
-      expect(screen.queryByText('This email is already registered.')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('This email already exists. Sign in instead, or use a different email.'),
+      ).not.toBeInTheDocument();
     });
 
     await user.click(screen.getByRole('checkbox'));

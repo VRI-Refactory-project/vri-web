@@ -28,6 +28,7 @@ import {
   PASSWORD_RULES,
   collectErrors,
   getPasswordStrength,
+  normalizePhone,
   validateEmail,
   validateName,
   validatePassword,
@@ -35,6 +36,7 @@ import {
 } from '../../lib/validation';
 import { describeError } from '../../services/api';
 import { checkEmailAvailability } from '../../services/emailAvailability';
+import { checkPhoneAvailability } from '../../services/phoneAvailability';
 import {
   registerDeaf,
   registerInterpreter,
@@ -163,6 +165,10 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
     status: 'idle',
   });
   const emailRequestId = useRef(0);
+  const [phoneCheck, setPhoneCheck] = useState<{ phone: string; status: EmailAvailability }>({
+    phone: '',
+    status: 'idle',
+  });
 
   const [videoDismissed, setVideoDismissed] = useState(false);
   const [videoProgress, setVideoProgress] = useState(0);
@@ -192,46 +198,73 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
     );
   };
 
-  // Recheck email availability after the user pauses typing.
-  // The request ID prevents an older response from replacing a newer result.
+  // Every edit changes the request identity, so the submit code below can tell
+  // if the email changed while it was checking.
   useEffect(() => {
-    const email = form.email.trim();
-    const requestId = ++emailRequestId.current;
+    emailRequestId.current += 1;
+  }, [form.email]);
 
-    if (!email || validateEmail(email, { required: true })) {
+  const checkEmailNow = async () => {
+    const email = form.email.trim();
+
+    if (!email || validateEmail(email, { required: true })) return;
+
+    if (
+      emailCheck.email === email &&
+      emailCheck.status !== 'idle' &&
+      emailCheck.status !== 'failed'
+    ) {
       return;
     }
 
-    const timeout = window.setTimeout(async () => {
-      setEmailCheck({ email, status: 'checking' });
+    setEmailCheck({ email, status: 'checking' });
 
-      try {
-        const available = await checkEmailAvailability(email);
+    const record = (status: EmailAvailability) =>
+      setEmailCheck((prev) =>
+        prev.email === email && prev.status === 'checking' ? { email, status } : prev,
+      );
 
-        if (emailRequestId.current === requestId) {
-          setEmailCheck({ email, status: available ? 'available' : 'taken' });
-        }
-      } catch {
-        if (emailRequestId.current === requestId) {
-          setEmailCheck({ email, status: 'failed' });
-        }
-      }
-    }, 500);
+    try {
+      const available = await checkEmailAvailability(email);
+      record(available ? 'available' : 'taken');
+    } catch {
+      record('failed');
+    }
+  };
 
-    return () => {
-      window.clearTimeout(timeout);
+  const checkPhoneNow = async () => {
+    const phone = normalizePhone(form.phone);
 
-      // Invalidate an in-flight request when the email changes or the page unmounts.
-      if (emailRequestId.current === requestId) {
-        emailRequestId.current += 1;
-      }
-    };
-  }, [form.email]);
+    if (!form.phone || validatePhoneNumber(form.phone)) return;
 
-  // A result only counts for the address it was fetched for. Once the email changes, an
-  // earlier "taken" or "available" answer is ignored without resetting state inside the effect.
+    if (
+      phoneCheck.phone === phone &&
+      phoneCheck.status !== 'idle' &&
+      phoneCheck.status !== 'failed'
+    ) {
+      return;
+    }
+
+    setPhoneCheck({ phone, status: 'checking' });
+
+    const record = (status: EmailAvailability) =>
+      setPhoneCheck((prev) =>
+        prev.phone === phone && prev.status === 'checking' ? { phone, status } : prev,
+      );
+
+    try {
+      const available = await checkPhoneAvailability(phone);
+      record(available ? 'available' : 'taken');
+    } catch {
+      record('failed');
+    }
+  };
+
   const emailAvailability: EmailAvailability =
     emailCheck.email === form.email.trim() ? emailCheck.status : 'idle';
+
+  const phoneAvailability: EmailAvailability =
+    phoneCheck.phone === normalizePhone(form.phone) ? phoneCheck.status : 'idle';
 
   // Recalculated on every keystroke: drives the strength bars and green ticks.
   const strength = getPasswordStrength(form.password);
@@ -256,7 +289,15 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
 
   const emailError =
     shown('email') ||
-    (emailAvailability === 'taken' ? 'This email is already registered.' : undefined);
+    (emailAvailability === 'taken'
+      ? 'This email already exists. Sign in instead, or use a different email.'
+      : undefined);
+
+  const phoneError =
+    shown('phone') ||
+    (phoneAvailability === 'taken'
+      ? 'This phone number already exists. Sign in instead, or use a different number.'
+      : undefined);
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -284,6 +325,11 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
     if (emailAvailability === 'taken') {
       setTouched((t) => ({ ...t, email: true }));
       document.getElementById('ca-email')?.focus();
+      return;
+    }
+    if (phoneAvailability === 'taken') {
+      setTouched((t) => ({ ...t, phone: true }));
+      document.getElementById('ca-phone')?.focus();
       return;
     }
 
@@ -460,7 +506,10 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
             placeholder: 'name@example.com',
             value: form.email,
             onChange: set('email'),
-            onBlur: touch('email'),
+            onBlur: () => {
+              touch('email')();
+              void checkEmailNow();
+            },
           },
           emailError,
         )}
@@ -475,14 +524,17 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
             id="ca-phone"
             value={form.phone}
             onChange={(phone) => setForm((f) => ({ ...f, phone }))}
-            onBlur={touch('phone')}
-            invalid={Boolean(shown('phone'))}
-            errorId={shown('phone') ? 'ca-phone-error' : undefined}
+            onBlur={() => {
+              touch('phone')();
+              void checkPhoneNow();
+            }}
+            invalid={Boolean(phoneError)}
+            errorId={phoneError ? 'ca-phone-error' : undefined}
           />
 
-          {shown('phone') && (
+          {phoneError && (
             <p className="field-error" id="ca-phone-error">
-              {shown('phone')}
+              {phoneError}
             </p>
           )}
         </div>
