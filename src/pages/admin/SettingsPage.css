@@ -207,3 +207,39 @@
   border: 1px solid #fca5a5;
   color: #b91c1c;
 }
+
+/* Logout section */
+.st-logout-card {
+  border: 1px solid #fecaca;
+  margin-bottom: 24px;
+}
+
+.st-logout-card .st-card-head h2 {
+  color: #dc2626;
+}
+
+/* Logout button */
+.st-btn--danger {
+  background: #dc2626;
+  color: #ffffff;
+  border: 1px solid #dc2626;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.st-btn--danger:hover {
+  background: #b91c1c;
+  border-color: #b91c1c;
+}
+
+.st-btn--danger:focus-visible {
+  outline: 3px solid #fca5a5;
+  outline-offset: 2px;
+}
+
+.st-btn--danger:active {
+  transform: scale(0.98);
+}
