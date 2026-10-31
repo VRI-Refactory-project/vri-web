@@ -1,5 +1,7 @@
 # vri-web
+
 VRI frontend
+
 # VRI Web Frontend (`vri-web`)
 
 The official Web Frontend application for the **Video Relay Interpreting (VRI) Platform in Uganda**, serving institutions (healthcare, justice, education), sign language interpreters, and system administrators.
@@ -8,7 +10,7 @@ Built with **React 18**, **TypeScript**, and **Vite**, fully containerised via *
 
 ---
 
-##  Tech Stack & Architecture
+## Tech Stack & Architecture
 
 - **Framework**: React (Vite + TypeScript)
 - **Runtime**: Node.js v20 (Docker) / v22 (CI Pipeline)
@@ -19,7 +21,7 @@ Built with **React 18**, **TypeScript**, and **Vite**, fully containerised via *
 
 ---
 
-##  Quick Start with Docker (Recommended)
+## Quick Start with Docker (Recommended)
 
 Docker ensures line-ending consistency (`LF`) across Windows, macOS, and Linux environments.
 
@@ -33,3 +35,4 @@ Create a `.env` file in the project root:
 
 ```bash
 cp .env.example .env
+```
