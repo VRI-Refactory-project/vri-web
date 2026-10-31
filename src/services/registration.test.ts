@@ -13,29 +13,32 @@ const payload = (role: string) => ({
   },
 });
 
-function mockFetch(role: string) {
-  const fn = vi.fn().mockResolvedValue({
-    ok: true,
-    status: 201,
-    statusText: 'Created',
-    json: async () => payload(role),
-  });
-  vi.stubGlobal('fetch', fn);
-  return fn;
-}
+function mockFetch(response: unknown) {
+  const fetchMock = vi.fn().mockImplementation((input: RequestInfo | URL) => {
+    const url = String(input);
 
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      json: async () => (url.includes('/api/health/') ? { status: 'ok' } : response),
+    });
+  });
+
+  vi.stubGlobal('fetch', fetchMock);
+  return fetchMock;
+}
 describe('registration services', () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it('registers a deaf user without an email and returns a session', async () => {
-    const fetchMock = mockFetch('deaf_hoh');
+    const fetchMock = mockFetch(payload('deaf_hoh'));
     const session = await registerDeaf({
       name: ' Amina ',
       phone: '0772123456',
       password: 'pw',
       email: ' ',
     });
-    const [url, init] = fetchMock.mock.calls[0];
+    const [url, init] = fetchMock.mock.calls[1];
     expect(url).toContain('/api/v1/auth/register/deaf/');
     expect(JSON.parse(init.body)).toEqual({
       full_name: 'Amina',
@@ -47,7 +50,7 @@ describe('registration services', () => {
   });
 
   it('sends the email and specialisations for an interpreter', async () => {
-    const fetchMock = mockFetch('interpreter');
+    const fetchMock = mockFetch(payload('institution'));
     await registerInterpreter({
       name: 'Joel',
       phone: '0772123456',
@@ -56,7 +59,7 @@ describe('registration services', () => {
       specialisations: ['MEDICAL', 'OTHER'],
       specialisationOther: ' Farming ',
     });
-    const [url, init] = fetchMock.mock.calls[0];
+    const [url, init] = fetchMock.mock.calls[1];
     expect(url).toContain('/api/v1/auth/register/interpreter/');
     expect(JSON.parse(init.body)).toMatchObject({
       email: 'j@x.org',
@@ -66,7 +69,7 @@ describe('registration services', () => {
   });
 
   it('maps organisation fields for an institution', async () => {
-    const fetchMock = mockFetch('institution');
+    const fetchMock = mockFetch(payload('institution'));
     await registerInstitution({
       name: 'Dr Okello',
       phone: '0772123456',
@@ -75,7 +78,7 @@ describe('registration services', () => {
       organisationName: 'Mulago',
       organisationType: 'HOSPITAL',
     });
-    const [url, init] = fetchMock.mock.calls[0];
+    const [url, init] = fetchMock.mock.calls[1];
     expect(url).toContain('/api/v1/auth/register/institution/');
     expect(JSON.parse(init.body)).toMatchObject({
       organisation_name: 'Mulago',
@@ -85,7 +88,7 @@ describe('registration services', () => {
   });
 
   it('sends what an "Other" institution is, and only for that type', async () => {
-    const fetchMock = mockFetch('institution');
+    const fetchMock = mockFetch(payload('institution'));
     await registerInstitution({
       name: 'Dr Okello',
       phone: '+256772123456',
@@ -95,7 +98,7 @@ describe('registration services', () => {
       organisationType: 'OTHER',
       organisationTypeOther: ' School for the Deaf ',
     });
-    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({
+    expect(JSON.parse(fetchMock.mock.calls[1][1].body)).toMatchObject({
       organisation_type: 'OTHER',
       organisation_type_other: 'School for the Deaf',
     });
@@ -109,14 +112,14 @@ describe('registration services', () => {
       organisationType: 'HOSPITAL',
       organisationTypeOther: 'left over text',
     });
-    expect(JSON.parse(fetchMock.mock.calls[1][1].body)).not.toHaveProperty(
+    expect(JSON.parse(fetchMock.mock.calls[3][1].body)).not.toHaveProperty(
       'organisation_type_other',
     );
   });
 
   it('sends the phone number without spaces or dashes', async () => {
-    const fetchMock = mockFetch('deaf_hoh');
+    const fetchMock = mockFetch(payload('deaf_hoh'));
     await registerDeaf({ name: 'Amina', phone: '+256 772-123 456', password: 'pw' });
-    expect(JSON.parse(fetchMock.mock.calls[0][1].body).phone_number).toBe('+256772123456');
+    expect(JSON.parse(fetchMock.mock.calls[1][1].body).phone_number).toBe('+256772123456');
   });
 });
