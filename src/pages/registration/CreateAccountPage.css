@@ -394,3 +394,28 @@ select.ca-input {
   border-radius: 2px;
   transition: width 0.2s linear;
 }
+
+
+.specialisation-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background-color: transparent !important;
+  color: #111827 !important; /* Plain dark text */
+  padding: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Only show the X when hovering over the word */
+.specialisation-chip svg {
+  color: #9ca3af;
+  cursor: pointer;
+}
+
+.specialisation-chip svg:hover {
+  color: #ef4444; /* Turns red when you hover to delete */
+}
+
+
+
