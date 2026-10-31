@@ -12,7 +12,7 @@ import './SettingsPage.css';
 
 export function SettingsPage() {
   const navigate = useNavigate();
-  const { session } = useAuth();
+  const { session, logout } = useAuth();
   const name = session?.user.name ?? 'Administrator';
   const initial = name.trim().charAt(0).toUpperCase() || 'A';
 
@@ -61,6 +61,17 @@ export function SettingsPage() {
     } finally {
       setSaving(false);
     }
+  }
+
+  function handleLogout() {
+    const confirmed = window.confirm(
+      'Are you sure you want to log out of your administrator account?',
+    );
+
+    if (!confirmed) return;
+
+    logout();
+    navigate('/login', { replace: true });
   }
 
   return (
@@ -169,6 +180,25 @@ export function SettingsPage() {
             disabled={!loaded || saving}
             onClick={() => void toggle('oneStepVerification', !prefs.oneStepVerification)}
           />
+        </div>
+      </section>
+
+      {/* Logout */}
+      <section className="st-card st-logout-card">
+        <div className="st-card-head">
+          <h2>Sign out</h2>
+          <p>End your administrator session securely.</p>
+        </div>
+
+        <div className="st-row">
+          <div>
+            <strong>Logout from your account</strong>
+            <p>You will need to sign in again to access the administrator dashboard.</p>
+          </div>
+
+          <button type="button" className="st-btn st-btn--danger" onClick={handleLogout}>
+            Logout
+          </button>
         </div>
       </section>
     </div>
