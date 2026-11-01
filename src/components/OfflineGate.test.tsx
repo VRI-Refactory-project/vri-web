@@ -1,6 +1,6 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { OfflineGate } from './OfflineGate';
 
 function renderGate() {
@@ -16,6 +16,10 @@ function renderGate() {
   );
 }
 
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
 describe('OfflineGate', () => {
   it('shows only the app when the internet is on', () => {
     renderGate();
@@ -24,7 +28,15 @@ describe('OfflineGate', () => {
     expect(screen.queryByRole('heading', { name: "You're offline" })).not.toBeInTheDocument();
   });
 
-  it('shows the offline overlay when the internet drops and hides it when it returns', () => {
+  it('shows the offline overlay when the internet drops and hides it when it returns', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+      }),
+    );
+
     renderGate();
 
     act(() => {
@@ -38,7 +50,9 @@ describe('OfflineGate', () => {
       window.dispatchEvent(new Event('online'));
     });
 
-    expect(screen.queryByRole('heading', { name: "You're offline" })).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByRole('heading', { name: "You're offline" })).not.toBeInTheDocument();
+    });
   });
 
   it('dismisses the overlay without leaving the current page', () => {
