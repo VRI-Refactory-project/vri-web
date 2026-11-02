@@ -1,5 +1,6 @@
 import { normalizePhone } from '../lib/validation';
-import { api } from './api';
+import { checkBackendConnection } from '../lib/connectivity';
+import { api, ApiError } from './api';
 import { toSession, type LoginResponse } from './auth';
 import type { AuthSession } from '../types';
 
@@ -58,10 +59,20 @@ export interface InstitutionRegistration {
 }
 
 async function register(path: string, body: Record<string, unknown>): Promise<AuthSession> {
+  const isConnected = await checkBackendConnection();
+
+  if (!isConnected) {
+    throw new ApiError(
+      0,
+      'Your connection is unavailable. Please reconnect to the internet before creating your account.',
+    );
+  }
+
   const res = await api<LoginResponse>(`/api/v1/auth/register/${path}/`, {
     method: 'POST',
     body: JSON.stringify(body),
   });
+
   return toSession(res);
 }
 

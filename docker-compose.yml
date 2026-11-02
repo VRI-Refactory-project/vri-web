@@ -3,7 +3,7 @@ services:
     build: .
     container_name: vri_react_web
     ports:
-      - "3000:3000"
+      - '3000:3000'
     volumes:
       - .:/app
       - /app/node_modules

@@ -829,13 +829,15 @@ import {
   PASSWORD_RULES,
   collectErrors,
   getPasswordStrength,
+  normalizePhone,
   validateEmail,
   validateName,
   validatePassword,
   validatePhoneNumber,
 } from '../../lib/validation';
-import { describeError } from '../../services/api';
+import { ApiError, describeError } from '../../services/api';
 import { checkEmailAvailability } from '../../services/emailAvailability';
+import { checkPhoneAvailability } from '../../services/phoneAvailability';
 import {
   registerDeaf,
   registerInterpreter,
@@ -948,6 +950,9 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>();
+  const [serverFieldErrors, setServerFieldErrors] = useState<
+    Partial<Record<'email' | 'phone', string>>
+  >({});
   const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
   const [submitted, setSubmitted] = useState(false);
 
@@ -956,6 +961,10 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
     status: 'idle',
   });
   const emailRequestId = useRef(0);
+  const [phoneCheck, setPhoneCheck] = useState<{ phone: string; status: EmailAvailability }>({
+    phone: '',
+    status: 'idle',
+  });
 
   const [videoDismissed, setVideoDismissed] = useState(false);
   const [videoProgress, setVideoProgress] = useState(0);
@@ -982,40 +991,75 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
     );
   };
 
+  // Every edit changes the request identity, so the submit code below can tell
+  // if the email changed while it was checking.
   useEffect(() => {
-    const email = form.email.trim();
-    const requestId = ++emailRequestId.current;
+    emailRequestId.current += 1;
+  }, [form.email]);
 
-    if (!email || validateEmail(email, { required: true })) {
+  const checkEmailNow = async () => {
+    const email = form.email.trim();
+
+    if (!email || validateEmail(email, { required: true })) return;
+
+    if (
+      emailCheck.email === email &&
+      emailCheck.status !== 'idle' &&
+      emailCheck.status !== 'failed'
+    ) {
       return;
     }
 
-    const timeout = window.setTimeout(async () => {
-      setEmailCheck({ email, status: 'checking' });
+    setEmailCheck({ email, status: 'checking' });
 
-      try {
-        const available = await checkEmailAvailability(email);
-        if (emailRequestId.current === requestId) {
-          setEmailCheck({ email, status: available ? 'available' : 'taken' });
-        }
-      } catch {
-        if (emailRequestId.current === requestId) {
-          setEmailCheck({ email, status: 'failed' });
-        }
-      }
-    }, 500);
+    const record = (status: EmailAvailability) =>
+      setEmailCheck((prev) =>
+        prev.email === email && prev.status === 'checking' ? { email, status } : prev,
+      );
 
-    return () => {
-      window.clearTimeout(timeout);
-      if (emailRequestId.current === requestId) {
-        emailRequestId.current += 1;
-      }
-    };
-  }, [form.email]);
+    try {
+      const available = await checkEmailAvailability(email);
+      record(available ? 'available' : 'taken');
+    } catch {
+      record('failed');
+    }
+  };
+
+  const checkPhoneNow = async () => {
+    const phone = normalizePhone(form.phone);
+
+    if (!form.phone || validatePhoneNumber(form.phone)) return;
+
+    if (
+      phoneCheck.phone === phone &&
+      phoneCheck.status !== 'idle' &&
+      phoneCheck.status !== 'failed'
+    ) {
+      return;
+    }
+
+    setPhoneCheck({ phone, status: 'checking' });
+
+    const record = (status: EmailAvailability) =>
+      setPhoneCheck((prev) =>
+        prev.phone === phone && prev.status === 'checking' ? { phone, status } : prev,
+      );
+
+    try {
+      const available = await checkPhoneAvailability(phone);
+      record(available ? 'available' : 'taken');
+    } catch {
+      record('failed');
+    }
+  };
 
   const emailAvailability: EmailAvailability =
     emailCheck.email === form.email.trim() ? emailCheck.status : 'idle';
 
+  const phoneAvailability: EmailAvailability =
+    phoneCheck.phone === normalizePhone(form.phone) ? phoneCheck.status : 'idle';
+
+  // Recalculated on every keystroke: drives the strength bars and green ticks.
   const strength = getPasswordStrength(form.password);
 
   const errors = collectErrors<FieldName>({
@@ -1037,7 +1081,17 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
 
   const emailError =
     shown('email') ||
-    (emailAvailability === 'taken' ? 'This email is already registered.' : undefined);
+    serverFieldErrors.email ||
+    (emailAvailability === 'taken'
+      ? 'This email already exists. Sign in instead, or use a different email.'
+      : undefined);
+
+  const phoneError =
+    shown('phone') ||
+    serverFieldErrors.phone ||
+    (phoneAvailability === 'taken'
+      ? 'This phone number already exists. Sign in instead, or use a different number.'
+      : undefined);
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -1064,6 +1118,11 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
     if (emailAvailability === 'taken') {
       setTouched((t) => ({ ...t, email: true }));
       document.getElementById('ca-email')?.focus();
+      return;
+    }
+    if (phoneAvailability === 'taken') {
+      setTouched((t) => ({ ...t, phone: true }));
+      document.getElementById('ca-phone')?.focus();
       return;
     }
 
@@ -1115,7 +1174,35 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
         replace: true,
       });
     } catch (err) {
-      setError(describeError(err));
+      if (err instanceof ApiError) {
+        const emailMessage = err.fieldError('email');
+        const phoneMessage = err.fieldError('phone_number') || err.fieldError('phone');
+
+        if (emailMessage || phoneMessage) {
+          setServerFieldErrors({
+            email: emailMessage,
+            phone: phoneMessage,
+          });
+
+          setTouched((prev) => ({
+            ...prev,
+            email: Boolean(emailMessage) || prev.email,
+            phone: Boolean(phoneMessage) || prev.phone,
+          }));
+
+          setError(undefined);
+
+          if (phoneMessage) {
+            document.getElementById('ca-phone')?.focus();
+          } else if (emailMessage) {
+            document.getElementById('ca-email')?.focus();
+          }
+        } else {
+          setError(describeError(err));
+        }
+      } else {
+        setError(describeError(err));
+      }
     } finally {
       setSubmitting(false);
     }
@@ -1208,27 +1295,47 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
             autoComplete: 'email',
             placeholder: 'name@example.com',
             value: form.email,
-            onChange: set('email'),
-            onBlur: touch('email'),
+            onChange: (e) => {
+              set('email')(e);
+              setServerFieldErrors((prev) => ({ ...prev, email: undefined }));
+            },
+            onBlur: () => {
+              touch('email')();
+              void checkEmailNow();
+            },
           },
           emailError,
         )}
 
-        <div className="ca-field">
+        {/* Phone on its own row. Existing phone validation is preserved. */}
+        <div
+          className="ca-field"
+          onBlur={(event) => {
+            // React blur events bubble. Validate only when focus leaves the whole
+            // phone-field wrapper, not when moving between its internal controls.
+            if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+              touch('phone')();
+              void checkPhoneNow();
+            }
+          }}
+        >
           <label className="ca-label" htmlFor="ca-phone">
             Phone number
           </label>
           <PhoneField
             id="ca-phone"
             value={form.phone}
-            onChange={(phone) => setForm((f) => ({ ...f, phone }))}
-            onBlur={touch('phone')}
-            invalid={Boolean(shown('phone'))}
-            errorId={shown('phone') ? 'ca-phone-error' : undefined}
+            onChange={(phone) => {
+              setForm((f) => ({ ...f, phone }));
+              setServerFieldErrors((prev) => ({ ...prev, phone: undefined }));
+            }}
+            invalid={Boolean(phoneError)}
+            errorId={phoneError ? 'ca-phone-error' : undefined}
           />
-          {shown('phone') && (
+
+          {phoneError && (
             <p className="field-error" id="ca-phone-error">
-              {shown('phone')}
+              {phoneError}
             </p>
           )}
         </div>
