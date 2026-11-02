@@ -17,6 +17,7 @@ import {
   ChevronRight,
   ChevronDown,
   Check,
+  X,
 } from 'lucide-react';
 import { AuthShell } from '../../components/AuthShell';
 import { PhoneField } from '../../components/PhoneField';
@@ -160,10 +161,22 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
   const set = (name: keyof typeof form) => (e: { target: { value: string } }) =>
     setForm((f) => ({ ...f, [name]: e.target.value }));
 
-  const toggleSpecialisation = (value: Specialisation) => {
-    setSpecialisations((prev) =>
-      prev.includes(value) ? prev.filter((s) => s !== value) : [...prev, value],
-    );
+  // Each specialisation can only be chosen once; chosen ones leave the menu.
+  const addSpecialisation = (value: Specialisation) => {
+    setSpecialisations((prev) => (prev.includes(value) ? prev : [...prev, value]));
+    setIsDropdownOpen(false);
+  };
+
+  const removeSpecialisation = (value: Specialisation) => {
+    setSpecialisations((prev) => prev.filter((s) => s !== value));
+    if (value === 'OTHER') setCustomSpecialisation('');
+  };
+
+  const availableOptions = SPECIALISATIONS.filter((o) => !specialisations.includes(o.value));
+
+  const chipLabel = (value: Specialisation) => {
+    if (value === 'OTHER') return customSpecialisation.trim() || 'Other';
+    return SPECIALISATIONS.find((o) => o.value === value)?.label ?? value;
   };
 
   // Recalculated on every keystroke: drives the strength bars and the green ticks.
@@ -182,6 +195,20 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
         : undefined,
     terms: agreed ? undefined : 'Accept the Terms and Privacy Policy to continue.',
   });
+  const specialisationError = !isInterpreter
+    ? undefined
+    : specialisations.length === 0
+      ? 'Choose at least one specialisation.'
+      : specialisations.includes('OTHER') && !/\p{L}/u.test(customSpecialisation)
+        ? 'Describe your specialisation using letters.'
+        : specialisations.includes('OTHER') &&
+            SPECIALISATIONS.some(
+              (o) =>
+                o.value !== 'OTHER' &&
+                o.label.toLowerCase() === customSpecialisation.trim().toLowerCase(),
+            )
+          ? 'That specialisation is already in the list. Pick it from the menu.'
+          : undefined;
   const shown = (name: FieldName) => (touched[name] || submitted ? errors[name] : undefined);
   const touch = (name: FieldName) => () => setTouched((t) => ({ ...t, [name]: true }));
 
@@ -190,21 +217,12 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
     setError(undefined);
     setSubmitted(true);
 
-    if (isInterpreter && specialisations.length === 0) {
-      setError('Please select at least one specialisation.');
-      return;
-    }
-
-    if (isInterpreter && specialisations.includes('OTHER') && !customSpecialisation.trim()) {
-      setError('Please specify your other specialisation.');
-      return;
-    }
-
     const firstInvalid = FIELD_ORDER.find((name) => errors[name]);
     if (firstInvalid) {
       document.getElementById(`ca-${firstInvalid}`)?.focus();
       return;
     }
+    if (specialisationError) return;
 
     setSubmitting(true);
     try {
@@ -233,14 +251,6 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
     } finally {
       setSubmitting(false);
     }
-  };
-
-  // Get the text to show inside the dropdown box
-  const getSelectedLabel = () => {
-    if (specialisations.length === 0) return 'Select specialisation(s)...';
-    return SPECIALISATIONS.filter((o) => specialisations.includes(o.value))
-      .map((o) => o.label)
-      .join(', ');
   };
 
   return (
@@ -359,140 +369,95 @@ export function CreateAccountPage({ role = 'deaf' }: Props) {
           )}
         </div>
 
-        {/* CUSTOM MULTI-SELECT DROPDOWN */}
+        {/* SPECIALISATION PICKER: removable chips + a menu of the options not yet chosen */}
         {isInterpreter && (
-          <div className="ca-field" ref={dropdownRef} style={{ position: 'relative' }}>
-            <label className="ca-label">Specialisation(s)</label>
+          <div className="ca-field ca-spec" ref={dropdownRef}>
+            <label className="ca-label" id="ca-spec-label">
+              Specialisation(s)
+            </label>
 
-            {/* The Box that looks like an input */}
-            <div
-              className="ca-input-wrap"
-              onClick={() => {
-                // Only open the dropdown if we are not currently typing in "Other"
-                if (!specialisations.includes('OTHER')) {
-                  setIsDropdownOpen(!isDropdownOpen);
-                }
-              }}
-              style={{ cursor: 'pointer', position: 'relative' }}
-            >
-              <span className="ca-input-icon">
-                <Award size={16} />
-              </span>
+            {specialisations.length > 0 && (
+              <ul className="ca-chips" aria-label="Selected specialisations">
+                {specialisations.map((value) => {
+                  const label = chipLabel(value);
+                  return (
+                    <li key={value} className="ca-chip">
+                      <span>{label}</span>
+                      <button
+                        type="button"
+                        className="ca-chip-remove"
+                        aria-label={`Remove ${label}`}
+                        onClick={() => removeSpecialisation(value)}
+                      >
+                        <X size={12} aria-hidden="true" />
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
 
-              {specialisations.includes('OTHER') ? (
-                /* IF "OTHER" IS SELECTED: Show the text input inside the box */
+            {specialisations.includes('OTHER') && (
+              <div className="ca-input-wrap">
+                <span className="ca-input-icon">
+                  <Award size={16} />
+                </span>
                 <input
                   type="text"
                   className="ca-input"
+                  aria-label="Your specialisation"
                   placeholder="Type your specialisation..."
                   value={customSpecialisation}
+                  maxLength={100}
                   onChange={(e) => setCustomSpecialisation(e.target.value)}
                   autoFocus
-                  style={{ paddingRight: '40px' }} // Make room for the icon
                 />
-              ) : (
-                /* OTHERWISE: Show the normal dropdown text */
-                <div
-                  className="ca-input"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}
-                >
-                  <span style={{ color: specialisations.length === 0 ? '#9ca3af' : '#111827' }}>
-                    {getSelectedLabel()}
-                  </span>
-                </div>
-              )}
-
-              {/* The Chevron Icon (Always visible on the right) */}
-              <div
-                style={{
-                  position: 'absolute',
-                  right: '16px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  pointerEvents: 'none',
-                  color: '#6b7280',
-                }}
-              >
-                <ChevronDown size={16} />
-              </div>
-            </div>
-
-            {/* The Dropdown Menu (Only shows if NOT in "Other" mode) */}
-            {isDropdownOpen && !specialisations.includes('OTHER') && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '100%',
-                  left: 0,
-                  right: 0,
-                  backgroundColor: 'white',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '8px',
-                  marginTop: '4px',
-                  padding: '8px',
-                  zIndex: 50,
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                  maxHeight: '260px',
-                  overflowY: 'auto',
-                }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                {SPECIALISATIONS.map((o) => (
-                  <div
-                    key={o.value}
-                    onClick={() => {
-                      toggleSpecialisation(o.value);
-                      // If they click "Other", close the menu so they can type in the box
-                      if (o.value === 'OTHER') setIsDropdownOpen(false);
-                    }}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      padding: '10px 12px',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      color: '#374151',
-                      borderRadius: '4px',
-                      backgroundColor: specialisations.includes(o.value)
-                        ? '#f3f4f6'
-                        : 'transparent',
-                      fontWeight: specialisations.includes(o.value) ? '600' : 'normal',
-                    }}
-                  >
-                    {o.label}
-                  </div>
-                ))}
               </div>
             )}
 
-            {/* A small button to go back to the list if they made a mistake */}
-            {specialisations.includes('OTHER') && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSpecialisations((prev) => prev.filter((s) => s !== 'OTHER'));
-                  setCustomSpecialisation('');
-                }}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#382c77',
-                  fontSize: '12px',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  marginTop: '4px',
-                  fontWeight: 600,
-                }}
-              >
-                Back to list
-              </button>
+            {availableOptions.length > 0 && (
+              <div className="ca-input-wrap">
+                <button
+                  type="button"
+                  className="ca-input ca-spec-trigger"
+                  aria-haspopup="listbox"
+                  aria-expanded={isDropdownOpen}
+                  aria-labelledby="ca-spec-label"
+                  onClick={() => setIsDropdownOpen((open) => !open)}
+                >
+                  {specialisations.length === 0
+                    ? 'Select specialisation(s)...'
+                    : 'Add another specialisation...'}
+                </button>
+                <span className="ca-input-icon">
+                  <Award size={16} />
+                </span>
+                <span className="ca-spec-chevron">
+                  <ChevronDown size={16} />
+                </span>
+              </div>
+            )}
+
+            {submitted && specialisationError && (
+              <p className="field-error" role="alert">
+                {specialisationError}
+              </p>
+            )}
+
+            {isDropdownOpen && availableOptions.length > 0 && (
+              <ul className="ca-spec-menu" role="listbox" aria-label="Specialisations">
+                {availableOptions.map((o) => (
+                  <li key={o.value} role="option" aria-selected={false}>
+                    <button
+                      type="button"
+                      className="ca-spec-option"
+                      onClick={() => addSpecialisation(o.value)}
+                    >
+                      {o.label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
         )}
