@@ -101,11 +101,15 @@ describe('CreateAccountPage', () => {
     );
   });
 
-  it('shows the server message when registration fails', async () => {
+  it('shows a duplicate phone error under the phone field', async () => {
     vi.spyOn(registration, 'registerDeaf').mockRejectedValue(
-      new ApiError(400, 'A user with this phone number already exists.'),
+      new ApiError(400, 'An account with this phone number already exists.', {
+        phone_number: ['An account with this phone number already exists.'],
+      }),
     );
+
     renderPage();
+
     await fill({
       'First name': 'Catherine',
       'Last name': 'Nawagirwa',
@@ -114,9 +118,15 @@ describe('CreateAccountPage', () => {
       Password: 'Secret-pass-1',
       'Confirm password': 'Secret-pass-1',
     });
+
     await userEvent.click(screen.getByRole('checkbox'));
     await userEvent.click(screen.getByRole('button', { name: /create account/i }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('already exists');
+
+    expect(
+      await screen.findByText('An account with this phone number already exists.'),
+    ).toBeInTheDocument();
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
   it('blocks submission without a name, phone, email or password', async () => {
@@ -168,9 +178,9 @@ describe('CreateAccountPage', () => {
 
   it('rejects an email that is only numbers', async () => {
     renderPage();
-    await userEvent.type(screen.getByLabelText('Email address'), '12345');
+    await userEvent.type(screen.getByLabelText('Email address'), '12345@example.com');
     await userEvent.tab();
-    expect(screen.getByText(/valid email/i)).toBeInTheDocument();
+    expect(screen.getByText(/cannot be only numbers/i)).toBeInTheDocument();
   });
 
   it('requires the terms to be accepted', async () => {
@@ -319,6 +329,11 @@ describe('CreateAccountPage', () => {
       'Email address': 'shadia@gmail.com',
       Password: 'Secret-pass-1',
       'Confirm password': 'Secret-pass-1',
+    });
+
+    // Availability is checked when the email field loses focus.
+    await waitFor(() => {
+      expect(checkEmailAvailability).toHaveBeenCalledWith('shadia@gmail.com');
     });
 
     expect(
