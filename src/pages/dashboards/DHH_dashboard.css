@@ -233,7 +233,7 @@ body {
   height: 100%;
   object-fit: cover;
   object-position: center left; /* Keeps the person in view */
-  
+
   /* This creates a smooth fade from left to right */
   mask-image: linear-gradient(to right, transparent, black 40%);
   -webkit-mask-image: linear-gradient(to right, transparent, black 40%);
@@ -245,7 +245,6 @@ body {
   z-index: 2; /* Ensures text and buttons are clickable and readable */
   max-width: 60%; /* Prevents text from spilling into the image area */
 }
-
 
 .hero-tag {
   font-size: 11px;
@@ -364,11 +363,14 @@ body {
   gap: 16px;
   cursor: pointer;
   text-align: left;
-   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .action-card:hover {
- transform: translateX(6px);
+  transform: translateX(6px);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08); /* Adds the floating shadow */
   border-color: #d8b4fe; /* Changes the border to light purple */
 }
@@ -419,8 +421,10 @@ body {
   padding: 20px;
   display: flex;
   flex-direction: column;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  cursor: pointer; 
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  cursor: pointer;
 }
 
 .stat-card:hover {

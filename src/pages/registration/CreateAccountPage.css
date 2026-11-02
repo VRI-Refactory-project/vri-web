@@ -395,7 +395,6 @@ select.ca-input {
   transition: width 0.2s linear;
 }
 
-
 .specialisation-chip {
   display: flex;
   align-items: center;
@@ -416,6 +415,3 @@ select.ca-input {
 .specialisation-chip svg:hover {
   color: #ef4444; /* Turns red when you hover to delete */
 }
-
-
-
