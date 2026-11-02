@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter, Navigate, type RouteObject } from 'react-router-dom';
 import { ApprovedInterpreterRoute } from '../components/ApprovedInterpreterRoute';
 import { GuestRoute } from '../components/Guestroute';
 import { ProtectedRoute } from '../components/ProtectedRoute';
@@ -9,6 +9,7 @@ import { RoleSelectionPage } from '../pages/registration/RoleSelectionPage';
 import { Forgotpassword } from '../pages/registration/Forgotpassword';
 import { Resetpassword } from '../pages/registration/Resetpassword';
 import { SignUpInstitution } from '../pages/registration/SignUpInstitution';
+import { UploadInstitutionLicense } from '../pages/registration/UploadInstitutionLicense';
 import { VerifyEmailPage } from '../pages/auth/VerifyEmailPage';
 import { SignInPage } from '../pages/auth/SignInPage';
 import { CreateAccountPage } from '../pages/registration/CreateAccountPage';
@@ -25,13 +26,22 @@ import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage';
 import { CredentialReviewPage } from '../pages/admin/CredentialReviewPage';
 import { VerificationsPage } from '../pages/admin/VerificationsPage';
 import { InstitutionAccountsPage } from '../pages/admin/InstitutionAccountsPage';
+import { InstitutionReviewPage } from '../pages/admin/InstitutionReviewPage';
 import { AvailabilityPage } from '../pages/interpreter/AvailabilityPage';
 import { InstitutionLayout } from '../features/institution/InstitutionLayout';
 import { StaffManagementPage } from '../pages/institution/StaffManagementPage';
 import { ProfilePage as DeafProfilePage } from '../pages/deaf/ProfilePage';
 import { StartSessionPage } from '../pages/deaf/StartSessionPage';
+import { SessionsHubPage } from '../pages/deaf/SessionsHubPage';
+import { SessionHistoryPage } from '../pages/deaf/SessionHistoryPage';
+import { AccessibilityPage } from '../pages/deaf/AccessibilityPage';
+import { WalletPage } from '../pages/deaf/WalletPage';
+import { MessagesPage } from '../pages/deaf/MessagesPage';
+import { SchedulePage } from '../pages/deaf/SchedulePage';
+import { SettingsPage as DeafSettingsPage } from '../pages/deaf/SettingsPage';
 import { LiveSessionPage } from '../pages/session/LiveSessionPage';
 import { ProfilePage as InterpreterProfilePage } from '../pages/interpreter/ProfilePage';
+import { InterpreterSessionsPage } from '../pages/interpreter/SessionsPage';
 import { SettingsPage } from '../pages/admin/SettingsPage';
 import { AdminProfilePage } from '../pages/admin/AdminProfilePage';
 import { CreateStaffAccountPage } from '../pages/institution/CreateStaffAccountPage';
@@ -39,10 +49,21 @@ import { OfflinePage } from '../pages/OfflinePage';
 import { StaffAccountCreatedPage } from '../pages/institution/StaffAccountCreatedPage';
 import { InstitutionDashboardPage } from '../pages/institution/InstitutionDashboardPage';
 import RequestsPage from '../pages/interpreter/RequestsPage';
+import { UsersPage } from '../pages/admin/UsersPage';
+import { OfflineGate } from '../components/OfflineGate';
+import { InstitutionProfilePage } from '../pages/institution/InstitutionProfilePage';
+import { SessionsPage } from '../pages/admin/SessionsPage';
+import { ReportsPage } from '../pages/admin/ReportsPage';
+import { InstitutionSettingsPage } from '../pages/institution/InstitutionSettingsPage';
+import { InstitutionAnalyticsPage } from '../pages/institution/InstitutionAnalyticsPage';
+import { InstitutionSessionsPage } from '../pages/institution/InstitutionSessionsPage';
+import { AuditLogsPage } from '../pages/admin/AuditLogsPage';
+import { ReportCategoryPage } from '../pages/admin/ReportCategoryPage';
+import { InterpreterSettingsPage } from '../pages/interpreter/SettingsPage';
+import { InterpreterWalletPage } from '../pages/interpreter/WalletPage';
 
-export const router = createBrowserRouter([
+const appRoutes: RouteObject[] = [
   {
-    // Public entry pages: signed-in users should return to their dashboard.
     element: <GuestRoute />,
     children: [
       { path: '/', element: <SplashPage /> },
@@ -51,16 +72,15 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    // Registration pages: allow a newly registered user to finish the sign-up flow.
     element: <GuestRoute allowSessionCreatedDuringRoute />,
     children: [
       { path: '/register/deaf', element: <CreateAccountPage /> },
       { path: '/register/interpreter', element: <CreateAccountPage role="interpreter" /> },
       { path: '/register/institution', element: <SignUpInstitution /> },
+      { path: '/register/institution/upload-license', element: <UploadInstitutionLicense /> },
     ],
   },
 
-  // The sign-in page already sends a signed-in person to their dashboard by itself.
   { path: '/sign-in', element: <SignInPage /> },
   { path: '/verify-email', element: <VerifyEmailPage /> },
   { path: '/offline', element: <OfflinePage /> },
@@ -72,7 +92,6 @@ export const router = createBrowserRouter([
     element: <Navigate to="/register/interpreter" replace />,
   },
   {
-    // Certificates are uploaded right after the account exists and before the email is confirmed.
     element: <ProtectedRoute allow={['interpreter']} requireVerifiedEmail={false} />,
     children: [
       { path: '/register/interpreter/certifications', element: <UploadCertificationsPage /> },
@@ -100,24 +119,23 @@ export const router = createBrowserRouter([
       {
         path: '/dashboard/deaf',
         element: (
-          <DashboardLayout links={deafNavigation} navLabel="Deaf dashboard" accountTo="/profile" />
+          <DashboardLayout
+            links={deafNavigation}
+            navLabel="Deaf dashboard"
+            accountTo="/dashboard/deaf/profile"
+          />
         ),
         children: [
           { index: true, element: <DashboardPage /> },
-          { path: 'sessions', element: <Placeholder title="Sessions" story="Sprint 2" /> },
+          { path: 'sessions', element: <SessionsHubPage /> },
+          { path: 'sessions/history', element: <SessionHistoryPage /> },
           { path: 'sessions/new', element: <StartSessionPage /> },
-          {
-            path: 'schedule',
-            element: <Placeholder title="Schedule a session" story="Not scheduled" />,
-          },
-          {
-            path: 'accessibility',
-            element: <Placeholder title="Accessibility setup" story="Not scheduled" />,
-          },
-          { path: 'messages', element: <Placeholder title="Messages" story="Sprint 2" /> },
-          { path: 'wallet', element: <Placeholder title="Wallet" story="Not scheduled" /> },
+          { path: 'schedule', element: <SchedulePage /> },
+          { path: 'accessibility', element: <AccessibilityPage /> },
+          { path: 'messages', element: <MessagesPage /> },
+          { path: 'wallet', element: <WalletPage /> },
           { path: 'profile', element: <DeafProfilePage /> },
-          { path: 'settings', element: <Placeholder title="Settings" story="Sprint 2" /> },
+          { path: 'settings', element: <DeafSettingsPage /> },
         ],
       },
     ],
@@ -127,7 +145,6 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute allow={['interpreter']} />,
     children: [
       {
-        // Nothing past this point opens until an admin has approved the interpreter.
         element: <ApprovedInterpreterRoute />,
         children: [
           {
@@ -136,11 +153,11 @@ export const router = createBrowserRouter([
             children: [
               { index: true, element: <InterpreterHomePage /> },
               { path: 'requests', element: <RequestsPage /> },
-              { path: 'sessions', element: <Placeholder title="Sessions" story="Sprint 2" /> },
+              { path: 'sessions', element: <InterpreterSessionsPage /> },
               { path: 'availability', element: <AvailabilityPage /> },
-              { path: 'wallet', element: <Placeholder title="Wallet" story="Not scheduled" /> },
+              { path: 'wallet', element: <InterpreterWalletPage /> },
               { path: 'profile', element: <InterpreterProfilePage /> },
-              { path: 'settings', element: <Placeholder title="Settings" story="Sprint 2" /> },
+              { path: 'settings', element: <InterpreterSettingsPage /> },
             ],
           },
         ],
@@ -152,16 +169,24 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute allow={['institution']} />,
     children: [
       {
-        path: '/dashboard/institution',
-        element: <InstitutionLayout />,
+        // TEMPORARY FRONTEND FIX: Force institutions to the pending page
+        // until the backend adds the "isApproved" check.
+        element: <Navigate to="/register/pending" replace />,
         children: [
-          { index: true, element: <InstitutionDashboardPage /> },
-          { path: 'staff', element: <StaffManagementPage /> },
-          { path: 'staff/new', element: <CreateStaffAccountPage /> },
-          { path: 'staff/created', element: <StaffAccountCreatedPage /> },
-          { path: 'sessions', element: <Placeholder title="Sessions" story="V2-028" /> },
-          { path: 'analytics', element: <Placeholder title="Analytics" story="V2-028" /> },
-          { path: 'settings', element: <Placeholder title="Settings" story="V2-028" /> },
+          {
+            path: '/dashboard/institution',
+            element: <InstitutionLayout />,
+            children: [
+              { index: true, element: <InstitutionDashboardPage /> },
+              { path: 'staff', element: <StaffManagementPage /> },
+              { path: 'staff/new', element: <CreateStaffAccountPage /> },
+              { path: 'staff/created', element: <StaffAccountCreatedPage /> },
+              { path: 'sessions', element: <InstitutionSessionsPage /> },
+              { path: 'analytics', element: <InstitutionAnalyticsPage /> },
+              { path: 'settings', element: <InstitutionSettingsPage /> },
+              { path: 'profile', element: <InstitutionProfilePage /> },
+            ],
+          },
         ],
       },
     ],
@@ -175,18 +200,19 @@ export const router = createBrowserRouter([
         element: <AdminLayout />,
         children: [
           { index: true, element: <AdminDashboardPage /> },
-          { path: 'users', element: <Placeholder title="Users" story="V2-064" /> },
+          { path: 'users', element: <UsersPage /> },
           { path: 'verifications', element: <VerificationsPage /> },
           { path: 'verifications/:id', element: <CredentialReviewPage /> },
           { path: 'institutions', element: <InstitutionAccountsPage /> },
-          { path: 'sessions', element: <Placeholder title="Sessions" story="V2-064" /> },
-          { path: 'reports', element: <Placeholder title="Reports" story="V2-064" /> },
-          { path: 'audit-logs', element: <Placeholder title="Audit Logs" story="V2-064" /> },
+          { path: 'institutions/:id', element: <InstitutionReviewPage /> },
+          { path: 'sessions', element: <SessionsPage /> },
+          { path: 'reports', element: <ReportsPage /> },
+          { path: 'reports/:category', element: <ReportCategoryPage /> },
+          { path: 'audit-logs', element: <AuditLogsPage /> },
           { path: 'settings', element: <SettingsPage /> },
           { path: 'profile', element: <AdminProfilePage /> },
         ],
       },
-
       {
         path: '/admin/interpreters',
         element: <Placeholder title="Interpreter review" story="V2-045" />,
@@ -203,4 +229,6 @@ export const router = createBrowserRouter([
     path: '*',
     element: <Placeholder title="Page not found" message="We could not find this page." />,
   },
-]);
+];
+
+export const router = createBrowserRouter([{ element: <OfflineGate />, children: appRoutes }]);

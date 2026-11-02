@@ -11,7 +11,7 @@ const renderPage = () =>
       <MemoryRouter initialEntries={['/register/institution']}>
         <Routes>
           <Route path="/register/institution" element={<SignUpInstitution />} />
-          <Route path="/register/pending" element={<p>pending review</p>} />
+          <Route path="/verify-email" element={<p>verify email page</p>} />
         </Routes>
       </MemoryRouter>
     </AuthProvider>,
@@ -29,9 +29,23 @@ describe('SignUpInstitution', () => {
     sessionStorage.clear();
   });
 
+  it('disables the submit button until the terms are agreed to', async () => {
+    renderPage();
+    const submitButton = screen.getByRole('button', { name: /submit registration/i });
+    expect(submitButton).toBeDisabled();
+
+    const checkbox = screen.getByRole('checkbox');
+    await userEvent.click(checkbox);
+
+    expect(submitButton).not.toBeDisabled();
+  });
+
   it('shows what is missing next to each field before submitting', async () => {
     const spy = vi.spyOn(registration, 'registerInstitution');
     renderPage();
+
+    await userEvent.click(screen.getByRole('checkbox'));
+
     await userEvent.click(screen.getByRole('button', { name: /submit registration/i }));
     expect(screen.getByText('Enter the institution name.')).toBeInTheDocument();
     expect(screen.getByText('Enter your full name.')).toBeInTheDocument();
@@ -60,6 +74,9 @@ describe('SignUpInstitution', () => {
     expect(screen.queryByLabelText('Please specify the type')).not.toBeInTheDocument();
     await userEvent.selectOptions(screen.getByLabelText('Institution type'), 'OTHER');
     expect(screen.getByLabelText('Please specify the type')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('checkbox'));
+
     await userEvent.click(screen.getByRole('button', { name: /submit registration/i }));
     expect(screen.getByText('Tell us what kind of institution this is.')).toBeInTheDocument();
     expect(spy).not.toHaveBeenCalled();
@@ -91,7 +108,7 @@ describe('SignUpInstitution', () => {
     expect(spy).not.toHaveBeenCalled();
   });
 
-  it('registers the institution and shows the pending page', async () => {
+  it('registers the institution and goes to the verify email page', async () => {
     const spy = vi.spyOn(registration, 'registerInstitution').mockResolvedValue(okSession);
     renderPage();
     await userEvent.type(screen.getByLabelText('Institution name'), 'Mulago');
@@ -101,12 +118,16 @@ describe('SignUpInstitution', () => {
     await userEvent.type(screen.getByLabelText('Work email'), 'a@mulago.org');
     await userEvent.type(screen.getByLabelText('Password'), 'Secret-pass-1');
     await userEvent.type(screen.getByLabelText('Confirm password'), 'Secret-pass-1');
+
+    await userEvent.click(screen.getByRole('checkbox'));
+
     await userEvent.click(screen.getByRole('button', { name: /submit registration/i }));
-    await waitFor(() => expect(screen.getByText('pending review')).toBeInTheDocument());
+
+    await waitFor(() => expect(screen.getByText('verify email page')).toBeInTheDocument());
+
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({ organisationName: 'Mulago', organisationType: 'COURT' }),
     );
-    // The confirmation box is for the person only: it must never reach the API.
     expect(spy.mock.calls[0][0]).not.toHaveProperty('confirmPassword');
   });
 
@@ -121,8 +142,13 @@ describe('SignUpInstitution', () => {
     await userEvent.type(screen.getByLabelText('Work email'), 'a@school.org');
     await userEvent.type(screen.getByLabelText('Password'), 'Secret-pass-1');
     await userEvent.type(screen.getByLabelText('Confirm password'), 'Secret-pass-1');
+
+    await userEvent.click(screen.getByRole('checkbox'));
+
     await userEvent.click(screen.getByRole('button', { name: /submit registration/i }));
-    await waitFor(() => expect(screen.getByText('pending review')).toBeInTheDocument());
+
+    await waitFor(() => expect(screen.getByText('verify email page')).toBeInTheDocument());
+
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({
         organisationType: 'OTHER',

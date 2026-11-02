@@ -1,0 +1,13 @@
+html[data-text-size='small'] {
+  font-size: 14px;
+}
+html[data-text-size='large'] {
+  font-size: 18px;
+}
+html[data-contrast='high'] {
+  filter: contrast(1.25);
+}
+html[data-contrast='high'] :focus-visible {
+  outline: 3px solid #000;
+  outline-offset: 2px;
+}
