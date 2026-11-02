@@ -7,6 +7,8 @@ import illustration from '../assets/verify-email-illustration.png';
 import './VerifyEmailModal.css';
 
 const RESEND_WAIT_SECONDS = 60;
+// Must match the server (RecoveryCode.LIFETIME in vri-api).
+const CODE_LIFETIME_SECONDS = 60;
 const CODE_LENGTH = 6;
 
 /**
@@ -28,6 +30,8 @@ export function VerifyEmailModal({
   const [info, setInfo] = useState('');
   const [busy, setBusy] = useState(false);
   const [wait, setWait] = useState(required ? 0 : RESEND_WAIT_SECONDS);
+  // Counts down the life of the code. It starts when this pop-up opens and again on every resend.
+  const [expiresIn, setExpiresIn] = useState(CODE_LIFETIME_SECONDS);
 
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
 
@@ -36,6 +40,12 @@ export function VerifyEmailModal({
     const timer = setTimeout(() => setWait((w) => w - 1), 1000);
     return () => clearTimeout(timer);
   }, [wait]);
+
+  useEffect(() => {
+    if (expiresIn <= 0) return;
+    const timer = setTimeout(() => setExpiresIn((s) => s - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [expiresIn]);
 
   // Focus first box on mount (only when the modal is actually visible)
   useEffect(() => {
@@ -155,6 +165,8 @@ export function VerifyEmailModal({
       const res = await resendEmailCode();
       setInfo(res.detail);
       setWait(RESEND_WAIT_SECONDS);
+      setExpiresIn(CODE_LIFETIME_SECONDS);
+      setDigits(Array(CODE_LENGTH).fill(''));
     } catch (err) {
       setError(describeError(err));
     }
@@ -170,6 +182,14 @@ export function VerifyEmailModal({
         <p className="verify-modal__text">
           We sent a 6-digit code to <strong>{user.email}</strong>. Enter it to confirm this address
           is yours. Accounts need a verified email before they can be approved.
+        </p>
+        <p
+          className={`verify-modal__text verify-modal__timer${expiresIn <= 0 ? ' verify-modal__timer--expired' : ''}`}
+          role="timer"
+        >
+          {expiresIn > 0
+            ? `The code expires in ${Math.floor(expiresIn / 60)}:${String(expiresIn % 60).padStart(2, '0')}.`
+            : 'This code has expired. Request a new one below.'}
         </p>
 
         <form onSubmit={submit} noValidate>

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AuthContext, type AuthState } from '../features/auth/authContext';
@@ -31,6 +31,15 @@ async function typeCode(code: string) {
   const boxes = Array.from({ length: 6 }, (_, i) => screen.getByLabelText(`Digit ${i + 1}`));
   for (let i = 0; i < code.length; i++) {
     await userEvent.type(boxes[i], code[i]);
+  }
+}
+
+/** Lets the clock run one second at a time, so each tick re-renders before the next. */
+function tick(seconds: number) {
+  for (let i = 0; i < seconds; i++) {
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
   }
 }
 
@@ -84,5 +93,19 @@ describe('VerifyEmailModal', () => {
     await typeCode('000000');
     await userEvent.click(screen.getByRole('button', { name: /verify email/i }));
     expect(await screen.findByRole('alert')).toHaveTextContent(/invalid or expired/i);
+  });
+
+  it('counts down the life of the code and says when it has expired', () => {
+    vi.useFakeTimers();
+    try {
+      renderModal({ email: 'a@b.com', emailVerified: false });
+      expect(screen.getByRole('timer')).toHaveTextContent('The code expires in 1:00.');
+      tick(18);
+      expect(screen.getByRole('timer')).toHaveTextContent('The code expires in 0:42.');
+      tick(42);
+      expect(screen.getByRole('timer')).toHaveTextContent('This code has expired');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

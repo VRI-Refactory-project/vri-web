@@ -151,7 +151,7 @@ function CertificateForm({
 
 // V2-003: interpreter registration, step 3 of 3. The account already exists and the person is
 // signed in, so each certificate is uploaded here. Ones that go through are removed from the
-// list, so a retry only sends what is left. The email check and the review come next.
+// list, so a retry only sends what is left. The review comes next; the email was confirmed before this step.
 export function UploadCertificationsPage() {
   const navigate = useNavigate();
   const [entries, setEntries] = useState<CertificateEntry[]>(() => [newEntry()]);
