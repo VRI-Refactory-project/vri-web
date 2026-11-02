@@ -92,7 +92,7 @@ const appRoutes: RouteObject[] = [
     element: <Navigate to="/register/interpreter" replace />,
   },
   {
-    element: <ProtectedRoute allow={['interpreter']} requireVerifiedEmail={false} />,
+    element: <ProtectedRoute allow={['interpreter']} />,
     children: [
       { path: '/register/interpreter/certifications', element: <UploadCertificationsPage /> },
     ],
