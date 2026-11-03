@@ -61,6 +61,7 @@ import { AuditLogsPage } from '../pages/admin/AuditLogsPage';
 import { ReportCategoryPage } from '../pages/admin/ReportCategoryPage';
 import { InterpreterSettingsPage } from '../pages/interpreter/SettingsPage';
 import { InterpreterWalletPage } from '../pages/interpreter/WalletPage';
+import { GuestVideoPage } from '../features/video/GuestVideoPage';
 
 const appRoutes: RouteObject[] = [
   {
@@ -82,6 +83,7 @@ const appRoutes: RouteObject[] = [
   },
 
   { path: '/sign-in', element: <SignInPage /> },
+  { path: '/video/:roomName', element: <GuestVideoPage /> },
   { path: '/verify-email', element: <VerifyEmailPage /> },
   { path: '/offline', element: <OfflinePage /> },
   { path: '/forgot-password', element: <Forgotpassword /> },
