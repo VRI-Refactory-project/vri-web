@@ -45,10 +45,6 @@ export function GuestVideoPage() {
   }
 
   return (
-    <GuestJoin
-      roomName={roomName}
-      error={error}
-      onJoin={(name) => setParticipantName(name)}
-    />
+    <GuestJoin roomName={roomName} error={error} onJoin={(name) => setParticipantName(name)} />
   );
 }

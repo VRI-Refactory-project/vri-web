@@ -1,9 +1,5 @@
-import {
-  LiveKitRoom,
-  VideoConference,
-  RoomAudioRenderer,
-} from "@livekit/components-react";
-import "@livekit/components-styles";
+import { LiveKitRoom, VideoConference, RoomAudioRenderer } from '@livekit/components-react';
+import '@livekit/components-styles';
 
 interface VideoRoomProps {
   token: string;
@@ -19,11 +15,11 @@ export function VideoRoom({
   return (
     <div
       style={{
-        height: "100vh",
-        width: "100vw",
-        backgroundColor: "#111",
-        display: "flex",
-        flexDirection: "column",
+        height: '100vh',
+        width: '100vw',
+        backgroundColor: '#111',
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
       <LiveKitRoom
@@ -32,7 +28,7 @@ export function VideoRoom({
         token={token}
         serverUrl={serverUrl}
         data-lk-theme="default"
-        style={{ height: "100%", flex: 1 }}
+        style={{ height: '100%', flex: 1 }}
         onDisconnected={onLeave}
       >
         <VideoConference />

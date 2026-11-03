@@ -4,7 +4,10 @@
   background-color: #f4f7fb;
   display: flex;
   flex-direction: column;
-  font-family: 'Manrope', -apple-system, sans-serif;
+  font-family:
+    'Manrope',
+    -apple-system,
+    sans-serif;
 }
 
 .lobby-header {
@@ -104,7 +107,7 @@
   background: white;
   padding: 40px;
   border-radius: 24px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
 }
 
 .lobby-sidebar h1 {

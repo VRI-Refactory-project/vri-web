@@ -2,7 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { Mic, MicOff, Video, VideoOff, Settings, ShieldCheck, X, Upload } from 'lucide-react';
 import { createLocalVideoTrack, LocalVideoTrack } from 'livekit-client';
 // Import the Wrapper type directly
-import { BackgroundProcessor, supportsBackgroundProcessors, type BackgroundProcessorWrapper } from '@livekit/track-processors';
+import {
+  BackgroundProcessor,
+  supportsBackgroundProcessors,
+  type BackgroundProcessorWrapper,
+} from '@livekit/track-processors';
 import './PreSessionLobby.css';
 
 interface LobbyProps {
@@ -12,13 +16,13 @@ interface LobbyProps {
 
 export const PreSessionLobby = ({ onJoin, onCancel }: LobbyProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  
+
   const [isMicOn, setIsMicOn] = useState(true);
   const [isVideoOn, setIsVideoOn] = useState(true);
-  
+
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [customImage, setCustomImage] = useState<string | null>(null);
-  
+
   // Use BackgroundProcessorWrapper instead of ProcessorType
   const [videoTrack, setVideoTrack] = useState<LocalVideoTrack | null>(null);
   const [processor, setProcessor] = useState<BackgroundProcessorWrapper | null>(null);
@@ -31,7 +35,7 @@ export const PreSessionLobby = ({ onJoin, onCancel }: LobbyProps) => {
       try {
         track = await createLocalVideoTrack({ facingMode: 'user' });
         setVideoTrack(track);
-        
+
         if (videoRef.current) {
           track.attach(videoRef.current);
         }
@@ -42,7 +46,7 @@ export const PreSessionLobby = ({ onJoin, onCancel }: LobbyProps) => {
           setProcessor(p);
         }
       } catch (err) {
-        console.error("Failed to start video", err);
+        console.error('Failed to start video', err);
       }
     };
 
@@ -72,7 +76,7 @@ export const PreSessionLobby = ({ onJoin, onCancel }: LobbyProps) => {
   // 3. Apply the Background Effect
   const setEffect = async (effect: 'none' | 'blur' | 'image', imageUrl?: string) => {
     if (!processor) {
-      alert("Background processor not supported in this browser.");
+      alert('Background processor not supported in this browser.');
       return;
     }
 
@@ -85,7 +89,7 @@ export const PreSessionLobby = ({ onJoin, onCancel }: LobbyProps) => {
         await processor.switchTo({ mode: 'virtual-background', imagePath: imageUrl });
       }
     } catch (err) {
-      console.error("Error applying effect", err);
+      console.error('Error applying effect', err);
     }
   };
 
@@ -101,21 +105,37 @@ export const PreSessionLobby = ({ onJoin, onCancel }: LobbyProps) => {
   return (
     <div className="lobby-container">
       <header className="lobby-header">
-        <h1 style={{ color: '#382c77', margin: 0, fontSize: '1.5rem', fontWeight: 800 }}>SignConnect</h1>
+        <h1 style={{ color: '#382c77', margin: 0, fontSize: '1.5rem', fontWeight: 800 }}>
+          SignConnect
+        </h1>
       </header>
 
       <main className="lobby-main">
         <div className="lobby-video-section">
           <div className="lobby-video-wrapper">
-            <video 
-              ref={videoRef} 
-              autoPlay 
-              playsInline 
-              muted 
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
               style={{ display: isVideoOn ? 'block' : 'none' }}
             />
-            {!isVideoOn && <div style={{ color: 'white', position: 'absolute', display: 'flex', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}>Camera is off</div>}
-            
+            {!isVideoOn && (
+              <div
+                style={{
+                  color: 'white',
+                  position: 'absolute',
+                  display: 'flex',
+                  width: '100%',
+                  height: '100%',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                Camera is off
+              </div>
+            )}
+
             <div className="lobby-controls">
               <button onClick={toggleAudio} className={`control-btn ${!isMicOn ? 'off' : ''}`}>
                 {isMicOn ? <Mic size={20} /> : <MicOff size={20} />}
@@ -139,12 +159,18 @@ export const PreSessionLobby = ({ onJoin, onCancel }: LobbyProps) => {
             <div>
               <h3>Micheal</h3>
               <p>Hard of hearing</p>
-              <span className="badge-verified"><ShieldCheck size={14}/> Verified Interpreter</span>
+              <span className="badge-verified">
+                <ShieldCheck size={14} /> Verified Interpreter
+              </span>
             </div>
           </div>
 
-          <button className="btn-join" onClick={onJoin}>Join Session</button>
-          <button className="btn-cancel" onClick={onCancel}><X size={16} /> Cancel</button>
+          <button className="btn-join" onClick={onJoin}>
+            Join Session
+          </button>
+          <button className="btn-cancel" onClick={onCancel}>
+            <X size={16} /> Cancel
+          </button>
         </div>
       </main>
 
@@ -153,12 +179,14 @@ export const PreSessionLobby = ({ onJoin, onCancel }: LobbyProps) => {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Video Settings</h2>
-              <button onClick={() => setIsSettingsOpen(false)} className="close-btn"><X size={20} /></button>
+              <button onClick={() => setIsSettingsOpen(false)} className="close-btn">
+                <X size={20} />
+              </button>
             </div>
-            
+
             <div className="modal-body">
               <h3>Background Effects</h3>
-              
+
               <div className="effect-options">
                 <button className="effect-btn" onClick={() => setEffect('none')}>
                   None
@@ -166,10 +194,28 @@ export const PreSessionLobby = ({ onJoin, onCancel }: LobbyProps) => {
                 <button className="effect-btn" onClick={() => setEffect('blur')}>
                   Blur Background
                 </button>
-                
+
                 <div style={{ marginTop: '16px' }}>
-                  <input type="file" id="bg-upload" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
-                  <label htmlFor="bg-upload" style={{ display: 'flex', padding: '12px', border: '2px dashed #ddd8ec', borderRadius: '8px', cursor: 'pointer', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
+                  <input
+                    type="file"
+                    id="bg-upload"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    style={{ display: 'none' }}
+                  />
+                  <label
+                    htmlFor="bg-upload"
+                    style={{
+                      display: 'flex',
+                      padding: '12px',
+                      border: '2px dashed #ddd8ec',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}
+                  >
                     <Upload size={18} /> {customImage ? 'Image ready' : 'Upload Custom Image'}
                   </label>
                 </div>
