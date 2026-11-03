@@ -1,0 +1,274 @@
+.lobby-container {
+  height: 100vh;
+  overflow: hidden;
+  background-color: #f4f7fb;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Manrope', -apple-system, sans-serif;
+}
+
+.lobby-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  flex-shrink: 0;
+}
+
+.lobby-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #382c77;
+  font-weight: 600;
+}
+
+.lobby-main {
+  flex: 1;
+  display: flex;
+  padding: 0 40px 40px;
+  gap: 40px;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.lobby-video-section {
+  flex: 2;
+  display: flex;
+  position: relative;
+}
+
+.lobby-video-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 3px solid #382c77;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Force video to fill the container exactly */
+.lobby-video-wrapper > video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.lobby-controls {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 16px;
+  background: #382c77;
+  padding: 12px 24px;
+  border-radius: 40px;
+  z-index: 10;
+}
+
+.control-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.control-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.control-btn.off {
+  background: #ef4444;
+}
+
+.lobby-sidebar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: white;
+  padding: 40px;
+  border-radius: 24px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+.lobby-sidebar h1 {
+  color: #382c77;
+  font-size: 2rem;
+  margin: 0 0 8px;
+}
+
+.lobby-subtitle {
+  color: #6b6785;
+  margin: 0 0 32px;
+}
+
+.lobby-profile {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.lobby-profile h3 {
+  margin: 0;
+  color: #1b1533;
+}
+
+.lobby-profile p {
+  margin: 0;
+  color: #6b6785;
+  font-size: 0.9rem;
+}
+
+.badge-verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #10b981;
+  color: white;
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 12px;
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+.btn-join {
+  background: #382c77;
+  color: white;
+  border: none;
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 16px;
+  transition: background 0.2s;
+}
+
+.btn-join:hover {
+  background: #2a205c;
+}
+
+.btn-cancel {
+  background: transparent;
+  color: #6b6785;
+  border: 1px solid #ddd8ec;
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-cancel:hover {
+  background: #fafafd;
+}
+
+/* Modal Styles */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: white;
+  width: 100%;
+  max-width: 400px;
+  border-radius: 16px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.modal-header h2 {
+  margin: 0;
+  color: #382c77;
+  font-size: 1.25rem;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #64748b;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-body h3 {
+  margin: 0 0 8px;
+  color: #1b1533;
+}
+
+.modal-hint {
+  color: #6b6785;
+  font-size: 0.875rem;
+  margin-bottom: 20px;
+}
+
+.effect-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.effect-btn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border: 1px solid #ddd8ec;
+  border-radius: 8px;
+  background: white;
+  color: #1b1533;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.effect-btn:hover {
+  background: #fafafd;
+}
+
+.effect-btn.active {
+  border-color: #382c77;
+  background: #f3f0ff;
+  color: #382c77;
+}
