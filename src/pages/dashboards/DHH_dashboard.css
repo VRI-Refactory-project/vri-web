@@ -690,6 +690,31 @@ body {
   display: none;
 }
 
+
+.stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+.stat-icon {
+  color: #8b5cf6; 
+  background-color: #f3e8ff; 
+  padding: 6px;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+}
+
+/* Make sure the stat-label sits correctly inside the new flex container */
+.stat-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 0; 
+}
+
 /* ── RESPONSIVE ──────────────────────────────────────────── */
 @media (max-width: 1024px) {
   .stats-grid {
