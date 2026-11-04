@@ -1,7 +1,7 @@
+
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Bell,
-  CalendarDays,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -13,11 +13,13 @@ import {
   Save,
   Trash2,
   X,
+  Calendar as CalendarIcon, // Added for the new calendar design
 } from 'lucide-react';
 import { describeError } from '../../services/api';
 import { interpreterApi } from '../../services/interpreterApi';
 import { useAuth } from '../../hooks/useAuth';
 import './AvailabilityPage.css';
+// import './AvailabilityPage.css';
 
 type DayName = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
 
@@ -321,7 +323,6 @@ export function AvailabilityPage() {
 
   const calendarDays = useMemo(() => {
     const firstWeekday = new Date(month.getFullYear(), month.getMonth(), 1).getDay();
-
     const daysInMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
 
     return [
@@ -500,132 +501,120 @@ export function AvailabilityPage() {
         </section>
 
         <aside className="availability-panel exceptions-panel">
-          <h2>Exceptions</h2>
-          <p className="availability-panel-description">Dates when your normal schedule changes</p>
+          {/* PROFESSIONAL CALENDAR START */}
+          <div className="av-calendar-card">
+            <div className="av-cal-header">
+              <div>
+                <h3 className="av-cal-title">Exceptions</h3>
+                <p className="av-cal-subtitle">Dates when your normal schedule changes</p>
+              </div>
+            </div>
 
-          <div className="availability-calendar">
-            <div className="availability-calendar-heading">
-              <button
-                type="button"
-                className="availability-icon-button"
-                aria-label="Previous month"
-                onClick={() => changeMonth(-1)}
-              >
-                <ChevronLeft size={20} />
+            <div className="av-cal-nav">
+              <button type="button" className="av-cal-nav-btn" aria-label="Previous month" onClick={() => changeMonth(-1)}>
+                <ChevronLeft size={18} />
               </button>
-
-              <strong>{monthLabel}</strong>
-
-              <button
-                type="button"
-                className="availability-icon-button"
-                aria-label="Next month"
-                onClick={() => changeMonth(1)}
-              >
-                <ChevronRight size={20} />
+              <span className="av-cal-month">{monthLabel}</span>
+              <button type="button" className="av-cal-nav-btn" aria-label="Next month" onClick={() => changeMonth(1)}>
+                <ChevronRight size={18} />
               </button>
             </div>
 
-            <div className="availability-calendar-grid availability-calendar-weekdays">
+            <div className="av-cal-grid">
               {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
-                <span key={`${day}-${index}`}>{day}</span>
+                <div key={`header-${index}`} className="av-cal-day-header">
+                  {day}
+                </div>
               ))}
-            </div>
 
-            <div className="availability-calendar-grid">
               {calendarDays.map((day, index) => {
                 if (day === null) {
-                  return <span key={`blank-${index}`} />;
+                  return <div key={`blank-${index}`} />;
                 }
 
                 const dateKey = toDateKey(new Date(month.getFullYear(), month.getMonth(), day));
-
                 const exception = exceptions.find((item) => item.date === dateKey);
-                const selected = selectedDate === dateKey;
+                const isSelected = selectedDate === dateKey;
+                const isUnavailable = exception?.unavailable;
+                const isModified = exception && !exception.unavailable;
 
                 return (
                   <button
                     type="button"
                     key={dateKey}
-                    className={[
-                      'availability-calendar-day',
-                      selected ? 'is-selected' : '',
-                      exception?.unavailable ? 'is-unavailable' : '',
-                      exception && !exception.unavailable ? 'is-modified' : '',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
-                    aria-label={`${formatDate(dateKey)}${exception ? ', has an exception' : ''}`}
-                    aria-pressed={selected}
+                    className={`av-cal-day ${isSelected ? 'av-cal-day--selected' : ''} ${isUnavailable ? 'av-cal-day--unavailable' : ''} ${isModified ? 'av-cal-day--modified' : ''}`}
                     onClick={() => setSelectedDate(dateKey)}
+                    aria-label={`${formatDate(dateKey)}${exception ? ', has an exception' : ''}`}
                   >
                     {day}
-                    {exception && <span />}
+                    {isSelected && <span className="av-cal-day-dot"></span>}
                   </button>
                 );
               })}
             </div>
-          </div>
 
-          <div className="availability-legend">
-            <span>
-              <i className="legend-unavailable" /> Unavailable
-            </span>
-            <span>
-              <i className="legend-modified" /> Modified hours
-            </span>
-          </div>
+            <div className="av-cal-legend">
+              <div className="av-cal-legend-item">
+                <span className="av-cal-dot av-cal-dot--red"></span>
+                Unavailable
+              </div>
+              <div className="av-cal-legend-item">
+                <span className="av-cal-dot av-cal-dot--green"></span>
+                Modified hours
+              </div>
+            </div>
 
-          <div className="availability-selected-exception">
-            <CalendarDays size={22} />
-            <div>
-              <strong>{formatDate(selectedDate)}</strong>
-              <p>
+            <div className="av-cal-selected-info">
+              <div className="av-cal-info-header">
+                <CalendarIcon size={18} className="av-cal-info-icon" />
+                <h4>{formatDate(selectedDate)}</h4>
+              </div>
+              <p className="av-cal-info-text">
                 {selectedException
                   ? selectedException.unavailable
                     ? 'Unavailable all day'
                     : `Modified hours: ${formatTime(selectedException.start ?? '08:00')} – ${formatTime(selectedException.end ?? '17:00')}`
                   : 'No exception for this date'}
               </p>
-
-              {selectedException?.note && <small>{selectedException.note}</small>}
+              {selectedException?.note && <p className="av-cal-info-text" style={{ marginTop: '4px', fontStyle: 'italic' }}>{selectedException.note}</p>}
             </div>
+
+            {selectedException && (
+              <div className="availability-exception-actions" style={{ marginBottom: '16px', padding: '0 16px' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDraft({
+                      date: selectedException.date,
+                      type: selectedException.unavailable ? 'unavailable' : 'modified',
+                      start: selectedException.start ?? '08:00',
+                      end: selectedException.end ?? '17:00',
+                      note: selectedException.note ?? '',
+                    });
+                    setEditingDay(null);
+                    setModalOpen(true);
+                  }}
+                  style={{ background: 'none', border: 'none', color: '#6d28d9', cursor: 'pointer', fontWeight: 600, fontSize: '13px' }}
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  className="is-danger"
+                  onClick={() => setExceptionToDelete(selectedException.id)}
+                  style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 600, fontSize: '13px', marginLeft: '16px' }}
+                >
+                  Remove
+                </button>
+              </div>
+            )}
+
+            <button type="button" className="av-cal-add-btn" onClick={openAddDialog}>
+              <Plus size={18} />
+              Add exception for a date
+            </button>
           </div>
-
-          {selectedException && (
-            <div className="availability-exception-actions">
-              <button
-                type="button"
-                onClick={() => {
-                  setDraft({
-                    date: selectedException.date,
-                    type: selectedException.unavailable ? 'unavailable' : 'modified',
-                    start: selectedException.start ?? '08:00',
-                    end: selectedException.end ?? '17:00',
-                    note: selectedException.note ?? '',
-                  });
-
-                  setEditingDay(null);
-                  setModalOpen(true);
-                }}
-              >
-                Edit
-              </button>
-
-              <button
-                type="button"
-                className="is-danger"
-                onClick={() => setExceptionToDelete(selectedException.id)}
-              >
-                Remove
-              </button>
-            </div>
-          )}
-
-          <button type="button" className="availability-add-exception" onClick={openAddDialog}>
-            <Plus size={20} />
-            Add exception for a date
-          </button>
+          {/* PROFESSIONAL CALENDAR END */}
         </aside>
       </div>
 
