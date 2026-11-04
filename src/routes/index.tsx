@@ -166,9 +166,9 @@ const appRoutes: RouteObject[] = [
     element: <ProtectedRoute allow={['institution']} />,
     children: [
       {
-        // TEMPORARY FRONTEND FIX: Force institutions to the pending page
+        // TEMPORARY FRONTEND FIX: Force institutions to the upload page
         // until the backend adds the "isApproved" check.
-        element: <Navigate to="/register/pending" replace />,
+        element: <Navigate to="/register/institution/upload-license" replace />,
         children: [
           {
             path: '/dashboard/institution',
