@@ -38,6 +38,18 @@ export async function getIncomingOffers(): Promise<IncomingOffer[]> {
 }
 
 /** POST .../offers/<id>/respond/. Answers 409 when the offer expired or was already answered. */
-export async function respondToOffer(id: string, action: 'accept' | 'decline'): Promise<void> {
-  await api(`${BASE}${id}/respond/`, { method: 'POST', body: JSON.stringify({ action }) });
+/** What the API answers. requestId is the session the interpreter can now join. */
+export interface OfferAnswer {
+  status: string;
+  requestId?: string;
+}
+
+export async function respondToOffer(
+  id: string,
+  action: 'accept' | 'decline',
+): Promise<OfferAnswer> {
+  return api<OfferAnswer>(`${BASE}${id}/respond/`, {
+    method: 'POST',
+    body: JSON.stringify({ action }),
+  });
 }
