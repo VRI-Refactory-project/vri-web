@@ -616,3 +616,82 @@
   color: #8a86a5;
   text-align: center;
 }
+
+
+.ad-user-menu-wrap {
+  position: relative;
+}
+
+.ad-user {
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.ad-user.active {
+  background: #f1f0f7;
+  border-color: #cbd5e1;
+}
+
+.ad-chevron {
+  transition: transform 0.2s ease;
+}
+
+.ad-chevron.rotate {
+  transform: rotate(180deg);
+}
+
+.ad-user-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 100;
+  width: 160px;
+  background: #ffffff;
+  border: 1px solid #e2e0ee;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+  padding: 4px;
+  animation: adFadeIn 0.15s ease;
+}
+
+.ad-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 13.5px;
+  color: #475569;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.ad-dropdown-item:hover {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.ad-dropdown-item.logout {
+  color: #dc2626;
+}
+
+.ad-dropdown-item.logout:hover {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+@keyframes adFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
