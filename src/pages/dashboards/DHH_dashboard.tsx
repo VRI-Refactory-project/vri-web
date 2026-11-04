@@ -10,6 +10,7 @@ import {
   Wallet,
 } from 'lucide-react';
 
+// 1. FIXED: Added useState to the react import
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
@@ -63,6 +64,10 @@ export function DashboardPage() {
   const [sessions, setSessions] = useState<DeafDashboard['sessions'] | null>(null);
   const [interpreters, setInterpreters] = useState<AvailableInterpreter[] | null>(null);
   const [openProfileId, setOpenProfileId] = useState<number | null>(null);
+
+  // 2. FIXED: Moved this state INSIDE the component
+  // Controls whether we show all interpreters or just the first 4
+  const [showAllInterpreters, setShowAllInterpreters] = useState(false);
 
   const [stats, setStats] = useState({
     walletBalance: 0,
@@ -377,16 +382,17 @@ export function DashboardPage() {
       <section className="dashboard-section">
         <div className="section-header">
           <h3>Available interpreters</h3>
-          <a href="#" className="view-all">
-            See all <ChevronRight size={16} />
-          </a>
+
+          <button className="view-all" onClick={() => setShowAllInterpreters(!showAllInterpreters)}>
+            {showAllInterpreters ? 'Show less' : 'See all'} <ChevronRight size={16} />
+          </button>
         </div>
 
         {interpreters !== null && interpreters.length === 0 && (
           <p className="text-muted">No interpreters are available right now.</p>
         )}
         <div className="interpreter-grid">
-          {interpreters?.map((interpreter) => (
+          {(showAllInterpreters ? interpreters : interpreters?.slice(0, 4))?.map((interpreter) => (
             <div key={interpreter.id} className="interpreter-card">
               <div className="interpreter-image-wrap">
                 {interpreter.photoUrl ? (
