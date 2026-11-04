@@ -10,7 +10,7 @@ const initials = (name: string) =>
 
 interface Props {
   name: string;
-  /** Present only for the viewer until the call server is connected. */
+  /** The person's camera and microphone. Without it, or with the camera off, initials show. */
   stream?: MediaStream | null;
   cameraOff?: boolean;
   large?: boolean;
@@ -32,9 +32,16 @@ export function VideoTile({ name, stream, cameraOff, large, highlight, muted }: 
       className={`vt${large ? ' vt--large' : ''}${highlight ? ' vt--highlight' : ''}`}
       aria-label={name}
     >
-      {showVideo ? (
-        <video ref={ref} className="vt__video" autoPlay playsInline muted={muted} />
-      ) : (
+      {/* Always mounted, so a person whose camera is off can still be heard. */}
+      <video
+        ref={ref}
+        className="vt__video"
+        autoPlay
+        playsInline
+        muted={muted}
+        hidden={!showVideo}
+      />
+      {!showVideo && (
         <span className="vt__initials" aria-hidden="true">
           {initials(name)}
         </span>

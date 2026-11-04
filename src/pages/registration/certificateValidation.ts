@@ -1,7 +1,7 @@
 export const ACCEPTED_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
 export const MAX_FILE_BYTES = 10 * 1024 * 1024;
 
-// TODO: confirm the final list of certificate types with the product owner / design.
+// Keep in step with CERTIFICATE_TYPES in vri-api (apps/interpreters/serializers.py).
 export const CERTIFICATE_TYPES = [
   'Uganda Sign Language interpreter certificate',
   'Diploma in sign language interpretation',
@@ -22,8 +22,15 @@ export interface EntryErrors {
   organisation?: string;
 }
 
+const ACCEPTED_EXTENSIONS = ['pdf', 'jpg', 'jpeg', 'png'];
+
 export function validateFile(file: File): string | undefined {
-  if (!ACCEPTED_TYPES.includes(file.type)) return 'Upload a PDF, JPG or PNG file.';
+  // Both checks: the browser-reported type can be empty or wrong, and the extension is what the
+  // server checks.
+  const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
+  if (!ACCEPTED_TYPES.includes(file.type) || !ACCEPTED_EXTENSIONS.includes(extension)) {
+    return 'Upload a PDF, JPG or PNG file.';
+  }
   if (file.size > MAX_FILE_BYTES) return 'The file is larger than 10 MB.';
   return undefined;
 }

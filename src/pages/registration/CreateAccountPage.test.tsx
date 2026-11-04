@@ -41,6 +41,11 @@ const fill = async (labels: Record<string, string>) => {
   }
 };
 
+const pick = async (label: string) => {
+  await userEvent.click(screen.getByRole('button', { name: /specialisation/i }));
+  await userEvent.click(screen.getByRole('button', { name: label }));
+};
+
 describe('CreateAccountPage', () => {
   beforeEach(() => {
     vi.mocked(checkEmailAvailability).mockResolvedValue(true);
@@ -293,9 +298,7 @@ describe('CreateAccountPage', () => {
         'Confirm password': 'Secret-pass-1',
       });
 
-      // Open the custom dropdown and select "Medical"
-      await userEvent.click(screen.getByText('Select specialisation(s)...'));
-      await userEvent.click(screen.getByText('Medical / health'));
+      await pick('Medical / health');
 
       await userEvent.click(screen.getByRole('checkbox'));
       await userEvent.click(screen.getByRole('button', { name: /create account/i }));
@@ -308,6 +311,88 @@ describe('CreateAccountPage', () => {
           specialisations: ['MEDICAL'],
         }),
       );
+    });
+
+    describe('specialisations', () => {
+      const fillInterpreter = () =>
+        fill({
+          'First name': 'Catherine',
+          'Last name': 'Nawagirwa',
+          'Phone number': '772123456',
+          'Email address': 'j@x.org',
+          Password: 'Secret-pass-1',
+          'Confirm password': 'Secret-pass-1',
+        });
+
+      it('shows each choice as a chip and removes it with the x', async () => {
+        renderPage('interpreter');
+        await pick('Medical / health');
+        await pick('Legal / court');
+        expect(screen.getByRole('button', { name: 'Remove Medical / health' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Remove Legal / court' })).toBeInTheDocument();
+
+        await userEvent.click(screen.getByRole('button', { name: 'Remove Medical / health' }));
+        expect(
+          screen.queryByRole('button', { name: 'Remove Medical / health' }),
+        ).not.toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Remove Legal / court' })).toBeInTheDocument();
+      });
+
+      it('does not offer an option that is already chosen', async () => {
+        renderPage('interpreter');
+        await pick('Medical / health');
+        await userEvent.click(screen.getByRole('button', { name: /specialisation/i }));
+        expect(screen.queryByRole('button', { name: 'Medical / health' })).not.toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Legal / court' })).toBeInTheDocument();
+      });
+
+      it('puts a removed option back in the menu', async () => {
+        renderPage('interpreter');
+        await pick('Medical / health');
+        await userEvent.click(screen.getByRole('button', { name: 'Remove Medical / health' }));
+        await userEvent.click(screen.getByRole('button', { name: /specialisation/i }));
+        expect(screen.getByRole('button', { name: 'Medical / health' })).toBeInTheDocument();
+      });
+
+      it('shows what was typed for Other as a chip and clears it on remove', async () => {
+        renderPage('interpreter');
+        await pick('Other (please specify)');
+        await userEvent.type(screen.getByLabelText('Your specialisation'), 'Aviation');
+        expect(screen.getByRole('button', { name: 'Remove Aviation' })).toBeInTheDocument();
+
+        await userEvent.click(screen.getByRole('button', { name: 'Remove Aviation' }));
+        expect(screen.queryByLabelText('Your specialisation')).not.toBeInTheDocument();
+      });
+
+      it('asks for a specialisation next to the field when none is chosen', async () => {
+        const spy = vi.spyOn(registration, 'registerInterpreter');
+        renderPage('interpreter');
+        await fillInterpreter();
+        await userEvent.click(screen.getByRole('checkbox'));
+        await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+        expect(screen.getByText('Choose at least one specialisation.')).toBeInTheDocument();
+        expect(spy).not.toHaveBeenCalled();
+      });
+
+      it('rejects Other text without letters', async () => {
+        renderPage('interpreter');
+        await pick('Other (please specify)');
+        await userEvent.type(screen.getByLabelText('Your specialisation'), '123');
+        await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+        expect(screen.getByText('Describe your specialisation using letters.')).toBeInTheDocument();
+      });
+
+      it('rejects an Other entry that repeats a listed specialisation', async () => {
+        const spy = vi.spyOn(registration, 'registerInterpreter');
+        renderPage('interpreter');
+        await fillInterpreter();
+        await pick('Other (please specify)');
+        await userEvent.type(screen.getByLabelText('Your specialisation'), 'legal / court');
+        await userEvent.click(screen.getByRole('checkbox'));
+        await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+        expect(screen.getByText(/already in the list/i)).toBeInTheDocument();
+        expect(spy).not.toHaveBeenCalled();
+      });
     });
   });
 
