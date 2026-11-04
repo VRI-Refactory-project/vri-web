@@ -5,9 +5,6 @@ import { needsEmailVerification } from '../../features/auth/emailGate';
 import { useAuth } from '../../hooks/useAuth';
 import './VerifyEmailPage.css';
 
-// IMPORT THE LOGO HERE (from src/assets)
-import logoIcon from '../../assets/no_bg.png';
-
 const safePath = (value: unknown): string | null =>
   typeof value === 'string' && value.startsWith('/') && !value.startsWith('//') ? value : null;
 
@@ -22,6 +19,7 @@ export function VerifyEmailPage() {
   if (!session) return <Navigate to="/sign-in" replace />;
 
   if (!needsEmailVerification(session.user)) {
+    // If no destination is found, but they are an institution, send to upload page.
     if (!next && session.user.role === 'institution') {
       next = '/register/institution/upload-license';
     }
@@ -33,11 +31,6 @@ export function VerifyEmailPage() {
 
   return (
     <main className="verify-page">
-      {/* USE THE IMPORTED LOGO VARIABLE HERE */}
-      <div className="verify-logo">
-        <img src={logoIcon} alt="SignConnect" />
-      </div>
-
       <VerifyEmailModal required onSignOut={logout} />
     </main>
   );
