@@ -1,4 +1,3 @@
-
 import {
   Video,
   Settings,
@@ -384,13 +383,9 @@ export function DashboardPage() {
         <div className="section-header">
           <h3>Available interpreters</h3>
 
-          <button 
-            className="view-all" 
-            onClick={() => setShowAllInterpreters(!showAllInterpreters)}
-          >
+          <button className="view-all" onClick={() => setShowAllInterpreters(!showAllInterpreters)}>
             {showAllInterpreters ? 'Show less' : 'See all'} <ChevronRight size={16} />
           </button>
-
         </div>
 
         {interpreters !== null && interpreters.length === 0 && (
