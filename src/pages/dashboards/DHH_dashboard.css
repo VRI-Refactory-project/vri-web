@@ -775,7 +775,7 @@ button.view-all {
   cursor: pointer;
   font-family: inherit;
   font-size: inherit;
-  color: var(--primary); 
+  color: var(--primary);
   display: flex;
   align-items: center;
   gap: 4px;

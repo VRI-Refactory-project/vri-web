@@ -371,7 +371,7 @@
 
 /* ---------- Exceptions (Professional Calendar) ---------- */
 .exceptions-panel {
-  padding: 0; 
+  padding: 0;
   background: transparent;
   border: none;
 }
@@ -380,7 +380,7 @@
   background: #f4efff; /* Light purple background */
   border-radius: 20px;
   padding: 24px;
-  box-shadow: none; 
+  box-shadow: none;
   border: 1px solid #e8e1f3;
   width: 100%;
   font-family: 'Manrope', system-ui, sans-serif;
@@ -462,15 +462,15 @@
   border: none;
   background: transparent;
   border-radius: 50%;
-  
+
   /* Updated Font Properties */
-  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; 
-  font-size: 10px;        
-  font-weight: 300;       
-  color: #1f2937;         
-  
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 300;
+  color: #1f2937;
+
   cursor: pointer;
-    color: #374151; 
+  color: #374151;
   transition: all 0.2s ease;
 }
 
@@ -481,15 +481,15 @@
 }
 
 .av-cal-day--selected {
-  background: #7a44d7;   
-  color: #ffffff;        
-  font-weight: 600;      
-  box-shadow: none;      
-  transform: scale(1.05); 
+  background: #7a44d7;
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: none;
+  transform: scale(1.05);
 }
 
 .av-cal-day-dot {
-  display: none; 
+  display: none;
 }
 
 .av-cal-day--unavailable {
@@ -525,15 +525,19 @@
   border-radius: 50%;
 }
 
-.av-cal-dot--red { background-color: #ef4444; }
-.av-cal-dot--green { background-color: #10b981; }
+.av-cal-dot--red {
+  background-color: #ef4444;
+}
+.av-cal-dot--green {
+  background-color: #10b981;
+}
 
 .av-cal-selected-info {
-  background: #ffffff; 
+  background: #ffffff;
   border-radius: 16px;
   padding: 16px;
   margin-bottom: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03); 
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
 .av-cal-info-header {
@@ -566,7 +570,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: #ffffff; 
+  background: #ffffff;
   border: 1px solid #e8e1f3;
   color: #6d28d9;
   font-size: 14px;

@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Bell,
@@ -511,11 +510,21 @@ export function AvailabilityPage() {
             </div>
 
             <div className="av-cal-nav">
-              <button type="button" className="av-cal-nav-btn" aria-label="Previous month" onClick={() => changeMonth(-1)}>
+              <button
+                type="button"
+                className="av-cal-nav-btn"
+                aria-label="Previous month"
+                onClick={() => changeMonth(-1)}
+              >
                 <ChevronLeft size={18} />
               </button>
               <span className="av-cal-month">{monthLabel}</span>
-              <button type="button" className="av-cal-nav-btn" aria-label="Next month" onClick={() => changeMonth(1)}>
+              <button
+                type="button"
+                className="av-cal-nav-btn"
+                aria-label="Next month"
+                onClick={() => changeMonth(1)}
+              >
                 <ChevronRight size={18} />
               </button>
             </div>
@@ -576,11 +585,18 @@ export function AvailabilityPage() {
                     : `Modified hours: ${formatTime(selectedException.start ?? '08:00')} – ${formatTime(selectedException.end ?? '17:00')}`
                   : 'No exception for this date'}
               </p>
-              {selectedException?.note && <p className="av-cal-info-text" style={{ marginTop: '4px', fontStyle: 'italic' }}>{selectedException.note}</p>}
+              {selectedException?.note && (
+                <p className="av-cal-info-text" style={{ marginTop: '4px', fontStyle: 'italic' }}>
+                  {selectedException.note}
+                </p>
+              )}
             </div>
 
             {selectedException && (
-              <div className="availability-exception-actions" style={{ marginBottom: '16px', padding: '0 16px' }}>
+              <div
+                className="availability-exception-actions"
+                style={{ marginBottom: '16px', padding: '0 16px' }}
+              >
                 <button
                   type="button"
                   onClick={() => {
@@ -594,7 +610,14 @@ export function AvailabilityPage() {
                     setEditingDay(null);
                     setModalOpen(true);
                   }}
-                  style={{ background: 'none', border: 'none', color: '#6d28d9', cursor: 'pointer', fontWeight: 600, fontSize: '13px' }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#6d28d9',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                    fontSize: '13px',
+                  }}
                 >
                   Edit
                 </button>
@@ -602,7 +625,15 @@ export function AvailabilityPage() {
                   type="button"
                   className="is-danger"
                   onClick={() => setExceptionToDelete(selectedException.id)}
-                  style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 600, fontSize: '13px', marginLeft: '16px' }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#ef4444',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                    fontSize: '13px',
+                    marginLeft: '16px',
+                  }}
                 >
                   Remove
                 </button>
