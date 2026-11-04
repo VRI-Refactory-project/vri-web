@@ -271,7 +271,7 @@ export function DashboardPage() {
               className="dash-btn-primary"
               onClick={() => navigate('/dashboard/deaf/sessions/new')}
             >
-              <Video size={18} /> Start VRI Session
+              <Video size={18} /> Start Session
             </button>
 
             <button
