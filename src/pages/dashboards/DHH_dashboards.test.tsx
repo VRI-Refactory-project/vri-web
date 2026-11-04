@@ -63,7 +63,7 @@ describe('DashboardPage (deaf)', () => {
   it('shows the Start VRI Session call to action', async () => {
     renderPage();
     await screen.findByText('No upcoming sessions yet.');
-    // expect(screen.getByRole('button', { name: /start vri session/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /start vri session/i })).toBeInTheDocument();
   });
 
   it('opens the start session page from the Start VRI Session button', async () => {
@@ -77,8 +77,8 @@ describe('DashboardPage (deaf)', () => {
     );
     await screen.findByText('No upcoming sessions yet.');
 
-    // await userEvent.click(screen.getByRole('button', { name: /start vri session/i }));
-    await userEvent.click(screen.getByRole('button', { name: /start session/i }));
+    await userEvent.click(screen.getByRole('button', { name: /start vri session/i }));
+    // await userEvent.click(screen.getByRole('button', { name: /start session/i }));
 
     expect(screen.getByText('Start session page')).toBeInTheDocument();
   });
