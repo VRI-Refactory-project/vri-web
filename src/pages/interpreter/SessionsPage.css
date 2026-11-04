@@ -1,0 +1,64 @@
+/* Page layout only. The pieces (Up next card, table) and the colour variables are in
+   components/interpreter/sessions/sessions.css. No padding: the dashboard frame (.dl-main) spaces it. */
+
+.isn-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  color: var(--isn-text);
+  font-family: 'Manrope', system-ui, sans-serif;
+}
+
+/* --- Header --- */
+.isn-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.isn-header h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.isn-header p {
+  margin: 4px 0 0;
+  font-size: 15px;
+  color: var(--isn-muted);
+}
+
+.isn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 4px;
+  border: none;
+  background: none;
+  color: var(--isn-text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.isn-back:hover {
+  color: var(--isn-purple);
+}
+
+.isn-back:focus-visible {
+  outline: 2px solid var(--isn-purple);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* --- "Not live yet" message --- */
+.isn-notice {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #fdf3d8;
+  color: #7a5200;
+  font-size: 14px;
+}

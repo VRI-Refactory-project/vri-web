@@ -4,8 +4,13 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from '../../features/auth/AuthProvider';
 import { ApiError } from '../../services/api';
 import * as registration from '../../services/registration';
+import { checkEmailAvailability } from '../../services/emailAvailability';
 import type { AuthSession } from '../../types';
 import { CreateAccountPage } from './CreateAccountPage';
+
+vi.mock('../../services/emailAvailability', () => ({
+  checkEmailAvailability: vi.fn(),
+}));
 
 const session = (role: 'deaf' | 'interpreter'): AuthSession => ({
   token: 't',
@@ -36,7 +41,15 @@ const fill = async (labels: Record<string, string>) => {
   }
 };
 
+const pick = async (label: string) => {
+  await userEvent.click(screen.getByRole('button', { name: /specialisation/i }));
+  await userEvent.click(screen.getByRole('button', { name: label }));
+};
+
 describe('CreateAccountPage', () => {
+  beforeEach(() => {
+    vi.mocked(checkEmailAvailability).mockResolvedValue(true);
+  });
   afterEach(() => {
     vi.restoreAllMocks();
     sessionStorage.clear();
@@ -58,7 +71,7 @@ describe('CreateAccountPage', () => {
     renderPage();
     const phone = screen.getByLabelText('Phone number') as HTMLInputElement;
     await userEvent.type(phone, '7721234567890123');
-    expect(phone.value.replace(/\s/g, '')).toBe('+256772123456');
+    expect(phone.value.replace(/\s/g, '')).toBe('772123456');
   });
 
   it('toggles the password field between masked and visible', async () => {
@@ -93,11 +106,15 @@ describe('CreateAccountPage', () => {
     );
   });
 
-  it('shows the server message when registration fails', async () => {
+  it('shows a duplicate phone error under the phone field', async () => {
     vi.spyOn(registration, 'registerDeaf').mockRejectedValue(
-      new ApiError(400, 'A user with this phone number already exists.'),
+      new ApiError(400, 'An account with this phone number already exists.', {
+        phone_number: ['An account with this phone number already exists.'],
+      }),
     );
+
     renderPage();
+
     await fill({
       'First name': 'Catherine',
       'Last name': 'Nawagirwa',
@@ -106,9 +123,15 @@ describe('CreateAccountPage', () => {
       Password: 'Secret-pass-1',
       'Confirm password': 'Secret-pass-1',
     });
+
     await userEvent.click(screen.getByRole('checkbox'));
     await userEvent.click(screen.getByRole('button', { name: /create account/i }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('already exists');
+
+    expect(
+      await screen.findByText('An account with this phone number already exists.'),
+    ).toBeInTheDocument();
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
   it('blocks submission without a name, phone, email or password', async () => {
@@ -129,15 +152,26 @@ describe('CreateAccountPage', () => {
     renderPage();
     const phone = screen.getByLabelText('Phone number') as HTMLInputElement;
     await userEvent.type(phone, 'jjjj772abc123');
-    expect(phone.value.replace(/\s/g, '')).toBe('+256772123');
+    expect(phone.value.replace(/\s/g, '')).toBe('772123');
   });
 
   it('offers a country picker with flags and changes the calling code with it', async () => {
     renderPage();
+
     const country = screen.getByLabelText('Country') as HTMLSelectElement;
+    const phone = screen.getByLabelText('Phone number') as HTMLInputElement;
+
     expect(country.value).toBe('UG');
+
+    // The calling code belongs to the country selector, not the input.
+    expect(phone.value).toBe('');
+    expect(document.querySelector('.country-picker__calling-code')?.textContent).toBe('+256');
+
     await userEvent.selectOptions(country, 'KE');
-    expect((screen.getByLabelText('Phone number') as HTMLInputElement).value).toMatch(/^\+254/);
+
+    expect(country.value).toBe('KE');
+    expect(document.querySelector('.country-picker__calling-code')?.textContent).toBe('+254');
+    expect(phone.value).toBe('');
   });
 
   it('says a number is too short for the country chosen', async () => {
@@ -149,9 +183,9 @@ describe('CreateAccountPage', () => {
 
   it('rejects an email that is only numbers', async () => {
     renderPage();
-    await userEvent.type(screen.getByLabelText('Email address'), '12345');
+    await userEvent.type(screen.getByLabelText('Email address'), '12345@example.com');
     await userEvent.tab();
-    expect(screen.getByText(/valid email/i)).toBeInTheDocument();
+    expect(screen.getByText(/cannot be only numbers/i)).toBeInTheDocument();
   });
 
   it('requires the terms to be accepted', async () => {
@@ -264,16 +298,13 @@ describe('CreateAccountPage', () => {
         'Confirm password': 'Secret-pass-1',
       });
 
-      //  NEW LOGIC: Open the custom dropdown and select "Medical"
-      await userEvent.click(screen.getByText('Select specialisation(s)...'));
-      await userEvent.click(screen.getByText('Medical / health'));
+      await pick('Medical / health');
 
       await userEvent.click(screen.getByRole('checkbox'));
       await userEvent.click(screen.getByRole('button', { name: /create account/i }));
 
       await waitFor(() => expect(screen.getByText('upload certificates')).toBeInTheDocument());
 
-      // Added expectation for the specialisation string
       expect(register).toHaveBeenCalledWith(
         expect.objectContaining({
           phone: '+256772123456',
@@ -281,5 +312,143 @@ describe('CreateAccountPage', () => {
         }),
       );
     });
+
+    describe('specialisations', () => {
+      const fillInterpreter = () =>
+        fill({
+          'First name': 'Catherine',
+          'Last name': 'Nawagirwa',
+          'Phone number': '772123456',
+          'Email address': 'j@x.org',
+          Password: 'Secret-pass-1',
+          'Confirm password': 'Secret-pass-1',
+        });
+
+      it('shows each choice as a chip and removes it with the x', async () => {
+        renderPage('interpreter');
+        await pick('Medical / health');
+        await pick('Legal / court');
+        expect(screen.getByRole('button', { name: 'Remove Medical / health' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Remove Legal / court' })).toBeInTheDocument();
+
+        await userEvent.click(screen.getByRole('button', { name: 'Remove Medical / health' }));
+        expect(
+          screen.queryByRole('button', { name: 'Remove Medical / health' }),
+        ).not.toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Remove Legal / court' })).toBeInTheDocument();
+      });
+
+      it('does not offer an option that is already chosen', async () => {
+        renderPage('interpreter');
+        await pick('Medical / health');
+        await userEvent.click(screen.getByRole('button', { name: /specialisation/i }));
+        expect(screen.queryByRole('button', { name: 'Medical / health' })).not.toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Legal / court' })).toBeInTheDocument();
+      });
+
+      it('puts a removed option back in the menu', async () => {
+        renderPage('interpreter');
+        await pick('Medical / health');
+        await userEvent.click(screen.getByRole('button', { name: 'Remove Medical / health' }));
+        await userEvent.click(screen.getByRole('button', { name: /specialisation/i }));
+        expect(screen.getByRole('button', { name: 'Medical / health' })).toBeInTheDocument();
+      });
+
+      it('shows what was typed for Other as a chip and clears it on remove', async () => {
+        renderPage('interpreter');
+        await pick('Other (please specify)');
+        await userEvent.type(screen.getByLabelText('Your specialisation'), 'Aviation');
+        expect(screen.getByRole('button', { name: 'Remove Aviation' })).toBeInTheDocument();
+
+        await userEvent.click(screen.getByRole('button', { name: 'Remove Aviation' }));
+        expect(screen.queryByLabelText('Your specialisation')).not.toBeInTheDocument();
+      });
+
+      it('asks for a specialisation next to the field when none is chosen', async () => {
+        const spy = vi.spyOn(registration, 'registerInterpreter');
+        renderPage('interpreter');
+        await fillInterpreter();
+        await userEvent.click(screen.getByRole('checkbox'));
+        await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+        expect(screen.getByText('Choose at least one specialisation.')).toBeInTheDocument();
+        expect(spy).not.toHaveBeenCalled();
+      });
+
+      it('rejects Other text without letters', async () => {
+        renderPage('interpreter');
+        await pick('Other (please specify)');
+        await userEvent.type(screen.getByLabelText('Your specialisation'), '123');
+        await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+        expect(screen.getByText('Describe your specialisation using letters.')).toBeInTheDocument();
+      });
+
+      it('rejects an Other entry that repeats a listed specialisation', async () => {
+        const spy = vi.spyOn(registration, 'registerInterpreter');
+        renderPage('interpreter');
+        await fillInterpreter();
+        await pick('Other (please specify)');
+        await userEvent.type(screen.getByLabelText('Your specialisation'), 'legal / court');
+        await userEvent.click(screen.getByRole('checkbox'));
+        await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+        expect(screen.getByText(/already in the list/i)).toBeInTheDocument();
+        expect(spy).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  it('clears the duplicate-email warning when the user enters a different available email', async () => {
+    const user = userEvent.setup();
+
+    vi.mocked(checkEmailAvailability)
+      .mockResolvedValueOnce(false) // First email is already registered.
+      .mockResolvedValue(true); // Replacement email is available.
+
+    const registerSpy = vi.spyOn(registration, 'registerDeaf').mockResolvedValue(session('deaf'));
+
+    renderPage();
+
+    await fill({
+      'First name': 'Catherine',
+      'Last name': 'Nawagirwa',
+      'Phone number': '772123456',
+      'Email address': 'shadia@gmail.com',
+      Password: 'Secret-pass-1',
+      'Confirm password': 'Secret-pass-1',
+    });
+
+    // Availability is checked when the email field loses focus.
+    await waitFor(() => {
+      expect(checkEmailAvailability).toHaveBeenCalledWith('shadia@gmail.com');
+    });
+
+    expect(
+      await screen.findByText(
+        'This email already exists. Sign in instead, or use a different email.',
+      ),
+    ).toBeInTheDocument();
+
+    const emailInput = screen.getByLabelText('Email address');
+
+    await user.clear(emailInput);
+    await user.type(emailInput, 'honeyva256@gmail.com');
+
+    await waitFor(() => {
+      expect(
+        screen.queryByText('This email already exists. Sign in instead, or use a different email.'),
+      ).not.toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole('checkbox'));
+    await user.click(screen.getByRole('button', { name: /create account/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('welcome step')).toBeInTheDocument();
+    });
+
+    expect(registerSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        email: 'honeyva256@gmail.com',
+      }),
+    );
   });
 });

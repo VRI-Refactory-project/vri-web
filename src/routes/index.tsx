@@ -41,6 +41,7 @@ import { SchedulePage } from '../pages/deaf/SchedulePage';
 import { SettingsPage as DeafSettingsPage } from '../pages/deaf/SettingsPage';
 import { LiveSessionPage } from '../pages/session/LiveSessionPage';
 import { ProfilePage as InterpreterProfilePage } from '../pages/interpreter/ProfilePage';
+import { InterpreterSessionsPage } from '../pages/interpreter/SessionsPage';
 import { SettingsPage } from '../pages/admin/SettingsPage';
 import { AdminProfilePage } from '../pages/admin/AdminProfilePage';
 import { CreateStaffAccountPage } from '../pages/institution/CreateStaffAccountPage';
@@ -58,6 +59,9 @@ import { InstitutionAnalyticsPage } from '../pages/institution/InstitutionAnalyt
 import { InstitutionSessionsPage } from '../pages/institution/InstitutionSessionsPage';
 import { AuditLogsPage } from '../pages/admin/AuditLogsPage';
 import { ReportCategoryPage } from '../pages/admin/ReportCategoryPage';
+import { InterpreterSettingsPage } from '../pages/interpreter/SettingsPage';
+import { InterpreterWalletPage } from '../pages/interpreter/WalletPage';
+import { GuestVideoPage } from '../features/video/GuestVideoPage';
 
 const appRoutes: RouteObject[] = [
   {
@@ -79,6 +83,7 @@ const appRoutes: RouteObject[] = [
   },
 
   { path: '/sign-in', element: <SignInPage /> },
+  { path: '/video/:roomName', element: <GuestVideoPage /> },
   { path: '/verify-email', element: <VerifyEmailPage /> },
   { path: '/offline', element: <OfflinePage /> },
   { path: '/forgot-password', element: <Forgotpassword /> },
@@ -89,7 +94,7 @@ const appRoutes: RouteObject[] = [
     element: <Navigate to="/register/interpreter" replace />,
   },
   {
-    element: <ProtectedRoute allow={['interpreter']} requireVerifiedEmail={false} />,
+    element: <ProtectedRoute allow={['interpreter']} />,
     children: [
       { path: '/register/interpreter/certifications', element: <UploadCertificationsPage /> },
     ],
@@ -150,11 +155,11 @@ const appRoutes: RouteObject[] = [
             children: [
               { index: true, element: <InterpreterHomePage /> },
               { path: 'requests', element: <RequestsPage /> },
-              { path: 'sessions', element: <Placeholder title="Sessions" story="Sprint 2" /> },
+              { path: 'sessions', element: <InterpreterSessionsPage /> },
               { path: 'availability', element: <AvailabilityPage /> },
-              { path: 'wallet', element: <Placeholder title="Wallet" story="Not scheduled" /> },
+              { path: 'wallet', element: <InterpreterWalletPage /> },
               { path: 'profile', element: <InterpreterProfilePage /> },
-              { path: 'settings', element: <Placeholder title="Settings" story="Sprint 2" /> },
+              { path: 'settings', element: <InterpreterSettingsPage /> },
             ],
           },
         ],

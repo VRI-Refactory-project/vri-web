@@ -7,6 +7,7 @@ import {
   Clock,
   CheckCircle2,
   AlertCircle,
+  Wallet,
 } from 'lucide-react';
 
 import { useEffect, useState } from 'react';
@@ -15,6 +16,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { api } from '../../services/api';
 import './DHH_dashboard.css';
 import { InterpreterProfileModal } from './InterpreterProfileModal';
+import bannerImage from '../../assets/suit.png';
 import {
   getAvailableInterpreters,
   type AvailableInterpreter,
@@ -264,7 +266,7 @@ export function DashboardPage() {
               className="dash-btn-primary"
               onClick={() => navigate('/dashboard/deaf/sessions/new')}
             >
-              <Video size={18} /> Start VRI Session
+              <Video size={18} /> Start Session
             </button>
 
             <button
@@ -274,6 +276,10 @@ export function DashboardPage() {
               <AlertCircle size={18} /> Emergency Request
             </button>
           </div>
+        </div>
+
+        <div className="hero-image-container">
+          <img src={bannerImage} alt="Interpreter" className="hero-banner-image" />
         </div>
       </section>
 
@@ -304,7 +310,10 @@ export function DashboardPage() {
       {/* Stats Grid */}
       <section className="stats-grid">
         <div className="stat-card">
-          <span className="stat-label">Upcoming</span>
+          <div className="stat-header">
+            <span className="stat-label">Upcoming</span>
+            <Calendar size={20} className="stat-icon" />
+          </div>
           <span className="stat-value">
             {sessionCount} {sessionCount === 1 ? 'session' : 'sessions'}
           </span>
@@ -314,13 +323,19 @@ export function DashboardPage() {
         </div>
 
         <div className="stat-card">
-          <span className="stat-label">Wallet</span>
+          <div className="stat-header">
+            <span className="stat-label">Wallet</span>
+            <Wallet size={20} className="stat-icon" />
+          </div>
           <span className="stat-value">{formatCurrency(stats.walletBalance)}</span>
           <span className="stat-sub">Available balance</span>
         </div>
 
         <div className="stat-card">
-          <span className="stat-label">This month</span>
+          <div className="stat-header">
+            <span className="stat-label">This month</span>
+            <Clock size={20} className="stat-icon" />
+          </div>
           <span className="stat-value">
             {stats.monthlySessions} {stats.monthlySessions === 1 ? 'session' : 'sessions'}
           </span>

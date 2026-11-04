@@ -1,11 +1,17 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, PhoneOff, CheckCircle2, Video as VideoIcon, X } from 'lucide-react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { SessionStatusBanner } from '../../components/session/SessionStatusBanner';
 import { CallControls } from '../../components/session/CallControls';
 import { VideoTile } from '../../components/session/VideoTile';
 import { useLocalMedia } from '../../features/session/useLocalMedia';
-import { buildParticipants, formatDuration } from '../../services/liveSession';
+import {
+  createLiveKitConnection,
+  type CreateConnection,
+  type RemotePerson,
+} from '../../features/session/callConnection';
+import { describeError } from '../../services/api';
+import { formatDuration } from '../../services/liveSession';
 import { cancelSessionRequest, type SessionRequestState } from '../../services/sessionRequests';
 import './LiveSessionPage.css';
 
@@ -24,17 +30,18 @@ const HOME = { deaf: '/dashboard/deaf', interpreter: '/dashboard/interpreter' } 
 
 interface Props {
   viewerRole: 'deaf' | 'interpreter';
-  /** How long "Connecting" lasts before the call opens, until real signalling replaces it. */
-  connectMs?: number;
+  /** How the page reaches the video server. Tests pass a fake one. */
+  createConnection?: CreateConnection;
 }
 
 /**
  * The live session, for the Deaf user and the interpreter (V2-011, V2-031). One page walks through
  * the design's screens: the lobby ("Ready to connect?"), the call, the end-session confirmation
- * and the session-ended screen. The viewer's own camera and microphone work; the other people's
- * video arrives with the WebRTC server, so their tiles show initials for now.
+ * and the session-ended screen. The lobby previews the viewer's camera. "Join Session" asks the
+ * API for a call token and joins the LiveKit room, and the other people's video and audio appear
+ * as they arrive.
  */
-export function LiveSessionPage({ viewerRole, connectMs = 1500 }: Props) {
+export function LiveSessionPage({ viewerRole, createConnection = createLiveKitConnection }: Props) {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -43,23 +50,48 @@ export function LiveSessionPage({ viewerRole, connectMs = 1500 }: Props) {
   const [phase, setPhase] = useState<Phase>('lobby');
   const [seconds, setSeconds] = useState(0);
   const [lastLength, setLastLength] = useState(0);
+  const [others, setOthers] = useState<RemotePerson[]>([]);
+  const [joinError, setJoinError] = useState<string | null>(null);
   const startedAt = useRef(0);
-  const people = useMemo(
-    () => buildParticipants({ viewerRole, interpreterName }),
-    [viewerRole, interpreterName],
-  );
   const home = HOME[viewerRole];
 
-  // "Connecting" then the call. This stands in for the signalling server.
-  useEffect(() => {
-    if (phase !== 'joining') return;
-    const timer = setTimeout(() => {
+  const [connection] = useState(() =>
+    createConnection({
+      onPeople: setOthers,
+      onLost: () => {
+        setJoinError('You were disconnected from the call. Join again to reconnect.');
+        setPhase('lobby');
+      },
+    }),
+  );
+  // Leaving the page leaves the call.
+  useEffect(() => () => connection.leave(), [connection]);
+
+  const join = async () => {
+    setJoinError(null);
+    setPhase('joining');
+    try {
+      await connection.join(id ?? '', media.stream);
+      // What the viewer chose in the lobby carries into the call.
+      connection.setMic(media.micOn);
+      connection.setCam(media.camOn);
       startedAt.current = Date.now();
       setSeconds(0);
       setPhase('call');
-    }, connectMs);
-    return () => clearTimeout(timer);
-  }, [phase, connectMs]);
+    } catch (err) {
+      setJoinError(describeError(err));
+      setPhase('lobby');
+    }
+  };
+
+  const toggleMic = () => {
+    media.toggleMic();
+    connection.setMic(!media.micOn);
+  };
+  const toggleCam = () => {
+    media.toggleCam();
+    connection.setCam(!media.camOn);
+  };
 
   useEffect(() => {
     if (phase !== 'call' && phase !== 'confirmEnd') return;
@@ -83,12 +115,12 @@ export function LiveSessionPage({ viewerRole, connectMs = 1500 }: Props) {
   };
 
   const endCall = () => {
+    connection.leave();
     setLastLength(Math.floor((Date.now() - startedAt.current) / 1000));
     setPhase('ended');
   };
 
-  const self = people[0];
-  const others = people.slice(1);
+  const selfName = 'You';
 
   if (phase === 'ended') {
     return (
@@ -129,7 +161,6 @@ export function LiveSessionPage({ viewerRole, connectMs = 1500 }: Props) {
   }
 
   if (phase === 'call') {
-    const [first, second] = others;
     return (
       <main className="ls ls--call">
         <header className="ls-top">
@@ -140,20 +171,32 @@ export function LiveSessionPage({ viewerRole, connectMs = 1500 }: Props) {
         </header>
         <SessionStatusBanner
           state="ACTIVE"
-          interpreterName={viewerRole === 'deaf' ? first.name : undefined}
+          interpreterName={viewerRole === 'deaf' ? interpreterName : undefined}
         />
         <div className="ls-stage">
-          <VideoTile name={self.name} stream={media.stream} cameraOff={!media.camOn} large muted />
+          <VideoTile name={selfName} stream={media.stream} cameraOff={!media.camOn} large muted />
           <div className="ls-side">
-            <VideoTile name={first.name} highlight={first.role === 'interpreter'} />
-            <VideoTile name={second.name} />
+            {others.length === 0 && (
+              <p className="vt ls-waiting" role="status">
+                Waiting for others to join…
+              </p>
+            )}
+            {others.map((person) => (
+              <VideoTile
+                key={person.id}
+                name={person.name}
+                stream={person.stream}
+                cameraOff={person.cameraOff}
+                highlight={person.name === interpreterName}
+              />
+            ))}
           </div>
         </div>
         <CallControls
           micOn={media.micOn}
           camOn={media.camOn}
-          onToggleMic={media.toggleMic}
-          onToggleCam={media.toggleCam}
+          onToggleMic={toggleMic}
+          onToggleCam={toggleCam}
           onEnd={() => setPhase('confirmEnd')}
         />
       </main>
@@ -169,13 +212,13 @@ export function LiveSessionPage({ viewerRole, connectMs = 1500 }: Props) {
       </header>
       <div className="ls-lobby">
         <div className="ls-preview">
-          <VideoTile name={self.name} stream={media.stream} cameraOff={!media.camOn} large muted />
+          <VideoTile name={selfName} stream={media.stream} cameraOff={!media.camOn} large muted />
           <div className="ls-preview-controls">
             <CallControls
               micOn={media.micOn}
               camOn={media.camOn}
-              onToggleMic={media.toggleMic}
-              onToggleCam={media.toggleCam}
+              onToggleMic={toggleMic}
+              onToggleCam={toggleCam}
               onEnd={() => undefined}
               lobby
             />
@@ -195,15 +238,15 @@ export function LiveSessionPage({ viewerRole, connectMs = 1500 }: Props) {
             </p>
           )}
           <SessionStatusBanner state={BANNER[phase]} interpreterName={interpreterName} />
-          {media.error && (
+          {(joinError ?? media.error) && (
             <p className="ls-error" role="alert">
-              {media.error}
+              {joinError ?? media.error}
             </p>
           )}
           <button
             type="button"
             className="ls-btn ls-btn--primary"
-            onClick={() => setPhase('joining')}
+            onClick={join}
             disabled={joining}
           >
             <VideoIcon size={18} aria-hidden="true" /> {joining ? 'Connecting…' : 'Join Session'}

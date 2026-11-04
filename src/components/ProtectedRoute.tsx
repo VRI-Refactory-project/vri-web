@@ -9,7 +9,7 @@ export function ProtectedRoute({
   requireVerifiedEmail = true,
 }: {
   allow: Role[];
-  /** Off only for steps that come before email verification in a sign-up (certificate upload). */
+  /** Turn off only for a step that must be reachable before the email is confirmed. */
   requireVerifiedEmail?: boolean;
 }) {
   const { session, checking } = useAuth();

@@ -1,0 +1,350 @@
+/* Shared by the pieces of the interpreter Sessions page. Page layout lives in SessionsPage.css. */
+
+.isn-page,
+.isn-next,
+.isn-panel {
+  --isn-purple: #3b2579;
+  --isn-purple-soft: #ede8fb;
+  --isn-green: #15803d;
+  --isn-text: #1f1640;
+  --isn-muted: #6b6585;
+  --isn-border: #ece9f7;
+}
+
+/* --- "Up next" card --- */
+.isn-next {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px;
+  padding: 22px 24px;
+  border: 1px solid var(--isn-border);
+  border-radius: 16px;
+  background: #fff;
+  font-family: 'Manrope', system-ui, sans-serif;
+  color: var(--isn-text);
+}
+
+.isn-next-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: var(--isn-purple);
+  color: #fff;
+}
+
+.isn-next-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+}
+
+.isn-next-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #f1f0f6;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.isn-next-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #14b8a6;
+}
+
+.isn-next h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.isn-next-when {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--isn-muted);
+  font-size: 13px;
+}
+
+/* Reschedule and Join on the right of the card, dropping underneath on narrow screens. */
+.isn-next-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.isn-next-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.isn-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: 1px solid #dcd8ea;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--isn-text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.isn-button--join {
+  border-color: #157a5c;
+  background: #157a5c;
+  color: #fff;
+}
+
+.isn-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.isn-button:focus-visible {
+  outline: 2px solid var(--isn-purple);
+  outline-offset: 2px;
+}
+
+.isn-next-hint {
+  margin: 0;
+  color: var(--isn-muted);
+  font-size: 12px;
+}
+
+@media (max-width: 700px) {
+  .isn-next-actions {
+    flex-basis: 100%;
+    align-items: stretch;
+  }
+
+  .isn-next-buttons > .isn-button {
+    flex: 1;
+  }
+}
+
+/* --- The white panel holding the sessions table --- */
+.isn-panel {
+  overflow: hidden;
+  border: 1px solid var(--isn-border);
+  border-radius: 16px;
+  background: #fff;
+  font-family: 'Manrope', system-ui, sans-serif;
+  color: var(--isn-text);
+}
+
+.isn-panel-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.isn-empty {
+  margin: 0;
+  padding: 8px 24px 24px;
+  color: var(--isn-muted);
+  font-size: 14px;
+}
+
+/* The count on the left, search and Filter on the right. */
+.isn-panel-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 22px 24px 16px;
+}
+
+.isn-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.isn-search,
+.isn-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #f6f5fa;
+  color: var(--isn-muted);
+  font-size: 13px;
+}
+
+.isn-search {
+  width: 220px;
+}
+
+.isn-search:focus-within,
+.isn-filter:focus-within {
+  outline: 2px solid var(--isn-purple);
+}
+
+.isn-search input,
+.isn-filter select {
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--isn-text);
+  font: inherit;
+}
+
+.isn-search input {
+  flex: 1;
+}
+
+.isn-filter label {
+  color: var(--isn-text);
+  font-weight: 600;
+}
+
+.isn-filter select {
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .isn-toolbar,
+  .isn-search {
+    flex: 1 1 100%;
+  }
+}
+
+/* Lets the table scroll sideways on a phone instead of squashing. */
+.isn-table-wrap {
+  overflow-x: auto;
+}
+
+.isn-table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+}
+
+.isn-table th {
+  padding: 12px 24px;
+  background: #f6f5fa;
+  color: var(--isn-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.isn-table td {
+  padding: 12px 24px;
+  border-top: 1px solid var(--isn-border);
+  vertical-align: middle;
+}
+
+/* Type and status sit in the middle and on the right, as in the design. */
+.isn-table th:nth-child(3),
+.isn-table td:nth-child(3) {
+  text-align: center;
+}
+
+.isn-table th:last-child,
+.isn-table td:last-child {
+  text-align: right;
+}
+
+/* --- One session --- */
+.isn-date {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 44px;
+  padding: 4px 6px;
+  border: 1px solid var(--isn-border);
+  border-radius: 8px;
+  background: #f6f5fa;
+  line-height: 1.2;
+}
+
+.isn-date-top {
+  color: var(--isn-muted);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.isn-date-day {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.isn-with {
+  display: block;
+  font-size: 14px;
+}
+
+.isn-detail {
+  display: block;
+  margin-top: 2px;
+  color: var(--isn-muted);
+  font-size: 12px;
+}
+
+.isn-type {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: #f1f0f6;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.isn-status-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.isn-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.isn-badge--upcoming {
+  background: #4f46e5;
+  color: #fff;
+}
+
+.isn-badge--completed {
+  background: #e3f6ec;
+  color: var(--isn-green);
+}
+
+.isn-chevron {
+  flex-shrink: 0;
+  color: #a19cb5;
+}

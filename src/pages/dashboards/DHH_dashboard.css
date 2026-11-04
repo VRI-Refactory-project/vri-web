@@ -154,6 +154,7 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
+  background-color: #382c77;
 }
 
 .dashboard-header {
@@ -211,6 +212,38 @@ body {
   margin-bottom: 24px;
   position: relative;
   overflow: hidden;
+}
+
+/* NEW: The container for the image */
+.hero-image-container {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 45%; /* Takes up the right 45% of the banner */
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  pointer-events: none; /* So the image doesn't block clicking the buttons */
+}
+
+/* NEW: The image itself with a fade effect */
+.hero-banner-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center left; /* Keeps the person in view */
+
+  /* This creates a smooth fade from left to right */
+  mask-image: linear-gradient(to right, transparent, black 40%);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 40%);
+}
+
+/* NEW: Make sure the text stays above the image */
+.hero-content {
+  position: relative;
+  z-index: 2; /* Ensures text and buttons are clickable and readable */
+  max-width: 60%; /* Prevents text from spilling into the image area */
 }
 
 .hero-tag {
@@ -330,11 +363,16 @@ body {
   gap: 16px;
   cursor: pointer;
   text-align: left;
-  transition: border-color 0.2s;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .action-card:hover {
-  border-color: var(--primary);
+  transform: translateX(6px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08); /* Adds the floating shadow */
+  border-color: #d8b4fe; /* Changes the border to light purple */
 }
 
 .action-icon {
@@ -383,6 +421,16 @@ body {
   padding: 20px;
   display: flex;
   flex-direction: column;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px); /* Moves the card up by 5 pixels */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08); /* Adds a soft shadow to make it look like it's floating */
+  border-color: #d8b4fe; /* Optional: changes the border to a light purple on hover */
 }
 
 .stat-label {
@@ -640,6 +688,30 @@ body {
 /* Hide the old square status dot since we're using the badge now */
 .status-dot-online {
   display: none;
+}
+
+.stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+.stat-icon {
+  color: #8b5cf6;
+  background-color: #f3e8ff;
+  padding: 6px;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+}
+
+/* Make sure the stat-label sits correctly inside the new flex container */
+.stat-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 0;
 }
 
 /* ── RESPONSIVE ──────────────────────────────────────────── */
