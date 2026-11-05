@@ -157,7 +157,7 @@ export const Resetpassword = () => {
           </div>
 
           {error && (
-            <p className="form-error" style={{ textAlign: 'center' }}>
+            <p className="form-error" style={{ textAlign: 'center' }} role="alert">
               {error}
             </p>
           )}
@@ -263,7 +263,12 @@ export const Resetpassword = () => {
             )}
           </div>
 
-          {error && <p className="form-error">{error}</p>}
+          {/* FIXED: Added role="alert" here */}
+          {error && (
+            <p className="form-error" role="alert">
+              {error}
+            </p>
+          )}
 
           <button
             type="submit"
