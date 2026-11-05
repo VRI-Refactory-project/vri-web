@@ -30,7 +30,7 @@ export const Forgotpassword = () => {
     setSubmitting(true);
     try {
       await requestRecovery(who);
-      // The API answers the same for unknown accounts, so we always move on to the code step.
+      // Send the email to the next page in the background
       navigate('/reset-password', { state: { identifier: who } });
     } catch (err) {
       setError(

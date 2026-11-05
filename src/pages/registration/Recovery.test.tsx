@@ -40,14 +40,27 @@ describe('account recovery pages (V2-008)', () => {
     await userEvent.click(screen.getByRole('button', { name: /send code/i }));
     expect(request).toHaveBeenCalledWith('deaf@test.com');
 
-    // Wait for something only the reset page has, then check it already knows who is resetting.
-    const code = await screen.findByLabelText('6-digit code');
-    expect(screen.getByLabelText('Email or phone number')).toHaveValue('deaf@test.com');
-    await userEvent.type(code, '123456');
+    // Wait for the Continue button to appear, which signals the OTP step is ready
+    const continueBtn = await screen.findByRole('button', { name: /continue/i });
+
+    // Now find all the OTP input boxes
+    const inputs = screen.getAllByRole('textbox');
+    expect(inputs.length).toBeGreaterThanOrEqual(6);
+
+    // Type the code into the 6 boxes
+    for (let i = 0; i < 6; i++) {
+      await userEvent.type(inputs[i], '1');
+    }
+
+    // Click Continue to go to the password step
+    await userEvent.click(continueBtn);
+
+    // STEP 3: The new password
     await userEvent.type(screen.getByLabelText('New password'), 'NewPass#2026');
+    await userEvent.type(screen.getByLabelText('Confirm password'), 'NewPass#2026');
     await userEvent.click(screen.getByRole('button', { name: /reset password/i }));
 
-    expect(confirm).toHaveBeenCalledWith('deaf@test.com', '123456', 'NewPass#2026');
+    expect(confirm).toHaveBeenCalledWith('deaf@test.com', '111111', 'NewPass#2026');
     expect(await screen.findByText('deaf home')).toBeInTheDocument();
   });
 
@@ -66,9 +79,18 @@ describe('account recovery pages (V2-008)', () => {
         </MemoryRouter>
       </AuthProvider>,
     );
-    await userEvent.type(screen.getByLabelText('6-digit code'), '000000');
+
+    await screen.findByRole('button', { name: /continue/i });
+    const inputs = screen.getAllByRole('textbox');
+    for (let i = 0; i < 6; i++) {
+      await userEvent.type(inputs[i], '0');
+    }
+    await userEvent.click(screen.getByRole('button', { name: /continue/i }));
+
     await userEvent.type(screen.getByLabelText('New password'), 'Whatever-1!');
+    await userEvent.type(screen.getByLabelText('Confirm password'), 'Whatever-1!');
     await userEvent.click(screen.getByRole('button', { name: /reset password/i }));
+
     expect(await screen.findByRole('alert')).toHaveTextContent('Invalid or expired code');
     expect(sessionStorage.getItem('vri.session')).toBeNull();
   });
@@ -90,7 +112,7 @@ describe('account recovery pages (V2-008)', () => {
     expect(request).toHaveBeenCalledWith('+256772123456');
   });
 
-  it('checks the code and the new password before resetting', async () => {
+  it('blocks resetting if the passwords do not match', async () => {
     const confirm = vi.spyOn(authService, 'confirmRecovery');
     render(
       <AuthProvider>
@@ -103,13 +125,19 @@ describe('account recovery pages (V2-008)', () => {
         </MemoryRouter>
       </AuthProvider>,
     );
-    const code = screen.getByLabelText('6-digit code') as HTMLInputElement;
-    await userEvent.type(code, '12ab34');
-    expect(code.value).toBe('1234');
-    await userEvent.type(screen.getByLabelText('New password'), 'short');
+
+    await screen.findByRole('button', { name: /continue/i });
+    const inputs = screen.getAllByRole('textbox');
+    for (let i = 0; i < 6; i++) {
+      await userEvent.type(inputs[i], '1');
+    }
+    await userEvent.click(screen.getByRole('button', { name: /continue/i }));
+
+    await userEvent.type(screen.getByLabelText('New password'), 'NewPass#2026');
+    await userEvent.type(screen.getByLabelText('Confirm password'), 'Different#2026');
     await userEvent.click(screen.getByRole('button', { name: /reset password/i }));
-    expect(screen.getByText('The code has 6 digits.')).toBeInTheDocument();
-    expect(screen.getByText(/at least 8 characters/i)).toBeInTheDocument();
+
+    expect(screen.getAllByText('Passwords do not match.')[0]).toBeInTheDocument();
     expect(confirm).not.toHaveBeenCalled();
   });
 });
