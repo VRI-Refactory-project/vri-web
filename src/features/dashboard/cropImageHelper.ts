@@ -1,4 +1,12 @@
-export const getCroppedImg = (imageSrc: string, pixelCrop: any): Promise<Blob> => {
+// Define the shape of the crop area
+export interface PixelCrop {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export const getCroppedImg = (imageSrc: string, pixelCrop: PixelCrop): Promise<Blob> => {
   return new Promise((resolve, reject) => {
     const image = new Image();
     image.src = imageSrc;
@@ -22,7 +30,7 @@ export const getCroppedImg = (imageSrc: string, pixelCrop: any): Promise<Blob> =
         0,
         0,
         pixelCrop.width,
-        pixelCrop.height,
+        pixelCrop.height
       );
 
       canvas.toBlob((blob) => {

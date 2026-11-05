@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import Cropper from 'react-easy-crop';
-import { getCroppedImg } from '../../features/dashboard/cropImageHelper';
+import { getCroppedImg, type PixelCrop } from '../../features/dashboard/cropImageHelper';
 
 interface Props {
   image: string;
@@ -11,17 +11,23 @@ interface Props {
 export function ProfilePhotoCropper({ image, onCropComplete, onCancel }: Props) {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  
+  // 1. FIXED: Typed the state instead of using 'null' alone
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<PixelCrop | null>(null);
 
   const onCropChange = (crop: { x: number; y: number }) => setCrop(crop);
   const onZoomChange = (zoom: number) => setZoom(zoom);
 
-  const handleCropComplete = useCallback((_croppedArea: any, croppedAreaPixels: any) => {
+  // 2. FIXED: Replaced 'any' with proper types
+  const handleCropComplete = useCallback((_croppedArea: unknown, croppedAreaPixels: PixelCrop) => {
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
 
   const handleSave = async () => {
     try {
+      // 3. FIXED: Added a check to ensure croppedAreaPixels exists
+      if (!croppedAreaPixels) return;
+      
       const croppedImageBlob = await getCroppedImg(image, croppedAreaPixels);
       onCropComplete(croppedImageBlob);
     } catch (e) {
@@ -80,6 +86,7 @@ export function ProfilePhotoCropper({ image, onCropComplete, onCancel }: Props) 
               borderRadius: '8px',
               border: '1px solid #ccc',
               background: 'transparent',
+              cursor: 'pointer',
             }}
           >
             Cancel
@@ -92,6 +99,7 @@ export function ProfilePhotoCropper({ image, onCropComplete, onCancel }: Props) 
               border: 'none',
               background: '#4b38ad',
               color: 'white',
+              cursor: 'pointer',
             }}
           >
             Save
