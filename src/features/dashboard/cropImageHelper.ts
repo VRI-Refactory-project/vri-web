@@ -30,7 +30,7 @@ export const getCroppedImg = (imageSrc: string, pixelCrop: PixelCrop): Promise<B
         0,
         0,
         pixelCrop.width,
-        pixelCrop.height
+        pixelCrop.height,
       );
 
       canvas.toBlob((blob) => {

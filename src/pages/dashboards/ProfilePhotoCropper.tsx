@@ -11,7 +11,7 @@ interface Props {
 export function ProfilePhotoCropper({ image, onCropComplete, onCancel }: Props) {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
-  
+
   // 1. FIXED: Typed the state instead of using 'null' alone
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<PixelCrop | null>(null);
 
@@ -27,7 +27,7 @@ export function ProfilePhotoCropper({ image, onCropComplete, onCancel }: Props) 
     try {
       // 3. FIXED: Added a check to ensure croppedAreaPixels exists
       if (!croppedAreaPixels) return;
-      
+
       const croppedImageBlob = await getCroppedImg(image, croppedAreaPixels);
       onCropComplete(croppedImageBlob);
     } catch (e) {
