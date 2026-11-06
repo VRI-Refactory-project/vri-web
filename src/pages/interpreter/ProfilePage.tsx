@@ -1,4 +1,4 @@
-// src/pages/interpreter/ProfilePage.tsx
+
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, BadgeCheck, Star, Pencil, Save, X, Plus, Camera } from 'lucide-react';
@@ -6,6 +6,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { SignOutButton } from '../../components/SignOutButton';
 import { describeError } from '../../services/api';
 import { getMyPhoto, removeMyPhoto, uploadMyPhoto } from '../../services/photos';
+import { ProfilePhotoCropper } from '../dashboards/ProfilePhotoCropper';
 import './ProfilePage.css';
 
 interface InterpreterProfile {
@@ -50,6 +51,9 @@ export function ProfilePage() {
   const [photoError, setPhotoError] = useState('');
   const fileInput = useRef<HTMLInputElement>(null);
 
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [showCropper, setShowCropper] = useState(false);
+
   // A failed lookup just leaves the initial showing.
   useEffect(() => {
     let cancelled = false;
@@ -64,18 +68,34 @@ export function ProfilePage() {
     };
   }, []);
 
-  async function handlePhotoChange(event: ChangeEvent<HTMLInputElement>) {
+  function handleFileSelect(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    const reader = new FileReader();
+    reader.addEventListener('load', () => {
+      setSelectedImage(reader.result as string);
+      setShowCropper(true);
+    });
+    reader.readAsDataURL(file);
+
+    if (fileInput.current) fileInput.current.value = '';
+  }
+
+  async function handleCropComplete(croppedBlob: Blob) {
+    setShowCropper(false);
     setPhotoBusy(true);
     setPhotoError('');
+
     try {
-      setPhotoUrl(await uploadMyPhoto(file));
+      const file = new File([croppedBlob], 'profile.jpg', { type: 'image/jpeg' });
+      const url = await uploadMyPhoto(file);
+      
+      if (url) setPhotoUrl(url);
     } catch (err) {
       setPhotoError(describeError(err));
     } finally {
       setPhotoBusy(false);
-      if (fileInput.current) fileInput.current.value = '';
     }
   }
 
@@ -178,7 +198,7 @@ export function ProfilePage() {
             type="file"
             accept="image/*"
             hidden
-            onChange={(e) => void handlePhotoChange(e)}
+            onChange={handleFileSelect} /* <-- CHANGED */
           />
           <button
             type="button"
@@ -360,6 +380,13 @@ export function ProfilePage() {
         )}
       </div>
       <SignOutButton />
+      {showCropper && selectedImage && (
+        <ProfilePhotoCropper
+          image={selectedImage}
+          onCropComplete={(blob) => void handleCropComplete(blob)}
+          onCancel={() => setShowCropper(false)}
+        />
+      )}
     </div>
   );
 }
