@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, BadgeCheck, Star, Pencil, Save, X, Plus, Camera } from 'lucide-react';
@@ -90,7 +89,7 @@ export function ProfilePage() {
     try {
       const file = new File([croppedBlob], 'profile.jpg', { type: 'image/jpeg' });
       const url = await uploadMyPhoto(file);
-      
+
       if (url) setPhotoUrl(url);
     } catch (err) {
       setPhotoError(describeError(err));
