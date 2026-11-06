@@ -323,7 +323,6 @@
   text-align: left !important; /* Forces text to the left */
 }
 
-
 /* Ensure the icon doesn't shrink */
 .ls-card .ls-status-banner > svg,
 .ls-card .ls-status-banner > span {
@@ -377,14 +376,13 @@
   background-color: #f9f8ff;
 }
 
-
 /* --- Custom Ended Banner --- */
 .custom-ended-banner {
   display: flex;
   align-items: flex-start;
   gap: 16px;
-   background-color: #f3efff; 
-  border: 1px solid #e8e1f3; 
+  background-color: #f3efff;
+  border: 1px solid #e8e1f3;
   border-radius: 12px;
   padding: 20px;
   width: 100%;
@@ -400,8 +398,8 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  border: 2px solid #8b5cf6; 
-  color: #8b5cf6; 
+  border: 2px solid #8b5cf6;
+  color: #8b5cf6;
   flex-shrink: 0;
   margin-top: 2px;
 }
@@ -414,14 +412,14 @@
   display: block;
   margin-bottom: 4px;
   font-weight: 700;
-   color: #4b3a9e; 
+  color: #4b3a9e;
   font-size: 15px;
 }
 
 .custom-ended-text p {
   margin: 0;
   font-size: 14px;
-  color: #6b7280; 
+  color: #6b7280;
   line-height: 1.5;
 }
 
