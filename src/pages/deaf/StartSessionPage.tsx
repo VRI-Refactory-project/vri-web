@@ -252,8 +252,6 @@
 //   );
 // }
 
-
-
 import { useEffect, useState } from 'react';
 import {
   Calendar,
@@ -468,7 +466,7 @@ export function StartSessionPage({ pollMs }: Props) {
       <Link to="/dashboard/deaf" className="ss-back">
         <ChevronLeft size={18} aria-hidden="true" /> Back
       </Link>
-      
+
       <div className="ss-header-content">
         <h1 className="ss-title">Start a VRI session</h1>
         <p className="ss-subtitle">
@@ -496,7 +494,7 @@ export function StartSessionPage({ pollMs }: Props) {
             <div className="ss-connect-sparkles">
               <Sparkles size={24} className="ss-sparkle-icon" />
             </div>
-            
+
             <span className="ss-tile" aria-hidden="true">
               <Video size={22} />
             </span>
