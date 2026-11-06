@@ -14,18 +14,20 @@ export function VerifyEmailPage() {
 
   const storedNext = sessionStorage.getItem('nextAfterVerification');
   const stateNext = safePath((location.state as { next?: unknown } | null)?.next);
-  let next = safePath(storedNext) ?? stateNext;
+  const next = safePath(storedNext) ?? stateNext;
 
   if (!session) return <Navigate to="/sign-in" replace />;
 
   if (!needsEmailVerification(session.user)) {
-    // If no destination is found, but they are an institution, send to upload page.
-    if (!next && session.user.role === 'institution') {
-      next = '/register/institution/upload-license';
-    }
-
+    // CLEAR the stored next so it doesn't interfere
     sessionStorage.removeItem('nextAfterVerification');
 
+    // FORCE institutions to the upload license page
+    if (session.user.role === 'institution') {
+      return <Navigate to="/register/institution/upload-license" replace />;
+    }
+
+    // For others, go to the next page or dashboard
     return <Navigate to={next ?? dashboardPathFor(session.user.role)} replace />;
   }
 
