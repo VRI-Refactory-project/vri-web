@@ -3,6 +3,7 @@ import { ChevronLeft, PhoneOff, CheckCircle2, Video as VideoIcon, X } from 'luci
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { SessionStatusBanner } from '../../components/session/SessionStatusBanner';
 import { CallControls } from '../../components/session/CallControls';
+import { GuestInvitePanel } from '../../components/session/GuestInvitePanel';
 import { VideoTile } from '../../components/session/VideoTile';
 import { useLocalMedia } from '../../features/session/useLocalMedia';
 import {
@@ -173,6 +174,7 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
           state="ACTIVE"
           interpreterName={viewerRole === 'deaf' ? interpreterName : undefined}
         />
+        {viewerRole === 'deaf' && id && <GuestInvitePanel sessionId={id} />}
         <div className="ls-stage">
           <VideoTile name={selfName} stream={media.stream} cameraOff={!media.camOn} large muted />
           <div className="ls-side">
@@ -243,6 +245,7 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
               {joinError ?? media.error}
             </p>
           )}
+          {viewerRole === 'deaf' && id && <GuestInvitePanel sessionId={id} />}
           <button
             type="button"
             className="ls-btn ls-btn--primary"
