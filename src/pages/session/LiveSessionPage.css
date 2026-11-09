@@ -165,12 +165,14 @@
   outline: 2px solid #5b43b5;
 }
 
+/* THE MIRROR FIX */
 .vt__video {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transform: scaleX(-1);
 }
 
 .vt__initials {

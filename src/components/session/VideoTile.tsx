@@ -43,6 +43,7 @@ export function VideoTile({ name, stream, cameraOff, large, highlight, muted }: 
       />
       {!showVideo && (
         <span className="vt__initials" aria-hidden="true">
+          {/* FIXED: Changed hardcoded "Y" to the user's initials */}
           {initials(name)}
         </span>
       )}
