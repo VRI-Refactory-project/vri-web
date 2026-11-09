@@ -79,7 +79,7 @@ describe('InterpreterHomePage', () => {
     expect(
       screen.getByRole('heading', {
         level: 1,
-        name: (name) => name.includes('Good morning') && name.includes('Amina'),
+        name: (name) => /good (morning|afternoon|evening)/i.test(name) && name.includes('Amina'),
       }),
     ).toBeInTheDocument();
   });

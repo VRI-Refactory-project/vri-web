@@ -42,6 +42,13 @@ const calendarNumbers = [
   24,
   25,
 ];
+/** "Good morning", "Good afternoon" or "Good evening", from the time on the user's device. */
+function greeting(date = new Date()) {
+  const hour = date.getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 18) return 'Good afternoon';
+  return 'Good evening';
+}
 
 export function InterpreterHomePage() {
   const { session } = useAuth();
@@ -82,7 +89,7 @@ export function InterpreterHomePage() {
                 <span className="ih-sun-icon">
                   <Sun size={24} />
                 </span>
-                Good morning, {firstName}
+                {greeting()}, {firstName}
               </h1>
               <p className="ih-banner-sub">Bridging communication. Expanding access.</p>
               <p className="ih-banner-desc">
