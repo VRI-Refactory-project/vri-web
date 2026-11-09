@@ -1,5 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { ChevronLeft, PhoneOff, CheckCircle2, Video as VideoIcon, X, Star } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  PhoneOff,
+  CheckCircle2,
+  Video as VideoIcon,
+  X,
+  Star,
+} from 'lucide-react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { SessionStatusBanner } from '../../components/session/SessionStatusBanner';
 import { CallControls } from '../../components/session/CallControls';
@@ -29,18 +37,38 @@ const BANNER: Record<Phase, SessionRequestState> = {
 
 const HOME = { deaf: '/dashboard/deaf', interpreter: '/dashboard/interpreter' } as const;
 
-const FEEDBACK_TAGS = [
-  'Great Interpreter',
-  'Clear Video',
-  'Clear Audio',
-  'Professional',
-  'Technical Issues',
-];
-
 interface Props {
   viewerRole: 'deaf' | 'interpreter';
   createConnection?: CreateConnection;
 }
+
+// UPDATED: Removed Presentation
+const CATEGORY_ISSUES: Record<string, { label: string }[]> = {
+  Audio: [
+    { label: 'Sound was delayed' },
+    { label: 'There was echo' },
+    { label: "Others couldn't hear me" },
+    { label: "I couldn't hear others" },
+    { label: 'Audio was breaking up' },
+    { label: 'Other audio issue' },
+  ],
+  Video: [
+    { label: 'The video was blurry' },
+    { label: 'Audio and video were not in sync' },
+    { label: "My camera didn't work" },
+    { label: 'The video was breaking up' },
+    { label: "I couldn't see others' video" },
+    { label: 'Other video issue' },
+  ],
+  Other: [
+    { label: 'Screen sharing issues' },
+    { label: 'Connection dropped' },
+    { label: 'Other issue' },
+  ],
+};
+
+// UPDATED: Removed Presentation
+const CATEGORIES = ['Audio', 'Video', 'Other'];
 
 export function LiveSessionPage({ viewerRole, createConnection = createLiveKitConnection }: Props) {
   const { id } = useParams();
@@ -50,43 +78,69 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
 
   const interpreterName = (location.state as { interpreterName?: string } | null)?.interpreterName;
   const media = useLocalMedia();
+
+  // For testing, you can temporarily change this to 'ended' or 'confirmEnd'
   const [phase, setPhase] = useState<Phase>('lobby');
   const [seconds, setSeconds] = useState(0);
-  const [lastLength, setLastLength] = useState(0);
+  // const [lastLength, setLastLength] = useState(0);
   const [others, setOthers] = useState<RemotePerson[]>([]);
   const [joinError, setJoinError] = useState<string | null>(null);
   const startedAt = useRef(0);
   const home = HOME[viewerRole];
 
-  // --- Feedback State ---
+  // --- Feedback Wizard State ---
   const [rating, setRating] = useState(0);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackStep, setFeedbackStep] = useState<'rating' | 'details' | 'success'>('rating');
+  const [selectedCategory, setSelectedCategory] = useState('Audio');
+  const [selectedIssues, setSelectedIssues] = useState<string[]>([]);
+  const [customFeedback, setCustomFeedback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
 
-  const toggleTag = (tag: string) => {
-    setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
+  const handleStarClick = (star: number) => {
+    setRating(star);
+
+    // Use a timeout so the user sees the star fill in before the page changes
+    setTimeout(() => {
+      if (star === 5) {
+        setFeedbackStep('success');
+        console.log('Submitted 5-star feedback');
+      } else {
+        setFeedbackStep('details');
+      }
+    }, 1000); // 1000ms delay
+  };
+
+  const toggleIssue = (label: string) => {
+    setSelectedIssues((prev) =>
+      prev.includes(label) ? prev.filter((i) => i !== label) : [...prev, label],
     );
   };
 
-  const submitFeedback = async () => {
-    if (rating === 0) return;
+  const submitDetailedFeedback = async () => {
     setIsSubmitting(true);
     try {
       console.log('Feedback submitted:', {
         sessionId: id,
         rating,
-        tags: selectedTags,
-        comment: feedbackText,
+        category: selectedCategory,
+        issues: selectedIssues,
+        customText: selectedCategory === 'Other' ? customFeedback : undefined,
       });
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      setFeedbackSubmitted(true);
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      setFeedbackStep('success');
     } catch (error) {
       console.error('Failed to submit feedback', error);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const changeCategory = (direction: 'next' | 'prev') => {
+    const currentIndex = CATEGORIES.indexOf(selectedCategory);
+    if (direction === 'next' && currentIndex < CATEGORIES.length - 1) {
+      setSelectedCategory(CATEGORIES[currentIndex + 1]);
+    } else if (direction === 'prev' && currentIndex > 0) {
+      setSelectedCategory(CATEGORIES[currentIndex - 1]);
     }
   };
 
@@ -149,7 +203,7 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
 
   const endCall = () => {
     connection.leave();
-    setLastLength(Math.floor((Date.now() - startedAt.current) / 1000));
+    // setLastLength(Math.floor((Date.now() - startedAt.current) / 1000));
     setPhase('ended');
   };
 
@@ -159,93 +213,166 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
     (session?.user as unknown as { profilePicture?: string; photo_url?: string })?.photo_url ||
     null;
 
+  // --- ENDED SCREEN (GOOGLE MEET STYLE) ---
   if (phase === 'ended') {
     return (
-      <main className="ls ls--center">
-        <section className="ls-card" aria-labelledby="ls-ended">
-          <span className="ls-badge" aria-hidden="true">
-            <CheckCircle2 size={34} />
-          </span>
-          <h1 id="ls-ended">Session ended</h1>
-          <p>Your session lasted {formatDuration(lastLength)}.</p>
+      <div className="gm-ended-page">
+        <div className="gm-ended-content">
+          <h1 className="gm-ended-title">You left the session</h1>
 
-          <div className="custom-ended-banner">
-            <div className="custom-ended-icon">
-              <X size={14} />
-            </div>
-            <div className="custom-ended-text">
-              <strong>Session ended</strong>
-              <p>This session has finished. Thank you for using SignConnect.</p>
-            </div>
+          {/* Action Buttons */}
+          <div className="gm-ended-actions">
+            <button
+              type="button"
+              className="gm-btn gm-btn--outline"
+              onClick={() => setPhase('lobby')}
+            >
+              Rejoin
+            </button>
+            <button type="button" className="gm-btn gm-btn--primary" onClick={() => navigate(home)}>
+              Go to Dashboard
+            </button>
           </div>
 
-          {!feedbackSubmitted ? (
-            <div className="feedback-form">
-              <h3>How was your session?</h3>
-              <p>Your feedback helps us improve SignConnect.</p>
+          {/* Feedback Wizard */}
+          <div className="gm-feedback-card">
+            {/* STEP 1: STAR RATING */}
+            {feedbackStep === 'rating' && (
+              <>
+                <h3>How was the audio and video?</h3>
+                <div className="gm-star-rating">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <div key={star} className="gm-star-wrapper">
+                      <button
+                        type="button"
+                        className={`gm-star-btn ${rating >= star ? 'active' : ''}`}
+                        onClick={() => handleStarClick(star)}
+                      >
+                        <Star
+                          size={32}
+                          strokeWidth={1.5}
+                          fill={rating >= star ? 'currentColor' : 'none'}
+                        />
+                      </button>
+                      {star === 1 && <span className="gm-star-label">Very bad</span>}
+                      {star === 5 && <span className="gm-star-label">Very good</span>}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
 
-              <div className="star-rating">
-                {[1, 2, 3, 4, 5].map((star) => (
+            {/* STEP 2: WHAT WENT WRONG (Only for 1-4 stars) */}
+            {feedbackStep === 'details' && (
+              <div className="gm-issue-wizard">
+                <div className="gm-stepper">
+                  {CATEGORIES.map((cat, idx) => (
+                    <div key={cat} className="gm-step-item">
+                      <div
+                        className={`gm-step-circle ${selectedCategory === cat ? 'active' : ''}`}
+                      />
+                      <span>{cat}</span>
+                      {idx < CATEGORIES.length - 1 && <div className="gm-step-line" />}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="gm-issue-slider">
                   <button
-                    key={star}
-                    type="button"
-                    className={`star-btn ${rating >= star ? 'active' : ''}`}
-                    onClick={() => setRating(star)}
-                    aria-label={`Rate ${star} out of 5`}
+                    className="gm-nav-arrow"
+                    onClick={() => changeCategory('prev')}
+                    disabled={selectedCategory === 'Audio'}
                   >
-                    <Star size={32} fill={rating >= star ? 'currentColor' : 'none'} />
+                    <ChevronLeft size={24} />
                   </button>
-                ))}
-              </div>
 
-              <div className="feedback-tags">
-                {FEEDBACK_TAGS.map((tag) => (
+                  <div className="gm-issue-card">
+                    <h3 className="gm-issue-title">What went wrong?</h3>
+
+                    {/* NEW: Show textarea if "Other" is selected */}
+                    {selectedCategory === 'Other' ? (
+                      <div className="gm-other-input-wrapper">
+                        <textarea
+                          className="gm-other-textarea"
+                          placeholder="Tell us more"
+                          maxLength={500}
+                          value={customFeedback}
+                          onChange={(e) => setCustomFeedback(e.target.value)}
+                        />
+                        <span className="gm-char-count">{customFeedback.length}/500</span>
+                      </div>
+                    ) : (
+                      /* Otherwise, show the normal checkboxes */
+                      <div className="gm-issue-list">
+                        {CATEGORY_ISSUES[selectedCategory].map((option) => (
+                          <label key={option.label} className="gm-issue-checkbox">
+                            <input
+                              type="checkbox"
+                              checked={selectedIssues.includes(option.label)}
+                              onChange={() => toggleIssue(option.label)}
+                            />
+                            <span className="gm-checkbox-custom" />
+                            <span>{option.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
                   <button
-                    key={tag}
-                    type="button"
-                    className={`feedback-tag ${selectedTags.includes(tag) ? 'selected' : ''}`}
-                    onClick={() => toggleTag(tag)}
+                    className="gm-nav-arrow"
+                    onClick={() => changeCategory('next')}
+                    disabled={selectedCategory === 'Other'}
                   >
-                    {tag}
+                    <ChevronRight size={24} />
                   </button>
-                ))}
+                </div>
+
+                <div className="gm-wizard-actions">
+                  <button
+                    className="gm-btn gm-btn--primary"
+                    onClick={submitDetailedFeedback}
+                    disabled={isSubmitting}
+                    style={{ width: '100%' }}
+                  >
+                    {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
+                  </button>
+                </div>
               </div>
+            )}
 
-              <textarea
-                className="feedback-textarea"
-                placeholder="Tell us more... (Optional)"
-                value={feedbackText}
-                onChange={(e) => setFeedbackText(e.target.value)}
-                rows={3}
-              />
+            {/* STEP 3: SUCCESS MESSAGE */}
+            {feedbackStep === 'success' && (
+              <div className="gm-feedback-success">
+                <CheckCircle2 size={40} color="#10b981" />
+                <h3>Thank you for your feedback!</h3>
+                <p>We appreciate you taking the time to help us improve.</p>
+              </div>
+            )}
+          </div>
+        </div>
 
-              <button
-                type="button"
-                className="ls-btn ls-btn--primary"
-                onClick={submitFeedback}
-                disabled={rating === 0 || isSubmitting}
-              >
-                {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
-              </button>
-            </div>
-          ) : (
-            <div className="feedback-success">
-              <CheckCircle2 size={48} className="text-green-500" />
-              <h3>Thank you!</h3>
-              <p>We appreciate you taking the time to help us improve.</p>
-            </div>
-          )}
-
-          <button
-            type="button"
-            className="ls-btn ls-btn--outline"
-            onClick={() => navigate(home)}
-            style={{ marginTop: feedbackSubmitted ? '16px' : '0' }}
+        {/* Bottom Left Feedback Link */}
+        <button
+          type="button"
+          className="gm-bottom-feedback"
+          onClick={() => alert('Feedback opened')}
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           >
-            Back to dashboard
-          </button>
-        </section>
-      </main>
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+          Feedback
+        </button>
+      </div>
     );
   }
 

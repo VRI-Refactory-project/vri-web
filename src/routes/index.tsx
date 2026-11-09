@@ -225,6 +225,8 @@ const appRoutes: RouteObject[] = [
     element: <Placeholder title="Interpreter review" story="V2-045" />,
   },
 
+  // { path: '/live/deaf/:id', element: <LiveSessionPage viewerRole="deaf" /> },
+
   {
     path: '*',
     element: <Placeholder title="Page not found" message="We could not find this page." />,
