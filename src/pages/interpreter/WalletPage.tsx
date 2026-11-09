@@ -51,12 +51,6 @@ export function InterpreterWalletPage() {
         </button>
       </header>
 
-      {wallet === null && (
-        <p className="iw-notice" role="status">
-          Payments are not live yet. Your balance and transactions will appear here once they are.
-        </p>
-      )}
-
       <div className="iw-stats">
         <StatCard
           icon={CreditCard}
