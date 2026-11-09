@@ -173,24 +173,18 @@ const appRoutes: RouteObject[] = [
     element: <ProtectedRoute allow={['institution']} />,
     children: [
       {
-        // TEMPORARY FRONTEND FIX: Force institutions to the upload page
-        // until the backend adds the "isApproved" check.
-        element: <Navigate to="/register/institution/upload-license" replace />,
+        // The forced redirect was removed. The upload page is public.
+        path: '/dashboard/institution',
+        element: <InstitutionLayout />,
         children: [
-          {
-            path: '/dashboard/institution',
-            element: <InstitutionLayout />,
-            children: [
-              { index: true, element: <InstitutionDashboardPage /> },
-              { path: 'staff', element: <StaffManagementPage /> },
-              { path: 'staff/new', element: <CreateStaffAccountPage /> },
-              { path: 'staff/created', element: <StaffAccountCreatedPage /> },
-              { path: 'sessions', element: <InstitutionSessionsPage /> },
-              { path: 'analytics', element: <InstitutionAnalyticsPage /> },
-              { path: 'settings', element: <InstitutionSettingsPage /> },
-              { path: 'profile', element: <InstitutionProfilePage /> },
-            ],
-          },
+          { index: true, element: <InstitutionDashboardPage /> },
+          { path: 'staff', element: <StaffManagementPage /> },
+          { path: 'staff/new', element: <CreateStaffAccountPage /> },
+          { path: 'staff/created', element: <StaffAccountCreatedPage /> },
+          { path: 'sessions', element: <InstitutionSessionsPage /> },
+          { path: 'analytics', element: <InstitutionAnalyticsPage /> },
+          { path: 'settings', element: <InstitutionSettingsPage /> },
+          { path: 'profile', element: <InstitutionProfilePage /> },
         ],
       },
     ],

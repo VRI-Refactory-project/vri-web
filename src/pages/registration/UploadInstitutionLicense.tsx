@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Upload, ChevronRight } from 'lucide-react';
 import { AuthShell } from '../../components/AuthShell';
 import { FLOWS } from '../../features/registration/flows';
-import { useAuth } from '../../hooks/useAuth';
 import { describeError } from '../../services/api';
 import { uploadInstitutionLicense } from '../../services/registration';
 import './AuthPages.css';
@@ -11,7 +10,6 @@ import './AuthPages.css';
 export const UploadInstitutionLicense = () => {
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
-  const { session } = useAuth();
 
   const [file, setFile] = useState<File | null>(null);
   const [licenseType, setLicenseType] = useState('BUSINESS_LICENSE');
@@ -69,22 +67,6 @@ export const UploadInstitutionLicense = () => {
     }
   };
 
-  if (!session) {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100vh',
-          backgroundColor: '#f4f3fa',
-        }}
-      >
-        <p>Loading...</p>
-      </div>
-    );
-  }
-
   return (
     <AuthShell steps={FLOWS.institution} current={3}>
       <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
@@ -108,7 +90,6 @@ export const UploadInstitutionLicense = () => {
         <form onSubmit={handleSubmit} noValidate>
           <div className="form-group">
             <label>Institution Document</label>
-
             <div
               style={{
                 border: dragging ? '2px dashed #382c77' : '2px dashed #cbd5e1',
