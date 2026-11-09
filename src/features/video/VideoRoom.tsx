@@ -4,9 +4,7 @@ import '@livekit/components-styles';
 interface VideoRoomProps {
   token: string;
   serverUrl?: string;
-  /** Turn the camera on when joining. Hearing guests may join without video. */
   video?: boolean;
-  /** Turn the microphone on when joining. False means the person only listens. */
   audio?: boolean;
   onLeave: () => void;
 }
@@ -28,6 +26,25 @@ export function VideoRoom({
         flexDirection: 'column',
       }}
     >
+      {/* 
+        CSS to fix the LiveKit default styles:
+        1. Mirror the local video
+        2. Hide the default 'Y' placeholder 
+      */}
+      <style>{`
+        .lk-participant-tile[data-lk-local-participant="true"] video {
+          transform: scaleX(-1);
+        }
+        
+        .lk-participant-placeholder svg {
+          display: none !important;
+        }
+        
+        .lk-participant-placeholder {
+          background-color: #382c77 !important;
+        }
+      `}</style>
+
       <LiveKitRoom
         video={video}
         audio={audio}

@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { Mic, MicOff, Video, VideoOff, Settings, ShieldCheck, X, Upload } from 'lucide-react';
 import { createLocalVideoTrack, LocalVideoTrack } from 'livekit-client';
-// Import the Wrapper type directly
 import {
   BackgroundProcessor,
   supportsBackgroundProcessors,
   type BackgroundProcessorWrapper,
 } from '@livekit/track-processors';
+import { useAuth } from '../../hooks/useAuth'; // Added useAuth
 import './PreSessionLobby.css';
 
 interface LobbyProps {
@@ -16,6 +16,7 @@ interface LobbyProps {
 
 export const PreSessionLobby = ({ onJoin, onCancel }: LobbyProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const { session } = useAuth(); // Get the session
 
   const [isMicOn, setIsMicOn] = useState(true);
   const [isVideoOn, setIsVideoOn] = useState(true);
@@ -23,11 +24,9 @@ export const PreSessionLobby = ({ onJoin, onCancel }: LobbyProps) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [customImage, setCustomImage] = useState<string | null>(null);
 
-  // Use BackgroundProcessorWrapper instead of ProcessorType
   const [videoTrack, setVideoTrack] = useState<LocalVideoTrack | null>(null);
   const [processor, setProcessor] = useState<BackgroundProcessorWrapper | null>(null);
 
-  // 1. Initialize LiveKit Track and Processor
   useEffect(() => {
     let track: LocalVideoTrack | null = null;
 
@@ -57,7 +56,6 @@ export const PreSessionLobby = ({ onJoin, onCancel }: LobbyProps) => {
     };
   }, []);
 
-  // 2. Toggles
   const toggleVideo = () => {
     if (videoTrack) {
       if (isVideoOn) {
@@ -73,7 +71,6 @@ export const PreSessionLobby = ({ onJoin, onCancel }: LobbyProps) => {
     setIsMicOn(!isMicOn);
   };
 
-  // 3. Apply the Background Effect
   const setEffect = async (effect: 'none' | 'blur' | 'image', imageUrl?: string) => {
     if (!processor) {
       alert('Background processor not supported in this browser.');
@@ -102,6 +99,8 @@ export const PreSessionLobby = ({ onJoin, onCancel }: LobbyProps) => {
     }
   };
 
+  const userInitial = session?.user?.name?.charAt(0).toUpperCase() || 'U';
+
   return (
     <div className="lobby-container">
       <header className="lobby-header">
@@ -118,21 +117,44 @@ export const PreSessionLobby = ({ onJoin, onCancel }: LobbyProps) => {
               autoPlay
               playsInline
               muted
-              style={{ display: isVideoOn ? 'block' : 'none' }}
+              style={{
+                display: isVideoOn ? 'block' : 'none',
+                transform: 'scaleX(-1)', // THIS FIXES THE MIRROR
+              }}
             />
+
             {!isVideoOn && (
               <div
                 style={{
                   color: 'white',
                   position: 'absolute',
                   display: 'flex',
+                  flexDirection: 'column',
                   width: '100%',
                   height: '100%',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  backgroundColor: '#382c77',
                 }}
               >
-                Camera is off
+                <div
+                  style={{
+                    width: '80px',
+                    height: '80px',
+                    borderRadius: '50%',
+                    backgroundColor: '#6b6785',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '2rem',
+                    fontWeight: 'bold',
+                    color: 'white',
+                    marginBottom: '16px',
+                  }}
+                >
+                  {userInitial} {/* THIS FIXES THE 'Y' */}
+                </div>
+                <p style={{ margin: 0, fontWeight: 600 }}>Camera is off</p>
               </div>
             )}
 
