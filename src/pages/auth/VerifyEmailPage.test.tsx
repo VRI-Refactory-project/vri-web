@@ -16,7 +16,6 @@ function renderPage(session: AuthSession | null, next?: string) {
           <Route path="/sign-in" element={<p>sign in page</p>} />
           <Route path="/dashboard/deaf" element={<p>deaf home</p>} />
           <Route path="/register/pending" element={<p>pending review</p>} />
-          {/* Add a mock route for the upload page so the test can find it */}
           <Route path="/register/institution/upload-license" element={<p>upload license page</p>} />
         </Routes>
       </MemoryRouter>
@@ -66,8 +65,7 @@ describe('VerifyEmailPage', () => {
     expect(screen.getByText('deaf home')).toBeInTheDocument();
   });
 
-  // NEW TEST: Verify that institutions go to the upload page, not the dashboard
-  it('sends an institution to the upload license page after verification', () => {
+  it('forces an institution to the upload license page after verification', () => {
     renderPage(session({ email: 'a@b.com', emailVerified: true, role: 'institution' }));
     expect(screen.getByText('upload license page')).toBeInTheDocument();
   });

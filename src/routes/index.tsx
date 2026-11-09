@@ -79,9 +79,12 @@ const appRoutes: RouteObject[] = [
       { path: '/register/deaf', element: <CreateAccountPage /> },
       { path: '/register/interpreter', element: <CreateAccountPage role="interpreter" /> },
       { path: '/register/institution', element: <SignUpInstitution /> },
-      { path: '/register/institution/upload-license', element: <UploadInstitutionLicense /> },
+      // NOTE: upload-license moved below!
     ],
   },
+
+  // MOVED HERE: Outside of GuestRoute so logged-in institutions can see it
+  { path: '/register/institution/upload-license', element: <UploadInstitutionLicense /> },
 
   { path: '/sign-in', element: <SignInPage /> },
   { path: '/video/:roomName', element: <GuestVideoPage /> },
@@ -173,7 +176,6 @@ const appRoutes: RouteObject[] = [
     element: <ProtectedRoute allow={['institution']} />,
     children: [
       {
-        // The forced redirect was removed. The upload page is public.
         path: '/dashboard/institution',
         element: <InstitutionLayout />,
         children: [
