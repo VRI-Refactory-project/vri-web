@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { User } from 'lucide-react';
-import { fetchUserRequests, ServiceRequest } from '../services/requests';
+import { fetchUserRequests, type ServiceRequest } from '../services/requests';
 
 export const RecentActivityFeed = () => {
   const [activities, setActivities] = useState<ServiceRequest[]>([]);
