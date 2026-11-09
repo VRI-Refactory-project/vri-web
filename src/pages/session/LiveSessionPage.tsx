@@ -153,9 +153,7 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
     setPhase('ended');
   };
 
-  // Use the real user name instead of 'You'
   const selfName = session?.user?.name || 'You';
-  // Safely access the profile picture field if it exists (removed 'any')
   const selfProfilePicture =
     (session?.user as unknown as { profilePicture?: string; photo_url?: string })?.profilePicture ||
     (session?.user as unknown as { profilePicture?: string; photo_url?: string })?.photo_url ||
@@ -285,32 +283,33 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
           interpreterName={viewerRole === 'deaf' ? interpreterName : undefined}
         />
         {viewerRole === 'deaf' && id && <GuestInvitePanel sessionId={id} />}
+
+        {/* THE GRID: Everyone goes in here together */}
         <div className="ls-stage">
           <VideoTile
             name={selfName}
             stream={media.stream}
             cameraOff={!media.camOn}
-            large
             muted
             profilePicture={selfProfilePicture}
+            highlight
           />
-          <div className="ls-side">
-            {others.length === 0 && (
-              <p className="vt ls-waiting" role="status">
-                Waiting for others to join…
-              </p>
-            )}
-            {others.map((person) => (
-              <VideoTile
-                key={person.id}
-                name={person.name}
-                stream={person.stream}
-                cameraOff={person.cameraOff}
-                highlight={person.name === interpreterName}
-              />
-            ))}
-          </div>
+          {others.map((person) => (
+            <VideoTile
+              key={person.id}
+              name={person.name}
+              stream={person.stream}
+              cameraOff={person.cameraOff}
+              highlight={person.name === interpreterName}
+            />
+          ))}
+          {others.length === 0 && (
+            <div className="vt ls-waiting" role="status">
+              Waiting for others to join…
+            </div>
+          )}
         </div>
+
         <CallControls
           micOn={media.micOn}
           camOn={media.camOn}

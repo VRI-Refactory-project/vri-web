@@ -125,26 +125,23 @@
   border: 1px solid #cfcae6;
 }
 
+/* UPDATED: Google Meet Style Grid */
 .ls--call .ls-stage {
   display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(200px, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  grid-auto-rows: 1fr;
   gap: 1rem;
   flex: 1;
+  min-height: 40rem;
+  align-content: center;
 }
 
+/* Make all video tiles equal size in the grid */
 .ls-stage > .vt {
-  min-height: 24rem;
-}
-
-.ls-side {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.ls-side .vt {
-  flex: 1;
-  min-height: 9rem;
+  min-height: 20rem;
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  height: 100%;
 }
 
 .ls--call .cc {
@@ -165,13 +162,14 @@
   outline: 2px solid #5b43b5;
 }
 
-/* THE MIRROR FIX */
+/* Ensure video doesn't crop the person, and mirror it */
 .vt__video {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain; /* Shows the full body */
+  background-color: #1a1a1a;
   transform: scaleX(-1);
 }
 
@@ -259,7 +257,6 @@
 /* ========================================= */
 
 .ls--center {
-  /* Gradient background matching your dashboard layout */
   background: linear-gradient(135deg, #fdfbf7 0%, #ebe5f7 35%, #c8b8f0 65%, #b8d4f0 100%);
   align-items: center;
   justify-content: center;
@@ -280,7 +277,6 @@
   box-shadow: 0 10px 30px rgba(56, 44, 119, 0.08);
 }
 
-/* The purple pill icon */
 .ls-badge {
   display: inline-flex;
   align-items: center;
@@ -310,7 +306,6 @@
   font-family: 'Manrope', system-ui, sans-serif;
 }
 
-/* Style the grey banner to look cleaner */
 .ls-card .ls-status-banner {
   background-color: #f3f4f6 !important;
   border: 1px solid #e5e7eb !important;
@@ -321,19 +316,17 @@
   display: flex !important;
   align-items: flex-start !important;
   gap: 16px !important;
-  margin-bottom: 32px !important; /* Forces space below the banner */
+  margin-bottom: 32px !important;
   box-sizing: border-box !important;
-  text-align: left !important; /* Forces text to the left */
+  text-align: left !important;
 }
 
-/* Ensure the icon doesn't shrink */
 .ls-card .ls-status-banner > svg,
 .ls-card .ls-status-banner > span {
   flex-shrink: 0 !important;
   margin-top: 2px !important;
 }
 
-/* Ensure the text takes up the remaining space and aligns left */
 .ls-card .ls-status-banner > div {
   flex: 1 !important;
   text-align: left !important;
@@ -342,7 +335,6 @@
   align-items: flex-start !important;
 }
 
-/* The primary button */
 .ls-card .ls-btn--primary {
   background-color: #382c77;
   color: #fff;
@@ -362,7 +354,6 @@
   box-shadow: 0 6px 16px rgba(56, 44, 119, 0.2);
 }
 
-/* The outline button */
 .ls-card .ls-btn--outline {
   background-color: #fff;
   color: #382c77;
@@ -379,7 +370,6 @@
   background-color: #f9f8ff;
 }
 
-/* --- Custom Ended Banner --- */
 .custom-ended-banner {
   display: flex;
   align-items: flex-start;
@@ -426,7 +416,6 @@
   line-height: 1.5;
 }
 
-/* --- Feedback Form --- */
 .feedback-form {
   width: 100%;
   text-align: center;
@@ -545,9 +534,6 @@
   .ls-lobby,
   .ls--call .ls-stage {
     grid-template-columns: 1fr;
-  }
-  .ls-side {
-    flex-direction: row;
   }
   .cc {
     gap: 0.5rem;
