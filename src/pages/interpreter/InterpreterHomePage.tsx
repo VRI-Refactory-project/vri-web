@@ -17,11 +17,12 @@ import {
   useAvailability,
   useInterpreterHome,
 } from '../../features/interpreter/homeData';
+import { RecentActivityFeed } from '../../components/RecentActivityFeed';
 import './InterpreterHomePage.css';
 import bannerImage from '../../assets/suit.png';
 
 const calendarDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-/** The numbers for one month's grid, Monday first: blanks before the 1st, then 1 to the last day. */
+
 function monthGrid(month: Date): (number | null)[] {
   const blanks = (new Date(month.getFullYear(), month.getMonth(), 1).getDay() + 6) % 7;
   const lastDay = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
@@ -31,7 +32,6 @@ function monthGrid(month: Date): (number | null)[] {
   ];
 }
 
-/** "Mon, 9 Nov 2026". */
 function dayPill(date: Date) {
   const weekday = date.toLocaleDateString('en-US', { weekday: 'short' });
   const month = date.toLocaleDateString('en-US', { month: 'short' });
@@ -55,7 +55,6 @@ export function InterpreterHomePage() {
 
   return (
     <div className="ih-page">
-      {/* TOP NAVIGATION BAR */}
       <header className="ih-topbar">
         <div className="ih-topbar-actions">
           <button className="ih-icon-btn relative" aria-label="Notifications">
@@ -66,9 +65,7 @@ export function InterpreterHomePage() {
       </header>
 
       <div className="ih-content-wrapper">
-        {/* MAIN CONTENT AREA */}
         <div className="ih-main-section">
-          {/* Welcome Banner */}
           <section className="ih-banner" aria-label="Greeting">
             <div className="ih-banner-text">
               <h1>
@@ -84,17 +81,11 @@ export function InterpreterHomePage() {
               </p>
             </div>
 
-            {/* NEW: Image Container */}
             <div className="ih-banner-image-container">
-              <img
-                src={bannerImage} // <--- CHANGED TO USE YOUR LOCAL IMAGE
-                alt="Sign language interpreter"
-                className="ih-banner-image"
-              />
+              <img src={bannerImage} alt="Sign language interpreter" className="ih-banner-image" />
             </div>
           </section>
 
-          {/* Stats Row */}
           <div className="ih-stats-row">
             <div className="ih-stat-box">
               <div className="ih-stat-header">
@@ -126,11 +117,8 @@ export function InterpreterHomePage() {
             </div>
           </div>
 
-          {/* THE NEW ALIGNMENT GRID */}
           <div className="ih-dashboard-split">
-            {/* LEFT COLUMN: Next Session & Upcoming */}
             <div className="ih-split-left">
-              {/* Next session */}
               <section className="ih-section">
                 <div className="ih-next-session-wrapper">
                   <div className="ih-section-header">
@@ -183,7 +171,6 @@ export function InterpreterHomePage() {
                 </div>
               </section>
 
-              {/* Upcoming Sessions */}
               <section className="ih-section">
                 <div className="ih-next-session-wrapper">
                   <div className="ih-section-header">
@@ -242,10 +229,8 @@ export function InterpreterHomePage() {
               </section>
             </div>
 
-            {/* RIGHT COLUMN: Recent Activity */}
             <div className="ih-split-right">
               <section className="ih-section">
-                {/* Wrapper that holds the header and the list */}
                 <div className="ih-activity-wrapper">
                   <div
                     className="ih-section-header"
@@ -264,70 +249,7 @@ export function InterpreterHomePage() {
                     className="ih-activity-card"
                     style={{ padding: 0, boxShadow: 'none', background: 'transparent' }}
                   >
-                    <div className="ih-timeline-item">
-                      <div className="ih-timeline-marker bg-green"></div>
-                      <img
-                        src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80"
-                        alt="James"
-                        className="ih-timeline-avatar"
-                      />
-                      <div className="ih-timeline-content">
-                        <p>You accepted James Carter's connection request</p>
-                        <span className="ih-time-label">2 hours ago</span>
-                      </div>
-                    </div>
-
-                    <div className="ih-timeline-item">
-                      <div className="ih-timeline-marker bg-purple"></div>
-                      <img
-                        src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80"
-                        alt="Priya"
-                        className="ih-timeline-avatar"
-                      />
-                      <div className="ih-timeline-content">
-                        <p>Priya Sharma sent you a connection request</p>
-                        <span className="ih-time-label">4 hours ago</span>
-                      </div>
-                    </div>
-
-                    <div className="ih-timeline-item">
-                      <div className="ih-timeline-marker bg-purple"></div>
-                      <img
-                        src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80"
-                        alt="Alex"
-                        className="ih-timeline-avatar"
-                      />
-                      <div className="ih-timeline-content">
-                        <p>Alex Johnson accepted your connection request</p>
-                        <span className="ih-time-label">Yesterday</span>
-                      </div>
-                    </div>
-
-                    <div className="ih-timeline-item">
-                      <div className="ih-timeline-marker bg-purple"></div>
-                      <img
-                        src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=100&q=80"
-                        alt="Grace"
-                        className="ih-timeline-avatar"
-                      />
-                      <div className="ih-timeline-content">
-                        <p>You started a chat with Grace Nsubuga</p>
-                        <span className="ih-time-label">Yesterday</span>
-                      </div>
-                    </div>
-
-                    <div className="ih-timeline-item">
-                      <div className="ih-timeline-marker bg-blue"></div>
-                      <img
-                        src="https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?auto=format&fit=crop&w=100&q=80"
-                        alt="Daniel"
-                        className="ih-timeline-avatar"
-                      />
-                      <div className="ih-timeline-content">
-                        <p>You received a connection request from Daniel Ochieng</p>
-                        <span className="ih-time-label">2 days ago</span>
-                      </div>
-                    </div>
+                    <RecentActivityFeed />
                   </div>
                 </div>
               </section>
@@ -335,7 +257,6 @@ export function InterpreterHomePage() {
           </div>
         </div>
 
-        {/* RIGHT SIDEBAR (Availability & Calendar) */}
         <aside className="ih-right-column">
           <div className="ih-card ih-availability-card">
             <div className="ih-availability-row">
@@ -414,7 +335,6 @@ export function InterpreterHomePage() {
                 Today&apos;s schedule <span className="ih-date-pill">{dayPill(today)}</span>
               </h4>
 
-              {/* TODO: list today's booked sessions once vri-api has an endpoint for them. */}
               <p className="ih-time-label">No sessions scheduled for today.</p>
             </div>
 
