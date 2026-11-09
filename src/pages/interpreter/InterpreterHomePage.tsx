@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import {
   Bell,
-  ChevronDown,
   Calendar,
   ChevronLeft,
   ChevronRight,
@@ -11,6 +10,12 @@ import {
   Sun,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { INTERPRETER_BASE } from '../../features/interpreter/navigation';
+import {
+  reasonText,
+  useAvailability,
+  useInterpreterHome,
+} from '../../features/interpreter/homeData';
 import './InterpreterHomePage.css';
 import bannerImage from '../../assets/suit.png';
 
@@ -45,7 +50,9 @@ const calendarNumbers = [
 
 export function InterpreterHomePage() {
   const { session } = useAuth();
-  const firstName = session?.user.name?.split(' ')[0] || 'Sarah';
+  const firstName = session?.user.name?.split(' ')[0] || 'there';
+  const { data: home } = useInterpreterHome();
+  const { available, reason, setAvailable, loading, saving, error } = useAvailability();
 
   return (
     <div className="ih-page">
@@ -56,19 +63,6 @@ export function InterpreterHomePage() {
             <Bell size={20} className="ih-icon" />
             <span className="ih-notification-dot"></span>
           </button>
-
-          <div className="ih-user-profile">
-            <img
-              src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80"
-              alt="Sarah Mitchell"
-              className="ih-avatar-sm"
-            />
-            <div className="ih-user-info">
-              <span className="ih-user-name">Sarah Mitchell</span>
-              <span className="ih-user-role">Interpreter</span>
-            </div>
-            <ChevronDown size={16} className="ih-chevron-down" />
-          </div>
         </div>
       </header>
 
@@ -106,9 +100,11 @@ export function InterpreterHomePage() {
             <div className="ih-stat-box">
               <div className="ih-stat-header">
                 <Clock size={20} className="ih-icon-blue" />
-                <span className="ih-trend trend-green">+2 new</span>
+                <span className="ih-trend trend-green">
+                  {home.availableRequests > 0 ? 'Needs reply' : 'All clear'}
+                </span>
               </div>
-              <h2>5</h2>
+              <h2>{home.availableRequests}</h2>
               <p>Pending requests</p>
             </div>
 
@@ -345,26 +341,36 @@ export function InterpreterHomePage() {
           <div className="ih-card ih-availability-card">
             <div className="ih-availability-row">
               <div className="ih-availability-status">
-                <span className="ih-availability-dot" aria-hidden="true" />
-                <span>Available for requests</span>
+                <span
+                  className={`ih-availability-dot${available ? '' : ' ih-availability-dot-off'}`}
+                  aria-hidden="true"
+                />
+                <span>{available ? 'Available for requests' : 'Not available'}</span>
               </div>
 
               <button
                 type="button"
-                className="ih-availability-toggle active"
+                className={`ih-availability-toggle${available ? ' active' : ''}`}
                 aria-label="Toggle availability"
+                aria-pressed={available}
+                disabled={loading || saving}
+                onClick={() => setAvailable(!available)}
               >
                 <span className="ih-availability-knob" aria-hidden="true" />
               </button>
             </div>
 
             <p className="ih-availability-copy">
-              You&apos;ll receive connection requests and messages when you&apos;re online.
+              {error ||
+                (available
+                  ? reasonText(reason) ||
+                    "You'll receive connection requests and messages when you're online."
+                  : "You won't receive requests while you're switched off.")}
             </p>
 
-            <button type="button" className="ih-availability-button">
+            <Link to={`${INTERPRETER_BASE}/availability`} className="ih-availability-button">
               Update availability
-            </button>
+            </Link>
           </div>
 
           <div className="ih-card ih-calendar-card">

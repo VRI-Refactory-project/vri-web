@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { INTERPRETER_NAV } from '../../features/interpreter/navigation';
@@ -37,11 +37,12 @@ function mockProfile(
   patch?: ReturnType<typeof reply>,
   reason: Reason = null,
 ) {
-  fetchMock.mockImplementation(async (_url: string, init?: RequestInit) =>
-    init?.method === 'PATCH'
+  fetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
+    if (String(url).includes('/offers/')) return reply(true, 200, []);
+    return init?.method === 'PATCH'
       ? (patch ?? reply(true, 200, status(!isAvailable)))
-      : reply(true, 200, status(isAvailable, reason)),
-  );
+      : reply(true, 200, status(isAvailable, reason));
+  });
 }
 
 function renderHome() {
@@ -111,14 +112,13 @@ describe('InterpreterHomePage', () => {
     );
   });
 
-  it('shows the availability toggle button', async () => {
+  it('shows the availability switch as on once the status has loaded', async () => {
     mockProfile(true);
     renderHome();
 
-    // Since the button is currently static in the UI, we just check if it renders
     const toggle = screen.getByRole('button', { name: /toggle availability/i });
-    expect(toggle).toBeInTheDocument();
-    expect(toggle).toHaveClass('active');
+    await waitFor(() => expect(toggle).toHaveClass('active'));
+    expect(screen.getByText('Available for requests')).toBeInTheDocument();
   });
 
   it('shows the request and session counts with links to their pages', () => {
