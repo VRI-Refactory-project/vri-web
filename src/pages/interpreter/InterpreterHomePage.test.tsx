@@ -120,6 +120,20 @@ describe('InterpreterHomePage', () => {
     await waitFor(() => expect(toggle).toHaveClass('active'));
     expect(screen.getByText('Available for requests')).toBeInTheDocument();
   });
+  it('switches availability off through the API when the toggle is clicked', async () => {
+    mockProfile(true);
+    renderHome();
+
+    const toggle = screen.getByRole('button', { name: /toggle availability/i });
+    await waitFor(() => expect(toggle).toHaveClass('active'));
+
+    fireEvent.click(toggle);
+
+    await waitFor(() => expect(toggle).not.toHaveClass('active'));
+    const patchCall = fetchMock.mock.calls.find(([, init]) => init?.method === 'PATCH');
+    expect(patchCall?.[1]?.body).toBe(JSON.stringify({ is_available: false }));
+    expect(screen.getByText('Not available')).toBeInTheDocument();
+  });
 
   it('shows the request and session counts with links to their pages', () => {
     renderHome();
