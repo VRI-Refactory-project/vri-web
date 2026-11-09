@@ -372,10 +372,7 @@ export function AvailabilityPage() {
       note,
     }));
 
-    setExceptions((current) => [
-      ...current.filter((item) => !covered.has(item.date)),
-      ...added,
-    ]);
+    setExceptions((current) => [...current.filter((item) => !covered.has(item.date)), ...added]);
 
     setSelectedDate(draft.date);
     setMonth(new Date(`${draft.date}T12:00:00`));
@@ -972,7 +969,11 @@ export function AvailabilityPage() {
                     Back
                   </button>
 
-                  <button type="button" className="availability-primary-button" onClick={commitRange}>
+                  <button
+                    type="button"
+                    className="availability-primary-button"
+                    onClick={commitRange}
+                  >
                     <Check size={17} />
                     Replace and add
                   </button>
@@ -987,7 +988,11 @@ export function AvailabilityPage() {
                     Cancel
                   </button>
 
-                  <button type="button" className="availability-primary-button" onClick={saveDialog}>
+                  <button
+                    type="button"
+                    className="availability-primary-button"
+                    onClick={saveDialog}
+                  >
                     <Check size={17} />
                     Save
                   </button>

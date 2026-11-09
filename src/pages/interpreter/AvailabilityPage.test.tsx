@@ -94,9 +94,7 @@ describe('AvailabilityPage date range on the calendar', () => {
     const modal = screen.getByRole('dialog');
     await user.click(within(modal).getByRole('button', { name: /^save$/i }));
 
-    expect(within(modal).getByRole('alert')).toHaveTextContent(
-      'will be replaced: 25 Nov.',
-    );
+    expect(within(modal).getByRole('alert')).toHaveTextContent('will be replaced: 25 Nov.');
 
     await user.click(within(modal).getByRole('button', { name: 'Replace and add' }));
 

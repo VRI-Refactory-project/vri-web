@@ -135,7 +135,9 @@ export const interpreterApi = {
         }),
       ),
     );
-    const failedDates = upcoming.filter((_, i) => saveResults[i].status === 'rejected').map((e) => e.date);
+    const failedDates = upcoming
+      .filter((_, i) => saveResults[i].status === 'rejected')
+      .map((e) => e.date);
 
     // Keep failed removals in the loaded set so the next save tries them again.
     loadedExceptionDates = new Set([...exceptions.map((e) => e.date), ...failedRemovals]);
