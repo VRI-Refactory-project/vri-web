@@ -179,6 +179,7 @@
   font-size: 2.25rem;
   font-weight: 700;
   color: #cfc8ee;
+  z-index: 1;
 }
 
 .vt--large .vt__initials {
