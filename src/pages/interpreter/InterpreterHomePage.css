@@ -655,7 +655,15 @@
   background: #d9d7ea;
   cursor: pointer;
 }
+.ih-availability-dot-off {
+  background: #b8b5c9;
+  box-shadow: 0 0 0 3px rgba(184, 181, 201, 0.2);
+}
 
+.ih-availability-toggle:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 .ih-availability-toggle.active {
   background: #6d4ad8;
   box-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
@@ -694,6 +702,10 @@
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
+  display: block;
+  box-sizing: border-box;
+  text-align: center;
+  text-decoration: none;
 }
 
 .ih-calendar-card {
