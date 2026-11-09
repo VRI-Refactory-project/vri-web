@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ChevronLeft, PhoneOff, CheckCircle2, Video as VideoIcon, X } from 'lucide-react';
+import { ChevronLeft, PhoneOff, CheckCircle2, Video as VideoIcon, X, Star } from 'lucide-react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { SessionStatusBanner } from '../../components/session/SessionStatusBanner';
 import { CallControls } from '../../components/session/CallControls';
@@ -29,6 +29,14 @@ const BANNER: Record<Phase, SessionRequestState> = {
 
 const HOME = { deaf: '/dashboard/deaf', interpreter: '/dashboard/interpreter' } as const;
 
+const FEEDBACK_TAGS = [
+  'Great Interpreter',
+  'Clear Video',
+  'Clear Audio',
+  'Professional',
+  'Technical Issues',
+];
+
 interface Props {
   viewerRole: 'deaf' | 'interpreter';
   /** How the page reaches the video server. Tests pass a fake one. */
@@ -57,6 +65,43 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
   const startedAt = useRef(0);
   const home = HOME[viewerRole];
 
+  // --- Feedback State ---
+  const [rating, setRating] = useState(0);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [feedbackText, setFeedbackText] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+
+  const toggleTag = (tag: string) => {
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
+    );
+  };
+
+  const submitFeedback = async () => {
+    if (rating === 0) return;
+    setIsSubmitting(true);
+    try {
+      // TODO: Replace with the real API call to your backend
+      // await api('/api/v1/sessions/feedback/', {
+      //   method: 'POST',
+      //   body: JSON.stringify({ sessionId: id, rating, tags: selectedTags, comment: feedbackText }),
+      // });
+      console.log('Feedback submitted:', {
+        sessionId: id,
+        rating,
+        tags: selectedTags,
+        comment: feedbackText,
+      });
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      setFeedbackSubmitted(true);
+    } catch (error) {
+      console.error('Failed to submit feedback', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const [connection] = useState(() =>
     createConnection({
       onPeople: setOthers,
@@ -74,7 +119,6 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
     setPhase('joining');
     try {
       await connection.join(id ?? '', media.stream);
-      // What the viewer chose in the lobby carries into the call.
       connection.setMic(media.micOn);
       connection.setCam(media.camOn);
       startedAt.current = Date.now();
@@ -105,7 +149,6 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
   }, [phase]);
 
   const cancelLobby = async () => {
-    // The Deaf user's request is still open until they join, so cancelling frees the queue.
     if (viewerRole === 'deaf' && id) {
       try {
         await cancelSessionRequest(id);
@@ -133,7 +176,7 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
           </span>
           <h1 id="ls-ended">Session ended</h1>
           <p>Your session lasted {formatDuration(lastLength)}.</p>
-          {/* <SessionStatusBanner state="COMPLETED" /> */}
+
           <div className="custom-ended-banner">
             <div className="custom-ended-icon">
               <X size={14} />
@@ -143,9 +186,72 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
               <p>This session has finished. Thank you for using SignConnect.</p>
             </div>
           </div>
-          {/* 👆 END OF CUSTOM HTML 👆 */}
 
-          <button type="button" className="ls-btn ls-btn--primary" onClick={() => navigate(home)}>
+          {/* FEEDBACK FORM */}
+          {!feedbackSubmitted ? (
+            <div className="feedback-form">
+              <h3>How was your session?</h3>
+              <p>Your feedback helps us improve SignConnect.</p>
+
+              <div className="star-rating">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    className={`star-btn ${rating >= star ? 'active' : ''}`}
+                    onClick={() => setRating(star)}
+                    aria-label={`Rate ${star} out of 5`}
+                  >
+                    <Star size={32} fill={rating >= star ? 'currentColor' : 'none'} />
+                  </button>
+                ))}
+              </div>
+
+              <div className="feedback-tags">
+                {FEEDBACK_TAGS.map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    className={`feedback-tag ${selectedTags.includes(tag) ? 'selected' : ''}`}
+                    onClick={() => toggleTag(tag)}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+
+              <textarea
+                className="feedback-textarea"
+                placeholder="Tell us more... (Optional)"
+                value={feedbackText}
+                onChange={(e) => setFeedbackText(e.target.value)}
+                rows={3}
+              />
+
+              <button
+                type="button"
+                className="ls-btn ls-btn--primary"
+                onClick={submitFeedback}
+                disabled={rating === 0 || isSubmitting}
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
+              </button>
+            </div>
+          ) : (
+            <div className="feedback-success">
+              <CheckCircle2 size={48} className="text-green-500" />
+              <h3>Thank you!</h3>
+              <p>We appreciate you taking the time to help us improve.</p>
+            </div>
+          )}
+          {/* END OF FEEDBACK FORM */}
+
+          <button
+            type="button"
+            className="ls-btn ls-btn--outline"
+            onClick={() => navigate(home)}
+            style={{ marginTop: feedbackSubmitted ? '16px' : '0' }}
+          >
             Back to dashboard
           </button>
         </section>
