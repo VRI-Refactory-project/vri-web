@@ -95,14 +95,19 @@ describe('LiveSessionPage', () => {
     expect(screen.getByRole('button', { name: /end call/i })).toBeTruthy();
   });
 
+  // 👇 UPDATED TEST 👇
   it('shows the session-ended screen after ending', async () => {
     renderPage('deaf');
     fireEvent.click(screen.getByRole('button', { name: /join session/i }));
     await waitFor(() => expect(screen.getByRole('button', { name: /end call/i })).toBeTruthy());
     fireEvent.click(screen.getByRole('button', { name: /end call/i }));
     fireEvent.click(screen.getByRole('button', { name: /^end session$/i }));
-    expect(screen.getByRole('heading', { name: 'Session ended' })).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: /back to dashboard/i }));
+
+    // Check for the new Google Meet title
+    expect(screen.getByRole('heading', { name: 'You left the session' })).toBeTruthy();
+
+    // Click the new "Go to Dashboard" button
+    fireEvent.click(screen.getByRole('button', { name: /go to dashboard/i }));
     expect(screen.getByText('Deaf home')).toBeTruthy();
   });
 
