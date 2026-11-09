@@ -1,15 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  Bell,
-  Calendar,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
-  MessageSquare,
-  Video,
-  Sun,
-} from 'lucide-react';
+import { Bell, Calendar, ChevronLeft, ChevronRight, Clock, Video, Sun } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { INTERPRETER_BASE } from '../../features/interpreter/navigation';
 import {
@@ -17,7 +8,7 @@ import {
   useAvailability,
   useInterpreterHome,
 } from '../../features/interpreter/homeData';
-import { RecentActivityFeed } from '../../components/RecentActivityFeed';
+import { markerClass, timeAgo, useRecentActivity } from '../../features/interpreter/recentActivity';
 import './InterpreterHomePage.css';
 import bannerImage from '../../assets/suit.png';
 
@@ -38,11 +29,20 @@ function dayPill(date: Date) {
   return `${weekday}, ${date.getDate()} ${month} ${date.getFullYear()}`;
 }
 
+/** "Good morning", "Good afternoon" or "Good evening", from the time on the user's device. */
+function greeting(date = new Date()) {
+  const hour = date.getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 18) return 'Good afternoon';
+  return 'Good evening';
+}
+
 export function InterpreterHomePage() {
   const { session } = useAuth();
   const firstName = session?.user.name?.split(' ')[0] || 'there';
   const { data: home } = useInterpreterHome();
   const { available, reason, setAvailable, loading, saving, error } = useAvailability();
+  const { items: activity, loading: activityLoading, error: activityError } = useRecentActivity();
   const today = new Date();
   const [viewMonth, setViewMonth] = useState(
     () => new Date(today.getFullYear(), today.getMonth(), 1),
@@ -72,7 +72,7 @@ export function InterpreterHomePage() {
                 <span className="ih-sun-icon">
                   <Sun size={24} />
                 </span>
-                Good morning, {firstName}
+                {greeting()}, {firstName}
               </h1>
               <p className="ih-banner-sub">Bridging communication. Expanding access.</p>
               <p className="ih-banner-desc">
@@ -107,14 +107,14 @@ export function InterpreterHomePage() {
               <p>This week&apos;s sessions</p>
             </div>
 
-            <div className="ih-stat-box">
+            {/* <div className="ih-stat-box">
               <div className="ih-stat-header">
                 <MessageSquare size={20} className="ih-icon-teal" />
                 <span className="ih-trend trend-muted">All read</span>
               </div>
               <h2>0</h2>
               <p>Unread messages</p>
-            </div>
+            </div> */}
           </div>
 
           <div className="ih-dashboard-split">
@@ -245,12 +245,25 @@ export function InterpreterHomePage() {
                     </h3>
                   </div>
 
-                  <div
-                    className="ih-activity-card"
-                    style={{ padding: 0, boxShadow: 'none', background: 'transparent' }}
-                  >
-                    <RecentActivityFeed />
-                  </div>
+                  {activityLoading && <p className="ih-time-label">Loading activity...</p>}
+
+                  {!activityLoading && activityError && (
+                    <p className="ih-time-label">{activityError}</p>
+                  )}
+
+                  {!activityLoading && !activityError && activity.length === 0 && (
+                    <p className="ih-time-label">No recent activity yet.</p>
+                  )}
+
+                  {activity.map((item) => (
+                    <div className="ih-timeline-item" key={item.id}>
+                      <div className={`ih-timeline-marker ${markerClass(item.category)}`}></div>
+                      <div className="ih-timeline-content">
+                        <p>{item.title}</p>
+                        <span className="ih-time-label">{timeAgo(item.created_at)}</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </section>
             </div>

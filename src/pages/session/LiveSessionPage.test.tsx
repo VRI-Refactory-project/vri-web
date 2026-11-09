@@ -9,13 +9,13 @@ import type {
   RemotePerson,
 } from '../../features/session/callConnection';
 import { LiveSessionPage } from './LiveSessionPage';
+import { AuthProvider } from '../../features/auth/AuthProvider'; // IMPORTED AuthProvider
 
 vi.mock('../../services/sessionRequests', () => ({
   cancelSessionRequest: vi.fn().mockResolvedValue(undefined),
 }));
 import { cancelSessionRequest } from '../../services/sessionRequests';
 
-/** A call connection that never touches the network, so the tests can drive what it reports. */
 function fakeCall(join: CallConnection['join'] = () => Promise.resolve()) {
   const calls = { join: vi.fn(join), setMic: vi.fn(), setCam: vi.fn(), leave: vi.fn() };
   let events: CallEvents | undefined;
@@ -29,31 +29,32 @@ function fakeCall(join: CallConnection['join'] = () => Promise.resolve()) {
 const AMINA: RemotePerson = {
   id: 'user-9',
   name: 'Amina Okafor',
-  // jsdom has no MediaStream, and the tile only passes it on to a <video> element.
   stream: {} as MediaStream,
   cameraOff: true,
 };
 
+// WRAPPED THE PAGE IN AuthProvider
 function renderPage(role: 'deaf' | 'interpreter', call = fakeCall()) {
   return render(
-    <MemoryRouter
-      initialEntries={[{ pathname: '/session/7', state: { interpreterName: 'Amina Okafor' } }]}
-    >
-      <Routes>
-        <Route
-          path="/session/:id"
-          element={<LiveSessionPage viewerRole={role} createConnection={call.create} />}
-        />
-        <Route path="/dashboard/deaf" element={<p>Deaf home</p>} />
-        <Route path="/dashboard/interpreter" element={<p>Interpreter home</p>} />
-      </Routes>
-    </MemoryRouter>,
+    <AuthProvider>
+      <MemoryRouter
+        initialEntries={[{ pathname: '/session/7', state: { interpreterName: 'Amina Okafor' } }]}
+      >
+        <Routes>
+          <Route
+            path="/session/:id"
+            element={<LiveSessionPage viewerRole={role} createConnection={call.create} />}
+          />
+          <Route path="/dashboard/deaf" element={<p>Deaf home</p>} />
+          <Route path="/dashboard/interpreter" element={<p>Interpreter home</p>} />
+        </Routes>
+      </MemoryRouter>
+    </AuthProvider>,
   );
 }
 
 beforeEach(() => {
   vi.mocked(cancelSessionRequest).mockClear();
-  // jsdom has no camera: the page must still work and say why.
   Object.defineProperty(navigator, 'mediaDevices', { value: undefined, configurable: true });
 });
 

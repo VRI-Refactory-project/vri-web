@@ -10,29 +10,34 @@ const initials = (name: string) =>
 
 interface Props {
   name: string;
-  /** The person's camera and microphone. Without it, or with the camera off, initials show. */
   stream?: MediaStream | null;
   cameraOff?: boolean;
   large?: boolean;
-  /** Draws the purple outline used for the interpreter. */
   highlight?: boolean;
-  /** The viewer's own tile is muted so they do not hear themselves. */
   muted?: boolean;
+  profilePicture?: string | null; // NEW: Allow a profile picture URL
 }
 
-/** One person's video with their name on it. Without video it shows their initials. */
-export function VideoTile({ name, stream, cameraOff, large, highlight, muted }: Props) {
+export function VideoTile({
+  name,
+  stream,
+  cameraOff,
+  large,
+  highlight,
+  muted,
+  profilePicture,
+}: Props) {
   const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     if (ref.current) ref.current.srcObject = stream ?? null;
   }, [stream]);
   const showVideo = Boolean(stream) && !cameraOff;
+
   return (
     <figure
       className={`vt${large ? ' vt--large' : ''}${highlight ? ' vt--highlight' : ''}`}
       aria-label={name}
     >
-      {/* Always mounted, so a person whose camera is off can still be heard. */}
       <video
         ref={ref}
         className="vt__video"
@@ -41,11 +46,27 @@ export function VideoTile({ name, stream, cameraOff, large, highlight, muted }: 
         muted={muted}
         hidden={!showVideo}
       />
-      {!showVideo && (
-        <span className="vt__initials" aria-hidden="true">
-          {initials(name)}
-        </span>
-      )}
+
+      {/* FIXED: Show profile picture if available, otherwise show initials */}
+      {!showVideo &&
+        (profilePicture ? (
+          <img
+            src={profilePicture}
+            alt={name}
+            style={{
+              width: '80px',
+              height: '80px',
+              borderRadius: '50%',
+              objectFit: 'cover',
+              zIndex: 1,
+            }}
+          />
+        ) : (
+          <span className="vt__initials" aria-hidden="true">
+            {initials(name)}
+          </span>
+        ))}
+
       <figcaption className="vt__name">{name}</figcaption>
     </figure>
   );

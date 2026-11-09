@@ -14,6 +14,7 @@ import { CallControls } from '../../components/session/CallControls';
 import { GuestInvitePanel } from '../../components/session/GuestInvitePanel';
 import { VideoTile } from '../../components/session/VideoTile';
 import { useLocalMedia } from '../../features/session/useLocalMedia';
+import { useAuth } from '../../hooks/useAuth';
 import {
   createLiveKitConnection,
   type CreateConnection,
@@ -73,6 +74,8 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const { session } = useAuth();
+
   const interpreterName = (location.state as { interpreterName?: string } | null)?.interpreterName;
   const media = useLocalMedia();
 
@@ -204,7 +207,11 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
     setPhase('ended');
   };
 
-  const selfName = 'You';
+  const selfName = session?.user?.name || 'You';
+  const selfProfilePicture =
+    (session?.user as unknown as { profilePicture?: string; photo_url?: string })?.profilePicture ||
+    (session?.user as unknown as { profilePicture?: string; photo_url?: string })?.photo_url ||
+    null;
 
   // --- ENDED SCREEN (GOOGLE MEET STYLE) ---
   if (phase === 'ended') {
@@ -403,25 +410,33 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
           interpreterName={viewerRole === 'deaf' ? interpreterName : undefined}
         />
         {viewerRole === 'deaf' && id && <GuestInvitePanel sessionId={id} />}
+
+        {/* THE GRID: Everyone goes in here together */}
         <div className="ls-stage">
-          <VideoTile name={selfName} stream={media.stream} cameraOff={!media.camOn} large muted />
-          <div className="ls-side">
-            {others.length === 0 && (
-              <p className="vt ls-waiting" role="status">
-                Waiting for others to join…
-              </p>
-            )}
-            {others.map((person) => (
-              <VideoTile
-                key={person.id}
-                name={person.name}
-                stream={person.stream}
-                cameraOff={person.cameraOff}
-                highlight={person.name === interpreterName}
-              />
-            ))}
-          </div>
+          <VideoTile
+            name={selfName}
+            stream={media.stream}
+            cameraOff={!media.camOn}
+            muted
+            profilePicture={selfProfilePicture}
+            highlight
+          />
+          {others.map((person) => (
+            <VideoTile
+              key={person.id}
+              name={person.name}
+              stream={person.stream}
+              cameraOff={person.cameraOff}
+              highlight={person.name === interpreterName}
+            />
+          ))}
+          {others.length === 0 && (
+            <div className="vt ls-waiting" role="status">
+              Waiting for others to join…
+            </div>
+          )}
         </div>
+
         <CallControls
           micOn={media.micOn}
           camOn={media.camOn}
@@ -433,7 +448,6 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
     );
   }
 
-  // lobby and joining
   const joining = phase === 'joining';
   return (
     <main className="ls">
@@ -442,7 +456,14 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
       </header>
       <div className="ls-lobby">
         <div className="ls-preview">
-          <VideoTile name={selfName} stream={media.stream} cameraOff={!media.camOn} large muted />
+          <VideoTile
+            name={selfName}
+            stream={media.stream}
+            cameraOff={!media.camOn}
+            large
+            muted
+            profilePicture={selfProfilePicture}
+          />
           <div className="ls-preview-controls">
             <CallControls
               micOn={media.micOn}
