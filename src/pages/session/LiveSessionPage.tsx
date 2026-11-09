@@ -3,6 +3,7 @@ import { ChevronLeft, PhoneOff, CheckCircle2, Video as VideoIcon, X } from 'luci
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { SessionStatusBanner } from '../../components/session/SessionStatusBanner';
 import { CallControls } from '../../components/session/CallControls';
+import { GuestInvitePanel } from '../../components/session/GuestInvitePanel';
 import { VideoTile } from '../../components/session/VideoTile';
 import { useLocalMedia } from '../../features/session/useLocalMedia';
 import {
@@ -48,6 +49,7 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
   const interpreterName = (location.state as { interpreterName?: string } | null)?.interpreterName;
   const media = useLocalMedia();
   const [phase, setPhase] = useState<Phase>('lobby');
+  // const [phase, setPhase] = useState<Phase>('ended');
   const [seconds, setSeconds] = useState(0);
   const [lastLength, setLastLength] = useState(0);
   const [others, setOthers] = useState<RemotePerson[]>([]);
@@ -131,7 +133,18 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
           </span>
           <h1 id="ls-ended">Session ended</h1>
           <p>Your session lasted {formatDuration(lastLength)}.</p>
-          <SessionStatusBanner state="COMPLETED" />
+          {/* <SessionStatusBanner state="COMPLETED" /> */}
+          <div className="custom-ended-banner">
+            <div className="custom-ended-icon">
+              <X size={14} />
+            </div>
+            <div className="custom-ended-text">
+              <strong>Session ended</strong>
+              <p>This session has finished. Thank you for using SignConnect.</p>
+            </div>
+          </div>
+          {/* 👆 END OF CUSTOM HTML 👆 */}
+
           <button type="button" className="ls-btn ls-btn--primary" onClick={() => navigate(home)}>
             Back to dashboard
           </button>
@@ -173,6 +186,7 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
           state="ACTIVE"
           interpreterName={viewerRole === 'deaf' ? interpreterName : undefined}
         />
+        {viewerRole === 'deaf' && id && <GuestInvitePanel sessionId={id} />}
         <div className="ls-stage">
           <VideoTile name={selfName} stream={media.stream} cameraOff={!media.camOn} large muted />
           <div className="ls-side">
@@ -243,6 +257,7 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
               {joinError ?? media.error}
             </p>
           )}
+          {viewerRole === 'deaf' && id && <GuestInvitePanel sessionId={id} />}
           <button
             type="button"
             className="ls-btn ls-btn--primary"

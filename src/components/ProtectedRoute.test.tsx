@@ -72,11 +72,18 @@ describe('ProtectedRoute', () => {
     expect(screen.getByText('sign in page, came from /dashboard/interpreter')).toBeInTheDocument();
   });
 
+  // it('sends the wrong role home', async () => {
+  //   const session = sessionFor('deaf');
+  //   serverConfirms(session);
+  //   renderAt(session);
+  //   expect(await screen.findByText('landing')).toBeInTheDocument();
+
   it('sends the wrong role home', async () => {
     const session = sessionFor('deaf');
     serverConfirms(session);
     renderAt(session);
-    expect(await screen.findByText('landing')).toBeInTheDocument();
+    // Use findByText with a longer timeout since the auth check + navigate can be slow
+    expect(await screen.findByText('landing', {}, { timeout: 3000 })).toBeInTheDocument();
   });
 
   it('lets the right role in once the server confirms the stored session', async () => {

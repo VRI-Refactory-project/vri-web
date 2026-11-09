@@ -1,6 +1,6 @@
-// src/pages/deaf/ProfilePage.tsx
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ProfilePhotoCropper } from '../dashboards/ProfilePhotoCropper'; // Adjust path if needed
 import {
   Camera,
   X,
@@ -76,6 +76,9 @@ export function ProfilePage() {
   const [bannerKind, setBannerKind] = useState<'error' | 'success'>('error');
   const [addingLang, setAddingLang] = useState(false);
   const [newLang, setNewLang] = useState('');
+
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [showCropper, setShowCropper] = useState(false);
 
   useEffect(() => {
     fetchMyProfile()
@@ -171,13 +174,30 @@ export function ProfilePage() {
     }
   }
 
-  async function handlePhotoChange(event: ChangeEvent<HTMLInputElement>) {
+  // 👇 REPLACED handlePhotoChange WITH handleFileSelect & handleCropComplete 👇
+  function handleFileSelect(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    const reader = new FileReader();
+    reader.addEventListener('load', () => {
+      setSelectedImage(reader.result as string);
+      setShowCropper(true);
+    });
+    reader.readAsDataURL(file);
+
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }
+
+  async function handleCropComplete(croppedBlob: Blob) {
+    setShowCropper(false);
     setUploading(true);
     setBanner('');
+
     try {
+      const file = new File([croppedBlob], 'profile.jpg', { type: 'image/jpeg' });
       const url = await uploadProfilePhoto(file);
+
       if (url) set('photoUrl', url);
       else setBanner('Photo upload succeeded but no URL was returned.');
     } catch (err) {
@@ -185,9 +205,9 @@ export function ProfilePage() {
       setBannerKind('error');
     } finally {
       setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   }
+  // 👆 END OF NEW FUNCTIONS 👆
 
   async function handlePhotoRemove() {
     setUploading(true);
@@ -254,7 +274,7 @@ export function ProfilePage() {
                   type="file"
                   accept="image/*"
                   hidden
-                  onChange={(e) => void handlePhotoChange(e)}
+                  onChange={handleFileSelect} /* <-- CHANGED */
                 />
                 <button
                   type="button"
@@ -534,6 +554,13 @@ export function ProfilePage() {
           <SignOutButton />
         </div>
       </div>
+      {showCropper && selectedImage && (
+        <ProfilePhotoCropper
+          image={selectedImage}
+          onCropComplete={(blob) => void handleCropComplete(blob)}
+          onCancel={() => setShowCropper(false)}
+        />
+      )}
     </div>
   );
 }

@@ -8,25 +8,25 @@
   flex-direction: column;
   gap: 1rem;
 }
-.ls--center {
-  align-items: center;
-  justify-content: center;
-}
+
 .ls-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
+
 .ls-brand {
   font-weight: 700;
   color: #3b2579;
   font-size: 1.15rem;
 }
+
 .ls-timer {
   font-variant-numeric: tabular-nums;
   color: #3b2579;
   font-weight: 600;
 }
+
 .ls-back {
   align-self: flex-start;
   display: inline-flex;
@@ -38,18 +38,22 @@
   cursor: pointer;
   font: inherit;
 }
+
 .ls-lobby {
   display: grid;
   grid-template-columns: minmax(0, 1.7fr) minmax(280px, 1fr);
   gap: 2rem;
   align-items: center;
 }
+
 .ls-preview {
   position: relative;
 }
+
 .ls-preview .vt {
   aspect-ratio: 16 / 10;
 }
+
 .ls-preview-controls {
   position: absolute;
   left: 0;
@@ -58,21 +62,25 @@
   display: flex;
   justify-content: center;
 }
+
 .ls-ready h1 {
   margin: 0 0 0.25rem;
   font-size: 2rem;
   color: #1b1240;
 }
+
 .ls-ready-sub {
   margin: 0 0 1rem;
   color: #3b2579;
 }
+
 .ls-who {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   margin: 0 0 1rem;
 }
+
 .ls-verified {
   background: #12b886;
   color: #fff;
@@ -80,10 +88,12 @@
   padding: 0.15rem 0.6rem;
   font-size: 0.75rem;
 }
+
 .ls-error {
   color: #b91c1c;
   margin: 0.75rem 0 0;
 }
+
 .ls-btn {
   display: flex;
   align-items: center;
@@ -97,71 +107,50 @@
   font-weight: 600;
   cursor: pointer;
 }
+
 .ls-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
+
 .ls-btn--primary {
   background: #3b2579;
   color: #fff;
   border: 0;
 }
+
 .ls-btn--outline {
   background: #fff;
   color: #1b1240;
   border: 1px solid #cfcae6;
 }
-.ls-card {
-  background: #fff;
-  border: 1px solid #dcd8ee;
-  border-radius: 1.25rem;
-  padding: 2.5rem 2rem;
-  max-width: 34rem;
-  width: 100%;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  align-items: stretch;
-}
-.ls-card h1 {
-  margin: 0.5rem 0 0;
-  font-size: 1.75rem;
-}
-.ls-card p {
-  margin: 0 0 0.75rem;
-}
-.ls-badge {
-  align-self: center;
-  display: grid;
-  place-items: center;
-  width: 5rem;
-  height: 3.5rem;
-  border-radius: 1.75rem;
-  background: #7e6cc3;
-  color: #fff;
-}
+
 .ls--call .ls-stage {
   display: grid;
   grid-template-columns: minmax(0, 3fr) minmax(200px, 1fr);
   gap: 1rem;
   flex: 1;
 }
+
 .ls-stage > .vt {
   min-height: 24rem;
 }
+
 .ls-side {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
+
 .ls-side .vt {
   flex: 1;
   min-height: 9rem;
 }
+
 .ls--call .cc {
   align-self: center;
 }
+
 .vt {
   position: relative;
   margin: 0;
@@ -171,9 +160,11 @@
   display: grid;
   place-items: center;
 }
+
 .vt--highlight {
   outline: 2px solid #5b43b5;
 }
+
 .vt__video {
   position: absolute;
   inset: 0;
@@ -181,14 +172,17 @@
   height: 100%;
   object-fit: cover;
 }
+
 .vt__initials {
   font-size: 2.25rem;
   font-weight: 700;
   color: #cfc8ee;
 }
+
 .vt--large .vt__initials {
   font-size: 4rem;
 }
+
 .vt__name {
   position: absolute;
   right: 0.75rem;
@@ -200,6 +194,7 @@
   font-size: 0.8rem;
   font-weight: 600;
 }
+
 .cc {
   display: flex;
   gap: 1rem;
@@ -209,6 +204,7 @@
   padding: 0.6rem 1.25rem;
   box-shadow: 0 8px 24px rgba(42, 27, 92, 0.35);
 }
+
 .cc__btn {
   display: flex;
   flex-direction: column;
@@ -221,10 +217,12 @@
   font-size: 0.7rem;
   cursor: pointer;
 }
+
 .cc__btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
 .cc__icon {
   display: grid;
   place-items: center;
@@ -233,14 +231,198 @@
   border-radius: 50%;
   background: #4a3a86;
 }
+
 .cc__btn[aria-pressed='true'] .cc__icon {
   background: #8a7cc8;
 }
+
 .cc__btn--end .cc__icon {
   background: #ef4444;
   width: 3rem;
   height: 3rem;
 }
+
+/* Shown in the call until someone else has joined. */
+.ls-waiting {
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 1rem;
+  text-align: center;
+}
+
+/* ========================================= */
+/* --- ENDED SESSION PAGE (Professional) --- */
+/* ========================================= */
+
+.ls--center {
+  /* Gradient background matching your dashboard layout */
+  background: linear-gradient(135deg, #fdfbf7 0%, #ebe5f7 35%, #c8b8f0 65%, #b8d4f0 100%);
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+}
+
+.ls-card {
+  background: #ffffff;
+  border: 1px solid #f1edf9;
+  border-radius: 24px;
+  padding: 48px 40px;
+  width: 100%;
+  max-width: 500px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 10px 30px rgba(56, 44, 119, 0.08);
+}
+
+/* The purple pill icon */
+.ls-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #8b5cf6;
+  color: #fff;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+}
+
+.ls-card h1 {
+  margin: 0 0 12px;
+  font-size: 28px;
+  font-weight: 800;
+  color: #1a1a1a;
+  letter-spacing: -0.5px;
+  font-family: 'Manrope', system-ui, sans-serif;
+}
+
+.ls-card p {
+  margin: 0 0 32px;
+  font-size: 16px;
+  color: #6b7280;
+  font-family: 'Manrope', system-ui, sans-serif;
+}
+
+/* Style the grey banner to look cleaner */
+.ls-card .ls-status-banner {
+  background-color: #f3f4f6 !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 12px !important;
+  padding: 20px !important;
+  color: #4b5563 !important;
+  width: 100% !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 16px !important;
+  margin-bottom: 32px !important; /* Forces space below the banner */
+  box-sizing: border-box !important;
+  text-align: left !important; /* Forces text to the left */
+}
+
+/* Ensure the icon doesn't shrink */
+.ls-card .ls-status-banner > svg,
+.ls-card .ls-status-banner > span {
+  flex-shrink: 0 !important;
+  margin-top: 2px !important;
+}
+
+/* Ensure the text takes up the remaining space and aligns left */
+.ls-card .ls-status-banner > div {
+  flex: 1 !important;
+  text-align: left !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+}
+
+/* The primary button */
+.ls-card .ls-btn--primary {
+  background-color: #382c77;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  height: 52px;
+  font-size: 16px;
+  font-weight: 700;
+  width: 100%;
+  transition: all 0.2s;
+  margin-top: 0;
+}
+
+.ls-card .ls-btn--primary:hover {
+  background-color: #2a2060;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(56, 44, 119, 0.2);
+}
+
+/* The outline button */
+.ls-card .ls-btn--outline {
+  background-color: #fff;
+  color: #382c77;
+  border: 1px solid #cfcae6;
+  border-radius: 12px;
+  height: 52px;
+  font-size: 16px;
+  font-weight: 700;
+  width: 100%;
+  transition: all 0.2s;
+}
+
+.ls-card .ls-btn--outline:hover {
+  background-color: #f9f8ff;
+}
+
+/* --- Custom Ended Banner --- */
+.custom-ended-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background-color: #f3efff;
+  border: 1px solid #e8e1f3;
+  border-radius: 12px;
+  padding: 20px;
+  width: 100%;
+  text-align: left;
+  margin-bottom: 32px;
+  box-sizing: border-box;
+}
+
+.custom-ended-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid #8b5cf6;
+  color: #8b5cf6;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.custom-ended-text {
+  flex: 1;
+}
+
+.custom-ended-text strong {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 700;
+  color: #4b3a9e;
+  font-size: 15px;
+}
+
+.custom-ended-text p {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
 @media (max-width: 800px) {
   .ls-lobby,
   .ls--call .ls-stage {
@@ -255,13 +437,4 @@
     flex-wrap: wrap;
     justify-content: center;
   }
-}
-
-/* Shown in the call until someone else has joined. */
-.ls-waiting {
-  display: grid;
-  place-items: center;
-  margin: 0;
-  padding: 1rem;
-  text-align: center;
 }

@@ -369,188 +369,220 @@
   background: #f7f5ff;
 }
 
-/* ---------- Exceptions ---------- */
+/* ---------- Exceptions (Professional Calendar) ---------- */
 .exceptions-panel {
-  padding: 20px 20px 18px;
+  padding: 0;
+  background: transparent;
+  border: none;
 }
 
-.availability-panel-description {
-  margin: 4px 0 16px;
-  color: var(--av-muted);
-  font-size: 12px;
-  line-height: 1.5;
+.av-calendar-card {
+  background: #f4efff; /* Light purple background */
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: none;
+  border: 1px solid #e8e1f3;
+  width: 100%;
+  font-family: 'Manrope', system-ui, sans-serif;
 }
 
-.availability-calendar {
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--av-border);
+.av-cal-header {
+  margin-bottom: 20px;
 }
 
-.availability-calendar-heading {
+.av-cal-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin: 0 0 4px 0;
+}
+
+.av-cal-subtitle {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.av-cal-nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 4px;
-  margin-bottom: 12px;
+  margin-bottom: 20px;
 }
 
-.availability-calendar-heading .availability-icon-button {
-  width: 30px;
-  height: 30px;
-  border: 0;
+.av-cal-month {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.av-cal-nav-btn {
   background: transparent;
-}
-
-.availability-calendar-heading strong {
-  font-size: 13.5px;
-  font-weight: 700;
-}
-
-.availability-calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  align-items: center;
-  justify-items: center;
-  gap: 5px 2px;
-}
-
-.availability-calendar-weekdays {
-  margin-bottom: 7px;
-  color: var(--av-muted);
-  font-size: 10.5px;
-  font-weight: 700;
-}
-
-.availability-calendar-day {
-  position: relative;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 34px;
-  padding: 0;
-  border: 0;
-  border-radius: 10px;
-  background: transparent;
-  color: var(--av-text);
-  font-size: 12px;
+  cursor: pointer;
+  color: #4b5563;
+  transition: all 0.2s;
 }
 
-.availability-calendar-day:hover {
-  background: #f0edfc;
+.av-cal-nav-btn:hover {
+  background: #f3f4f6;
+  color: #111827;
 }
 
-.availability-calendar-day.is-selected {
-  background: #eae6fa;
-  color: var(--av-purple);
-  font-weight: 800;
+.av-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 24px;
 }
 
-.availability-calendar-day.is-unavailable {
-  background: #f8e5e9;
-  color: var(--av-red);
-}
-
-.availability-calendar-day.is-modified {
-  background: #e0f2f0;
-  color: var(--av-teal-dark);
-}
-
-.availability-calendar-day > span {
-  position: absolute;
-  bottom: 2px;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: currentColor;
-}
-
-.availability-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 13px;
-  padding: 14px 0;
-  color: var(--av-muted);
+.av-cal-day-header {
+  text-align: center;
   font-size: 11px;
+  font-weight: 700;
+  color: #7a44d7; /* Purple headers */
+  padding-bottom: 8px;
+  text-transform: uppercase;
+  font-family: 'Plus Jakarta Sans', 'Manrope', system-ui, sans-serif;
 }
 
-.availability-legend > span {
+.av-cal-day {
+  position: relative;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  border-radius: 50%;
+
+  /* Updated Font Properties */
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 300;
+  color: #1f2937;
+
+  cursor: pointer;
+  color: #374151;
+  transition: all 0.2s ease;
+}
+
+.av-cal-day:hover {
+  background: #e8e1f3;
+  color: #111827;
+  font-weight: 600;
+}
+
+.av-cal-day--selected {
+  background: #7a44d7;
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: none;
+  transform: scale(1.05);
+}
+
+.av-cal-day-dot {
+  display: none;
+}
+
+.av-cal-day--unavailable {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.av-cal-day--modified {
+  color: #0e8584;
+  font-weight: 600;
+}
+
+.av-cal-legend {
+  display: flex;
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #f1edf9;
+  margin-bottom: 20px;
+}
+
+.av-cal-legend-item {
   display: flex;
   align-items: center;
   gap: 6px;
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
 }
 
-.availability-legend i {
-  display: inline-block;
+.av-cal-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
 }
 
-.legend-unavailable {
-  background: var(--av-red);
+.av-cal-dot--red {
+  background-color: #ef4444;
+}
+.av-cal-dot--green {
+  background-color: #10b981;
 }
 
-.legend-modified {
-  background: var(--av-teal);
+.av-cal-selected-info {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
-.availability-selected-exception {
+.av-cal-info-header {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding-top: 15px;
-  color: var(--av-red);
-}
-
-.availability-selected-exception > div {
-  min-width: 0;
-  color: var(--av-text);
-}
-
-.availability-selected-exception strong {
-  font-size: 13px;
-}
-
-.availability-selected-exception p {
-  margin: 5px 0 0;
-  color: var(--av-muted);
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.availability-selected-exception small {
-  display: block;
-  margin-top: 4px;
-  color: var(--av-muted);
-  font-size: 11px;
-}
-
-.availability-exception-actions {
-  display: flex;
-  gap: 16px;
-  margin: 8px 0 0 32px;
-}
-
-.availability-exception-actions button,
-.availability-add-exception {
-  display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 6px 0;
-  border: 0;
-  background: transparent;
-  color: var(--av-purple);
-  font-size: 12px;
-  font-weight: 650;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
-.availability-exception-actions button.is-danger {
-  color: var(--av-red);
+.av-cal-info-icon {
+  color: #ef4444;
 }
 
-.availability-add-exception {
-  margin-top: 15px;
+.av-cal-info-header h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.av-cal-info-text {
+  margin: 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.av-cal-add-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid #e8e1f3;
+  color: #6d28d9;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 14px;
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.av-cal-add-btn:hover {
+  background: #f9fafb;
 }
 
 /* ---------- Messages / loading ---------- */
