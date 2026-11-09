@@ -20,6 +20,14 @@ export interface AvailabilityData {
   available: boolean;
 }
 
+/** Some one-off dates could not be saved or removed. The weekly hours were already saved. */
+export class AvailabilitySaveError extends Error {
+  savedCount: number;
+  failedDates: string[];
+  failedRemovals: string[];
+  constructor(init: { savedCount: number; failedDates: string[]; failedRemovals: string[] });
+}
+
 export const interpreterApi: {
   getAvailability: () => Promise<AvailabilityData>;
   updateAvailability: (

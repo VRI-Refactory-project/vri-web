@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { interpreterApi } from './interpreterApi';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { AvailabilitySaveError, interpreterApi } from './interpreterApi';
 
 const fetchMock = vi.fn();
 vi.stubGlobal('fetch', fetchMock);
@@ -100,5 +100,56 @@ describe('interpreterApi', () => {
     expect(String(url)).toContain('/api/v1/interpreters/me/availability/status/');
     expect(init.method).toBe('PATCH');
     expect(JSON.parse(init.body)).toEqual({ is_available: false });
+  });
+});
+
+describe('interpreterApi.updateAvailability partial failures', () => {
+  beforeEach(() => {
+    // Fixed "today" (1 November 2026) so the upcoming-date logic is predictable.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 10, 1, 9, 0, 0));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('saves the other days and reports exactly the day that failed', async () => {
+    fetchMock.mockImplementation(async (url: string) =>
+      // The 25th fails on the server; every other request succeeds.
+      url.includes('/days/2026-11-25/') ? reply({ detail: 'boom' }, 500) : reply({}),
+    );
+
+    const exceptions = [
+      { id: 'a', date: '2026-11-24', unavailable: true },
+      { id: 'b', date: '2026-11-25', unavailable: true },
+      { id: 'c', date: '2026-11-26', unavailable: true },
+    ];
+
+    const error = await interpreterApi
+      .updateAvailability({ weeklySchedule: [], exceptions })
+      .catch((err: unknown) => err);
+
+    expect(error).toBeInstanceOf(AvailabilitySaveError);
+    const saveError = error as AvailabilitySaveError;
+    expect(saveError.failedDates).toEqual(['2026-11-25']);
+    expect(saveError.savedCount).toBe(2);
+    expect(saveError.failedRemovals).toEqual([]);
+
+    // The other two days were still sent, not abandoned after the failure.
+    const calledUrls = fetchMock.mock.calls.map(([url]) => String(url));
+    expect(calledUrls.some((url) => url.includes('/days/2026-11-24/'))).toBe(true);
+    expect(calledUrls.some((url) => url.includes('/days/2026-11-26/'))).toBe(true);
+  });
+
+  it('resolves when every day saves', async () => {
+    fetchMock.mockResolvedValue(reply({}));
+
+    await expect(
+      interpreterApi.updateAvailability({
+        weeklySchedule: [],
+        exceptions: [{ id: 'a', date: '2026-11-24', unavailable: true }],
+      }),
+    ).resolves.toBeUndefined();
   });
 });
