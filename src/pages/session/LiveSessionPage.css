@@ -275,6 +275,453 @@ body,
   text-align: center;
 }
 
+/* ========================================= */
+/* --- ENDED SESSION PAGE (Professional) --- */
+/* ========================================= */
+
+.ls--center {
+  background: linear-gradient(135deg, #fdfbf7 0%, #ebe5f7 35%, #c8b8f0 65%, #b8d4f0 100%);
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  min-height: 100vh;
+}
+
+.ls-card {
+  background: #ffffff;
+  border: 1px solid #f1edf9;
+  border-radius: 24px;
+  padding: 32px 40px;
+  width: 100%;
+  max-width: 500px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 10px 30px rgba(56, 44, 119, 0.08);
+}
+
+.ls-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 72px;
+  border-radius: 50%;
+  background: #8b5cf6;
+  color: #fff;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+}
+
+.ls-card h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+  font-weight: 800;
+  color: #1a1a1a;
+  letter-spacing: -0.5px;
+  font-family: 'Manrope', system-ui, sans-serif;
+}
+
+.ls-card p {
+  margin: 0 0 24px;
+  font-size: 16px;
+  color: #6b7280;
+  font-family: 'Manrope', system-ui, sans-serif;
+}
+
+/* ========================================= */
+/* --- GOOGLE MEET ENDED SCREEN --- */
+/* ========================================= */
+
+.gm-ended-page {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #fdfbf7 0%, #ebe5f7 35%, #c8b8f0 65%, #b8d4f0 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: 'Google Sans', 'Manrope', system-ui, sans-serif;
+  z-index: 1000;
+  overflow-y: auto; /* Allows the whole page to scroll if needed */
+}
+
+.gm-ended-content {
+  margin-top: 60px;
+  margin-bottom: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 600px;
+}
+
+.gm-ended-title {
+  font-size: 32px;
+  font-weight: 400;
+  color: #3c4043;
+  margin-bottom: 32px;
+  letter-spacing: -0.5px;
+}
+
+.gm-ended-actions {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.gm-btn {
+  height: 44px;
+  padding: 0 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gm-btn--outline {
+  background: #ffffff;
+  border: 1px solid #dadce0;
+  color: #382c77;
+}
+
+.gm-btn--outline:hover {
+  background: #f8f9fa;
+}
+
+.gm-btn--primary {
+  background: #382c77;
+  border: 1px solid #382c77;
+  color: #ffffff;
+}
+
+.gm-btn--primary:hover {
+  background: #2a2060;
+  box-shadow: 0 4px 12px rgba(56, 44, 119, 0.2);
+}
+
+/* --- The Main Feedback Card --- */
+.gm-feedback-card {
+  background: #ffffff;
+  border-radius: 20px;
+  max-width: 420px;
+  width: 100%;
+  padding: 32px 24px 48px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  box-shadow: 0 10px 30px rgba(56, 44, 119, 0.08);
+  /* Removed max-height so it expands to fit content naturally */
+}
+
+.gm-feedback-card h3 {
+  font-size: 15px;
+  font-weight: 500;
+  color: #1a1a1a;
+  margin: 0 0 20px 0;
+}
+
+/* --- Star Rating --- */
+.gm-star-rating {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.gm-star-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  width: 50px;
+}
+
+.gm-star-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #dadce0;
+  transition: color 0.2s;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.gm-star-btn:hover {
+  transform: scale(1.1);
+}
+
+.gm-star-btn.active {
+  color: #7a44d7;
+}
+
+.gm-star-label {
+  position: absolute;
+  top: 44px;
+  font-size: 11px;
+  color: #5f6368;
+  white-space: nowrap;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* --- Bottom Left Feedback Link --- */
+.gm-bottom-feedback {
+  position: absolute;
+  bottom: 24px;
+  left: 32px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: #5f6368;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.gm-bottom-feedback:hover {
+  color: #1a73e8;
+}
+
+/* --- Wizard Stepper --- */
+.gm-issue-wizard {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.gm-stepper {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.gm-step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex: 1;
+}
+
+.gm-step-circle {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #d1d5db;
+  margin-bottom: 8px;
+  z-index: 2;
+}
+
+.gm-step-circle.active {
+  background: #382c77;
+}
+
+.gm-step-item span {
+  font-size: 12px;
+  color: #5f6368;
+}
+
+.gm-step-line {
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: #e5e7eb;
+  z-index: 1;
+}
+
+/* --- Issue Slider (Arrows + Card) --- */
+.gm-issue-slider {
+  display: flex;
+  align-items: flex-start; /* Align arrows to the top */
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  margin-bottom: 16px;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+
+.gm-nav-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #f3f4f6;
+  border: none;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  margin-top: 20px; /* Push arrows down to align with card content */
+}
+
+.gm-nav-arrow:hover:not(:disabled) {
+  background: #f3efff;
+  color: #382c77;
+}
+
+.gm-nav-arrow:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* --- The Inner Card (No double border) --- */
+.gm-issue-card {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  width: 100%;
+}
+
+.gm-issue-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  width: 100%;
+  text-align: left;
+  margin-bottom: 16px;
+}
+
+.gm-issue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.gm-issue-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.gm-issue-checkbox:hover {
+  background: #f3f4f6;
+}
+
+.gm-issue-checkbox input {
+  display: none;
+}
+
+.gm-checkbox-custom {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #d1d5db;
+  border-radius: 4px;
+  display: inline-block;
+  position: relative;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.gm-issue-checkbox input:checked + .gm-checkbox-custom {
+  background: #382c77;
+  border-color: #382c77;
+}
+
+.gm-issue-checkbox input:checked + .gm-checkbox-custom::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.gm-wizard-actions {
+  width: 100%;
+  margin-top: 16px;
+}
+
+/* --- Success State --- */
+.gm-feedback-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+.gm-feedback-success h3 {
+  margin: 16px 0 8px;
+  font-size: 18px;
+  color: #1a1a1a;
+}
+
+.gm-feedback-success p {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* --- Other Input (Textarea) --- */
+.gm-other-input-wrapper {
+  position: relative;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.gm-other-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px 16px;
+  border: 1px solid #dcd7ee;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  color: #382c77;
+  resize: vertical;
+  box-sizing: border-box;
+  background: #ffffff;
+  transition: border-color 0.2s;
+}
+
+.gm-other-textarea:focus {
+  outline: none;
+  border-color: #7a44d7;
+  box-shadow: 0 0 0 3px rgba(122, 68, 215, 0.15);
+}
+
+.gm-other-textarea::placeholder {
+  color: #80868b;
+}
+
+.gm-char-count {
+  position: absolute;
+  bottom: 12px;
+  right: 16px;
+  font-size: 11px;
+  color: #80868b;
+  pointer-events: none;
+}
+
 @media (max-width: 800px) {
   .ls-lobby,
   .ls--call .ls-stage {
