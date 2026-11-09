@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Bell,
@@ -20,39 +21,37 @@ import './InterpreterHomePage.css';
 import bannerImage from '../../assets/suit.png';
 
 const calendarDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const calendarNumbers = [
-  null,
-  null,
-  null,
-  null,
-  5,
-  6,
-  7,
-  8,
-  9,
-  10,
-  11,
-  12,
-  13,
-  14,
-  15,
-  16,
-  17,
-  18,
-  19,
-  20,
-  21,
-  22,
-  23,
-  24,
-  25,
-];
+/** The numbers for one month's grid, Monday first: blanks before the 1st, then 1 to the last day. */
+function monthGrid(month: Date): (number | null)[] {
+  const blanks = (new Date(month.getFullYear(), month.getMonth(), 1).getDay() + 6) % 7;
+  const lastDay = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+  return [
+    ...Array<null>(blanks).fill(null),
+    ...Array.from({ length: lastDay }, (_, index) => index + 1),
+  ];
+}
+
+/** "Mon, 9 Nov 2026". */
+function dayPill(date: Date) {
+  const weekday = date.toLocaleDateString('en-US', { weekday: 'short' });
+  const month = date.toLocaleDateString('en-US', { month: 'short' });
+  return `${weekday}, ${date.getDate()} ${month} ${date.getFullYear()}`;
+}
 
 export function InterpreterHomePage() {
   const { session } = useAuth();
   const firstName = session?.user.name?.split(' ')[0] || 'there';
   const { data: home } = useInterpreterHome();
   const { available, reason, setAvailable, loading, saving, error } = useAvailability();
+  const today = new Date();
+  const [viewMonth, setViewMonth] = useState(
+    () => new Date(today.getFullYear(), today.getMonth(), 1),
+  );
+  const monthLabel = viewMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const isThisMonth =
+    viewMonth.getFullYear() === today.getFullYear() && viewMonth.getMonth() === today.getMonth();
+  const shiftMonth = (by: number) =>
+    setViewMonth(new Date(viewMonth.getFullYear(), viewMonth.getMonth() + by, 1));
 
   return (
     <div className="ih-page">
@@ -379,14 +378,16 @@ export function InterpreterHomePage() {
             </h3>
 
             <div className="ih-cal-header">
-              <button type="button" aria-label="Previous month">
+              <button type="button" aria-label="Previous month" onClick={() => shiftMonth(-1)}>
                 <ChevronLeft size={14} />
               </button>
-              <span>October 2026</span>
-              <button type="button" aria-label="Next month">
+              <span>{monthLabel}</span>
+              <button type="button" aria-label="Next month" onClick={() => shiftMonth(1)}>
                 <ChevronRight size={14} />
               </button>
             </div>
+
+            <div className="ih-cal-grid" aria-label={`${monthLabel} calendar`}></div>
 
             <div className="ih-cal-grid" aria-label="October calendar">
               {calendarDays.map((day) => (
@@ -394,45 +395,27 @@ export function InterpreterHomePage() {
                   {day}
                 </span>
               ))}
-
-              {calendarNumbers.map((day, index) => (
-                <span
-                  key={`${day ?? 'empty'}-${index}`}
-                  className={day === 14 ? 'ih-cal-day ih-cal-day-active' : 'ih-cal-day'}
-                >
-                  {day ?? ''}
-                </span>
-              ))}
             </div>
+            {monthGrid(viewMonth).map((day, index) => (
+              <span
+                key={`${day ?? 'empty'}-${index}`}
+                className={
+                  isThisMonth && day === today.getDate()
+                    ? 'ih-cal-day ih-cal-day-active'
+                    : 'ih-cal-day'
+                }
+              >
+                {day ?? ''}
+              </span>
+            ))}
 
             <div className="ih-today-schedule">
               <h4>
-                Today&apos;s schedule <span className="ih-date-pill">Wed, 14 Oct 2026</span>
+                Today&apos;s schedule <span className="ih-date-pill">{dayPill(today)}</span>
               </h4>
 
-              <div className="ih-schedule-item">
-                <span className="ih-dot ih-dot-purple" aria-hidden="true" />
-                <div>
-                  <p>10:30 AM - 11:00 AM &nbsp; James Carter</p>
-                  <span className="ih-time-label">Video call</span>
-                </div>
-              </div>
-
-              <div className="ih-schedule-item">
-                <span className="ih-dot ih-dot-green" aria-hidden="true" />
-                <div>
-                  <p>2:00 PM - 2:30 PM &nbsp; Priya Sharma</p>
-                  <span className="ih-time-label">Video call</span>
-                </div>
-              </div>
-
-              <div className="ih-schedule-item">
-                <span className="ih-dot ih-dot-blue" aria-hidden="true" />
-                <div>
-                  <p>4:00 PM - 4:30 PM &nbsp; Grace Nsubuga</p>
-                  <span className="ih-time-label">Video call</span>
-                </div>
-              </div>
+              {/* TODO: list today's booked sessions once vri-api has an endpoint for them. */}
+              <p className="ih-time-label">No sessions scheduled for today.</p>
             </div>
 
             <button type="button" className="ih-btn-calendar">
