@@ -144,4 +144,24 @@ describe('InterpreterHomePage', () => {
     const viewAllLinks = screen.getAllByRole('link', { name: /view all/i });
     expect(viewAllLinks.length).toBeGreaterThan(0);
   });
+  it('shows the real current month and highlights today', () => {
+    renderHome();
+    const now = new Date();
+    const label = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+    expect(screen.getByText(label)).toBeInTheDocument();
+    expect(document.querySelector('.ih-cal-day-active')).toHaveTextContent(String(now.getDate()));
+  });
+
+  it('moves the calendar to the next month, where nothing is highlighted', () => {
+    renderHome();
+    const now = new Date();
+    const next = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const label = next.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+    fireEvent.click(screen.getByRole('button', { name: /next month/i }));
+
+    expect(screen.getByText(label)).toBeInTheDocument();
+    expect(document.querySelector('.ih-cal-day-active')).toBeNull();
+  });
 });

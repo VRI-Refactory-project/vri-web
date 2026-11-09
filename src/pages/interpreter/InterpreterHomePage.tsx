@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Bell,
@@ -16,47 +17,44 @@ import {
   useAvailability,
   useInterpreterHome,
 } from '../../features/interpreter/homeData';
+import { RecentActivityFeed } from '../../components/RecentActivityFeed';
 import './InterpreterHomePage.css';
 import bannerImage from '../../assets/suit.png';
 
 const calendarDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const calendarNumbers = [
-  null,
-  null,
-  null,
-  null,
-  5,
-  6,
-  7,
-  8,
-  9,
-  10,
-  11,
-  12,
-  13,
-  14,
-  15,
-  16,
-  17,
-  18,
-  19,
-  20,
-  21,
-  22,
-  23,
-  24,
-  25,
-];
+
+function monthGrid(month: Date): (number | null)[] {
+  const blanks = (new Date(month.getFullYear(), month.getMonth(), 1).getDay() + 6) % 7;
+  const lastDay = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+  return [
+    ...Array<null>(blanks).fill(null),
+    ...Array.from({ length: lastDay }, (_, index) => index + 1),
+  ];
+}
+
+function dayPill(date: Date) {
+  const weekday = date.toLocaleDateString('en-US', { weekday: 'short' });
+  const month = date.toLocaleDateString('en-US', { month: 'short' });
+  return `${weekday}, ${date.getDate()} ${month} ${date.getFullYear()}`;
+}
 
 export function InterpreterHomePage() {
   const { session } = useAuth();
   const firstName = session?.user.name?.split(' ')[0] || 'there';
   const { data: home } = useInterpreterHome();
   const { available, reason, setAvailable, loading, saving, error } = useAvailability();
+  const today = new Date();
+  const [viewMonth, setViewMonth] = useState(
+    () => new Date(today.getFullYear(), today.getMonth(), 1),
+  );
+  const monthLabel = viewMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const isThisMonth =
+    viewMonth.getFullYear() === today.getFullYear() && viewMonth.getMonth() === today.getMonth();
+  const shiftMonth = (by: number) =>
+    setViewMonth(new Date(viewMonth.getFullYear(), viewMonth.getMonth() + by, 1));
 
   return (
     <div className="ih-page">
-      {/* TOP NAVIGATION BAR */}
       <header className="ih-topbar">
         <div className="ih-topbar-actions">
           <button className="ih-icon-btn relative" aria-label="Notifications">
@@ -67,9 +65,7 @@ export function InterpreterHomePage() {
       </header>
 
       <div className="ih-content-wrapper">
-        {/* MAIN CONTENT AREA */}
         <div className="ih-main-section">
-          {/* Welcome Banner */}
           <section className="ih-banner" aria-label="Greeting">
             <div className="ih-banner-text">
               <h1>
@@ -85,17 +81,11 @@ export function InterpreterHomePage() {
               </p>
             </div>
 
-            {/* NEW: Image Container */}
             <div className="ih-banner-image-container">
-              <img
-                src={bannerImage} // <--- CHANGED TO USE YOUR LOCAL IMAGE
-                alt="Sign language interpreter"
-                className="ih-banner-image"
-              />
+              <img src={bannerImage} alt="Sign language interpreter" className="ih-banner-image" />
             </div>
           </section>
 
-          {/* Stats Row */}
           <div className="ih-stats-row">
             <div className="ih-stat-box">
               <div className="ih-stat-header">
@@ -127,11 +117,8 @@ export function InterpreterHomePage() {
             </div>
           </div>
 
-          {/* THE NEW ALIGNMENT GRID */}
           <div className="ih-dashboard-split">
-            {/* LEFT COLUMN: Next Session & Upcoming */}
             <div className="ih-split-left">
-              {/* Next session */}
               <section className="ih-section">
                 <div className="ih-next-session-wrapper">
                   <div className="ih-section-header">
@@ -184,7 +171,6 @@ export function InterpreterHomePage() {
                 </div>
               </section>
 
-              {/* Upcoming Sessions */}
               <section className="ih-section">
                 <div className="ih-next-session-wrapper">
                   <div className="ih-section-header">
@@ -243,10 +229,8 @@ export function InterpreterHomePage() {
               </section>
             </div>
 
-            {/* RIGHT COLUMN: Recent Activity */}
             <div className="ih-split-right">
               <section className="ih-section">
-                {/* Wrapper that holds the header and the list */}
                 <div className="ih-activity-wrapper">
                   <div
                     className="ih-section-header"
@@ -265,70 +249,7 @@ export function InterpreterHomePage() {
                     className="ih-activity-card"
                     style={{ padding: 0, boxShadow: 'none', background: 'transparent' }}
                   >
-                    <div className="ih-timeline-item">
-                      <div className="ih-timeline-marker bg-green"></div>
-                      <img
-                        src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80"
-                        alt="James"
-                        className="ih-timeline-avatar"
-                      />
-                      <div className="ih-timeline-content">
-                        <p>You accepted James Carter's connection request</p>
-                        <span className="ih-time-label">2 hours ago</span>
-                      </div>
-                    </div>
-
-                    <div className="ih-timeline-item">
-                      <div className="ih-timeline-marker bg-purple"></div>
-                      <img
-                        src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80"
-                        alt="Priya"
-                        className="ih-timeline-avatar"
-                      />
-                      <div className="ih-timeline-content">
-                        <p>Priya Sharma sent you a connection request</p>
-                        <span className="ih-time-label">4 hours ago</span>
-                      </div>
-                    </div>
-
-                    <div className="ih-timeline-item">
-                      <div className="ih-timeline-marker bg-purple"></div>
-                      <img
-                        src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80"
-                        alt="Alex"
-                        className="ih-timeline-avatar"
-                      />
-                      <div className="ih-timeline-content">
-                        <p>Alex Johnson accepted your connection request</p>
-                        <span className="ih-time-label">Yesterday</span>
-                      </div>
-                    </div>
-
-                    <div className="ih-timeline-item">
-                      <div className="ih-timeline-marker bg-purple"></div>
-                      <img
-                        src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=100&q=80"
-                        alt="Grace"
-                        className="ih-timeline-avatar"
-                      />
-                      <div className="ih-timeline-content">
-                        <p>You started a chat with Grace Nsubuga</p>
-                        <span className="ih-time-label">Yesterday</span>
-                      </div>
-                    </div>
-
-                    <div className="ih-timeline-item">
-                      <div className="ih-timeline-marker bg-blue"></div>
-                      <img
-                        src="https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?auto=format&fit=crop&w=100&q=80"
-                        alt="Daniel"
-                        className="ih-timeline-avatar"
-                      />
-                      <div className="ih-timeline-content">
-                        <p>You received a connection request from Daniel Ochieng</p>
-                        <span className="ih-time-label">2 days ago</span>
-                      </div>
-                    </div>
+                    <RecentActivityFeed />
                   </div>
                 </div>
               </section>
@@ -336,7 +257,6 @@ export function InterpreterHomePage() {
           </div>
         </div>
 
-        {/* RIGHT SIDEBAR (Availability & Calendar) */}
         <aside className="ih-right-column">
           <div className="ih-card ih-availability-card">
             <div className="ih-availability-row">
@@ -379,14 +299,16 @@ export function InterpreterHomePage() {
             </h3>
 
             <div className="ih-cal-header">
-              <button type="button" aria-label="Previous month">
+              <button type="button" aria-label="Previous month" onClick={() => shiftMonth(-1)}>
                 <ChevronLeft size={14} />
               </button>
-              <span>October 2026</span>
-              <button type="button" aria-label="Next month">
+              <span>{monthLabel}</span>
+              <button type="button" aria-label="Next month" onClick={() => shiftMonth(1)}>
                 <ChevronRight size={14} />
               </button>
             </div>
+
+            <div className="ih-cal-grid" aria-label={`${monthLabel} calendar`}></div>
 
             <div className="ih-cal-grid" aria-label="October calendar">
               {calendarDays.map((day) => (
@@ -394,45 +316,26 @@ export function InterpreterHomePage() {
                   {day}
                 </span>
               ))}
-
-              {calendarNumbers.map((day, index) => (
-                <span
-                  key={`${day ?? 'empty'}-${index}`}
-                  className={day === 14 ? 'ih-cal-day ih-cal-day-active' : 'ih-cal-day'}
-                >
-                  {day ?? ''}
-                </span>
-              ))}
             </div>
+            {monthGrid(viewMonth).map((day, index) => (
+              <span
+                key={`${day ?? 'empty'}-${index}`}
+                className={
+                  isThisMonth && day === today.getDate()
+                    ? 'ih-cal-day ih-cal-day-active'
+                    : 'ih-cal-day'
+                }
+              >
+                {day ?? ''}
+              </span>
+            ))}
 
             <div className="ih-today-schedule">
               <h4>
-                Today&apos;s schedule <span className="ih-date-pill">Wed, 14 Oct 2026</span>
+                Today&apos;s schedule <span className="ih-date-pill">{dayPill(today)}</span>
               </h4>
 
-              <div className="ih-schedule-item">
-                <span className="ih-dot ih-dot-purple" aria-hidden="true" />
-                <div>
-                  <p>10:30 AM - 11:00 AM &nbsp; James Carter</p>
-                  <span className="ih-time-label">Video call</span>
-                </div>
-              </div>
-
-              <div className="ih-schedule-item">
-                <span className="ih-dot ih-dot-green" aria-hidden="true" />
-                <div>
-                  <p>2:00 PM - 2:30 PM &nbsp; Priya Sharma</p>
-                  <span className="ih-time-label">Video call</span>
-                </div>
-              </div>
-
-              <div className="ih-schedule-item">
-                <span className="ih-dot ih-dot-blue" aria-hidden="true" />
-                <div>
-                  <p>4:00 PM - 4:30 PM &nbsp; Grace Nsubuga</p>
-                  <span className="ih-time-label">Video call</span>
-                </div>
-              </div>
+              <p className="ih-time-label">No sessions scheduled for today.</p>
             </div>
 
             <button type="button" className="ih-btn-calendar">

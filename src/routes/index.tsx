@@ -79,9 +79,12 @@ const appRoutes: RouteObject[] = [
       { path: '/register/deaf', element: <CreateAccountPage /> },
       { path: '/register/interpreter', element: <CreateAccountPage role="interpreter" /> },
       { path: '/register/institution', element: <SignUpInstitution /> },
-      { path: '/register/institution/upload-license', element: <UploadInstitutionLicense /> },
+      // NOTE: upload-license moved below!
     ],
   },
+
+  // MOVED HERE: Outside of GuestRoute so logged-in institutions can see it
+  { path: '/register/institution/upload-license', element: <UploadInstitutionLicense /> },
 
   { path: '/sign-in', element: <SignInPage /> },
   { path: '/video/:roomName', element: <GuestVideoPage /> },
@@ -173,24 +176,17 @@ const appRoutes: RouteObject[] = [
     element: <ProtectedRoute allow={['institution']} />,
     children: [
       {
-        // TEMPORARY FRONTEND FIX: Force institutions to the upload page
-        // until the backend adds the "isApproved" check.
-        element: <Navigate to="/register/institution/upload-license" replace />,
+        path: '/dashboard/institution',
+        element: <InstitutionLayout />,
         children: [
-          {
-            path: '/dashboard/institution',
-            element: <InstitutionLayout />,
-            children: [
-              { index: true, element: <InstitutionDashboardPage /> },
-              { path: 'staff', element: <StaffManagementPage /> },
-              { path: 'staff/new', element: <CreateStaffAccountPage /> },
-              { path: 'staff/created', element: <StaffAccountCreatedPage /> },
-              { path: 'sessions', element: <InstitutionSessionsPage /> },
-              { path: 'analytics', element: <InstitutionAnalyticsPage /> },
-              { path: 'settings', element: <InstitutionSettingsPage /> },
-              { path: 'profile', element: <InstitutionProfilePage /> },
-            ],
-          },
+          { index: true, element: <InstitutionDashboardPage /> },
+          { path: 'staff', element: <StaffManagementPage /> },
+          { path: 'staff/new', element: <CreateStaffAccountPage /> },
+          { path: 'staff/created', element: <StaffAccountCreatedPage /> },
+          { path: 'sessions', element: <InstitutionSessionsPage /> },
+          { path: 'analytics', element: <InstitutionAnalyticsPage /> },
+          { path: 'settings', element: <InstitutionSettingsPage /> },
+          { path: 'profile', element: <InstitutionProfilePage /> },
         ],
       },
     ],

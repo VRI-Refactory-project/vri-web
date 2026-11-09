@@ -19,15 +19,12 @@ export function VerifyEmailPage() {
   if (!session) return <Navigate to="/sign-in" replace />;
 
   if (!needsEmailVerification(session.user)) {
-    // CLEAR the stored next so it doesn't interfere
-    sessionStorage.removeItem('nextAfterVerification');
-
-    // FORCE institutions to the upload license page
+    // If they are an institution, force them to upload the license
     if (session.user.role === 'institution') {
       return <Navigate to="/register/institution/upload-license" replace />;
     }
 
-    // For others, go to the next page or dashboard
+    sessionStorage.removeItem('nextAfterVerification');
     return <Navigate to={next ?? dashboardPathFor(session.user.role)} replace />;
   }
 
