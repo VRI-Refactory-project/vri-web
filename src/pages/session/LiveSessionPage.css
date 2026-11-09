@@ -267,7 +267,7 @@
   background: #ffffff;
   border: 1px solid #f1edf9;
   border-radius: 24px;
-  padding: 32px 40px; 
+  padding: 32px 40px;
   width: 100%;
   max-width: 500px;
   text-align: center;
@@ -292,7 +292,7 @@
 }
 
 .ls-card h1 {
-  margin: 0 0 8px; 
+  margin: 0 0 8px;
   font-size: 28px;
   font-weight: 800;
   color: #1a1a1a;
@@ -423,7 +423,6 @@
   line-height: 1.5;
 }
 
-
 /* --- Feedback Form --- */
 .feedback-form {
   width: 100%;
@@ -460,8 +459,12 @@
   padding: 0;
 }
 
-.star-btn:hover { transform: scale(1.15); }
-.star-btn.active { color: #f59e0b; }
+.star-btn:hover {
+  transform: scale(1.15);
+}
+.star-btn.active {
+  color: #f59e0b;
+}
 
 .feedback-tags {
   display: flex;
@@ -483,7 +486,9 @@
   transition: all 0.2s;
 }
 
-.feedback-tag:hover { background: #f3f4f6; }
+.feedback-tag:hover {
+  background: #f3f4f6;
+}
 .feedback-tag.selected {
   background: #f3efff;
   border-color: #8b5cf6;
@@ -529,7 +534,9 @@
   color: #6b7280;
 }
 
-.text-green-500 { color: #10b981; }
+.text-green-500 {
+  color: #10b981;
+}
 
 @media (max-width: 800px) {
   .ls-lobby,
