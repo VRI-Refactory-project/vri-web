@@ -6,6 +6,7 @@ import { CallControls } from '../../components/session/CallControls';
 import { GuestInvitePanel } from '../../components/session/GuestInvitePanel';
 import { VideoTile } from '../../components/session/VideoTile';
 import { useLocalMedia } from '../../features/session/useLocalMedia';
+import { useAuth } from '../../hooks/useAuth';
 import {
   createLiveKitConnection,
   type CreateConnection,
@@ -18,7 +19,6 @@ import './LiveSessionPage.css';
 
 type Phase = 'lobby' | 'joining' | 'call' | 'confirmEnd' | 'ended';
 
-/** What the status banner says in each phase. It follows the server's state once V2-011 sends it. */
 const BANNER: Record<Phase, SessionRequestState> = {
   lobby: 'ACCEPTED',
   joining: 'CONNECTING',
@@ -39,25 +39,18 @@ const FEEDBACK_TAGS = [
 
 interface Props {
   viewerRole: 'deaf' | 'interpreter';
-  /** How the page reaches the video server. Tests pass a fake one. */
   createConnection?: CreateConnection;
 }
 
-/**
- * The live session, for the Deaf user and the interpreter (V2-011, V2-031). One page walks through
- * the design's screens: the lobby ("Ready to connect?"), the call, the end-session confirmation
- * and the session-ended screen. The lobby previews the viewer's camera. "Join Session" asks the
- * API for a call token and joins the LiveKit room, and the other people's video and audio appear
- * as they arrive.
- */
 export function LiveSessionPage({ viewerRole, createConnection = createLiveKitConnection }: Props) {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const { session } = useAuth();
+
   const interpreterName = (location.state as { interpreterName?: string } | null)?.interpreterName;
   const media = useLocalMedia();
   const [phase, setPhase] = useState<Phase>('lobby');
-  // const [phase, setPhase] = useState<Phase>('ended');
   const [seconds, setSeconds] = useState(0);
   const [lastLength, setLastLength] = useState(0);
   const [others, setOthers] = useState<RemotePerson[]>([]);
@@ -82,11 +75,6 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
     if (rating === 0) return;
     setIsSubmitting(true);
     try {
-      // TODO: Replace with the real API call to your backend
-      // await api('/api/v1/sessions/feedback/', {
-      //   method: 'POST',
-      //   body: JSON.stringify({ sessionId: id, rating, tags: selectedTags, comment: feedbackText }),
-      // });
       console.log('Feedback submitted:', {
         sessionId: id,
         rating,
@@ -111,7 +99,7 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
       },
     }),
   );
-  // Leaving the page leaves the call.
+
   useEffect(() => () => connection.leave(), [connection]);
 
   const join = async () => {
@@ -165,7 +153,13 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
     setPhase('ended');
   };
 
-  const selfName = 'You';
+  // Use the real user name instead of 'You'
+  const selfName = session?.user?.name || 'You';
+  // Safely access the profile picture field if it exists (removed 'any')
+  const selfProfilePicture =
+    (session?.user as unknown as { profilePicture?: string; photo_url?: string })?.profilePicture ||
+    (session?.user as unknown as { profilePicture?: string; photo_url?: string })?.photo_url ||
+    null;
 
   if (phase === 'ended') {
     return (
@@ -187,7 +181,6 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
             </div>
           </div>
 
-          {/* FEEDBACK FORM */}
           {!feedbackSubmitted ? (
             <div className="feedback-form">
               <h3>How was your session?</h3>
@@ -244,7 +237,6 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
               <p>We appreciate you taking the time to help us improve.</p>
             </div>
           )}
-          {/* END OF FEEDBACK FORM */}
 
           <button
             type="button"
@@ -294,7 +286,14 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
         />
         {viewerRole === 'deaf' && id && <GuestInvitePanel sessionId={id} />}
         <div className="ls-stage">
-          <VideoTile name={selfName} stream={media.stream} cameraOff={!media.camOn} large muted />
+          <VideoTile
+            name={selfName}
+            stream={media.stream}
+            cameraOff={!media.camOn}
+            large
+            muted
+            profilePicture={selfProfilePicture}
+          />
           <div className="ls-side">
             {others.length === 0 && (
               <p className="vt ls-waiting" role="status">
@@ -323,7 +322,6 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
     );
   }
 
-  // lobby and joining
   const joining = phase === 'joining';
   return (
     <main className="ls">
@@ -332,7 +330,14 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
       </header>
       <div className="ls-lobby">
         <div className="ls-preview">
-          <VideoTile name={selfName} stream={media.stream} cameraOff={!media.camOn} large muted />
+          <VideoTile
+            name={selfName}
+            stream={media.stream}
+            cameraOff={!media.camOn}
+            large
+            muted
+            profilePicture={selfProfilePicture}
+          />
           <div className="ls-preview-controls">
             <CallControls
               micOn={media.micOn}
