@@ -157,7 +157,7 @@
 
 .ih-stats-row {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -541,6 +541,24 @@
   z-index: 1;
 }
 
+/* Circle with the first letter, used when the person has no photo */
+.ih-timeline-avatar-initial {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3e8ff;
+  color: #6d28d9;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* The line between items goes through the middle of the avatar */
+.ih-timeline-item-avatar::before {
+  top: 34px;
+  left: 16px;
+  bottom: -4px;
+}
+
 .ih-timeline-content {
   flex: 1;
   padding-top: 2px;
@@ -851,12 +869,6 @@
   .ih-right-column > * {
     flex: 1;
     min-width: 300px;
-  }
-}
-
-@media (max-width: 860px) {
-  .ih-stats-row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

@@ -9,6 +9,7 @@ import {
   useInterpreterHome,
 } from '../../features/interpreter/homeData';
 import { markerClass, timeAgo, useRecentActivity } from '../../features/interpreter/recentActivity';
+import { photoSrc } from '../../services/photos';
 import './InterpreterHomePage.css';
 import bannerImage from '../../assets/suit.png';
 
@@ -255,15 +256,36 @@ export function InterpreterHomePage() {
                     <p className="ih-time-label">No recent activity yet.</p>
                   )}
 
-                  {activity.map((item) => (
-                    <div className="ih-timeline-item" key={item.id}>
-                      <div className={`ih-timeline-marker ${markerClass(item.category)}`}></div>
-                      <div className="ih-timeline-content">
-                        <p>{item.title}</p>
-                        <span className="ih-time-label">{timeAgo(item.created_at)}</span>
+                  {activity.map((item) => {
+                    const hasActor = Boolean(item.actor_name || item.actor_photo); // is it a session item?
+                    const photo = photoSrc(item.actor_photo); // full photo URL, or null
+                    return (
+                      <div
+                        className={`ih-timeline-item${hasActor ? ' ih-timeline-item-avatar' : ''}`}
+                        key={item.id}
+                      >
+                        {hasActor ? (
+                          photo ? (
+                            <img
+                              src={photo}
+                              alt={item.actor_name ?? 'Deaf user'}
+                              className="ih-timeline-avatar"
+                            />
+                          ) : (
+                            <span className="ih-timeline-avatar ih-timeline-avatar-initial">
+                              {(item.actor_name ?? '?').charAt(0).toUpperCase()}
+                            </span>
+                          )
+                        ) : (
+                          <div className={`ih-timeline-marker ${markerClass(item.category)}`}></div>
+                        )}
+                        <div className="ih-timeline-content">
+                          <p>{item.title}</p>
+                          <span className="ih-time-label">{timeAgo(item.created_at)}</span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </section>
             </div>
@@ -321,27 +343,25 @@ export function InterpreterHomePage() {
               </button>
             </div>
 
-            <div className="ih-cal-grid" aria-label={`${monthLabel} calendar`}></div>
-
-            <div className="ih-cal-grid" aria-label="October calendar">
+            <div className="ih-cal-grid" aria-label={`${monthLabel} calendar`}>
               {calendarDays.map((day) => (
                 <span key={day} className="ih-cal-day-name">
                   {day}
                 </span>
               ))}
+              {monthGrid(viewMonth).map((day, index) => (
+                <span
+                  key={`${day ?? 'empty'}-${index}`}
+                  className={
+                    isThisMonth && day === today.getDate()
+                      ? 'ih-cal-day ih-cal-day-active'
+                      : 'ih-cal-day'
+                  }
+                >
+                  {day ?? ''}
+                </span>
+              ))}
             </div>
-            {monthGrid(viewMonth).map((day, index) => (
-              <span
-                key={`${day ?? 'empty'}-${index}`}
-                className={
-                  isThisMonth && day === today.getDate()
-                    ? 'ih-cal-day ih-cal-day-active'
-                    : 'ih-cal-day'
-                }
-              >
-                {day ?? ''}
-              </span>
-            ))}
 
             <div className="ih-today-schedule">
               <h4>
@@ -350,10 +370,6 @@ export function InterpreterHomePage() {
 
               <p className="ih-time-label">No sessions scheduled for today.</p>
             </div>
-
-            <button type="button" className="ih-btn-calendar">
-              View full calendar <span aria-hidden="true">→</span>
-            </button>
           </div>
         </aside>
       </div>

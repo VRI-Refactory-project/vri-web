@@ -9,6 +9,8 @@ export interface ActivityItem {
   category: string;
   read_at: string | null;
   created_at: string;
+  actor_name?: string | null; // the Deaf user's name (session items only)
+  actor_photo?: string | null; // path to their photo, or null
 }
 
 /** How many items the card shows. */
