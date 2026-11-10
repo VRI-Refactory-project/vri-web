@@ -42,7 +42,6 @@ interface Props {
   createConnection?: CreateConnection;
 }
 
-// UPDATED: Removed Presentation
 const CATEGORY_ISSUES: Record<string, { label: string }[]> = {
   Audio: [
     { label: 'Sound was delayed' },
@@ -67,7 +66,6 @@ const CATEGORY_ISSUES: Record<string, { label: string }[]> = {
   ],
 };
 
-// UPDATED: Removed Presentation
 const CATEGORIES = ['Audio', 'Video', 'Other'];
 
 export function LiveSessionPage({ viewerRole, createConnection = createLiveKitConnection }: Props) {
@@ -79,10 +77,8 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
   const interpreterName = (location.state as { interpreterName?: string } | null)?.interpreterName;
   const media = useLocalMedia();
 
-  // For testing, you can temporarily change this to 'ended' or 'confirmEnd'
   const [phase, setPhase] = useState<Phase>('lobby');
   const [seconds, setSeconds] = useState(0);
-  // const [lastLength, setLastLength] = useState(0);
   const [others, setOthers] = useState<RemotePerson[]>([]);
   const [joinError, setJoinError] = useState<string | null>(null);
   const startedAt = useRef(0);
@@ -99,7 +95,6 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
   const handleStarClick = (star: number) => {
     setRating(star);
 
-    // Use a timeout so the user sees the star fill in before the page changes
     setTimeout(() => {
       if (star === 5) {
         setFeedbackStep('success');
@@ -107,7 +102,7 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
       } else {
         setFeedbackStep('details');
       }
-    }, 1000); // 1000ms delay
+    }, 1000);
   };
 
   const toggleIssue = (label: string) => {
@@ -203,7 +198,6 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
 
   const endCall = () => {
     connection.leave();
-    // setLastLength(Math.floor((Date.now() - startedAt.current) / 1000));
     setPhase('ended');
   };
 
@@ -213,14 +207,12 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
     (session?.user as unknown as { profilePicture?: string; photo_url?: string })?.photo_url ||
     null;
 
-  // --- ENDED SCREEN (GOOGLE MEET STYLE) ---
   if (phase === 'ended') {
     return (
       <div className="gm-ended-page">
         <div className="gm-ended-content">
           <h1 className="gm-ended-title">You left the session</h1>
 
-          {/* Action Buttons */}
           <div className="gm-ended-actions">
             <button
               type="button"
@@ -234,9 +226,7 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
             </button>
           </div>
 
-          {/* Feedback Wizard */}
           <div className="gm-feedback-card">
-            {/* STEP 1: STAR RATING */}
             {feedbackStep === 'rating' && (
               <>
                 <h3>How was the audio and video?</h3>
@@ -262,7 +252,6 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
               </>
             )}
 
-            {/* STEP 2: WHAT WENT WRONG (Only for 1-4 stars) */}
             {feedbackStep === 'details' && (
               <div className="gm-issue-wizard">
                 <div className="gm-stepper">
@@ -289,7 +278,6 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
                   <div className="gm-issue-card">
                     <h3 className="gm-issue-title">What went wrong?</h3>
 
-                    {/* NEW: Show textarea if "Other" is selected */}
                     {selectedCategory === 'Other' ? (
                       <div className="gm-other-input-wrapper">
                         <textarea
@@ -302,7 +290,6 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
                         <span className="gm-char-count">{customFeedback.length}/500</span>
                       </div>
                     ) : (
-                      /* Otherwise, show the normal checkboxes */
                       <div className="gm-issue-list">
                         {CATEGORY_ISSUES[selectedCategory].map((option) => (
                           <label key={option.label} className="gm-issue-checkbox">
@@ -341,7 +328,6 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
               </div>
             )}
 
-            {/* STEP 3: SUCCESS MESSAGE */}
             {feedbackStep === 'success' && (
               <div className="gm-feedback-success">
                 <CheckCircle2 size={40} color="#10b981" />
@@ -352,7 +338,6 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
           </div>
         </div>
 
-        {/* Bottom Left Feedback Link */}
         <button
           type="button"
           className="gm-bottom-feedback"
@@ -405,13 +390,16 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
             {formatDuration(seconds)}
           </span>
         </header>
-        <SessionStatusBanner
-          state="ACTIVE"
-          interpreterName={viewerRole === 'deaf' ? interpreterName : undefined}
-        />
-        {viewerRole === 'deaf' && id && <GuestInvitePanel sessionId={id} />}
 
-        {/* THE GRID: Everyone goes in here together */}
+        {/* ADDED: The header row to align the banner and button side-by-side */}
+        <div className="ls-call-header">
+          <SessionStatusBanner
+            state="ACTIVE"
+            interpreterName={viewerRole === 'deaf' ? interpreterName : undefined}
+          />
+          {viewerRole === 'deaf' && id && <GuestInvitePanel sessionId={id} />}
+        </div>
+
         <div className="ls-stage">
           <VideoTile
             name={selfName}

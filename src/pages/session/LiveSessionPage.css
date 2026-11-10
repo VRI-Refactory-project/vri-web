@@ -725,3 +725,17 @@
     justify-content: center;
   }
 }
+
+.ls-call-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+  margin-bottom: 1rem;
+}
+
+/* Force the invite button to not stretch to full width */
+.ls-call-header > * {
+  width: auto !important;
+  margin-top: 0 !important;
+}
