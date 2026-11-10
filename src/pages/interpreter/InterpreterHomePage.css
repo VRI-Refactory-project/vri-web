@@ -597,10 +597,15 @@
 }
 
 .ih-availability-card {
-  padding: 14px 12px 12px;
+  height: 220px; /* same height as the banner */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* status row at the top, button at the bottom */
+  padding: 20px 16px 16px;
   background: #fbf9ff;
   border-color: #e8e1f3;
-  margin-top: 20px;
+  /* margin-top: 20px;  <- delete this line */
 }
 
 .ih-availability-row {
@@ -861,6 +866,7 @@
 @media (max-width: 1080px) {
   .ih-content-wrapper {
     grid-template-columns: 1fr;
+    
   }
   .ih-right-column {
     flex-direction: row;
@@ -869,6 +875,7 @@
   .ih-right-column > * {
     flex: 1;
     min-width: 300px;
+    height: auto;
   }
 }
 
