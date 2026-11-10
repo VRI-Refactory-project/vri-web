@@ -1,4 +1,3 @@
-
 // import { CalendarDays, ChevronLeft, Clock } from 'lucide-react';
 // import { useRef, useState, type FormEvent } from 'react';
 // import { Link } from 'react-router-dom';
@@ -252,8 +251,6 @@
 //   );
 // }
 
-
-
 import { CalendarDays, ChevronLeft, Clock } from 'lucide-react';
 import { useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
@@ -315,9 +312,8 @@ export function SchedulePage() {
       setResult('saved');
       setForm(EMPTY);
       setCustomSessionType('');
-
     } catch (error) {
-      console.error("Failed to save session", error);
+      console.error('Failed to save session', error);
       setResult('unavailable');
     }
   };
