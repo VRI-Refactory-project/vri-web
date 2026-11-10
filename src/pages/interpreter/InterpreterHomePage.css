@@ -866,7 +866,6 @@
 @media (max-width: 1080px) {
   .ih-content-wrapper {
     grid-template-columns: 1fr;
-    
   }
   .ih-right-column {
     flex-direction: row;
