@@ -178,7 +178,7 @@
 }
 .dx-badge--processing {
   background: #e0f0ff;
-  color: #1d4ed8;
+  color: #382c77;
 }
 .dx-amount {
   min-width: 90px;
@@ -312,8 +312,9 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* --- FORM STYLES --- */
 .dx-form {
-  max-width: 34rem;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -328,12 +329,16 @@
 .dx-input {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
   padding: 0 14px;
   border: 1px solid #e2e0ee;
   border-radius: 12px;
   background: #fff;
   font-weight: 400;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
 }
 .dx-input input,
 .dx-input select {
@@ -343,6 +348,7 @@
   padding: 12px 0;
   font: inherit;
   background: transparent;
+  color: #111827;
 }
 .dx-form em {
   color: #b91c1c;
@@ -362,6 +368,157 @@
   font: inherit;
   font-weight: 700;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+.dx-primary:hover {
+  background: #2a1b5c;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(59, 37, 121, 0.25);
+}
+.dx-primary:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* --- DROPDOWN STYLES --- */
+.dx-input select {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 15px;
+  color: #111827;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23111827%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat;
+  background-position: right 0px center;
+  background-size: 16px;
+  padding-right: 24px;
+}
+
+/* Hide native browser icons for date/time so we can use ours */
+.dx-input input[type='date']::-webkit-calendar-picker-indicator,
+.dx-input input[type='time']::-webkit-calendar-picker-indicator {
+  display: none;
+  -webkit-appearance: none;
+}
+
+.dx-icon-clickable {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #111827;
+  transition: color 0.2s;
+  padding-left: 8px;
+}
+.dx-icon-clickable:hover {
+  color: #382c77;
+}
+
+/* --- PLACEHOLDER LOGIC --- */
+.dx-input select:invalid,
+.dx-input select:has(option[value='']:checked) {
+  color: #9ca3af !important;
+}
+.dx-input select:not(:invalid) {
+  color: #111827 !important;
+}
+.dx-input select option {
+  color: #111827 !important;
+  font-weight: 500;
+}
+.dx-input select option[value=''] {
+  color: #9ca3af !important;
+  font-weight: 400;
+}
+
+/* --- 2-Column Layout --- */
+.dx-schedule-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+  align-items: start;
+  width: 100%;
+  max-width: 950px;
+}
+.dx-schedule-layout .dx-form {
+  max-width: none;
+}
+
+/* --- Summary Card --- */
+.dx-summary {
+  background: #f9f8ff;
+  border: 1px solid #ece9f7;
+  border-radius: 16px;
+  padding: 24px;
+  position: sticky;
+  top: 24px;
+}
+.dx-summary h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #382c77;
+}
+.dx-summary p {
+  margin: 0 0 20px;
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.4;
+}
+.dx-summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.dx-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-bottom: 1px solid #ece9f7;
+  padding-bottom: 12px;
+}
+.dx-summary-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.dx-summary-item span {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.dx-summary-item strong {
+  font-size: 15px;
+  color: #1a1a1a;
+  font-weight: 500;
+}
+
+/* --- Error State for Inputs --- */
+.dx-input--error {
+  border-color: #b91c1c !important;
+  background-color: #fef2f2 !important;
+}
+.dx-input--error input,
+.dx-input--error select {
+  color: #b91c1c !important;
+}
+
+/* --- Responsive --- */
+@media (max-width: 860px) {
+  .dx-schedule-layout {
+    grid-template-columns: 1fr;
+  }
+  .dx-summary {
+    position: static;
+  }
 }
 @media (max-width: 800px) {
   .dx-chat {

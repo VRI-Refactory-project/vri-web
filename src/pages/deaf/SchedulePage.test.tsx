@@ -19,9 +19,10 @@ const fill = () => {
   const future = new Date(Date.now() + 3 * 86_400_000).toISOString().slice(0, 10);
   fireEvent.change(screen.getByLabelText('Date'), { target: { value: future } });
   fireEvent.change(screen.getByLabelText('Time'), { target: { value: '10:30' } });
-  fireEvent.change(screen.getByLabelText('Location'), {
-    target: { value: 'Northside Medical Center' },
-  });
+
+  // UPDATED: Use Duration and Session Type instead of Location
+  fireEvent.change(screen.getByLabelText('Duration'), { target: { value: '30' } });
+  fireEvent.change(screen.getByLabelText('Session Type'), { target: { value: 'medical' } });
 };
 
 describe('SchedulePage', () => {
