@@ -336,7 +336,9 @@
   border-radius: 12px;
   background: #fff;
   font-weight: 400;
-  transition: border-color 0.2s, background-color 0.2s;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
 }
 .dx-input input,
 .dx-input select {
@@ -392,7 +394,7 @@
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23111827%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E");
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23111827%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E');
   background-repeat: no-repeat;
   background-position: right 0px center;
   background-size: 16px;
@@ -400,8 +402,8 @@
 }
 
 /* Hide native browser icons for date/time so we can use ours */
-.dx-input input[type="date"]::-webkit-calendar-picker-indicator,
-.dx-input input[type="time"]::-webkit-calendar-picker-indicator {
+.dx-input input[type='date']::-webkit-calendar-picker-indicator,
+.dx-input input[type='time']::-webkit-calendar-picker-indicator {
   display: none;
   -webkit-appearance: none;
 }
@@ -421,7 +423,7 @@
 
 /* --- PLACEHOLDER LOGIC --- */
 .dx-input select:invalid,
-.dx-input select:has(option[value=""]:checked) {
+.dx-input select:has(option[value='']:checked) {
   color: #9ca3af !important;
 }
 .dx-input select:not(:invalid) {
@@ -431,7 +433,7 @@
   color: #111827 !important;
   font-weight: 500;
 }
-.dx-input select option[value=""] {
+.dx-input select option[value=''] {
   color: #9ca3af !important;
   font-weight: 400;
 }

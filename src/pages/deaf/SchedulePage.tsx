@@ -1,4 +1,3 @@
-
 // import { CalendarDays, ChevronLeft, Clock } from 'lucide-react';
 // import { useRef, useState, type FormEvent } from 'react';
 // import { Link } from 'react-router-dom';
@@ -10,11 +9,11 @@
 // import { extrasMocked } from '../../services/deafExtras';
 // import './DeafExtras.css';
 
-// const EMPTY: ScheduleForm = { 
-//   date: '', 
-//   time: '', 
-//   duration: '', 
-//   sessionType: '' 
+// const EMPTY: ScheduleForm = {
+//   date: '',
+//   time: '',
+//   duration: '',
+//   sessionType: ''
 // };
 
 // export function SchedulePage() {
@@ -32,7 +31,7 @@
 
 //   const submit = (e: FormEvent) => {
 //     e.preventDefault();
-    
+
 //     // 👇 Optional: You can add custom validation here for customSessionType if needed
 //     // if (form.sessionType === 'other' && !customSessionType.trim()) {
 //     //   setErrors({ ...errors, sessionType: 'Please specify your session type.' });
@@ -74,8 +73,8 @@
 //               }}
 //               {...field('date')}
 //             />
-//             <span 
-//               className="dx-icon-clickable" 
+//             <span
+//               className="dx-icon-clickable"
 //               onClick={() => {
 //                 if (dateInputRef.current) {
 //                   dateInputRef.current.type = 'date';
@@ -88,7 +87,7 @@
 //           </span>
 //           {errors.date && <em role="alert">{errors.date}</em>}
 //         </label>
-        
+
 //         <label>
 //           Time
 //           <span className="dx-input">
@@ -104,8 +103,8 @@
 //               }}
 //               {...field('time')}
 //             />
-//             <span 
-//               className="dx-icon-clickable" 
+//             <span
+//               className="dx-icon-clickable"
 //               onClick={() => {
 //                 if (timeInputRef.current) {
 //                   timeInputRef.current.type = 'time';
@@ -118,7 +117,7 @@
 //           </span>
 //           {errors.time && <em role="alert">{errors.time}</em>}
 //         </label>
-        
+
 //         <label>
 //           Duration
 //           <span className="dx-input">
@@ -173,7 +172,7 @@
 //             )}
 //           </span>
 //           {errors.sessionType && <em role="alert">{errors.sessionType}</em>}
-          
+
 //           {/* Optional: A small "Back to list" button */}
 //           {form.sessionType === 'other' && (
 //             <button
@@ -216,9 +215,6 @@
 //   );
 // }
 
-
-
-
 import { CalendarDays, ChevronLeft, Clock } from 'lucide-react';
 import { useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
@@ -230,11 +226,11 @@ import {
 import { extrasMocked } from '../../services/deafExtras';
 import './DeafExtras.css';
 
-const EMPTY: ScheduleForm = { 
-  date: '', 
-  time: '', 
-  duration: '', 
-  sessionType: '' 
+const EMPTY: ScheduleForm = {
+  date: '',
+  time: '',
+  duration: '',
+  sessionType: '',
 };
 
 export function SchedulePage() {
@@ -252,7 +248,7 @@ export function SchedulePage() {
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    
+
     // Optional custom validation for the "Other" text field
     if (form.sessionType === 'other' && !customSessionType.trim()) {
       setErrors({ ...errors, sessionType: 'Please specify your session type.' });
@@ -280,10 +276,8 @@ export function SchedulePage() {
 
       {/* 👇 2-Column Layout 👇 */}
       <div className="dx-schedule-layout">
-        
         {/* LEFT COLUMN: The Form */}
         <form className="dx-card dx-form" onSubmit={submit} noValidate>
-          
           {/* Date */}
           <label>
             Date
@@ -300,8 +294,8 @@ export function SchedulePage() {
                 }}
                 {...field('date')}
               />
-              <span 
-                className="dx-icon-clickable" 
+              <span
+                className="dx-icon-clickable"
                 onClick={() => {
                   if (dateInputRef.current) {
                     dateInputRef.current.type = 'date';
@@ -314,7 +308,7 @@ export function SchedulePage() {
             </span>
             {errors.date && <em role="alert">{errors.date}</em>}
           </label>
-          
+
           {/* Time */}
           <label>
             Time
@@ -331,8 +325,8 @@ export function SchedulePage() {
                 }}
                 {...field('time')}
               />
-              <span 
-                className="dx-icon-clickable" 
+              <span
+                className="dx-icon-clickable"
                 onClick={() => {
                   if (timeInputRef.current) {
                     timeInputRef.current.type = 'time';
@@ -345,7 +339,7 @@ export function SchedulePage() {
             </span>
             {errors.time && <em role="alert">{errors.time}</em>}
           </label>
-          
+
           {/* Duration */}
           <label>
             Duration
@@ -401,7 +395,6 @@ export function SchedulePage() {
               )}
             </span>
             {errors.sessionType && <em role="alert">{errors.sessionType}</em>}
-            
             {form.sessionType === 'other' && (
               <button
                 type="button"
@@ -432,10 +425,11 @@ export function SchedulePage() {
           )}
           {result === 'unavailable' && (
             <p className="dx-notice" role="status">
-              Scheduling is not live yet, so this session was not saved. You can still start one now.
+              Scheduling is not live yet, so this session was not saved. You can still start one
+              now.
             </p>
           )}
-          
+
           <button type="submit" className="dx-primary">
             Save Session
           </button>
@@ -445,7 +439,7 @@ export function SchedulePage() {
         <aside className="dx-card dx-summary">
           <h2>Booking Summary</h2>
           <p>Please review your session details before saving.</p>
-          
+
           <div className="dx-summary-list">
             <div className="dx-summary-item">
               <span>Date</span>
@@ -462,14 +456,13 @@ export function SchedulePage() {
             <div className="dx-summary-item">
               <span>Session Type</span>
               <strong>
-                {form.sessionType === 'other' 
-                  ? customSessionType || 'Custom' 
+                {form.sessionType === 'other'
+                  ? customSessionType || 'Custom'
                   : form.sessionType || 'Not selected'}
               </strong>
             </div>
           </div>
         </aside>
-
       </div>
     </div>
   );
