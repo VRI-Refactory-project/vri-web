@@ -20,9 +20,16 @@ import {
   type CreateConnection,
   type RemotePerson,
 } from '../../features/session/callConnection';
+import { labelFor } from '../../features/session/sessionStatus';
+import { openSessionSocket, type OpenSessionSocket } from '../../features/session/sessionSocket';
 import { describeError } from '../../services/api';
 import { formatDuration } from '../../services/liveSession';
-import { cancelSessionRequest, type SessionRequestState } from '../../services/sessionRequests';
+import {
+  cancelSessionRequest,
+  endSession,
+  FINAL_STATES,
+  type SessionRequestState,
+} from '../../services/sessionRequests';
 import './LiveSessionPage.css';
 
 type Phase = 'lobby' | 'joining' | 'call' | 'confirmEnd' | 'ended';
@@ -40,6 +47,8 @@ const HOME = { deaf: '/dashboard/deaf', interpreter: '/dashboard/interpreter' } 
 interface Props {
   viewerRole: 'deaf' | 'interpreter';
   createConnection?: CreateConnection;
+  /** How the page hears that the session ended. Tests pass a fake one. */
+  openSocket?: OpenSessionSocket;
 }
 
 // UPDATED: Removed Presentation
@@ -70,7 +79,18 @@ const CATEGORY_ISSUES: Record<string, { label: string }[]> = {
 // UPDATED: Removed Presentation
 const CATEGORIES = ['Audio', 'Video', 'Other'];
 
-export function LiveSessionPage({ viewerRole, createConnection = createLiveKitConnection }: Props) {
+/**
+ * The live session, for the Deaf user and the interpreter (V2-011, V2-031). One page walks through
+ * the design's screens: the lobby ("Ready to connect?"), the call, the end-session confirmation
+ * and the session-ended screen. The lobby previews the viewer's camera. "Join Session" asks the
+ * API for a call token and joins the LiveKit room, and the other people's video and audio appear
+ * as they arrive.
+ */
+export function LiveSessionPage({
+  viewerRole,
+  createConnection = createLiveKitConnection,
+  openSocket = openSessionSocket,
+}: Props) {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -85,6 +105,12 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
   // const [lastLength, setLastLength] = useState(0);
   const [others, setOthers] = useState<RemotePerson[]>([]);
   const [joinError, setJoinError] = useState<string | null>(null);
+  // How the session ended, so the ended screen says the right thing (V2-031, V2-034).
+  const [endedState, setEndedState] = useState<SessionRequestState>('COMPLETED');
+  const [ending, setEnding] = useState(false);
+  const [endError, setEndError] = useState<string | null>(null);
+  // True for the person who pressed "End session", so their screen says "You left the session".
+  const [endedByMe, setEndedByMe] = useState(false);
   const startedAt = useRef(0);
   const home = HOME[viewerRole];
 
@@ -156,6 +182,21 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
 
   useEffect(() => () => connection.leave(), [connection]);
 
+  // The server tells everyone when the session ends, whoever ended it (V2-034).
+  useEffect(() => {
+    if (!id) return;
+    const socket = openSocket(id, {
+      onStatus: (state) => {
+        if (!FINAL_STATES.includes(state)) return;
+        connection.leave();
+        startedAt.current = 0;
+        setEndedState(state);
+        setPhase('ended');
+      },
+    });
+    return () => socket.close();
+  }, [id, openSocket, connection]);
+
   const join = async () => {
     setJoinError(null);
     setPhase('joining');
@@ -201,9 +242,24 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
     navigate(home);
   };
 
-  const endCall = () => {
+  // Ends the session for everyone. If the server refuses, the person stays in the call.
+  const endCall = async () => {
+    if (!id) return;
+    setEnding(true);
+    setEndError(null);
+    setEndedByMe(true);
+    try {
+      await endSession(id);
+    } catch (err) {
+      setEndError(describeError(err));
+      setEndedByMe(false);
+      setEnding(false);
+      return;
+    }
+    setEnding(false);
     connection.leave();
-    // setLastLength(Math.floor((Date.now() - startedAt.current) / 1000));
+    startedAt.current = 0;
+    setEndedState('COMPLETED');
     setPhase('ended');
   };
 
@@ -215,20 +271,28 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
 
   // --- ENDED SCREEN (GOOGLE MEET STYLE) ---
   if (phase === 'ended') {
+    // The person who ended it hears "You left"; everyone else is told how the session ended.
+    const endedTitle =
+      endedByMe && endedState === 'COMPLETED' ? 'You left the session' : labelFor(endedState).title;
+    // The session is over for everyone, so there is nothing to rejoin. V2-033 (leave without ending)
+    // can turn this on for a person who only left while the session carries on.
+    const canRejoin = false;
     return (
       <div className="gm-ended-page">
         <div className="gm-ended-content">
-          <h1 className="gm-ended-title">You left the session</h1>
+          <h1 className="gm-ended-title">{endedTitle}</h1>
 
           {/* Action Buttons */}
           <div className="gm-ended-actions">
-            <button
-              type="button"
-              className="gm-btn gm-btn--outline"
-              onClick={() => setPhase('lobby')}
-            >
-              Rejoin
-            </button>
+            {canRejoin && (
+              <button
+                type="button"
+                className="gm-btn gm-btn--outline"
+                onClick={() => setPhase('lobby')}
+              >
+                Rejoin
+              </button>
+            )}
             <button type="button" className="gm-btn gm-btn--primary" onClick={() => navigate(home)}>
               Go to Dashboard
             </button>
@@ -385,10 +449,28 @@ export function LiveSessionPage({ viewerRole, createConnection = createLiveKitCo
           </span>
           <h1 id="ls-end-title">End this session?</h1>
           <p>Everyone will be disconnected from the session.</p>
-          <button type="button" className="ls-btn ls-btn--primary" onClick={endCall}>
+          {endError && (
+            <p className="ls-error" role="alert">
+              {endError}
+            </p>
+          )}
+          <button
+            type="button"
+            className="ls-btn ls-btn--primary"
+            onClick={() => void endCall()}
+            disabled={ending}
+          >
             End session
           </button>
-          <button type="button" className="ls-btn ls-btn--outline" onClick={() => setPhase('call')}>
+          <button
+            type="button"
+            className="ls-btn ls-btn--outline"
+            onClick={() => {
+              setEndError(null);
+              setPhase('call');
+            }}
+            disabled={ending}
+          >
             Continue session
           </button>
         </section>
