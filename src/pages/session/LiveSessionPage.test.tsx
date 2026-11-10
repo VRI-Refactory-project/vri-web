@@ -8,13 +8,17 @@ import type {
   CreateConnection,
   RemotePerson,
 } from '../../features/session/callConnection';
+import type { OpenSessionSocket, SessionEvents } from '../../features/session/sessionSocket';
+import type { SessionRequestState } from '../../services/sessionRequests';
 import { LiveSessionPage } from './LiveSessionPage';
 import { AuthProvider } from '../../features/auth/AuthProvider'; // IMPORTED AuthProvider
 
 vi.mock('../../services/sessionRequests', () => ({
   cancelSessionRequest: vi.fn().mockResolvedValue(undefined),
+  endSession: vi.fn().mockResolvedValue(undefined),
+  FINAL_STATES: ['FAILED', 'CANCELLED', 'COMPLETED'],
 }));
-import { cancelSessionRequest } from '../../services/sessionRequests';
+import { cancelSessionRequest, endSession } from '../../services/sessionRequests';
 
 function fakeCall(join: CallConnection['join'] = () => Promise.resolve()) {
   const calls = { join: vi.fn(join), setMic: vi.fn(), setCam: vi.fn(), leave: vi.fn() };
@@ -26,6 +30,17 @@ function fakeCall(join: CallConnection['join'] = () => Promise.resolve()) {
   return { calls, create, events: () => events as CallEvents };
 }
 
+/** A session socket that never touches the network, so the tests can play what the server says. */
+function fakeSocket() {
+  let events: SessionEvents | undefined;
+  const close = vi.fn();
+  const open: OpenSessionSocket = (_id, e) => {
+    events = e;
+    return { close };
+  };
+  return { open, close, status: (state: SessionRequestState) => events?.onStatus(state) };
+}
+
 const AMINA: RemotePerson = {
   id: 'user-9',
   name: 'Amina Okafor',
@@ -34,7 +49,7 @@ const AMINA: RemotePerson = {
 };
 
 // WRAPPED THE PAGE IN AuthProvider
-function renderPage(role: 'deaf' | 'interpreter', call = fakeCall()) {
+function renderPage(role: 'deaf' | 'interpreter', call = fakeCall(), socket = fakeSocket()) {
   return render(
     <AuthProvider>
       <MemoryRouter
@@ -43,7 +58,13 @@ function renderPage(role: 'deaf' | 'interpreter', call = fakeCall()) {
         <Routes>
           <Route
             path="/session/:id"
-            element={<LiveSessionPage viewerRole={role} createConnection={call.create} />}
+            element={
+              <LiveSessionPage
+                viewerRole={role}
+                createConnection={call.create}
+                openSocket={socket.open}
+              />
+            }
           />
           <Route path="/dashboard/deaf" element={<p>Deaf home</p>} />
           <Route path="/dashboard/interpreter" element={<p>Interpreter home</p>} />
@@ -55,6 +76,8 @@ function renderPage(role: 'deaf' | 'interpreter', call = fakeCall()) {
 
 beforeEach(() => {
   vi.mocked(cancelSessionRequest).mockClear();
+  vi.mocked(endSession).mockClear();
+  // jsdom has no camera: the page must still work and say why.
   Object.defineProperty(navigator, 'mediaDevices', { value: undefined, configurable: true });
 });
 
@@ -104,10 +127,11 @@ describe('LiveSessionPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /end call/i }));
     fireEvent.click(screen.getByRole('button', { name: /^end session$/i }));
 
-    // Check for the new Google Meet title
-    expect(screen.getByRole('heading', { name: 'You left the session' })).toBeTruthy();
+    // The person who ended it sees the Google Meet style title
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: 'You left the session' })).toBeTruthy(),
+    );
 
-    // Click the new "Go to Dashboard" button
     fireEvent.click(screen.getByRole('button', { name: /go to dashboard/i }));
     expect(screen.getByText('Deaf home')).toBeTruthy();
   });
@@ -171,6 +195,80 @@ describe('LiveSessionPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /end call/i }));
     fireEvent.click(screen.getByRole('button', { name: /^end session$/i }));
+    await waitFor(() => expect(call.calls.leave).toHaveBeenCalled());
+  });
+
+  it('ends the session for everyone through the API before leaving', async () => {
+    const call = fakeCall();
+    renderPage('interpreter', call);
+    fireEvent.click(screen.getByRole('button', { name: /join session/i }));
+    await waitFor(() => expect(screen.getByRole('button', { name: /end call/i })).toBeTruthy());
+
+    fireEvent.click(screen.getByRole('button', { name: /end call/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^end session$/i }));
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: 'You left the session' })).toBeTruthy(),
+    );
+    expect(endSession).toHaveBeenCalledWith('7');
     expect(call.calls.leave).toHaveBeenCalled();
+  });
+
+  it('stays in the call and says why when the server will not end it', async () => {
+    vi.mocked(endSession).mockRejectedValueOnce(
+      new ApiError(403, 'Only the interpreter or the person who asked can end this session.'),
+    );
+    const call = fakeCall();
+    renderPage('deaf', call);
+    fireEvent.click(screen.getByRole('button', { name: /join session/i }));
+    await waitFor(() => expect(screen.getByRole('button', { name: /end call/i })).toBeTruthy());
+
+    fireEvent.click(screen.getByRole('button', { name: /end call/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^end session$/i }));
+    await waitFor(() =>
+      expect(screen.getByRole('alert').textContent).toContain('Only the interpreter'),
+    );
+    expect(screen.getByText('End this session?')).toBeTruthy();
+    expect(call.calls.leave).not.toHaveBeenCalled();
+  });
+
+  it('shows the ended screen to everyone when the server says the session is over', async () => {
+    const call = fakeCall();
+    const socket = fakeSocket();
+    renderPage('deaf', call, socket);
+    fireEvent.click(screen.getByRole('button', { name: /join session/i }));
+    await waitFor(() => expect(screen.getByRole('button', { name: /end call/i })).toBeTruthy());
+
+    act(() => socket.status('COMPLETED'));
+    expect(screen.getByRole('heading', { name: 'Session ended' })).toBeTruthy();
+    expect(call.calls.leave).toHaveBeenCalled();
+  });
+
+  it('offers no Rejoin once the session is over for everyone', async () => {
+    const socket = fakeSocket();
+    renderPage('deaf', fakeCall(), socket);
+    act(() => socket.status('COMPLETED'));
+    expect(screen.queryByRole('button', { name: /rejoin/i })).toBeNull();
+    expect(screen.getByRole('button', { name: /go to dashboard/i })).toBeTruthy();
+  });
+
+  it('tells the person how it ended when the session failed', () => {
+    const socket = fakeSocket();
+    renderPage('deaf', fakeCall(), socket);
+    act(() => socket.status('FAILED'));
+    expect(screen.getByRole('heading', { name: 'We could not connect you' })).toBeTruthy();
+  });
+
+  it('ignores status updates that do not end the session', () => {
+    const socket = fakeSocket();
+    renderPage('deaf', fakeCall(), socket);
+    act(() => socket.status('ACCEPTED'));
+    expect(screen.getByText('Ready to connect?')).toBeTruthy();
+  });
+
+  it('stops listening to the server when the page closes', () => {
+    const socket = fakeSocket();
+    const view = renderPage('deaf', fakeCall(), socket);
+    view.unmount();
+    expect(socket.close).toHaveBeenCalled();
   });
 });
