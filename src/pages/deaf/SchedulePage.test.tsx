@@ -39,7 +39,7 @@ describe('SchedulePage', () => {
   it('shows an error message when the API call fails', async () => {
     // Simulate the backend returning an error
     vi.mocked(api).mockRejectedValueOnce(new Error('Network error'));
-    
+
     show();
     fill();
     fireEvent.click(screen.getByRole('button', { name: 'Save Session' }));
@@ -52,7 +52,7 @@ describe('SchedulePage', () => {
   it('confirms successfully when the API call succeeds', async () => {
     // Simulate the backend returning a successful response
     vi.mocked(api).mockResolvedValueOnce({});
-    
+
     show();
     fill();
     fireEvent.click(screen.getByRole('button', { name: 'Save Session' }));
