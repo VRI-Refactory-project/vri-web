@@ -24,6 +24,7 @@ export interface Institution {
   status: InstitutionStatus;
   createdAt: string;
   createdBy: string;
+  verification_document?: string; // ADDED: Holds the URL of the uploaded PDF
 }
 
 export interface InstitutionForm {
@@ -146,6 +147,7 @@ function normalizeInstitution(value: unknown): Institution {
       record.registered_at,
     ),
     createdBy: stringValue(record.created_by_name, record.created_by, record.createdBy) || 'Admin',
+    verification_document: stringValue(record.verification_document) || undefined, // ADDED: Map the URL from the backend
   };
 }
 
