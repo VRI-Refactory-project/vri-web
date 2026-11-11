@@ -1,14 +1,5 @@
 import { useEffect, useState } from 'react';
-import {
-  Calendar,
-  Check,
-  ChevronLeft,
-  User,
-  Video,
-  ArrowRight,
-  Lightbulb,
-  Sparkles,
-} from 'lucide-react';
+import { Calendar, Check, ChevronLeft, User, Video, ArrowRight, Lightbulb } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useSessionRequest } from '../../hooks/useSessionRequest';
 import './StartSessionPage.css';
@@ -236,11 +227,6 @@ export function StartSessionPage({ pollMs }: Props) {
       <div className="ss-grid">
         <div className="ss-left">
           <section className="ss-connect" aria-labelledby="ss-connect-title">
-            {/* Decorative sparkles inside the purple card */}
-            <div className="ss-connect-sparkles">
-              <Sparkles size={24} className="ss-sparkle-icon" />
-            </div>
-
             <span className="ss-tile" aria-hidden="true">
               <Video size={22} />
             </span>

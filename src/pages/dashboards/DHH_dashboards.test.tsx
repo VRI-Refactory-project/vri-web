@@ -29,11 +29,22 @@ const amina = {
   photo_url: null,
 };
 
-/** Answers each endpoint the page calls; the interpreters list is empty unless a test sets it. */
-function respondWith(sessions: unknown[] = [], interpreters: unknown[] = []) {
+/**
+ * Answers each endpoint the page calls.
+ * - `sessions`      → dashboard payload's `sessions` field
+ * - `interpreters`  → available interpreters list
+ * - `bookedSessions`→ the /interpreters/sessions/booked/ endpoint
+ */
+function respondWith(
+  sessions: unknown[] = [],
+  interpreters: unknown[] = [],
+  bookedSessions: unknown[] = [],
+) {
   fetchMock.mockImplementation(async (url: string) => {
-    if (String(url).includes('available-interpreters')) return ok(interpreters);
-    if (String(url).includes('/deaf/interpreters/')) return ok({ ...amina, available_now: true });
+    const u = String(url);
+    if (u.includes('/interpreters/sessions/booked/')) return ok(bookedSessions);
+    if (u.includes('available-interpreters')) return ok(interpreters);
+    if (u.includes('/deaf/interpreters/')) return ok({ ...amina, available_now: true });
     return ok({ user: {}, requests: [], sessions, chats: [] });
   });
 }
@@ -78,7 +89,6 @@ describe('DashboardPage (deaf)', () => {
     await screen.findByText('No upcoming sessions yet.');
 
     await userEvent.click(screen.getByRole('button', { name: /start vri session/i }));
-    // await userEvent.click(screen.getByRole('button', { name: /start session/i }));
 
     expect(screen.getByText('Start session page')).toBeInTheDocument();
   });
@@ -159,12 +169,37 @@ describe('DashboardPage (deaf)', () => {
   });
 
   it('shows the list as empty when it cannot be loaded', async () => {
-    fetchMock.mockImplementation(async (url: string) =>
-      String(url).includes('available-interpreters')
-        ? { ok: false, status: 500, statusText: 'Server Error', json: async () => ({}) }
-        : ok({ user: {}, requests: [], sessions: [], chats: [] }),
-    );
+    fetchMock.mockImplementation(async (url: string) => {
+      const u = String(url);
+      if (u.includes('/interpreters/sessions/booked/')) return ok([]);
+      if (u.includes('available-interpreters')) {
+        return { ok: false, status: 500, statusText: 'Server Error', json: async () => ({}) };
+      }
+      return ok({ user: {}, requests: [], sessions: [], chats: [] });
+    });
     renderPage();
     expect(await screen.findByText('No interpreters are available right now.')).toBeInTheDocument();
+  });
+
+  // NEW: verifies that booked sessions render on the dashboard
+  it('lists the booked sessions returned by the API', async () => {
+    respondWith(
+      [],
+      [],
+      [
+        {
+          id: 42,
+          date: '2026-12-01',
+          time: '14:30',
+          duration: 30,
+          session_type: 'medical',
+          status: 'PENDING',
+        },
+      ],
+    );
+    renderPage();
+    expect(await screen.findByText(/medical session/i)).toBeInTheDocument();
+    expect(screen.getByText(/2026-12-01/)).toBeInTheDocument();
+    expect(screen.queryByText('No upcoming sessions yet.')).not.toBeInTheDocument();
   });
 });
