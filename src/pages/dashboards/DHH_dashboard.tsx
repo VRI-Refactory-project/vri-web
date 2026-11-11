@@ -491,12 +491,6 @@ import {
   type AvailableInterpreter,
 } from '../../services/availableInterpreters';
 
-/** The part of GET /api/v1/dashboard/deaf/ this page uses. */
-interface DeafDashboard {
-  requests: Record<string, unknown>[];
-  sessions: Record<string, unknown>[];
-}
-
 /** Matches the NotificationSerializer from the backend */
 interface NotificationItem {
   id: number;
@@ -539,19 +533,22 @@ export function DashboardPage() {
   const firstName = (session?.user.name ?? '').trim().split(/\s+/)[0] ?? '';
 
   // --- STATE ---
-  const [sessions, setSessions] = useState<DeafDashboard['sessions'] | null>(null);
   const [bookedSessions, setBookedSessions] = useState<BookedSession[]>([]);
   const [interpreters, setInterpreters] = useState<AvailableInterpreter[] | null>(null);
   const [openProfileId, setOpenProfileId] = useState<number | null>(null);
 
   const [showAllInterpreters, setShowAllInterpreters] = useState(false);
-  const [showAllSessions, setShowAllSessions] = useState(false); // 👈 NEW STATE
+  const [showAllSessions, setShowAllSessions] = useState(false);
 
-  const [stats, setStats] = useState({
+  // const [stats, setStats] = useState({
+  //   walletBalance: 0,
+  //   monthlySessions: 0,
+  //   monthlyMinutes: 0,
+  // });
+
+  const stats = {
     walletBalance: 0,
-    monthlySessions: 0,
-    monthlyMinutes: 0,
-  });
+  };
 
   // Notifications State
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
@@ -561,24 +558,7 @@ export function DashboardPage() {
   useEffect(() => {
     let cancelled = false;
 
-    // 1. Fetch Dashboard Data
-    api<DeafDashboard>('/api/v1/dashboard/deaf/').then(
-      (data) => {
-        if (!cancelled) {
-          setSessions(data.sessions);
-          setStats({
-            walletBalance: 0,
-            monthlySessions: 0,
-            monthlyMinutes: 0,
-          });
-        }
-      },
-      () => {
-        if (!cancelled) setSessions([]);
-      },
-    );
-
-    // 2. Fetch Notifications
+    // 1. Fetch Notifications
     api<NotificationItem[]>('/api/v1/notifications/').then(
       (data) => {
         if (!cancelled) setNotifications(Array.isArray(data) ? data : []);
@@ -588,7 +568,7 @@ export function DashboardPage() {
       },
     );
 
-    // 3. Fetch Available Interpreters
+    // 2. Fetch Available Interpreters
     getAvailableInterpreters().then(
       (list) => {
         if (!cancelled) setInterpreters(list);
@@ -598,7 +578,7 @@ export function DashboardPage() {
       },
     );
 
-    // 4. Fetch Booked Sessions (with Array safety guard)
+    // 3. Fetch Booked Sessions
     api<BookedSession[]>('/api/v1/interpreters/sessions/booked/').then(
       (data) => {
         if (!cancelled) setBookedSessions(Array.isArray(data) ? data : []);
@@ -613,7 +593,24 @@ export function DashboardPage() {
     };
   }, []);
 
-  const sessionCount = sessions?.length ?? 0;
+  // Use the new bookedSessions state instead of the old dashboard data
+  const sessionCount = bookedSessions.length;
+
+  // Calculate this month's stats dynamically from bookedSessions
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+
+  const sessionsThisMonth = bookedSessions.filter((session) => {
+    const sessionDate = new Date(session.date);
+    return sessionDate.getMonth() === currentMonth && sessionDate.getFullYear() === currentYear;
+  });
+
+  const monthlySessionsCount = sessionsThisMonth.length;
+
+  const monthlyMinutesCount = sessionsThisMonth.reduce(
+    (total, session) => total + (session.duration || 0),
+    0,
+  );
 
   // Safety check added here
   const hasUnread = Array.isArray(notifications) && notifications.some((n) => n.read_at === null);
@@ -830,9 +827,10 @@ export function DashboardPage() {
             <Clock size={20} className="stat-icon" />
           </div>
           <span className="stat-value">
-            {stats.monthlySessions} {stats.monthlySessions === 1 ? 'session' : 'sessions'}
+            {/* UPDATED: Use the dynamically calculated variables */}
+            {monthlySessionsCount} {monthlySessionsCount === 1 ? 'session' : 'sessions'}
           </span>
-          <span className="stat-sub">{formatTime(stats.monthlyMinutes)} interpreted</span>
+          <span className="stat-sub">{formatTime(monthlyMinutesCount)} interpreted</span>
         </div>
       </section>
 
@@ -841,7 +839,7 @@ export function DashboardPage() {
         <div className="section-header">
           <h3>Upcoming sessions</h3>
 
-          {/* 👇 UPDATED: Button with onClick */}
+          {/* UPDATED: Button with onClick */}
           <button className="view-all" onClick={() => setShowAllSessions(!showAllSessions)}>
             {showAllSessions ? 'Show less' : 'View all'} <ChevronRight size={16} />
           </button>
@@ -851,7 +849,7 @@ export function DashboardPage() {
           {bookedSessions.length === 0 ? (
             <p className="text-muted">No upcoming sessions yet.</p>
           ) : (
-            /* 👇 UPDATED: Sliced array based on state */
+            /* UPDATED: Sliced array based on state */
             (showAllSessions ? bookedSessions : bookedSessions.slice(0, 4)).map((session) => (
               <div key={session.id} className="session-card">
                 <div className="session-card-top">
@@ -889,7 +887,7 @@ export function DashboardPage() {
           <h3>Available interpreters</h3>
 
           <button className="view-all" onClick={() => setShowAllInterpreters(!showAllInterpreters)}>
-            {showAllInterpreters ? 'Show less' : 'See all'} <ChevronRight size={16} />
+            {showAllInterpreters ? 'Show less' : 'View all'} <ChevronRight size={16} />
           </button>
         </div>
 

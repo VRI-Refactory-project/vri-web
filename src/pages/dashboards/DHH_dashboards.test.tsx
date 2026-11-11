@@ -130,12 +130,34 @@ describe('DashboardPage (deaf)', () => {
     renderPage();
     expect(await screen.findByText('No upcoming sessions yet.')).toBeInTheDocument();
     expect(screen.getAllByText('0 sessions')).toHaveLength(2);
-    expect(fetchMock.mock.calls[0][0]).toContain('/api/v1/dashboard/deaf/');
+    // 👇 REMOVED: The check for the old dashboard endpoint
     expect(screen.queryByText(/dr\. sarah chen/i)).not.toBeInTheDocument();
   });
 
   it('counts the sessions the API returns', async () => {
-    respondWith([{ id: 1 }, { id: 2 }]);
+    // 👇 Pass the fake data into the 3rd argument (bookedSessions)
+    respondWith(
+      [],
+      [],
+      [
+        {
+          id: 1,
+          date: '2026-12-01',
+          time: '10:00',
+          duration: 30,
+          session_type: 'medical',
+          status: 'PENDING',
+        },
+        {
+          id: 2,
+          date: '2026-12-02',
+          time: '11:00',
+          duration: 30,
+          session_type: 'legal',
+          status: 'PENDING',
+        },
+      ],
+    );
     renderPage();
     await waitFor(() => expect(screen.getByText('2 sessions')).toBeInTheDocument());
   });
@@ -199,7 +221,6 @@ describe('DashboardPage (deaf)', () => {
     );
     renderPage();
     expect(await screen.findByText(/medical session/i)).toBeInTheDocument();
-    // expect(screen.getByText(/2026-12-01/)).toBeInTheDocument();
     // Check for the new date box layout
     expect(screen.getByText('Dec')).toBeInTheDocument();
     expect(screen.getByText('1')).toBeInTheDocument();
