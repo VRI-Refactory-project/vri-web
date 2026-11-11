@@ -840,12 +840,11 @@ export function DashboardPage() {
       <section className="dashboard-section">
         <div className="section-header">
           <h3>Upcoming sessions</h3>
-          
+
           {/* 👇 UPDATED: Button with onClick */}
           <button className="view-all" onClick={() => setShowAllSessions(!showAllSessions)}>
             {showAllSessions ? 'Show less' : 'View all'} <ChevronRight size={16} />
           </button>
-
         </div>
 
         <div className="session-grid">
