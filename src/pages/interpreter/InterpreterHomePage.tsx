@@ -108,6 +108,7 @@ export function InterpreterHomePage() {
           </section>
 
           <div className="ih-stats-row">
+            {/* Pending Requests Card */}
             <div className="ih-stat-box">
               <div className="ih-stat-header">
                 <Clock size={20} className="ih-icon-blue" />
@@ -123,21 +124,10 @@ export function InterpreterHomePage() {
               <div className="ih-stat-header">
                 <Calendar size={20} className="ih-icon-purple" />
                 <span className="ih-trend trend-purple">{sessionsToday.length} today</span>
-                ...
-                <h2>{sessionsWeek.length}</h2>
               </div>
-              <h2>3</h2>
+              <h2>{sessionsWeek.length}</h2>
               <p>This week&apos;s sessions</p>
             </div>
-
-            {/* <div className="ih-stat-box">
-              <div className="ih-stat-header">
-                <MessageSquare size={20} className="ih-icon-teal" />
-                <span className="ih-trend trend-muted">All read</span>
-              </div>
-              <h2>0</h2>
-              <p>Unread messages</p>
-            </div> */}
           </div>
 
           <div className="ih-dashboard-split">
