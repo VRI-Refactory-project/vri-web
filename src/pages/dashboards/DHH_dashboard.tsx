@@ -10,7 +10,6 @@
 //   Wallet,
 // } from 'lucide-react';
 
-// // 1. FIXED: Added useState to the react import
 // import { useEffect, useState } from 'react';
 // import { useNavigate } from 'react-router-dom';
 // import { useAuth } from '../../hooks/useAuth';
@@ -40,6 +39,16 @@
 //   created_at: string;
 // }
 
+// // NEW: Interface for the scheduled sessions
+// interface BookedSession {
+//   id: number;
+//   date: string;
+//   time: string;
+//   duration: number;
+//   session_type: string;
+//   status: string;
+// }
+
 // function greeting(date = new Date()) {
 //   const hour = date.getHours();
 //   if (hour < 12) return 'Good morning';
@@ -62,11 +71,10 @@
 
 //   // --- STATE ---
 //   const [sessions, setSessions] = useState<DeafDashboard['sessions'] | null>(null);
+//   const [bookedSessions, setBookedSessions] = useState<BookedSession[]>([]);
 //   const [interpreters, setInterpreters] = useState<AvailableInterpreter[] | null>(null);
 //   const [openProfileId, setOpenProfileId] = useState<number | null>(null);
 
-//   // 2. FIXED: Moved this state INSIDE the component
-//   // Controls whether we show all interpreters or just the first 4
 //   const [showAllInterpreters, setShowAllInterpreters] = useState(false);
 
 //   const [stats, setStats] = useState({
@@ -117,6 +125,16 @@
 //       },
 //       () => {
 //         if (!cancelled) setInterpreters([]);
+//       },
+//     );
+
+//     // 4. NEW: Fetch Booked Sessions
+//     api<BookedSession[]>('/api/v1/interpreters/sessions/booked/').then(
+//       (data) => {
+//         if (!cancelled) setBookedSessions(data);
+//       },
+//       () => {
+//         if (!cancelled) setBookedSessions([]);
 //       },
 //     );
 
@@ -348,7 +366,7 @@
 //         </div>
 //       </section>
 
-//       {/* Upcoming Sessions */}
+//       {/* UPDATED: Upcoming Sessions */}
 //       <section className="dashboard-section">
 //         <div className="section-header">
 //           <h3>Upcoming sessions</h3>
@@ -358,23 +376,24 @@
 //         </div>
 
 //         <div className="session-list">
-//           {sessions !== null && sessionCount === 0 && (
+//           {bookedSessions.length === 0 ? (
 //             <p className="text-muted">No upcoming sessions yet.</p>
+//           ) : (
+//             bookedSessions.map((session) => (
+//               <div key={session.id} className="session-card">
+//                 <div className="session-details">
+//                   <h4 style={{ textTransform: 'capitalize' }}>{session.session_type} Session</h4>
+//                   <p>
+//                     <Clock size={14} /> {session.date} at {session.time} ({session.duration} mins)
+//                   </p>
+//                 </div>
+//                 <div className="session-status">
+//                   <span className="badge badge-scheduled">{session.status}</span>
+//                 </div>
+//                 <ChevronRight size={20} className="session-arrow" />
+//               </div>
+//             ))
 //           )}
-//           {sessions?.map((item, index) => (
-//             <div key={String(item.id ?? index)} className="session-card">
-//               <div className="session-details">
-//                 <h4>{String(item.interpreter_name ?? 'Interpreter session')}</h4>
-//                 <p>
-//                   <Clock size={14} /> {String(item.starts_at ?? '')}
-//                 </p>
-//               </div>
-//               <div className="session-status">
-//                 <span className="badge badge-scheduled">Scheduled</span>
-//               </div>
-//               <ChevronRight size={20} className="session-arrow" />
-//             </div>
-//           ))}
 //         </div>
 //       </section>
 
@@ -489,7 +508,7 @@ interface NotificationItem {
   created_at: string;
 }
 
-// NEW: Interface for the scheduled sessions
+// Interface for the scheduled sessions
 interface BookedSession {
   id: number;
   date: string;
@@ -578,10 +597,10 @@ export function DashboardPage() {
       },
     );
 
-    // 4. NEW: Fetch Booked Sessions
+    // 4. Fetch Booked Sessions (with Array safety guard)
     api<BookedSession[]>('/api/v1/interpreters/sessions/booked/').then(
       (data) => {
-        if (!cancelled) setBookedSessions(data);
+        if (!cancelled) setBookedSessions(Array.isArray(data) ? data : []);
       },
       () => {
         if (!cancelled) setBookedSessions([]);
@@ -816,7 +835,7 @@ export function DashboardPage() {
         </div>
       </section>
 
-      {/* UPDATED: Upcoming Sessions */}
+      {/* Upcoming Sessions (Grid Layout) */}
       <section className="dashboard-section">
         <div className="section-header">
           <h3>Upcoming sessions</h3>
@@ -825,22 +844,35 @@ export function DashboardPage() {
           </a>
         </div>
 
-        <div className="session-list">
+        <div className="session-grid">
           {bookedSessions.length === 0 ? (
             <p className="text-muted">No upcoming sessions yet.</p>
           ) : (
             bookedSessions.map((session) => (
               <div key={session.id} className="session-card">
+                <div className="session-card-top">
+                  <div className="session-date-box">
+                    <span className="session-date-month">
+                      {new Date(session.date).toLocaleString('default', { month: 'short' })}
+                    </span>
+                    <span className="session-date-day">{new Date(session.date).getDate()}</span>
+                  </div>
+                  <span className={`badge badge-${session.status.toLowerCase()}`}>
+                    {session.status}
+                  </span>
+                </div>
+
                 <div className="session-details">
                   <h4 style={{ textTransform: 'capitalize' }}>{session.session_type} Session</h4>
                   <p>
-                    <Clock size={14} /> {session.date} at {session.time} ({session.duration} mins)
+                    <Clock size={14} /> {session.time} • {session.duration} mins
                   </p>
                 </div>
-                <div className="session-status">
-                  <span className="badge badge-scheduled">{session.status}</span>
+
+                <div className="session-card-footer">
+                  <span>View details</span>
+                  <ChevronRight size={16} className="session-arrow" />
                 </div>
-                <ChevronRight size={20} className="session-arrow" />
               </div>
             ))
           )}
