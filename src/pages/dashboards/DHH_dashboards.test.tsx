@@ -136,10 +136,28 @@ describe('DashboardPage (deaf)', () => {
 
   it('counts the sessions the API returns', async () => {
     // 👇 Pass the fake data into the 3rd argument (bookedSessions)
-    respondWith([], [], [
-      { id: 1, date: '2026-12-01', time: '10:00', duration: 30, session_type: 'medical', status: 'PENDING' }, 
-      { id: 2, date: '2026-12-02', time: '11:00', duration: 30, session_type: 'legal', status: 'PENDING' }
-    ]);
+    respondWith(
+      [],
+      [],
+      [
+        {
+          id: 1,
+          date: '2026-12-01',
+          time: '10:00',
+          duration: 30,
+          session_type: 'medical',
+          status: 'PENDING',
+        },
+        {
+          id: 2,
+          date: '2026-12-02',
+          time: '11:00',
+          duration: 30,
+          session_type: 'legal',
+          status: 'PENDING',
+        },
+      ],
+    );
     renderPage();
     await waitFor(() => expect(screen.getByText('2 sessions')).toBeInTheDocument());
   });
