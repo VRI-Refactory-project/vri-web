@@ -208,11 +208,21 @@ export function LiveSessionPage({
     }
   };
 
+  // Without access the buttons cannot work, so say why instead of doing nothing (V2-032 FE-05).
+  const [accessNotice, setAccessNotice] = useState<string | null>(null);
   const toggleMic = () => {
+    if (media.blocked) {
+      setAccessNotice(media.error);
+      return;
+    }
     media.toggleMic();
     connection.setMic(!media.micOn);
   };
   const toggleCam = () => {
+    if (media.blocked) {
+      setAccessNotice(media.error);
+      return;
+    }
     media.toggleCam();
     connection.setCam(!media.camOn);
   };
@@ -507,6 +517,12 @@ export function LiveSessionPage({
             </div>
           )}
         </div>
+
+        {accessNotice && (
+          <p className="ls-error" role="alert">
+            {accessNotice}
+          </p>
+        )}
 
         <CallControls
           micOn={media.micOn}

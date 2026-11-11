@@ -27,6 +27,8 @@ export function useLocalMedia() {
       ? null
       : 'This browser cannot use a camera. Try a recent version of Chrome, Edge or Firefox.',
   );
+  // True once the browser has refused the camera and microphone (blocked, missing or in use).
+  const [blocked, setBlocked] = useState(false);
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
   const live = useRef<MediaStream | null>(null);
@@ -45,7 +47,9 @@ export function useLocalMedia() {
         setStream(s);
       })
       .catch((err) => {
-        if (!cancelled) setError(mediaErrorMessage(err));
+        if (cancelled) return;
+        setError(mediaErrorMessage(err));
+        setBlocked(true);
       });
     return () => {
       cancelled = true;
@@ -68,6 +72,7 @@ export function useLocalMedia() {
   return {
     stream,
     error,
+    blocked,
     micOn,
     camOn,
     toggleMic: () => toggle('audio'),
