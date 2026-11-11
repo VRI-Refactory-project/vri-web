@@ -20,6 +20,11 @@ vi.mock('../../services/sessionRequests', () => ({
 }));
 import { cancelSessionRequest, endSession } from '../../services/sessionRequests';
 
+vi.mock('../../services/sessionFeedback', () => ({
+  submitSessionFeedback: vi.fn().mockResolvedValue(undefined),
+}));
+import { submitSessionFeedback } from '../../services/sessionFeedback';
+
 function fakeCall(join: CallConnection['join'] = () => Promise.resolve()) {
   const calls = { join: vi.fn(join), setMic: vi.fn(), setCam: vi.fn(), leave: vi.fn() };
   let events: CallEvents | undefined;
@@ -77,6 +82,7 @@ function renderPage(role: 'deaf' | 'interpreter', call = fakeCall(), socket = fa
 beforeEach(() => {
   vi.mocked(cancelSessionRequest).mockClear();
   vi.mocked(endSession).mockClear();
+  vi.mocked(submitSessionFeedback).mockClear();
   // jsdom has no camera: the page must still work and say why.
   Object.defineProperty(navigator, 'mediaDevices', { value: undefined, configurable: true });
 });
@@ -336,5 +342,82 @@ describe('LiveSessionPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /stop video/i }));
     expect(call.calls.setCam).toHaveBeenCalledTimes(1);
     expect(screen.getByRole('button', { name: /mute/i })).toBeTruthy();
+  });
+
+  // --- Feedback for everyone (V2-041) ---
+
+  it('asks the interpreter how the call quality was once the session is over', () => {
+    const socket = fakeSocket();
+    renderPage('interpreter', fakeCall(), socket);
+    act(() => socket.status('COMPLETED'));
+    expect(screen.getByText('How was the call quality for you?')).toBeTruthy();
+  });
+
+  it('sends a 5-star rating as the whole feedback', async () => {
+    const socket = fakeSocket();
+    renderPage('deaf', fakeCall(), socket);
+    act(() => socket.status('COMPLETED'));
+
+    fireEvent.click(screen.getByRole('button', { name: '5 out of 5' }));
+
+    await waitFor(() => expect(screen.getByText('Thank you for your feedback!')).toBeTruthy(), {
+      timeout: 3000,
+    });
+    expect(submitSessionFeedback).toHaveBeenCalledWith('7', { rating: 5 });
+  });
+
+  it('lets an interpreter send feedback too', async () => {
+    const socket = fakeSocket();
+    renderPage('interpreter', fakeCall(), socket);
+    act(() => socket.status('COMPLETED'));
+
+    fireEvent.click(screen.getByRole('button', { name: '5 out of 5' }));
+
+    await waitFor(() => expect(submitSessionFeedback).toHaveBeenCalledWith('7', { rating: 5 }), {
+      timeout: 3000,
+    });
+  });
+
+  it('says so and keeps the card when the feedback could not be sent', async () => {
+    vi.mocked(submitSessionFeedback).mockRejectedValueOnce(
+      new ApiError(500, 'Something went wrong.'),
+    );
+    const socket = fakeSocket();
+    renderPage('deaf', fakeCall(), socket);
+    act(() => socket.status('COMPLETED'));
+
+    fireEvent.click(screen.getByRole('button', { name: '5 out of 5' }));
+
+    await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('Something went'), {
+      timeout: 3000,
+    });
+    expect(screen.queryByText('Thank you for your feedback!')).toBeNull();
+  });
+
+  it('thanks the person if they had already sent feedback', async () => {
+    vi.mocked(submitSessionFeedback).mockRejectedValueOnce(
+      new ApiError(409, 'You have already sent feedback for this session.', {
+        code: 'already_submitted',
+      }),
+    );
+    const socket = fakeSocket();
+    renderPage('deaf', fakeCall(), socket);
+    act(() => socket.status('COMPLETED'));
+
+    fireEvent.click(screen.getByRole('button', { name: '5 out of 5' }));
+
+    await waitFor(() => expect(screen.getByText('Thank you for your feedback!')).toBeTruthy(), {
+      timeout: 3000,
+    });
+  });
+
+  it('does not ask for feedback from someone who only left the call', async () => {
+    renderPage('interpreter');
+    fireEvent.click(screen.getByRole('button', { name: /join session/i }));
+    await waitFor(() => expect(screen.getByRole('button', { name: /leave call/i })).toBeTruthy());
+
+    fireEvent.click(screen.getByRole('button', { name: /leave call/i }));
+
+    expect(screen.queryByText('How was the call quality for you?')).toBeNull();
   });
 });

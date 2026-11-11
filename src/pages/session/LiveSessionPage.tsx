@@ -22,8 +22,13 @@ import {
 } from '../../features/session/callConnection';
 import { labelFor } from '../../features/session/sessionStatus';
 import { openSessionSocket, type OpenSessionSocket } from '../../features/session/sessionSocket';
-import { describeError } from '../../services/api';
+import { ApiError, describeError } from '../../services/api';
 import { formatDuration } from '../../services/liveSession';
+import {
+  submitSessionFeedback,
+  type FeedbackCategory,
+  type FeedbackInput,
+} from '../../services/sessionFeedback';
 import {
   cancelSessionRequest,
   endSession,
@@ -75,7 +80,21 @@ const CATEGORY_ISSUES: Record<string, { label: string }[]> = {
   ],
 };
 
-const CATEGORIES = ['Audio', 'Video', 'Other'];
+const CATEGORIES: FeedbackCategory[] = ['Audio', 'Video', 'Other'];
+
+// The question at the top of the feedback card, worded for each person's side of the call.
+const FEEDBACK_QUESTION = {
+  deaf: 'How was the audio and video?',
+  interpreter: 'How was the call quality for you?',
+} as const;
+
+// The API keeps one category per feedback, so use the first one the person's choices belong to.
+function categoryOf(issues: string[], comment: string): FeedbackCategory | undefined {
+  for (const category of CATEGORIES) {
+    if (CATEGORY_ISSUES[category].some((option) => issues.includes(option.label))) return category;
+  }
+  return comment.trim() ? 'Other' : undefined;
+}
 
 /**
  * The live session, for the Deaf user and the interpreter (V2-011, V2-031). One page walks through
@@ -115,18 +134,36 @@ export function LiveSessionPage({
   // --- Feedback Wizard State ---
   const [rating, setRating] = useState(0);
   const [feedbackStep, setFeedbackStep] = useState<'rating' | 'details' | 'success'>('rating');
-  const [selectedCategory, setSelectedCategory] = useState('Audio');
+  const [selectedCategory, setSelectedCategory] = useState<FeedbackCategory>('Audio');
   const [selectedIssues, setSelectedIssues] = useState<string[]>([]);
   const [customFeedback, setCustomFeedback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [feedbackError, setFeedbackError] = useState<string | null>(null);
+
+  // Sends the feedback (V2-041). True when it is saved, or was already saved (say from another tab).
+  const sendFeedback = async (input: FeedbackInput): Promise<boolean> => {
+    if (!id) return false;
+    setFeedbackError(null);
+    try {
+      await submitSessionFeedback(id, input);
+      return true;
+    } catch (err) {
+      const code = err instanceof ApiError ? (err.body as { code?: string } | null)?.code : null;
+      if (code === 'already_submitted') return true;
+      setFeedbackError(describeError(err));
+      return false;
+    }
+  };
 
   const handleStarClick = (star: number) => {
     setRating(star);
 
     setTimeout(() => {
       if (star === 5) {
-        setFeedbackStep('success');
-        console.log('Submitted 5-star feedback');
+        // Nothing went wrong, so a 5-star rating is the whole feedback.
+        void sendFeedback({ rating: 5 }).then((saved) => {
+          if (saved) setFeedbackStep('success');
+        });
       } else {
         setFeedbackStep('details');
       }
@@ -141,21 +178,14 @@ export function LiveSessionPage({
 
   const submitDetailedFeedback = async () => {
     setIsSubmitting(true);
-    try {
-      console.log('Feedback submitted:', {
-        sessionId: id,
-        rating,
-        category: selectedCategory,
-        issues: selectedIssues,
-        customText: selectedCategory === 'Other' ? customFeedback : undefined,
-      });
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      setFeedbackStep('success');
-    } catch (error) {
-      console.error('Failed to submit feedback', error);
-    } finally {
-      setIsSubmitting(false);
-    }
+    const saved = await sendFeedback({
+      rating,
+      category: categoryOf(selectedIssues, customFeedback),
+      issues: selectedIssues,
+      comment: customFeedback.trim(),
+    });
+    if (saved) setFeedbackStep('success');
+    setIsSubmitting(false);
   };
 
   const changeCategory = (direction: 'next' | 'prev') => {
@@ -298,6 +328,8 @@ export function LiveSessionPage({
         : labelFor(endedState).title;
     // Rejoin only makes sense for someone who left while the session carries on for the others.
     const canRejoin = leftEarly;
+    // Feedback is for a finished session. Someone who only left has nothing to rate yet.
+    const canGiveFeedback = endedState === 'COMPLETED' && !leftEarly;
     return (
       <div className="gm-ended-page">
         <div className="gm-ended-content">
@@ -318,116 +350,124 @@ export function LiveSessionPage({
             </button>
           </div>
 
-          <div className="gm-feedback-card">
-            {feedbackStep === 'rating' && (
-              <>
-                <h3>How was the audio and video?</h3>
-                <div className="gm-star-rating">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <div key={star} className="gm-star-wrapper">
-                      <button
-                        type="button"
-                        className={`gm-star-btn ${rating >= star ? 'active' : ''}`}
-                        onClick={() => handleStarClick(star)}
-                      >
-                        <Star
-                          size={32}
-                          strokeWidth={1.5}
-                          fill={rating >= star ? 'currentColor' : 'none'}
-                        />
-                      </button>
-                      {star === 1 && <span className="gm-star-label">Very bad</span>}
-                      {star === 5 && <span className="gm-star-label">Very good</span>}
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-
-            {feedbackStep === 'details' && (
-              <div className="gm-issue-wizard">
-                <div className="gm-stepper">
-                  {CATEGORIES.map((cat, idx) => (
-                    <div key={cat} className="gm-step-item">
-                      <div
-                        className={`gm-step-circle ${selectedCategory === cat ? 'active' : ''}`}
-                      />
-                      <span>{cat}</span>
-                      {idx < CATEGORIES.length - 1 && <div className="gm-step-line" />}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="gm-issue-slider">
-                  <button
-                    className="gm-nav-arrow"
-                    onClick={() => changeCategory('prev')}
-                    disabled={selectedCategory === 'Audio'}
-                  >
-                    <ChevronLeft size={24} />
-                  </button>
-
-                  <div className="gm-issue-card">
-                    <h3 className="gm-issue-title">What went wrong?</h3>
-
-                    {selectedCategory === 'Other' ? (
-                      <div className="gm-other-input-wrapper">
-                        <textarea
-                          className="gm-other-textarea"
-                          placeholder="Tell us more"
-                          maxLength={500}
-                          value={customFeedback}
-                          onChange={(e) => setCustomFeedback(e.target.value)}
-                        />
-                        <span className="gm-char-count">{customFeedback.length}/500</span>
+          {canGiveFeedback && (
+            <div className="gm-feedback-card">
+              {feedbackError && (
+                <p className="ls-error" role="alert">
+                  {feedbackError}
+                </p>
+              )}
+              {feedbackStep === 'rating' && (
+                <>
+                  <h3>{FEEDBACK_QUESTION[viewerRole]}</h3>
+                  <div className="gm-star-rating">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <div key={star} className="gm-star-wrapper">
+                        <button
+                          type="button"
+                          className={`gm-star-btn ${rating >= star ? 'active' : ''}`}
+                          aria-label={`${star} out of 5`}
+                          onClick={() => handleStarClick(star)}
+                        >
+                          <Star
+                            size={32}
+                            strokeWidth={1.5}
+                            fill={rating >= star ? 'currentColor' : 'none'}
+                          />
+                        </button>
+                        {star === 1 && <span className="gm-star-label">Very bad</span>}
+                        {star === 5 && <span className="gm-star-label">Very good</span>}
                       </div>
-                    ) : (
-                      <div className="gm-issue-list">
-                        {CATEGORY_ISSUES[selectedCategory].map((option) => (
-                          <label key={option.label} className="gm-issue-checkbox">
-                            <input
-                              type="checkbox"
-                              checked={selectedIssues.includes(option.label)}
-                              onChange={() => toggleIssue(option.label)}
-                            />
-                            <span className="gm-checkbox-custom" />
-                            <span>{option.label}</span>
-                          </label>
-                        ))}
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {feedbackStep === 'details' && (
+                <div className="gm-issue-wizard">
+                  <div className="gm-stepper">
+                    {CATEGORIES.map((cat, idx) => (
+                      <div key={cat} className="gm-step-item">
+                        <div
+                          className={`gm-step-circle ${selectedCategory === cat ? 'active' : ''}`}
+                        />
+                        <span>{cat}</span>
+                        {idx < CATEGORIES.length - 1 && <div className="gm-step-line" />}
                       </div>
-                    )}
+                    ))}
                   </div>
 
-                  <button
-                    className="gm-nav-arrow"
-                    onClick={() => changeCategory('next')}
-                    disabled={selectedCategory === 'Other'}
-                  >
-                    <ChevronRight size={24} />
-                  </button>
-                </div>
+                  <div className="gm-issue-slider">
+                    <button
+                      className="gm-nav-arrow"
+                      onClick={() => changeCategory('prev')}
+                      disabled={selectedCategory === 'Audio'}
+                    >
+                      <ChevronLeft size={24} />
+                    </button>
 
-                <div className="gm-wizard-actions">
-                  <button
-                    className="gm-btn gm-btn--primary"
-                    onClick={submitDetailedFeedback}
-                    disabled={isSubmitting}
-                    style={{ width: '100%' }}
-                  >
-                    {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
-                  </button>
-                </div>
-              </div>
-            )}
+                    <div className="gm-issue-card">
+                      <h3 className="gm-issue-title">What went wrong?</h3>
 
-            {feedbackStep === 'success' && (
-              <div className="gm-feedback-success">
-                <CheckCircle2 size={40} color="#10b981" />
-                <h3>Thank you for your feedback!</h3>
-                <p>We appreciate you taking the time to help us improve.</p>
-              </div>
-            )}
-          </div>
+                      {selectedCategory === 'Other' ? (
+                        <div className="gm-other-input-wrapper">
+                          <textarea
+                            className="gm-other-textarea"
+                            placeholder="Tell us more"
+                            maxLength={500}
+                            value={customFeedback}
+                            onChange={(e) => setCustomFeedback(e.target.value)}
+                          />
+                          <span className="gm-char-count">{customFeedback.length}/500</span>
+                        </div>
+                      ) : (
+                        <div className="gm-issue-list">
+                          {CATEGORY_ISSUES[selectedCategory].map((option) => (
+                            <label key={option.label} className="gm-issue-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={selectedIssues.includes(option.label)}
+                                onChange={() => toggleIssue(option.label)}
+                              />
+                              <span className="gm-checkbox-custom" />
+                              <span>{option.label}</span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <button
+                      className="gm-nav-arrow"
+                      onClick={() => changeCategory('next')}
+                      disabled={selectedCategory === 'Other'}
+                    >
+                      <ChevronRight size={24} />
+                    </button>
+                  </div>
+
+                  <div className="gm-wizard-actions">
+                    <button
+                      className="gm-btn gm-btn--primary"
+                      onClick={submitDetailedFeedback}
+                      disabled={isSubmitting}
+                      style={{ width: '100%' }}
+                    >
+                      {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {feedbackStep === 'success' && (
+                <div className="gm-feedback-success">
+                  <CheckCircle2 size={40} color="#10b981" />
+                  <h3>Thank you for your feedback!</h3>
+                  <p>We appreciate you taking the time to help us improve.</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <button
