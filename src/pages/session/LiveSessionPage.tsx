@@ -107,6 +107,8 @@ export function LiveSessionPage({
   const [endError, setEndError] = useState<string | null>(null);
   // True for the person who pressed "End session", so their screen says "You left the session".
   const [endedByMe, setEndedByMe] = useState(false);
+  // True for a person who only left the call. The session carries on for the others, so they may rejoin.
+  const [leftEarly, setLeftEarly] = useState(false);
   const startedAt = useRef(0);
   const home = HOME[viewerRole];
 
@@ -185,6 +187,8 @@ export function LiveSessionPage({
         if (!FINAL_STATES.includes(state)) return;
         connection.leave();
         startedAt.current = 0;
+        // The session is over for everyone now, so there is nothing left to rejoin.
+        setLeftEarly(false);
         setEndedState(state);
         setPhase('ended');
       },
@@ -194,6 +198,7 @@ export function LiveSessionPage({
 
   const join = async () => {
     setJoinError(null);
+    setLeftEarly(false);
     setPhase('joining');
     try {
       await connection.join(id ?? '', media.stream);
@@ -268,6 +273,17 @@ export function LiveSessionPage({
     setPhase('ended');
   };
 
+  // Leaving ends nothing: the others stay in the session, and this person may rejoin (V2-033).
+  const leaveCall = () => {
+    connection.leave();
+    startedAt.current = 0;
+    setLeftEarly(true);
+    setPhase('ended');
+  };
+
+  // Only the person who started the session (the Deaf user) can end it for everyone.
+  const canEnd = viewerRole === 'deaf';
+
   const selfName = session?.user?.name || 'You';
   const selfProfilePicture =
     (session?.user as unknown as { profilePicture?: string; photo_url?: string })?.profilePicture ||
@@ -277,10 +293,11 @@ export function LiveSessionPage({
   if (phase === 'ended') {
     // The person who ended it hears "You left"; everyone else is told how the session ended.
     const endedTitle =
-      endedByMe && endedState === 'COMPLETED' ? 'You left the session' : labelFor(endedState).title;
-    // The session is over for everyone, so there is nothing to rejoin. V2-033 (leave without ending)
-    // can turn this on for a person who only left while the session carries on.
-    const canRejoin = false;
+      leftEarly || (endedByMe && endedState === 'COMPLETED')
+        ? 'You left the session'
+        : labelFor(endedState).title;
+    // Rejoin only makes sense for someone who left while the session carries on for the others.
+    const canRejoin = leftEarly;
     return (
       <div className="gm-ended-page">
         <div className="gm-ended-content">
@@ -530,6 +547,8 @@ export function LiveSessionPage({
           onToggleMic={toggleMic}
           onToggleCam={toggleCam}
           onEnd={() => setPhase('confirmEnd')}
+          onLeave={leaveCall}
+          canEnd={canEnd}
         />
       </main>
     );
