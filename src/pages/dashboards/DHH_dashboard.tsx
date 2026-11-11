@@ -545,6 +545,7 @@ export function DashboardPage() {
   const [openProfileId, setOpenProfileId] = useState<number | null>(null);
 
   const [showAllInterpreters, setShowAllInterpreters] = useState(false);
+  const [showAllSessions, setShowAllSessions] = useState(false); // 👈 NEW STATE
 
   const [stats, setStats] = useState({
     walletBalance: 0,
@@ -839,16 +840,20 @@ export function DashboardPage() {
       <section className="dashboard-section">
         <div className="section-header">
           <h3>Upcoming sessions</h3>
-          <a href="#" className="view-all">
-            View all <ChevronRight size={16} />
-          </a>
+          
+          {/* 👇 UPDATED: Button with onClick */}
+          <button className="view-all" onClick={() => setShowAllSessions(!showAllSessions)}>
+            {showAllSessions ? 'Show less' : 'View all'} <ChevronRight size={16} />
+          </button>
+
         </div>
 
         <div className="session-grid">
           {bookedSessions.length === 0 ? (
             <p className="text-muted">No upcoming sessions yet.</p>
           ) : (
-            bookedSessions.map((session) => (
+            /* 👇 UPDATED: Sliced array based on state */
+            (showAllSessions ? bookedSessions : bookedSessions.slice(0, 4)).map((session) => (
               <div key={session.id} className="session-card">
                 <div className="session-card-top">
                   <div className="session-date-box">
