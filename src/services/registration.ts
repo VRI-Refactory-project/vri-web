@@ -120,7 +120,8 @@ export interface InstitutionLicensePayload {
 }
 
 export async function uploadInstitutionLicense(data: FormData): Promise<void> {
-  await api('/api/v1/institutions/upload-license/', {
+  await api('/api/v1/institutions/me/document/', {
+    // CHANGED: Updated URL
     method: 'POST',
     body: data,
     // Note: Do NOT set Content-Type header manually here.
