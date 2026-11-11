@@ -27,6 +27,7 @@ function renderAt(session: AuthSession | null, requireVerifiedEmail = true) {
           <Route path="/" element={<p>landing</p>} />
           <Route path="/sign-in" element={<SignInStub />} />
           <Route path="/verify-email" element={<VerifyStub />} />
+          <Route path="/change-password" element={<p>choose your own password</p>} />
           <Route
             element={
               <ProtectedRoute allow={['interpreter']} requireVerifiedEmail={requireVerifiedEmail} />
@@ -142,5 +143,13 @@ describe('ProtectedRoute', () => {
     serverConfirms(session);
     renderAt(session, false);
     expect(await screen.findByText('interpreter home')).toBeInTheDocument();
+  });
+
+  it('sends staff with a one-time password to choose their own first', async () => {
+    const base = sessionFor('interpreter');
+    const session = { ...base, user: { ...base.user, mustChangePassword: true } };
+    serverConfirms(session);
+    renderAt(session);
+    expect(await screen.findByText('choose your own password')).toBeInTheDocument();
   });
 });

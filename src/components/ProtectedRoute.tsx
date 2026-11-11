@@ -23,6 +23,8 @@ export function ProtectedRoute({
     return <Navigate to="/sign-in" replace state={{ from }} />;
   }
   if (!allow.includes(session.user.role)) return <Navigate to="/" replace />;
+  // Staff given a one-time password must choose their own before anything else.
+  if (session.user.mustChangePassword) return <Navigate to="/change-password" replace />;
   // Email has to be confirmed before anything inside the app, then they carry on to where they were.
   if (requireVerifiedEmail && needsEmailVerification(session.user)) {
     const next = `${location.pathname}${location.search}`;
