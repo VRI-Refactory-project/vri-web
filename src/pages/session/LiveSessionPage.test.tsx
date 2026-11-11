@@ -200,7 +200,7 @@ describe('LiveSessionPage', () => {
 
   it('ends the session for everyone through the API before leaving', async () => {
     const call = fakeCall();
-    renderPage('interpreter', call);
+    renderPage('deaf', call);
     fireEvent.click(screen.getByRole('button', { name: /join session/i }));
     await waitFor(() => expect(screen.getByRole('button', { name: /end call/i })).toBeTruthy());
 
@@ -213,9 +213,54 @@ describe('LiveSessionPage', () => {
     expect(call.calls.leave).toHaveBeenCalled();
   });
 
+  it('gives an interpreter Leave but not End', async () => {
+    renderPage('interpreter');
+    fireEvent.click(screen.getByRole('button', { name: /join session/i }));
+    await waitFor(() => expect(screen.getByRole('button', { name: /leave call/i })).toBeTruthy());
+    expect(screen.queryByRole('button', { name: /end call/i })).toBeNull();
+  });
+
+  it('gives the person who started the session both Leave and End', async () => {
+    renderPage('deaf');
+    fireEvent.click(screen.getByRole('button', { name: /join session/i }));
+    await waitFor(() => expect(screen.getByRole('button', { name: /leave call/i })).toBeTruthy());
+    expect(screen.getByRole('button', { name: /end call/i })).toBeTruthy();
+  });
+
+  it('leaving does not end the session and offers Rejoin', async () => {
+    const call = fakeCall();
+    renderPage('interpreter', call);
+    fireEvent.click(screen.getByRole('button', { name: /join session/i }));
+    await waitFor(() => expect(screen.getByRole('button', { name: /leave call/i })).toBeTruthy());
+
+    fireEvent.click(screen.getByRole('button', { name: /leave call/i }));
+
+    expect(screen.getByRole('heading', { name: 'You left the session' })).toBeTruthy();
+    expect(call.calls.leave).toHaveBeenCalled();
+    expect(endSession).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: /rejoin/i })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: /rejoin/i }));
+    expect(screen.getByText('Ready to connect?')).toBeTruthy();
+  });
+
+  it('takes Rejoin away if the session ends for everyone after someone left', async () => {
+    const socket = fakeSocket();
+    renderPage('interpreter', fakeCall(), socket);
+    fireEvent.click(screen.getByRole('button', { name: /join session/i }));
+    await waitFor(() => expect(screen.getByRole('button', { name: /leave call/i })).toBeTruthy());
+    fireEvent.click(screen.getByRole('button', { name: /leave call/i }));
+    expect(screen.getByRole('button', { name: /rejoin/i })).toBeTruthy();
+
+    act(() => socket.status('COMPLETED'));
+
+    expect(screen.queryByRole('button', { name: /rejoin/i })).toBeNull();
+    expect(screen.getByRole('heading', { name: 'Session ended' })).toBeTruthy();
+  });
+
   it('stays in the call and says why when the server will not end it', async () => {
     vi.mocked(endSession).mockRejectedValueOnce(
-      new ApiError(403, 'Only the interpreter or the person who asked can end this session.'),
+      new ApiError(403, 'Only the person who started this session can end it for everyone.'),
     );
     const call = fakeCall();
     renderPage('deaf', call);
@@ -225,7 +270,7 @@ describe('LiveSessionPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /end call/i }));
     fireEvent.click(screen.getByRole('button', { name: /^end session$/i }));
     await waitFor(() =>
-      expect(screen.getByRole('alert').textContent).toContain('Only the interpreter'),
+      expect(screen.getByRole('alert').textContent).toContain('Only the person who started'),
     );
     expect(screen.getByText('End this session?')).toBeTruthy();
     expect(call.calls.leave).not.toHaveBeenCalled();
