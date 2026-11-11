@@ -193,27 +193,63 @@ export function InstitutionReviewPage() {
                 </div>
               </div>
 
+              {/* REPLACED: Real document section */}
               <div className="ir-document">
                 <div className="ir-doc-head">
                   <FileText size={22} />
                   <div>
-                    <strong>Institution_registration.pdf</strong>
-                    <small>2.1MB · PDF</small>
+                    <strong>
+                      {institution.verification_document
+                        ? 'Institution_document.pdf'
+                        : 'No document uploaded'}
+                    </strong>
+                    <small>
+                      {institution.verification_document ? 'Uploaded document' : 'Pending upload'}
+                    </small>
                   </div>
                 </div>
                 <small className="ir-doc-meta">
                   Uploaded: {formatDate(institution.createdAt)} · By: {institution.createdBy}
                 </small>
                 <div className="ir-doc-actions">
-                  <button type="button" className="ir-btn ir-btn--primary" disabled>
-                    <Eye size={15} /> View documents
-                  </button>
-                  <button type="button" className="ir-btn ir-btn--ghost" disabled>
+                  <a
+                    href={institution.verification_document || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ir-btn ir-btn--primary"
+                    style={{
+                      pointerEvents: institution.verification_document ? 'auto' : 'none',
+                      opacity: institution.verification_document ? 1 : 0.5,
+                      textDecoration: 'none',
+                    }}
+                  >
+                    <Eye size={15} /> View document
+                  </a>
+                  <a
+                    href={institution.verification_document || '#'}
+                    download
+                    className="ir-btn ir-btn--ghost"
+                    style={{
+                      pointerEvents: institution.verification_document ? 'auto' : 'none',
+                      opacity: institution.verification_document ? 1 : 0.5,
+                      textDecoration: 'none',
+                    }}
+                  >
                     <Download size={15} /> Download
-                  </button>
-                  <button type="button" className="ir-btn ir-btn--ghost" disabled>
+                  </a>
+                  <a
+                    href={institution.verification_document || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ir-btn ir-btn--ghost"
+                    style={{
+                      pointerEvents: institution.verification_document ? 'auto' : 'none',
+                      opacity: institution.verification_document ? 1 : 0.5,
+                      textDecoration: 'none',
+                    }}
+                  >
                     <ExternalLink size={15} /> Open in new tab
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>

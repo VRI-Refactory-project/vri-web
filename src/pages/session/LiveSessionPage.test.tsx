@@ -271,4 +271,25 @@ describe('LiveSessionPage', () => {
     view.unmount();
     expect(socket.close).toHaveBeenCalled();
   });
+
+  it('says access is needed when Mute or Stop Video is pressed without access', async () => {
+    const denied = Object.assign(new Error('denied'), { name: 'NotAllowedError' });
+    Object.defineProperty(navigator, 'mediaDevices', {
+      value: { getUserMedia: vi.fn().mockRejectedValue(denied) },
+      configurable: true,
+    });
+    const call = fakeCall();
+    renderPage('deaf', call);
+    await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('blocked'));
+    fireEvent.click(screen.getByRole('button', { name: /join session/i }));
+    await waitFor(() => expect(screen.getByRole('button', { name: /end call/i })).toBeTruthy());
+    expect(screen.queryByRole('alert')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: /mute/i }));
+    expect(screen.getByRole('alert').textContent).toContain('Allow access');
+    expect(call.calls.setMic).toHaveBeenCalledTimes(1); // only the one from joining
+    fireEvent.click(screen.getByRole('button', { name: /stop video/i }));
+    expect(call.calls.setCam).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('button', { name: /mute/i })).toBeTruthy();
+  });
 });
