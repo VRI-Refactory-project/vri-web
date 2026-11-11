@@ -199,7 +199,10 @@ describe('DashboardPage (deaf)', () => {
     );
     renderPage();
     expect(await screen.findByText(/medical session/i)).toBeInTheDocument();
-    expect(screen.getByText(/2026-12-01/)).toBeInTheDocument();
+    // expect(screen.getByText(/2026-12-01/)).toBeInTheDocument();
+    // Check for the new date box layout
+    expect(screen.getByText('Dec')).toBeInTheDocument();
+    expect(screen.getByText('1')).toBeInTheDocument();
     expect(screen.queryByText('No upcoming sessions yet.')).not.toBeInTheDocument();
   });
 });
