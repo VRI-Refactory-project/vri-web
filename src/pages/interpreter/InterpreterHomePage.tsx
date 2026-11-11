@@ -9,6 +9,16 @@ import {
   useInterpreterHome,
 } from '../../features/interpreter/homeData';
 import { markerClass, timeAgo, useRecentActivity } from '../../features/interpreter/recentActivity';
+import { photoSrc } from '../../services/photos';
+import { dayLabel, formatDuration } from '../../services/interpreterSessions';
+import {
+  finishedSessions,
+  runningSession,
+  sessionsOn,
+  sessionsThisWeek,
+  timeOf,
+  useMySessions,
+} from '../../features/interpreter/homeSessions';
 import './InterpreterHomePage.css';
 import bannerImage from '../../assets/suit.png';
 
@@ -37,13 +47,24 @@ function greeting(date = new Date()) {
   return 'Good evening';
 }
 
+/** A person's photo, or their first letter on a coloured circle when they have none. */
+function Avatar({ name, photo }: { name: string; photo: string | null }) {
+  if (photo) return <img src={photo} alt={name} className="ih-avatar-md" />;
+  return <span className="ih-avatar-md ih-avatar-initial">{name.charAt(0).toUpperCase()}</span>;
+}
+
 export function InterpreterHomePage() {
   const { session } = useAuth();
   const firstName = session?.user.name?.split(' ')[0] || 'there';
   const { data: home } = useInterpreterHome();
   const { available, reason, setAvailable, loading, saving, error } = useAvailability();
   const { items: activity, loading: activityLoading, error: activityError } = useRecentActivity();
+  const { sessions } = useMySessions();
   const today = new Date();
+  const current = runningSession(sessions);
+  const recent = finishedSessions(sessions);
+  const sessionsToday = sessionsOn(sessions, today);
+  const sessionsWeek = sessionsThisWeek(sessions, today);
   const [viewMonth, setViewMonth] = useState(
     () => new Date(today.getFullYear(), today.getMonth(), 1),
   );
@@ -101,7 +122,9 @@ export function InterpreterHomePage() {
             <div className="ih-stat-box">
               <div className="ih-stat-header">
                 <Calendar size={20} className="ih-icon-purple" />
-                <span className="ih-trend trend-purple">+1 today</span>
+                <span className="ih-trend trend-purple">{sessionsToday.length} today</span>
+                ...
+                <h2>{sessionsWeek.length}</h2>
               </div>
               <h2>3</h2>
               <p>This week&apos;s sessions</p>
@@ -123,51 +146,42 @@ export function InterpreterHomePage() {
                 <div className="ih-next-session-wrapper">
                   <div className="ih-section-header">
                     <h3>
-                      <Calendar size={18} className="ih-section-icon" /> Next session
+                      <Calendar size={18} className="ih-section-icon" /> Current session
                     </h3>
-                    <Link to="#" className="ih-section-link">
+                    <Link to={`${INTERPRETER_BASE}/sessions`} className="ih-section-link">
                       View all <ChevronRight size={14} />
                     </Link>
                   </div>
 
-                  <div className="ih-next-session-content">
-                    <div className="ih-next-header">
-                      <img
-                        src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80"
-                        alt="James Carter"
-                        className="ih-avatar-md"
-                      />
-                      <div>
-                        <h4>
-                          James Carter <span className="ih-badge-verified">✓</span>
-                        </h4>
-                        <p className="ih-meta">Deaf User • Kampala, Uganda</p>
+                  {current ? (
+                    <div className="ih-next-session-content">
+                      <div className="ih-next-header">
+                        <Avatar name={current.withName} photo={current.photo} />
+                        <div>
+                          <h4>{current.withName}</h4>
+                          <p className="ih-meta">Deaf User • In progress</p>
+                        </div>
                       </div>
-                      <ChevronRight
-                        size={18}
-                        className="ih-chevron"
-                        style={{ marginLeft: 'auto' }}
-                      />
-                    </div>
 
-                    <div className="ih-next-details">
-                      <p>
-                        <Calendar size={14} className="ih-meta-icon" /> Today, 10:30 AM - 11:00 AM
-                      </p>
-                      <p>
-                        <Video size={14} className="ih-meta-icon" /> Video call
-                      </p>
-                    </div>
+                      <div className="ih-next-details">
+                        <p>
+                          <Calendar size={14} className="ih-meta-icon" /> Started{' '}
+                          {dayLabel(current.startedAt, today)}, {timeOf(current.startedAt)}
+                        </p>
+                        <p>
+                          <Video size={14} className="ih-meta-icon" /> Video call
+                        </p>
+                      </div>
 
-                    <div className="ih-next-actions">
-                      <button className="ih-btn-primary" type="button">
-                        Join session
-                      </button>
-                      <button className="ih-btn-secondary" type="button">
-                        View details
-                      </button>
+                      <div className="ih-next-actions">
+                        <Link to={`/live/interpreter/${current.id}`} className="ih-btn-primary">
+                          Join session
+                        </Link>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <p className="ih-time-label ih-empty-note">No session in progress.</p>
+                  )}
                 </div>
               </section>
 
@@ -175,56 +189,42 @@ export function InterpreterHomePage() {
                 <div className="ih-next-session-wrapper">
                   <div className="ih-section-header">
                     <h3>
-                      <Calendar size={18} className="ih-section-icon" /> Upcoming sessions
+                      <Calendar size={18} className="ih-section-icon" /> Recent sessions
                     </h3>
-                    <Link to="#" className="ih-section-link">
+                    <Link to={`${INTERPRETER_BASE}/sessions`} className="ih-section-link">
                       View all <ChevronRight size={14} />
                     </Link>
                   </div>
 
-                  <div className="ih-list-card-transparent">
-                    <div className="ih-list-item">
-                      <img
-                        src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80"
-                        alt="Priya Sharma"
-                        className="ih-avatar-md"
-                      />
-                      <div className="ih-list-info">
-                        <h4>
-                          Priya Sharma <span className="ih-badge-verified">✓</span>
-                        </h4>
-                        <p className="ih-meta">Interpreter • Kampala, Uganda</p>
-                      </div>
-                      <div className="ih-list-time">
-                        <p>Today, 2:00 PM - 2:30 PM</p>
-                        <p className="ih-meta-inline">
-                          <Video size={12} className="ih-meta-icon" /> Video call
-                        </p>
-                      </div>
-                      <ChevronRight size={18} className="ih-chevron" />
+                  {recent.length === 0 ? (
+                    <p className="ih-time-label ih-empty-note">No finished sessions yet.</p>
+                  ) : (
+                    <div className="ih-list-card-transparent">
+                      {recent.map((session, index) => (
+                        <div
+                          className={`ih-list-item${index === recent.length - 1 ? ' ih-list-item-last' : ''}`}
+                          key={session.id}
+                        >
+                          <Avatar name={session.withName} photo={session.photo} />
+                          <div className="ih-list-info">
+                            <h4>{session.withName}</h4>
+                            <p className="ih-meta">Deaf User</p>
+                          </div>
+                          <div className="ih-list-time">
+                            <p>
+                              {dayLabel(session.startedAt, today)}, {timeOf(session.startedAt)}
+                            </p>
+                            <p className="ih-meta-inline">
+                              <Video size={12} className="ih-meta-icon" />{' '}
+                              {session.durationMinutes
+                                ? formatDuration(session.durationMinutes)
+                                : 'Video call'}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-
-                    <div className="ih-list-item ih-list-item-last">
-                      <img
-                        src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=200&q=80"
-                        alt="Grace Nsubuga"
-                        className="ih-avatar-md"
-                      />
-                      <div className="ih-list-info">
-                        <h4>
-                          Grace Nsubuga <span className="ih-badge-verified">✓</span>
-                        </h4>
-                        <p className="ih-meta">Interpreter • Entebbe, Uganda</p>
-                      </div>
-                      <div className="ih-list-time">
-                        <p>Tomorrow, 4:00 PM - 4:30 PM</p>
-                        <p className="ih-meta-inline">
-                          <Video size={12} className="ih-meta-icon" /> Video call
-                        </p>
-                      </div>
-                      <ChevronRight size={18} className="ih-chevron" />
-                    </div>
-                  </div>
+                  )}
                 </div>
               </section>
             </div>
@@ -255,15 +255,36 @@ export function InterpreterHomePage() {
                     <p className="ih-time-label">No recent activity yet.</p>
                   )}
 
-                  {activity.map((item) => (
-                    <div className="ih-timeline-item" key={item.id}>
-                      <div className={`ih-timeline-marker ${markerClass(item.category)}`}></div>
-                      <div className="ih-timeline-content">
-                        <p>{item.title}</p>
-                        <span className="ih-time-label">{timeAgo(item.created_at)}</span>
+                  {activity.map((item) => {
+                    const hasActor = Boolean(item.actor_name || item.actor_photo); // is it a session item?
+                    const photo = photoSrc(item.actor_photo); // full photo URL, or null
+                    return (
+                      <div
+                        className={`ih-timeline-item${hasActor ? ' ih-timeline-item-avatar' : ''}`}
+                        key={item.id}
+                      >
+                        {hasActor ? (
+                          photo ? (
+                            <img
+                              src={photo}
+                              alt={item.actor_name ?? 'Deaf user'}
+                              className="ih-timeline-avatar"
+                            />
+                          ) : (
+                            <span className="ih-timeline-avatar ih-timeline-avatar-initial">
+                              {(item.actor_name ?? '?').charAt(0).toUpperCase()}
+                            </span>
+                          )
+                        ) : (
+                          <div className={`ih-timeline-marker ${markerClass(item.category)}`}></div>
+                        )}
+                        <div className="ih-timeline-content">
+                          <p>{item.title}</p>
+                          <span className="ih-time-label">{timeAgo(item.created_at)}</span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </section>
             </div>
@@ -321,39 +342,41 @@ export function InterpreterHomePage() {
               </button>
             </div>
 
-            <div className="ih-cal-grid" aria-label={`${monthLabel} calendar`}></div>
-
-            <div className="ih-cal-grid" aria-label="October calendar">
+            <div className="ih-cal-grid" aria-label={`${monthLabel} calendar`}>
               {calendarDays.map((day) => (
                 <span key={day} className="ih-cal-day-name">
                   {day}
                 </span>
               ))}
+              {monthGrid(viewMonth).map((day, index) => (
+                <span
+                  key={`${day ?? 'empty'}-${index}`}
+                  className={
+                    isThisMonth && day === today.getDate()
+                      ? 'ih-cal-day ih-cal-day-active'
+                      : 'ih-cal-day'
+                  }
+                >
+                  {day ?? ''}
+                </span>
+              ))}
             </div>
-            {monthGrid(viewMonth).map((day, index) => (
-              <span
-                key={`${day ?? 'empty'}-${index}`}
-                className={
-                  isThisMonth && day === today.getDate()
-                    ? 'ih-cal-day ih-cal-day-active'
-                    : 'ih-cal-day'
-                }
-              >
-                {day ?? ''}
-              </span>
-            ))}
 
             <div className="ih-today-schedule">
               <h4>
                 Today&apos;s schedule <span className="ih-date-pill">{dayPill(today)}</span>
               </h4>
 
-              <p className="ih-time-label">No sessions scheduled for today.</p>
+              {sessionsToday.length === 0 ? (
+                <p className="ih-time-label">No sessions today.</p>
+              ) : (
+                sessionsToday.map((session) => (
+                  <p className="ih-time-label" key={session.id}>
+                    {timeOf(session.startedAt)} · {session.withName}
+                  </p>
+                ))
+              )}
             </div>
-
-            <button type="button" className="ih-btn-calendar">
-              View full calendar <span aria-hidden="true">→</span>
-            </button>
           </div>
         </aside>
       </div>
