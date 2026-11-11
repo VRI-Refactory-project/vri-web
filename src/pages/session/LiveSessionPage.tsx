@@ -22,9 +22,13 @@ import {
 } from '../../features/session/callConnection';
 import { labelFor } from '../../features/session/sessionStatus';
 import { openSessionSocket, type OpenSessionSocket } from '../../features/session/sessionSocket';
-import { describeError } from '../../services/api';
+import { ApiError, describeError } from '../../services/api';
 import { formatDuration } from '../../services/liveSession';
-import { submitSessionFeedback, type FeedbackCategory } from '../../services/sessionFeedback';
+import {
+  submitSessionFeedback,
+  type FeedbackCategory,
+  type FeedbackInput,
+} from '../../services/sessionFeedback';
 import {
   cancelSessionRequest,
   endSession,
@@ -76,7 +80,21 @@ const CATEGORY_ISSUES: Record<string, { label: string }[]> = {
   ],
 };
 
-const CATEGORIES = ['Audio', 'Video', 'Other'];
+const CATEGORIES: FeedbackCategory[] = ['Audio', 'Video', 'Other'];
+
+// The question at the top of the feedback card, worded for each person's side of the call.
+const FEEDBACK_QUESTION = {
+  deaf: 'How was the audio and video?',
+  interpreter: 'How was the call quality for you?',
+} as const;
+
+// The API keeps one category per feedback, so use the first one the person's choices belong to.
+function categoryOf(issues: string[], comment: string): FeedbackCategory | undefined {
+  for (const category of CATEGORIES) {
+    if (CATEGORY_ISSUES[category].some((option) => issues.includes(option.label))) return category;
+  }
+  return comment.trim() ? 'Other' : undefined;
+}
 
 /**
  * The live session, for the Deaf user and the interpreter (V2-011, V2-031). One page walks through
@@ -116,25 +134,36 @@ export function LiveSessionPage({
   // --- Feedback Wizard State ---
   const [rating, setRating] = useState(0);
   const [feedbackStep, setFeedbackStep] = useState<'rating' | 'details' | 'success'>('rating');
-  const [selectedCategory, setSelectedCategory] = useState('Audio');
+  const [selectedCategory, setSelectedCategory] = useState<FeedbackCategory>('Audio');
   const [selectedIssues, setSelectedIssues] = useState<string[]>([]);
   const [customFeedback, setCustomFeedback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedbackError, setFeedbackError] = useState<string | null>(null);
 
+  // Sends the feedback (V2-041). True when it is saved, or was already saved (say from another tab).
+  const sendFeedback = async (input: FeedbackInput): Promise<boolean> => {
+    if (!id) return false;
+    setFeedbackError(null);
+    try {
+      await submitSessionFeedback(id, input);
+      return true;
+    } catch (err) {
+      const code = err instanceof ApiError ? (err.body as { code?: string } | null)?.code : null;
+      if (code === 'already_submitted') return true;
+      setFeedbackError(describeError(err));
+      return false;
+    }
+  };
+
   const handleStarClick = (star: number) => {
     setRating(star);
-    setFeedbackError(null);
 
-    setTimeout(async () => {
+    setTimeout(() => {
       if (star === 5) {
-        // A 5-star rating is the whole message; nothing more to ask.
-        try {
-          if (id) await submitSessionFeedback(id, { rating: 5 });
-          setFeedbackStep('success');
-        } catch (error) {
-          setFeedbackError(describeError(error));
-        }
+        // Nothing went wrong, so a 5-star rating is the whole feedback.
+        void sendFeedback({ rating: 5 }).then((saved) => {
+          if (saved) setFeedbackStep('success');
+        });
       } else {
         setFeedbackStep('details');
       }
@@ -148,22 +177,15 @@ export function LiveSessionPage({
   };
 
   const submitDetailedFeedback = async () => {
-    if (!id) return;
     setIsSubmitting(true);
-    setFeedbackError(null);
-    try {
-      await submitSessionFeedback(id, {
-        rating,
-        category: selectedCategory as FeedbackCategory,
-        issues: selectedIssues,
-        comment: selectedCategory === 'Other' ? customFeedback.trim() : undefined,
-      });
-      setFeedbackStep('success');
-    } catch (error) {
-      setFeedbackError(describeError(error));
-    } finally {
-      setIsSubmitting(false);
-    }
+    const saved = await sendFeedback({
+      rating,
+      category: categoryOf(selectedIssues, customFeedback),
+      issues: selectedIssues,
+      comment: customFeedback.trim(),
+    });
+    if (saved) setFeedbackStep('success');
+    setIsSubmitting(false);
   };
 
   const changeCategory = (direction: 'next' | 'prev') => {
@@ -306,7 +328,7 @@ export function LiveSessionPage({
         : labelFor(endedState).title;
     // Rejoin only makes sense for someone who left while the session carries on for the others.
     const canRejoin = leftEarly;
-    // Feedback is for a session that really finished, not for someone who only stepped out of it.
+    // Feedback is for a finished session. Someone who only left has nothing to rate yet.
     const canGiveFeedback = endedState === 'COMPLETED' && !leftEarly;
     return (
       <div className="gm-ended-page">
@@ -330,15 +352,21 @@ export function LiveSessionPage({
 
           {canGiveFeedback && (
             <div className="gm-feedback-card">
+              {feedbackError && (
+                <p className="ls-error" role="alert">
+                  {feedbackError}
+                </p>
+              )}
               {feedbackStep === 'rating' && (
                 <>
-                  <h3>How was the audio and video?</h3>
+                  <h3>{FEEDBACK_QUESTION[viewerRole]}</h3>
                   <div className="gm-star-rating">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <div key={star} className="gm-star-wrapper">
                         <button
                           type="button"
                           className={`gm-star-btn ${rating >= star ? 'active' : ''}`}
+                          aria-label={`${star} out of 5`}
                           onClick={() => handleStarClick(star)}
                         >
                           <Star
@@ -437,12 +465,6 @@ export function LiveSessionPage({
                   <h3>Thank you for your feedback!</h3>
                   <p>We appreciate you taking the time to help us improve.</p>
                 </div>
-              )}
-
-              {feedbackError && feedbackStep !== 'success' && (
-                <p className="form-error" role="alert">
-                  {feedbackError}
-                </p>
               )}
             </div>
           )}

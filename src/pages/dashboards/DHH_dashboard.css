@@ -469,13 +469,21 @@ body {
 }
 
 .view-all {
-  color: var(--primary);
-  font-size: 14px;
-  font-weight: 500;
-  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  color: #3b2579; /* or your brand purple */
+  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 4px;
+  font-weight: 600;
+}
+
+.view-all:hover {
+  text-decoration: underline;
 }
 
 /* ── SESSIONS ────────────────────────────────────────────── */
@@ -819,6 +827,7 @@ button.view-all:hover {
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 16px;
+  width: 100%;
 }
 
 .session-date-box {
@@ -897,6 +906,7 @@ button.view-all:hover {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  flex-shrink: 0;
 }
 
 .badge-pending {
