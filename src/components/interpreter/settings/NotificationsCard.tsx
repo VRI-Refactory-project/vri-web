@@ -1,6 +1,7 @@
 import { Bell } from 'lucide-react';
 import type { NotificationSettings } from '../../../features/interpreter/settings';
 import { SettingsCard } from './SettingsCard';
+import { BrowserNotificationsRow } from './BrowserNotificationsRow';
 import { ToggleRow } from './ToggleRow';
 
 interface NotificationsCardProps {
@@ -33,6 +34,8 @@ export function NotificationsCard({ value, onChange }: NotificationsCardProps) {
       title="Notifications"
       description="Choose what notifications you want to receive."
     >
+      <BrowserNotificationsRow />
+
       {ROWS.map(({ key, title, description }) => (
         <ToggleRow
           key={key}
