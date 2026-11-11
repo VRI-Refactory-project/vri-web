@@ -395,6 +395,27 @@
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(109, 40, 217, 0.3);
 }
+/* "Join session" is a link, so it needs button-like layout. */
+a.ih-btn-primary {
+  display: inline-block;
+  text-decoration: none;
+}
+
+/* Initial on a coloured circle, for a person with no photo. */
+.ih-avatar-initial {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3e8ff;
+  color: #6d28d9;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.ih-empty-note {
+  margin: 0;
+  padding: 8px 0;
+}
 
 .ih-btn-secondary {
   border: 1px solid #e5e7eb;
@@ -597,10 +618,15 @@
 }
 
 .ih-availability-card {
-  padding: 14px 12px 12px;
+  height: 220px; /* same height as the banner */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* status row at the top, button at the bottom */
+  padding: 20px 16px 16px;
   background: #fbf9ff;
   border-color: #e8e1f3;
-  margin-top: 20px;
+  /* margin-top: 20px;  <- delete this line */
 }
 
 .ih-availability-row {
@@ -869,6 +895,7 @@
   .ih-right-column > * {
     flex: 1;
     min-width: 300px;
+    height: auto;
   }
 }
 
