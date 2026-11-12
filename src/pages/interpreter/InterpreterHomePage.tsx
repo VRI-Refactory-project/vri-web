@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Bell, Calendar, ChevronLeft, ChevronRight, Clock, Video, Sun } from 'lucide-react';
+import { Bell, Calendar, ChevronLeft, ChevronRight, Clock, Sun } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { INTERPRETER_BASE } from '../../features/interpreter/navigation';
 import {
@@ -240,20 +240,14 @@ export function InterpreterHomePage() {
                         <h4>{session.withName}</h4>
                         <p className="ih-meta">
                           {dayLabel(session.startedAt, today)}, {timeOf(session.startedAt)}
+                          {session.durationMinutes
+                            ? ` · ${formatDuration(session.durationMinutes)}`
+                            : ''}
                         </p>
                       </div>
-                      {session.running ? (
-                        <Link to={`/live/interpreter/${session.id}`} className="ih-recent-join">
-                          Join session
-                        </Link>
-                      ) : (
-                        <span className="ih-meta-inline">
-                          <Video size={12} className="ih-meta-icon" />{' '}
-                          {session.durationMinutes
-                            ? formatDuration(session.durationMinutes)
-                            : 'Video call'}
-                        </span>
-                      )}
+                      <Link to={`${INTERPRETER_BASE}/sessions`} className="ih-recent-details">
+                        Details
+                      </Link>
                     </div>
                   ))}
                 </div>

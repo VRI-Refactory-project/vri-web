@@ -267,11 +267,11 @@ describe('InterpreterHomePage', () => {
       .getAllByRole('heading', { level: 4 })
       .map((heading) => heading.textContent);
     expect(names).toEqual(['Sierah Tabbuti', 'Brian Okello']);
-    expect(within(recent).getAllByText('12 mins')).toHaveLength(2);
+    expect(within(recent).getAllByText(/· 12 mins/)).toHaveLength(2);
     expect(screen.queryByText('Recent activity')).not.toBeInTheDocument();
   });
 
-  it('lets the interpreter rejoin a session that is still going', async () => {
+  it('offers Details, not Join, for every recent session', async () => {
     mySessions = reply(true, 200, [
       taken(5, 'Sierah Tabbuti', 'COMPLETED', 90),
       taken(9, 'Brian Okello', 'ASSIGNED', 10),
@@ -279,12 +279,12 @@ describe('InterpreterHomePage', () => {
     renderHome();
 
     const recent = card('Recent sessions');
-    const join = await within(recent).findByRole('link', { name: 'Join session' });
-    expect(join).toHaveAttribute('href', '/live/interpreter/9');
-    const names = within(recent)
-      .getAllByRole('heading', { level: 4 })
-      .map((heading) => heading.textContent);
-    expect(names[0]).toBe('Brian Okello');
+    const details = await within(recent).findAllByRole('link', { name: 'Details' });
+    expect(details).toHaveLength(2);
+    details.forEach((link) =>
+      expect(link).toHaveAttribute('href', '/dashboard/interpreter/sessions'),
+    );
+    expect(within(recent).queryByRole('link', { name: /join/i })).not.toBeInTheDocument();
   });
 
   it('says so when there are no sessions yet', async () => {
