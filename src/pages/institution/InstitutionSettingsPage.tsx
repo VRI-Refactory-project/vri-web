@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { ChevronRight, CheckCircle2 } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
 import './InstitutionSettingsPage.css';
 
 export function InstitutionSettingsPage() {
+  const { logout } = useAuth();
+
   // State for toggles
   const [notifications, setNotifications] = useState({
     sessionUpdates: true,
@@ -155,7 +158,7 @@ export function InstitutionSettingsPage() {
         </div>
 
         <div className="settings-list">
-          <div className="settings-item clickable" onClick={() => alert('Sign out logic here')}>
+          <div className="settings-item clickable" onClick={logout}>
             <div className="settings-item-info text-danger">
               <h3>Sign out</h3>
               <p>Sign out of SignConnect on this device.</p>
