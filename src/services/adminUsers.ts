@@ -1,13 +1,15 @@
 // src/services/adminUsers.ts
 import { api } from './api';
 
+const PATH = '/api/v1/administration/users/';
+
 export interface AdminUser {
   id: string;
   name: string;
   email: string;
   phone: string;
   role: 'deaf' | 'interpreter' | 'institution' | 'admin';
-  verificationStatus: 'verified' | 'pending' | 'suspended';
+  verificationStatus: 'verified' | 'pending' | 'rejected' | 'suspended';
   registeredAt: string;
   lastActive: string;
 }
@@ -47,8 +49,8 @@ function normalizeUser(raw: ApiUser): AdminUser {
     verificationStatus:
       status === 'verified' || status === 'approved'
         ? 'verified'
-        : status === 'suspended'
-          ? 'suspended'
+        : status === 'suspended' || status === 'rejected'
+          ? (status as 'suspended' | 'rejected')
           : 'pending',
     registeredAt: raw.created_at ?? raw.registered_at ?? '',
     lastActive: raw.last_active ?? raw.last_login ?? '',
@@ -67,7 +69,7 @@ function unwrap(value: unknown): ApiUser[] {
   return [];
 }
 
-/** GET /api/v1/admin/users/  (filters optional) */
+/** GET /api/v1/administration/users/  (filters optional) */
 export async function fetchAdminUsers(filters: AdminUserFilters = {}): Promise<AdminUser[]> {
   const params = new URLSearchParams();
   if (filters.search) params.set('search', filters.search);
@@ -75,7 +77,7 @@ export async function fetchAdminUsers(filters: AdminUserFilters = {}): Promise<A
   if (filters.status && filters.status !== 'all-statuses') params.set('status', filters.status);
   if (filters.range && filters.range !== 'all-time') params.set('range', filters.range);
   const query = params.toString();
-  const path = query ? `/api/v1/admin/users/?${query}` : '/api/v1/admin/users/';
+  const path = query ? `${PATH}?${query}` : PATH;
   const raw = await api<unknown>(path);
   return unwrap(raw)
     .map(normalizeUser)
