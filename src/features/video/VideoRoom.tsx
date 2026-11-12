@@ -1,12 +1,11 @@
 import { LiveKitRoom, VideoConference, RoomAudioRenderer } from '@livekit/components-react';
 import '@livekit/components-styles';
+import '../../pages/session/LiveSessionPage.css';
 
 interface VideoRoomProps {
   token: string;
   serverUrl?: string;
-  /** Turn the camera on when joining. Hearing guests may join without video. */
   video?: boolean;
-  /** Turn the microphone on when joining. False means the person only listens. */
   audio?: boolean;
   onLeave: () => void;
 }
@@ -19,27 +18,21 @@ export function VideoRoom({
   onLeave,
 }: VideoRoomProps) {
   return (
-    <div
-      style={{
-        height: '100vh',
-        width: '100vw',
-        backgroundColor: '#111',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
+    <main className="ls ls--call">
       <LiveKitRoom
         video={video}
         audio={audio}
         token={token}
         serverUrl={serverUrl}
         data-lk-theme="default"
-        style={{ height: '100%', flex: 1 }}
+        style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
         onDisconnected={onLeave}
       >
-        <VideoConference />
+        <div style={{ flex: 1, minHeight: 0 }}>
+          <VideoConference />
+        </div>
         <RoomAudioRenderer />
       </LiveKitRoom>
-    </div>
+    </main>
   );
 }

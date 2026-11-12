@@ -532,6 +532,45 @@
   background-color: #10b981;
 }
 
+/* Range picked on the calendar: days in between are tinted, the start and end are solid. */
+.av-cal-day--in-range {
+  background: #efe9fb;
+  color: #382c77;
+  font-weight: 600;
+  border-radius: 0;
+}
+
+.av-cal-day--range-edge {
+  background: #7a44d7;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.av-cal-range-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px 16px 0;
+  font-size: 12.5px;
+  color: #382c77;
+}
+
+.av-cal-range-clear {
+  background: none;
+  border: none;
+  color: #6d28d9;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 12.5px;
+}
+
+.availability-date-range {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
 .av-cal-selected-info {
   background: #ffffff;
   border-radius: 16px;

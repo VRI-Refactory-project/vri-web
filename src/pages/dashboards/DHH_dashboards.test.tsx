@@ -29,11 +29,22 @@ const amina = {
   photo_url: null,
 };
 
-/** Answers each endpoint the page calls; the interpreters list is empty unless a test sets it. */
-function respondWith(sessions: unknown[] = [], interpreters: unknown[] = []) {
+/**
+ * Answers each endpoint the page calls.
+ * - `sessions`      → dashboard payload's `sessions` field
+ * - `interpreters`  → available interpreters list
+ * - `bookedSessions`→ the /interpreters/sessions/booked/ endpoint
+ */
+function respondWith(
+  sessions: unknown[] = [],
+  interpreters: unknown[] = [],
+  bookedSessions: unknown[] = [],
+) {
   fetchMock.mockImplementation(async (url: string) => {
-    if (String(url).includes('available-interpreters')) return ok(interpreters);
-    if (String(url).includes('/deaf/interpreters/')) return ok({ ...amina, available_now: true });
+    const u = String(url);
+    if (u.includes('/interpreters/sessions/booked/')) return ok(bookedSessions);
+    if (u.includes('available-interpreters')) return ok(interpreters);
+    if (u.includes('/deaf/interpreters/')) return ok({ ...amina, available_now: true });
     return ok({ user: {}, requests: [], sessions, chats: [] });
   });
 }
@@ -78,7 +89,6 @@ describe('DashboardPage (deaf)', () => {
     await screen.findByText('No upcoming sessions yet.');
 
     await userEvent.click(screen.getByRole('button', { name: /start vri session/i }));
-    // await userEvent.click(screen.getByRole('button', { name: /start session/i }));
 
     expect(screen.getByText('Start session page')).toBeInTheDocument();
   });
@@ -120,12 +130,34 @@ describe('DashboardPage (deaf)', () => {
     renderPage();
     expect(await screen.findByText('No upcoming sessions yet.')).toBeInTheDocument();
     expect(screen.getAllByText('0 sessions')).toHaveLength(2);
-    expect(fetchMock.mock.calls[0][0]).toContain('/api/v1/dashboard/deaf/');
+    // 👇 REMOVED: The check for the old dashboard endpoint
     expect(screen.queryByText(/dr\. sarah chen/i)).not.toBeInTheDocument();
   });
 
   it('counts the sessions the API returns', async () => {
-    respondWith([{ id: 1 }, { id: 2 }]);
+    // 👇 Pass the fake data into the 3rd argument (bookedSessions)
+    respondWith(
+      [],
+      [],
+      [
+        {
+          id: 1,
+          date: '2026-12-01',
+          time: '10:00',
+          duration: 30,
+          session_type: 'medical',
+          status: 'PENDING',
+        },
+        {
+          id: 2,
+          date: '2026-12-02',
+          time: '11:00',
+          duration: 30,
+          session_type: 'legal',
+          status: 'PENDING',
+        },
+      ],
+    );
     renderPage();
     await waitFor(() => expect(screen.getByText('2 sessions')).toBeInTheDocument());
   });
@@ -159,12 +191,39 @@ describe('DashboardPage (deaf)', () => {
   });
 
   it('shows the list as empty when it cannot be loaded', async () => {
-    fetchMock.mockImplementation(async (url: string) =>
-      String(url).includes('available-interpreters')
-        ? { ok: false, status: 500, statusText: 'Server Error', json: async () => ({}) }
-        : ok({ user: {}, requests: [], sessions: [], chats: [] }),
-    );
+    fetchMock.mockImplementation(async (url: string) => {
+      const u = String(url);
+      if (u.includes('/interpreters/sessions/booked/')) return ok([]);
+      if (u.includes('available-interpreters')) {
+        return { ok: false, status: 500, statusText: 'Server Error', json: async () => ({}) };
+      }
+      return ok({ user: {}, requests: [], sessions: [], chats: [] });
+    });
     renderPage();
     expect(await screen.findByText('No interpreters are available right now.')).toBeInTheDocument();
+  });
+
+  // NEW: verifies that booked sessions render on the dashboard
+  it('lists the booked sessions returned by the API', async () => {
+    respondWith(
+      [],
+      [],
+      [
+        {
+          id: 42,
+          date: '2026-12-01',
+          time: '14:30',
+          duration: 30,
+          session_type: 'medical',
+          status: 'PENDING',
+        },
+      ],
+    );
+    renderPage();
+    expect(await screen.findByText(/medical session/i)).toBeInTheDocument();
+    // Check for the new date box layout
+    expect(screen.getByText('Dec')).toBeInTheDocument();
+    expect(screen.getByText('1')).toBeInTheDocument();
+    expect(screen.queryByText('No upcoming sessions yet.')).not.toBeInTheDocument();
   });
 });

@@ -49,6 +49,10 @@ const STATUS_TO_STATE: Record<string, SessionRequestState> = {
   FAILED: 'FAILED',
 };
 
+/** The screen state for a status the API (or its WebSocket) sends. Unknown ones count as waiting. */
+export const toSessionState = (status: string): SessionRequestState =>
+  STATUS_TO_STATE[status] ?? 'QUEUED';
+
 interface ApiSessionRequest {
   id: number | string;
   status: string;
@@ -63,7 +67,7 @@ function fromApi(raw: ApiSessionRequest): SessionRequest {
   return {
     id: String(raw.id),
     // An unknown status is treated as still waiting, so the screen keeps polling.
-    state: STATUS_TO_STATE[raw.display_status ?? raw.status] ?? 'QUEUED',
+    state: toSessionState(raw.display_status ?? raw.status),
     createdAt: raw.created_at,
     interpreter: raw.interpreter ?? undefined,
   };
@@ -97,4 +101,12 @@ export async function cancelSessionRequest(id: string): Promise<SessionRequest> 
   if (mockEnabled()) return mockCancel(id);
   const raw = await api<ApiSessionRequest>(`${BASE}${id}/cancel/`, { method: 'POST' });
   return fromApi(raw);
+}
+
+/**
+ * Ends the session for everyone (V2-034). The API allows only the interpreter or the person who
+ * asked for the session, and answers 403 to anyone else.
+ */
+export async function endSession(id: string): Promise<SessionRequest> {
+  return fromApi(await api<ApiSessionRequest>(`${BASE}${id}/end/`, { method: 'POST' }));
 }

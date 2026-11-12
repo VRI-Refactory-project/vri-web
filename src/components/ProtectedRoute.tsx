@@ -1,6 +1,7 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { needsEmailVerification } from '../features/auth/emailGate';
 import { useAuth } from '../hooks/useAuth';
+import { SessionCheckScreen } from './SessionCheckScreen';
 import type { Role } from '../types';
 
 /** Role-based route guard (V2-066 / NEW-02). */
@@ -14,14 +15,16 @@ export function ProtectedRoute({
 }) {
   const { session, checking } = useAuth();
   const location = useLocation();
-  // A stored session is only a claim until the server confirms it. Show nothing meanwhile.
-  if (checking) return <p className="route-checking">Checking your session…</p>;
+  // A stored session is only a claim until the server confirms it. Show the loading screen meanwhile.
+  if (checking) return <SessionCheckScreen />;
   // Remember where the person was going, so signing in again can bring them back to it.
   if (!session) {
     const from = `${location.pathname}${location.search}`;
     return <Navigate to="/sign-in" replace state={{ from }} />;
   }
   if (!allow.includes(session.user.role)) return <Navigate to="/" replace />;
+  // Staff given a one-time password must choose their own before anything else.
+  if (session.user.mustChangePassword) return <Navigate to="/change-password" replace />;
   // Email has to be confirmed before anything inside the app, then they carry on to where they were.
   if (requireVerifiedEmail && needsEmailVerification(session.user)) {
     const next = `${location.pathname}${location.search}`;

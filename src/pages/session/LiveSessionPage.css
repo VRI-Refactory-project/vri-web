@@ -1,18 +1,19 @@
 .ls {
-  min-height: 100vh;
+  height: 100vh; /* Takes full screen height */
+  display: flex;
+  flex-direction: column;
   padding: 1.25rem 1.5rem 2rem;
   background: #f5f4fb;
   color: #1b1240;
   font-family: inherit;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  overflow: hidden; /* Prevents this page from scrolling */
 }
 
 .ls-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
 }
 
 .ls-brand {
@@ -44,6 +45,8 @@
   grid-template-columns: minmax(0, 1.7fr) minmax(280px, 1fr);
   gap: 2rem;
   align-items: center;
+  flex: 1;
+  min-height: 0; /* Allows flex child to shrink */
 }
 
 .ls-preview {
@@ -125,30 +128,49 @@
   border: 1px solid #cfcae6;
 }
 
+/* --- CALL LAYOUT (Google Meet Style) --- */
+.ls--call {
+  overflow: hidden;
+}
+
 .ls--call .ls-stage {
   display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(200px, 1fr);
+  /* This makes all tiles equal size and fill the available space */
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-auto-rows: 1fr;
   gap: 1rem;
   flex: 1;
+  min-height: 0; /* Allows flex child to shrink */
+  align-content: center;
 }
 
+/* Make all video tiles equal size in the grid */
 .ls-stage > .vt {
-  min-height: 24rem;
+  height: 100%;
+  width: 100%;
+  aspect-ratio: auto; /* Let the grid control the aspect */
 }
 
-.ls-side {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+/* Ensure video doesn't have black bars and fills the box */
+.vt__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Fills the box without black bars */
+  background-color: #1a1a1a;
+  transform: scaleX(-1);
 }
 
-.ls-side .vt {
-  flex: 1;
-  min-height: 9rem;
+/* Ensure the video doesn't crop the person too much */
+.ls-stage .vt {
+  aspect-ratio: 16 / 9;
 }
 
 .ls--call .cc {
   align-self: center;
+  flex-shrink: 0;
+  margin-top: 1rem;
 }
 
 .vt {
@@ -165,18 +187,11 @@
   outline: 2px solid #5b43b5;
 }
 
-.vt__video {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
 .vt__initials {
   font-size: 2.25rem;
   font-weight: 700;
   color: #cfc8ee;
+  z-index: 1;
 }
 
 .vt--large .vt__initials {
@@ -193,6 +208,7 @@
   padding: 0.2rem 0.7rem;
   font-size: 0.8rem;
   font-weight: 600;
+  z-index: 2;
 }
 
 .cc {
@@ -242,7 +258,6 @@
   height: 3rem;
 }
 
-/* Shown in the call until someone else has joined. */
 .ls-waiting {
   display: grid;
   place-items: center;
@@ -256,11 +271,11 @@
 /* ========================================= */
 
 .ls--center {
-  /* Gradient background matching your dashboard layout */
   background: linear-gradient(135deg, #fdfbf7 0%, #ebe5f7 35%, #c8b8f0 65%, #b8d4f0 100%);
   align-items: center;
   justify-content: center;
   padding: 40px 24px;
+  min-height: 100vh;
 }
 
 .ls-card {
@@ -277,7 +292,6 @@
   box-shadow: 0 10px 30px rgba(56, 44, 119, 0.08);
 }
 
-/* The purple pill icon */
 .ls-badge {
   display: inline-flex;
   align-items: center;
@@ -307,235 +321,396 @@
   font-family: 'Manrope', system-ui, sans-serif;
 }
 
-/* Style the grey banner to look cleaner */
-.ls-card .ls-status-banner {
-  background-color: #f3f4f6 !important;
-  border: 1px solid #e5e7eb !important;
-  border-radius: 12px !important;
-  padding: 20px !important;
-  color: #4b5563 !important;
-  width: 100% !important;
-  display: flex !important;
-  align-items: flex-start !important;
-  gap: 16px !important;
-  margin-bottom: 32px !important; /* Forces space below the banner */
-  box-sizing: border-box !important;
-  text-align: left !important; /* Forces text to the left */
-}
+/* ========================================= */
+/* --- GOOGLE MEET ENDED SCREEN --- */
+/* ========================================= */
 
-/* Ensure the icon doesn't shrink */
-.ls-card .ls-status-banner > svg,
-.ls-card .ls-status-banner > span {
-  flex-shrink: 0 !important;
-  margin-top: 2px !important;
-}
-
-/* Ensure the text takes up the remaining space and aligns left */
-.ls-card .ls-status-banner > div {
-  flex: 1 !important;
-  text-align: left !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: flex-start !important;
-}
-
-/* The primary button */
-.ls-card .ls-btn--primary {
-  background-color: #382c77;
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  height: 52px;
-  font-size: 16px;
-  font-weight: 700;
-  width: 100%;
-  transition: all 0.2s;
-  margin-top: 0;
-}
-
-.ls-card .ls-btn--primary:hover {
-  background-color: #2a2060;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(56, 44, 119, 0.2);
-}
-
-/* The outline button */
-.ls-card .ls-btn--outline {
-  background-color: #fff;
-  color: #382c77;
-  border: 1px solid #cfcae6;
-  border-radius: 12px;
-  height: 52px;
-  font-size: 16px;
-  font-weight: 700;
-  width: 100%;
-  transition: all 0.2s;
-}
-
-.ls-card .ls-btn--outline:hover {
-  background-color: #f9f8ff;
-}
-
-/* --- Custom Ended Banner --- */
-.custom-ended-banner {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  background-color: #f3efff;
-  border: 1px solid #e8e1f3;
-  border-radius: 12px;
-  padding: 16px;
-  width: 100%;
-  text-align: left;
-  margin-bottom: 24px;
-  box-sizing: border-box;
-}
-
-.custom-ended-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: 2px solid #8b5cf6;
-  color: #8b5cf6;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.custom-ended-text {
-  flex: 1;
-}
-
-.custom-ended-text strong {
-  display: block;
-  margin-bottom: 4px;
-  font-weight: 700;
-  color: #4b3a9e;
-  font-size: 15px;
-}
-
-.custom-ended-text p {
-  margin: 0;
-  font-size: 14px;
-  color: #6b7280;
-  line-height: 1.5;
-}
-
-/* --- Feedback Form --- */
-.feedback-form {
-  width: 100%;
-  text-align: center;
-  margin-bottom: 24px;
-}
-
-.feedback-form h3 {
-  margin: 0 0 4px;
-  font-size: 20px;
-  font-weight: 800;
-  color: #1a1a1a;
-}
-
-.feedback-form p {
-  margin: 0 0 20px;
-  font-size: 14px;
-  color: #6b7280;
-}
-
-.star-rating {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 20px;
-}
-
-.star-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #d1d5db;
-  transition: all 0.2s;
-  padding: 0;
-}
-
-.star-btn:hover {
-  transform: scale(1.15);
-}
-.star-btn.active {
-  color: #f59e0b;
-}
-
-.feedback-tags {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 20px;
-}
-
-.feedback-tag {
-  padding: 6px 14px;
-  border-radius: 999px;
-  border: 1px solid #e5e7eb;
-  background: #f9fafb;
-  color: #4b5563;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.feedback-tag:hover {
-  background: #f3f4f6;
-}
-.feedback-tag.selected {
-  background: #f3efff;
-  border-color: #8b5cf6;
-  color: #6d28d9;
-}
-
-.feedback-textarea {
-  width: 100%;
-  padding: 14px;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  font-family: inherit;
-  font-size: 14px;
-  resize: vertical;
-  margin-bottom: 20px;
-  box-sizing: border-box;
-  background: #f9fafb;
-}
-
-.feedback-textarea:focus {
-  outline: 2px solid #8b5cf6;
-  border-color: transparent;
-  background: #ffffff;
-}
-
-.feedback-success {
+.gm-ended-page {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #fdfbf7 0%, #ebe5f7 35%, #c8b8f0 65%, #b8d4f0 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 16px 0;
+  font-family: 'Google Sans', 'Manrope', system-ui, sans-serif;
+  z-index: 1000;
+  overflow-y: auto; /* Allows the whole page to scroll if needed */
+}
+
+.gm-ended-content {
+  margin-top: 60px;
+  margin-bottom: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 600px;
+}
+
+.gm-ended-title {
+  font-size: 32px;
+  font-weight: 400;
+  color: #3c4043;
+  margin-bottom: 32px;
+  letter-spacing: -0.5px;
+}
+
+.gm-ended-actions {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.gm-btn {
+  height: 44px;
+  padding: 0 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gm-btn--outline {
+  background: #ffffff;
+  border: 1px solid #dadce0;
+  color: #382c77;
+}
+
+.gm-btn--outline:hover {
+  background: #f8f9fa;
+}
+
+.gm-btn--primary {
+  background: #382c77;
+  border: 1px solid #382c77;
+  color: #ffffff;
+}
+
+.gm-btn--primary:hover {
+  background: #2a2060;
+  box-shadow: 0 4px 12px rgba(56, 44, 119, 0.2);
+}
+
+/* --- The Main Feedback Card --- */
+.gm-feedback-card {
+  background: #ffffff;
+  border-radius: 20px;
+  max-width: 420px;
+  width: 100%;
+  padding: 32px 24px 48px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  box-shadow: 0 10px 30px rgba(56, 44, 119, 0.08);
+  /* Removed max-height so it expands to fit content naturally */
+}
+
+.gm-feedback-card h3 {
+  font-size: 15px;
+  font-weight: 500;
+  color: #1a1a1a;
+  margin: 0 0 20px 0;
+}
+
+/* --- Star Rating --- */
+.gm-star-rating {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.gm-star-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  width: 50px;
+}
+
+.gm-star-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #dadce0;
+  transition: color 0.2s;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.gm-star-btn:hover {
+  transform: scale(1.1);
+}
+
+.gm-star-btn.active {
+  color: #7a44d7;
+}
+
+.gm-star-label {
+  position: absolute;
+  top: 44px;
+  font-size: 11px;
+  color: #5f6368;
+  white-space: nowrap;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* --- Bottom Left Feedback Link --- */
+.gm-bottom-feedback {
+  position: absolute;
+  bottom: 24px;
+  left: 32px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: #5f6368;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.gm-bottom-feedback:hover {
+  color: #1a73e8;
+}
+
+/* --- Wizard Stepper --- */
+.gm-issue-wizard {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.gm-stepper {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.gm-step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex: 1;
+}
+
+.gm-step-circle {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #d1d5db;
+  margin-bottom: 8px;
+  z-index: 2;
+}
+
+.gm-step-circle.active {
+  background: #382c77;
+}
+
+.gm-step-item span {
+  font-size: 12px;
+  color: #5f6368;
+}
+
+.gm-step-line {
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: #e5e7eb;
+  z-index: 1;
+}
+
+/* --- Issue Slider (Arrows + Card) --- */
+.gm-issue-slider {
+  display: flex;
+  align-items: flex-start; /* Align arrows to the top */
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  margin-bottom: 16px;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+
+.gm-nav-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #f3f4f6;
+  border: none;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  margin-top: 20px; /* Push arrows down to align with card content */
+}
+
+.gm-nav-arrow:hover:not(:disabled) {
+  background: #f3efff;
+  color: #382c77;
+}
+
+.gm-nav-arrow:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* --- The Inner Card (No double border) --- */
+.gm-issue-card {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  width: 100%;
+}
+
+.gm-issue-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  width: 100%;
+  text-align: left;
   margin-bottom: 16px;
 }
 
-.feedback-success h3 {
-  margin: 12px 0 4px;
-  font-size: 20px;
+.gm-issue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.gm-issue-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.gm-issue-checkbox:hover {
+  background: #f3f4f6;
+}
+
+.gm-issue-checkbox input {
+  display: none;
+}
+
+.gm-checkbox-custom {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #d1d5db;
+  border-radius: 4px;
+  display: inline-block;
+  position: relative;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.gm-issue-checkbox input:checked + .gm-checkbox-custom {
+  background: #382c77;
+  border-color: #382c77;
+}
+
+.gm-issue-checkbox input:checked + .gm-checkbox-custom::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.gm-wizard-actions {
+  width: 100%;
+  margin-top: 16px;
+}
+
+/* --- Success State --- */
+.gm-feedback-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+.gm-feedback-success h3 {
+  margin: 16px 0 8px;
+  font-size: 18px;
   color: #1a1a1a;
 }
 
-.feedback-success p {
+.gm-feedback-success p {
   margin: 0;
   font-size: 14px;
   color: #6b7280;
 }
 
-.text-green-500 {
-  color: #10b981;
+/* --- Other Input (Textarea) --- */
+.gm-other-input-wrapper {
+  position: relative;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.gm-other-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px 16px;
+  border: 1px solid #dcd7ee;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  color: #382c77;
+  resize: vertical;
+  box-sizing: border-box;
+  background: #ffffff;
+  transition: border-color 0.2s;
+}
+
+.gm-other-textarea:focus {
+  outline: none;
+  border-color: #7a44d7;
+  box-shadow: 0 0 0 3px rgba(122, 68, 215, 0.15);
+}
+
+.gm-other-textarea::placeholder {
+  color: #80868b;
+}
+
+.gm-char-count {
+  position: absolute;
+  bottom: 12px;
+  right: 16px;
+  font-size: 11px;
+  color: #80868b;
+  pointer-events: none;
 }
 
 @media (max-width: 800px) {
@@ -543,13 +718,24 @@
   .ls--call .ls-stage {
     grid-template-columns: 1fr;
   }
-  .ls-side {
-    flex-direction: row;
-  }
   .cc {
     gap: 0.5rem;
     padding: 0.5rem 0.75rem;
     flex-wrap: wrap;
     justify-content: center;
   }
+}
+
+.ls-call-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+  margin-bottom: 1rem;
+}
+
+/* Force the invite button to not stretch to full width */
+.ls-call-header > * {
+  width: auto !important;
+  margin-top: 0 !important;
 }

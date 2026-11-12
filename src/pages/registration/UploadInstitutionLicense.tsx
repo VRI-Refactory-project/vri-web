@@ -54,9 +54,10 @@ export const UploadInstitutionLicense = () => {
     setError(undefined);
     try {
       const formData = new FormData();
-      formData.append('license', file);
-      formData.append('licenseType', licenseType);
-      formData.append('issuingAuthority', issuingAuthority);
+      // CHANGED: Backend expects 'document' and 'document_type'
+      formData.append('document', file);
+      formData.append('document_type', licenseType);
+      formData.append('issuing_authority', issuingAuthority);
 
       await uploadInstitutionLicense(formData);
       navigate('/register/pending', { replace: true });

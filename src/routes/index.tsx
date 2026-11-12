@@ -11,6 +11,7 @@ import { Resetpassword } from '../pages/registration/Resetpassword';
 import { SignUpInstitution } from '../pages/registration/SignUpInstitution';
 import { UploadInstitutionLicense } from '../pages/registration/UploadInstitutionLicense';
 import { VerifyEmailPage } from '../pages/auth/VerifyEmailPage';
+import { ChangeTemporaryPasswordPage } from '../pages/auth/ChangeTemporaryPasswordPage';
 import { SignInPage } from '../pages/auth/SignInPage';
 import { CreateAccountPage } from '../pages/registration/CreateAccountPage';
 import { PendingReviewPage } from '../pages/registration/PendingReviewPage';
@@ -29,6 +30,9 @@ import { InstitutionAccountsPage } from '../pages/admin/InstitutionAccountsPage'
 import { InstitutionReviewPage } from '../pages/admin/InstitutionReviewPage';
 import { AvailabilityPage } from '../pages/interpreter/AvailabilityPage';
 import { InstitutionLayout } from '../features/institution/InstitutionLayout';
+import { InstitutionRoleRoute } from '../components/InstitutionRoleRoute';
+import { StaffLayout } from '../features/staff/StaffLayout';
+import { StaffDashboardPage } from '../features/staff/StaffDashboardPage';
 import { StaffManagementPage } from '../pages/institution/StaffManagementPage';
 import { ProfilePage as DeafProfilePage } from '../pages/deaf/ProfilePage';
 import { StartSessionPage } from '../pages/deaf/StartSessionPage';
@@ -79,14 +83,18 @@ const appRoutes: RouteObject[] = [
       { path: '/register/deaf', element: <CreateAccountPage /> },
       { path: '/register/interpreter', element: <CreateAccountPage role="interpreter" /> },
       { path: '/register/institution', element: <SignUpInstitution /> },
-      { path: '/register/institution/upload-license', element: <UploadInstitutionLicense /> },
+      // NOTE: upload-license moved below!
     ],
   },
+
+  // MOVED HERE: Outside of GuestRoute so logged-in institutions can see it
+  { path: '/register/institution/upload-license', element: <UploadInstitutionLicense /> },
 
   { path: '/sign-in', element: <SignInPage /> },
   { path: '/video/:roomName', element: <GuestVideoPage /> },
   { path: '/join/:token', element: <GuestSessionPage /> },
   { path: '/verify-email', element: <VerifyEmailPage /> },
+  { path: '/change-password', element: <ChangeTemporaryPasswordPage /> },
   { path: '/offline', element: <OfflinePage /> },
   { path: '/forgot-password', element: <Forgotpassword /> },
   { path: '/reset-password', element: <Resetpassword /> },
@@ -105,6 +113,16 @@ const appRoutes: RouteObject[] = [
   {
     element: <ProtectedRoute allow={['deaf']} />,
     children: [{ path: '/live/deaf/:id', element: <LiveSessionPage viewerRole="deaf" /> }],
+  },
+  {
+    // Institution staff request interpreters like a Deaf person does, so they join as the requester.
+    element: <ProtectedRoute allow={['institution']} />,
+    children: [
+      {
+        path: '/live/institution/:id',
+        element: <LiveSessionPage viewerRole="deaf" home="/dashboard/staff" />,
+      },
+    ],
   },
   {
     element: <ProtectedRoute allow={['interpreter']} />,
@@ -173,18 +191,38 @@ const appRoutes: RouteObject[] = [
     element: <ProtectedRoute allow={['institution']} />,
     children: [
       {
-        // The forced redirect was removed. The upload page is public.
-        path: '/dashboard/institution',
-        element: <InstitutionLayout />,
+        // The institution admin's area. Staff are sent to /dashboard/staff.
+        element: <InstitutionRoleRoute allow="ADMIN" />,
         children: [
-          { index: true, element: <InstitutionDashboardPage /> },
-          { path: 'staff', element: <StaffManagementPage /> },
-          { path: 'staff/new', element: <CreateStaffAccountPage /> },
-          { path: 'staff/created', element: <StaffAccountCreatedPage /> },
-          { path: 'sessions', element: <InstitutionSessionsPage /> },
-          { path: 'analytics', element: <InstitutionAnalyticsPage /> },
-          { path: 'settings', element: <InstitutionSettingsPage /> },
-          { path: 'profile', element: <InstitutionProfilePage /> },
+          {
+            path: '/dashboard/institution',
+            element: <InstitutionLayout />,
+            children: [
+              { index: true, element: <InstitutionDashboardPage /> },
+              { path: 'staff', element: <StaffManagementPage /> },
+              { path: 'staff/new', element: <CreateStaffAccountPage /> },
+              { path: 'staff/created', element: <StaffAccountCreatedPage /> },
+              { path: 'sessions', element: <InstitutionSessionsPage /> },
+              { path: 'analytics', element: <InstitutionAnalyticsPage /> },
+              { path: 'settings', element: <InstitutionSettingsPage /> },
+              { path: 'profile', element: <InstitutionProfilePage /> },
+            ],
+          },
+        ],
+      },
+      {
+        // The institution staff member's area (Figma: signconnect-staff-*).
+        element: <InstitutionRoleRoute allow="STAFF" />,
+        children: [
+          {
+            path: '/dashboard/staff',
+            element: <StaffLayout />,
+            children: [
+              { index: true, element: <StaffDashboardPage /> },
+              { path: 'start-session', element: <StartSessionPage /> },
+              { path: 'schedule-session', element: <SchedulePage /> },
+            ],
+          },
         ],
       },
     ],
@@ -222,6 +260,8 @@ const appRoutes: RouteObject[] = [
     path: '/admin/interpreters',
     element: <Placeholder title="Interpreter review" story="V2-045" />,
   },
+
+  // { path: '/live/deaf/:id', element: <LiveSessionPage viewerRole="deaf" /> },
 
   {
     path: '*',
