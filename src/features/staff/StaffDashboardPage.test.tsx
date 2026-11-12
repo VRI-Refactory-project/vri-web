@@ -13,6 +13,14 @@ vi.mock('../../hooks/useAuth', () => ({
 const source = vi.hoisted(() => ({ load: (() => Promise.resolve([])) as () => Promise<unknown> }));
 vi.mock('../../services/mySessions', () => ({ getMySessions: () => source.load() }));
 
+// The institution's name comes from a second call. A plain function again, for the same reason.
+const institution = vi.hoisted(() => ({
+  load: (() => Promise.resolve({ name: 'Northside Medical Center' })) as () => Promise<unknown>,
+}));
+vi.mock('../../services/institutionDashboard', () => ({
+  getInstitutionOverview: () => institution.load(),
+}));
+
 const item = (over: Partial<HistoryItem>): HistoryItem => ({
   id: '1',
   status: 'completed',
@@ -32,6 +40,7 @@ function renderPage() {
 
 beforeEach(() => {
   source.load = () => Promise.resolve([]);
+  institution.load = () => Promise.resolve({ name: 'Northside Medical Center' });
 });
 
 describe('StaffDashboardPage', () => {
@@ -44,6 +53,18 @@ describe('StaffDashboardPage', () => {
     );
     expect(await screen.findByText('No active session')).toBeInTheDocument();
     expect(screen.getByText('You have no sessions yet.')).toBeInTheDocument();
+  });
+
+  it('shows which institution the staff member belongs to', async () => {
+    renderPage();
+    expect(await screen.findByText('Northside Medical Center')).toBeInTheDocument();
+  });
+
+  it('opens without the institution name when it cannot be loaded', async () => {
+    institution.load = () => Promise.reject(new Error('offline'));
+    renderPage();
+    expect(await screen.findByText('No active session')).toBeInTheDocument();
+    expect(screen.queryByText('Northside Medical Center')).not.toBeInTheDocument();
   });
 
   it('lists the three latest sessions with who answered and how they ended', async () => {

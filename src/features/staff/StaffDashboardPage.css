@@ -12,6 +12,14 @@
   gap: 10px;
   font-size: 14px;
 }
+.sd-account-text {
+  display: grid;
+  text-align: right;
+}
+.sd-account-text span {
+  color: #5a5775;
+  font-size: 12px;
+}
 .sd-avatar {
   display: grid;
   place-items: center;

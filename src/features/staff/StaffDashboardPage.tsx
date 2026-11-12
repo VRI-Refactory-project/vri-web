@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { formatWhen, STATUS_LABEL, titleFor } from '../../features/sessions/sessionHistory';
 import { useAuth } from '../../hooks/useAuth';
+import { getInstitutionOverview } from '../../services/institutionDashboard';
 import { getMySessions, type HistoryItem } from '../../services/mySessions';
 import './StaffDashboardPage.css';
 
@@ -30,6 +31,7 @@ export function StaffDashboardPage() {
   const firstName = name.trim().split(/\s+/)[0] ?? '';
   // null while loading; an empty list when the request fails, so the page still opens.
   const [items, setItems] = useState<HistoryItem[] | null>(null);
+  const [institution, setInstitution] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -42,13 +44,27 @@ export function StaffDashboardPage() {
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    getInstitutionOverview().then(
+      (overview) => !cancelled && setInstitution(overview.name),
+      () => undefined, // the name is a nicety: the page works without it
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const recent = (items ?? []).slice(0, 3);
   const inProgress = (items ?? []).find((i) => i.status === 'waiting' || i.status === 'matched');
 
   return (
     <div className="sd-page">
       <div className="sd-account" aria-label="Signed in as">
-        <strong>{name}</strong>
+        <span className="sd-account-text">
+          <strong>{name}</strong>
+          {institution && <span>{institution}</span>}
+        </span>
         <span className="sd-avatar" aria-hidden="true">
           {initials(name)}
         </span>
