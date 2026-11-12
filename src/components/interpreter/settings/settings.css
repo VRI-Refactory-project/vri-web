@@ -289,3 +289,14 @@
   gap: 12px;
   margin-top: 8px;
 }
+/* Shown under a row when its switch could not be changed */
+.is-row-error {
+  margin: 0;
+  padding: 0 0 12px;
+  color: #b42318;
+  font-size: 14px;
+}
+.is-notice--error {
+  background: #fdecec;
+  color: #a12626;
+}

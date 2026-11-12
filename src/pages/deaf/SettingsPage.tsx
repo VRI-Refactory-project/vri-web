@@ -1,6 +1,7 @@
 import { Accessibility, ChevronRight, CircleHelp, User } from 'lucide-react';
 import type { ComponentType } from 'react';
 import { Link } from 'react-router-dom';
+import { BrowserNotificationsCard } from '../../components/BrowserNotificationsCard';
 import './SessionsPages.css';
 
 interface Item {
@@ -62,6 +63,7 @@ export function SettingsPage() {
           );
         })}
       </ul>
+      <BrowserNotificationsCard />
     </div>
   );
 }

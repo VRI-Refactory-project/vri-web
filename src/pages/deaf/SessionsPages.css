@@ -177,3 +177,25 @@ a.sh-card:focus-visible {
   background: #fdecec;
   color: #7f1d1d;
 }
+/* Browser notifications card on the Settings page */
+.sh-notify {
+  margin-top: 12px;
+}
+.sh-notify-error {
+  color: #b42318;
+}
+.sh-notify-button {
+  flex: none;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 10px;
+  background: #3b2579;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.sh-notify-button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}

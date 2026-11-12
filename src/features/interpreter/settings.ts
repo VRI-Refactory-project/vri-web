@@ -1,9 +1,7 @@
 /**
- * The interpreter's Settings page: what each setting is and where it starts.
- *
- * The page is static for now: nothing is saved until the settings endpoint exists, so every visit
- * starts from DEFAULT_SETTINGS. When the endpoint arrives, loading and saving go in a service file
- * and these types stay the same.
+ * Only the notification choices are saved on the server so far (see notificationSettings.ts). The
+ * privacy and account preferences are static: every visit starts from DEFAULT_SETTINGS until their
+ * endpoints exist. Loading and saving go in a service file and these types stay the same.
  */
 
 export interface NotificationSettings {
