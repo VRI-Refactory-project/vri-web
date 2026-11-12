@@ -254,6 +254,7 @@
 import { CalendarDays, ChevronLeft, Clock } from 'lucide-react';
 import { useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
+import { useRequesterPaths } from '../../features/dashboard/requesterPaths';
 import {
   validateSchedule,
   type ScheduleErrors,
@@ -270,6 +271,7 @@ const EMPTY: ScheduleForm = {
 };
 
 export function SchedulePage() {
+  const paths = useRequesterPaths();
   const [form, setForm] = useState<ScheduleForm>(EMPTY);
   const [errors, setErrors] = useState<ScheduleErrors>({});
   const [result, setResult] = useState<'saved' | 'unavailable' | null>(null);
@@ -322,7 +324,7 @@ export function SchedulePage() {
 
   return (
     <div className="dx-page">
-      <Link to="/dashboard/deaf/sessions" className="dx-back">
+      <Link to={paths.scheduleBack} className="dx-back">
         <ChevronLeft size={18} aria-hidden /> Back
       </Link>
       <header className="dx-header">

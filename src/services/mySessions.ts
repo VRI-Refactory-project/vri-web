@@ -1,7 +1,7 @@
 import { api } from './api';
 
 /** How a request ended up, in the words a person sees in their history. */
-export type HistoryStatus = 'waiting' | 'matched' | 'cancelled' | 'missed';
+export type HistoryStatus = 'waiting' | 'matched' | 'completed' | 'cancelled' | 'missed';
 
 export interface HistoryItem {
   id: string;
@@ -25,6 +25,9 @@ const STATUS: Record<string, HistoryStatus> = {
   PENDING: 'waiting',
   OFFERED: 'waiting',
   ASSIGNED: 'matched',
+  CONNECTING: 'matched',
+  ACTIVE: 'matched',
+  COMPLETED: 'completed',
   CANCELLED: 'cancelled',
   FAILED: 'missed',
 };

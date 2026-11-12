@@ -154,6 +154,7 @@ a.sh-card:focus-visible {
   background: #eceff3;
   color: #475569;
 }
+.sh-pill--completed,
 .sh-pill--matched {
   background: #e1f5ea;
   color: #15803d;

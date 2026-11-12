@@ -115,6 +115,16 @@ const appRoutes: RouteObject[] = [
     children: [{ path: '/live/deaf/:id', element: <LiveSessionPage viewerRole="deaf" /> }],
   },
   {
+    // Institution staff request interpreters like a Deaf person does, so they join as the requester.
+    element: <ProtectedRoute allow={['institution']} />,
+    children: [
+      {
+        path: '/live/institution/:id',
+        element: <LiveSessionPage viewerRole="deaf" home="/dashboard/staff" />,
+      },
+    ],
+  },
+  {
     element: <ProtectedRoute allow={['interpreter']} />,
     children: [
       { path: '/live/interpreter/:id', element: <LiveSessionPage viewerRole="interpreter" /> },
@@ -207,7 +217,11 @@ const appRoutes: RouteObject[] = [
           {
             path: '/dashboard/staff',
             element: <StaffLayout />,
-            children: [{ index: true, element: <StaffDashboardPage /> }],
+            children: [
+              { index: true, element: <StaffDashboardPage /> },
+              { path: 'start-session', element: <StartSessionPage /> },
+              { path: 'schedule-session', element: <SchedulePage /> },
+            ],
           },
         ],
       },

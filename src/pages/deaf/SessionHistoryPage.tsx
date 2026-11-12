@@ -12,7 +12,7 @@ import { describeError } from '../../services/api';
 import { getMySessions, type HistoryItem } from '../../services/mySessions';
 import './SessionsPages.css';
 
-const FILTERS: StatusFilter[] = ['all', 'matched', 'waiting', 'cancelled', 'missed'];
+const FILTERS: StatusFilter[] = ['all', 'matched', 'completed', 'waiting', 'cancelled', 'missed'];
 
 /** The person's past requests with who answered them, searchable and filterable by status. */
 export function SessionHistoryPage() {

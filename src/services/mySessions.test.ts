@@ -26,6 +26,16 @@ describe('getMySessions', () => {
     expect(items[3].emergency).toBe(true);
   });
 
+  it('shows finished and in-progress sessions as such, not as waiting', async () => {
+    vi.mocked(api).mockResolvedValue([
+      { id: 1, status: 'COMPLETED', created_at: '2026-10-01T10:00:00Z' },
+      { id: 2, status: 'ACTIVE', created_at: '2026-10-02T10:00:00Z' },
+      { id: 3, status: 'CONNECTING', created_at: '2026-10-03T10:00:00Z' },
+    ]);
+    const items = await getMySessions();
+    expect(items.map((i) => i.status)).toEqual(['completed', 'matched', 'matched']);
+  });
+
   it('accepts a paged answer', async () => {
     vi.mocked(api).mockResolvedValue({
       results: [{ id: 9, status: 'ASSIGNED', created_at: '2026-10-01T10:00:00Z' }],
