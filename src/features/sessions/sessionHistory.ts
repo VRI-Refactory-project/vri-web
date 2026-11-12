@@ -3,6 +3,7 @@ import type { HistoryItem, HistoryStatus } from '../../services/mySessions';
 export const STATUS_LABEL: Record<HistoryStatus, string> = {
   waiting: 'Waiting',
   matched: 'Matched',
+  completed: 'Completed',
   cancelled: 'Cancelled',
   missed: 'Missed',
 };
