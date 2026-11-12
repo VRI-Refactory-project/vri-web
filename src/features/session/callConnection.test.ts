@@ -80,7 +80,9 @@ describe('createLiveKitConnection', () => {
     await connection.join('7', local as unknown as MediaStream);
 
     expect(getCallToken).toHaveBeenCalledWith('7');
-    expect(room.connect).toHaveBeenCalledWith('wss://live.example', 'jwt');
+    expect(room.connect).toHaveBeenCalledWith('wss://live.example', 'jwt', {
+      rtcConfig: { iceServers: [] },
+    });
     expect(room.localParticipant.publishTrack).toHaveBeenCalledTimes(2);
     expect(room.localParticipant.publishTrack.mock.calls.map((c) => c[1].source)).toEqual([
       'camera',
@@ -138,6 +140,23 @@ describe('createLiveKitConnection', () => {
 
     expect(camera.mute).toHaveBeenCalledTimes(1);
     expect(camera.unmute).toHaveBeenCalledTimes(1);
+  });
+
+  it('connects through the STUN and TURN servers the API sends with the token', async () => {
+    const iceServers = [{ urls: ['stun:stun.example.com:3478'] }];
+    vi.mocked(getCallToken).mockResolvedValueOnce({
+      token: 'jwt',
+      url: 'wss://live.example',
+      room: 'session-7',
+      ice_servers: iceServers,
+    });
+    const connection = createLiveKitConnection(events());
+
+    await connection.join('7', null);
+
+    expect(room.connect).toHaveBeenCalledWith('wss://live.example', 'jwt', {
+      rtcConfig: { iceServers },
+    });
   });
 
   it('tells the page when the connection drops, but not when the page leaves on purpose', () => {

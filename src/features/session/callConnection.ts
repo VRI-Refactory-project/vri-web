@@ -89,8 +89,8 @@ export const createLiveKitConnection: CreateConnection = (events) => {
   return {
     async join(sessionId, local) {
       leaving = false;
-      const { token, url } = await getCallToken(sessionId);
-      await room.connect(url, token);
+      const { token, url, ice_servers } = await getCallToken(sessionId);
+      await room.connect(url, token, { rtcConfig: { iceServers: ice_servers ?? [] } });
       if (leaving) {
         // The person left the page while the connection was being made.
         void room.disconnect();
