@@ -80,7 +80,9 @@ describe('createLiveKitConnection', () => {
     await connection.join('7', local as unknown as MediaStream);
 
     expect(getCallToken).toHaveBeenCalledWith('7');
-    expect(room.connect).toHaveBeenCalledWith('wss://live.example', 'jwt', { rtcConfig: { iceServers: [] } });
+    expect(room.connect).toHaveBeenCalledWith('wss://live.example', 'jwt', {
+      rtcConfig: { iceServers: [] },
+    });
     expect(room.localParticipant.publishTrack).toHaveBeenCalledTimes(2);
     expect(room.localParticipant.publishTrack.mock.calls.map((c) => c[1].source)).toEqual([
       'camera',
@@ -152,7 +154,9 @@ describe('createLiveKitConnection', () => {
 
     await connection.join('7', null);
 
-    expect(room.connect).toHaveBeenCalledWith('wss://live.example', 'jwt', { rtcConfig: { iceServers } });
+    expect(room.connect).toHaveBeenCalledWith('wss://live.example', 'jwt', {
+      rtcConfig: { iceServers },
+    });
   });
 
   it('tells the page when the connection drops, but not when the page leaves on purpose', () => {
