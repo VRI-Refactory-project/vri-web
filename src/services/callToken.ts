@@ -7,6 +7,8 @@ export interface CallToken {
   /** The LiveKit server to connect to. */
   url: string;
   room: string;
+  /** STUN and TURN servers to connect through (V2-011). Empty when none are configured. */
+  ice_servers?: RTCIceServer[];
 }
 
 /**
