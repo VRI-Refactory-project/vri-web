@@ -4,9 +4,11 @@ import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 import { useRequesterPaths } from './requesterPaths';
 
-const at = (path: string) => ({ children }: { children: ReactNode }) => (
-  <MemoryRouter initialEntries={[path]}>{children}</MemoryRouter>
-);
+const at =
+  (path: string) =>
+  ({ children }: { children: ReactNode }) => (
+    <MemoryRouter initialEntries={[path]}>{children}</MemoryRouter>
+  );
 
 describe('useRequesterPaths', () => {
   it('keeps a Deaf user inside their own dashboard', () => {
