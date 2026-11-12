@@ -60,12 +60,12 @@ export function useMySessions() {
   return { sessions };
 }
 
-/** The session that is going on right now, or null. */
-export const runningSession = (sessions: HomeSession[]) => sessions.find((s) => s.running) ?? null;
-
-/** The latest finished sessions, newest first. */
-export const finishedSessions = (sessions: HomeSession[], count = 3) =>
-  sessions.filter((s) => !s.running).slice(0, count);
+/** The latest sessions, newest first. One that is still going is kept first so it can be rejoined. */
+export function recentSessions(sessions: HomeSession[], count = 5) {
+  const running = sessions.filter((s) => s.running);
+  const finished = sessions.filter((s) => !s.running);
+  return [...running, ...finished].slice(0, count);
+}
 
 /** The sessions that started on this day. */
 export const sessionsOn = (sessions: HomeSession[], day: Date) =>
