@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CircleUserRound, Plus } from 'lucide-react';
+import { getInstitutionOverview } from '../../services/institutionDashboard';
 import './InstitutionDashboardPage.css';
 
 type SessionStatus = 'Live' | 'Ended' | 'Pending';
@@ -29,7 +30,7 @@ interface InstitutionDashboardData {
   usageHours: number;
   usagePlanPercent: number;
   alerts: number;
-  pendingStaff: number;
+  revokedStaff: number;
   flaggedSessions: number;
   weeklyActivity: number[];
   departments: Department[];
@@ -51,8 +52,10 @@ export function InstitutionDashboardPage({
   const [weekly, setWeekly] = useState(true);
   const [search, setSearch] = useState('');
 
-  // State for real data
-  const [data] = useState<InstitutionDashboardData>({
+  const [orgName, setOrgName] = useState('');
+  // The staff figures are real (GET /dashboard/institution/). The session, usage and department
+  // figures stay empty until the API can report them for an institution.
+  const [data, setData] = useState<InstitutionDashboardData>({
     activeSessions: 0,
     staff: 0,
     activeStaff: 0,
@@ -60,12 +63,32 @@ export function InstitutionDashboardPage({
     usageHours: 0,
     usagePlanPercent: 0,
     alerts: 0,
-    pendingStaff: 0,
+    revokedStaff: 0,
     flaggedSessions: 0,
     weeklyActivity: [0, 0, 0, 0, 0, 0, 0],
     departments: [],
     sessions: [],
   });
+
+  useEffect(() => {
+    let cancelled = false;
+    getInstitutionOverview().then(
+      (overview) => {
+        if (cancelled) return;
+        setOrgName(overview.name);
+        setData((current) => ({
+          ...current,
+          staff: overview.staff.total,
+          activeStaff: overview.staff.active,
+          revokedStaff: overview.staff.revoked,
+        }));
+      },
+      () => undefined, // the page still opens, with the figures it cannot load left at zero
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const filteredSessions = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -104,7 +127,7 @@ export function InstitutionDashboardPage({
       <header className="id-heading">
         <div>
           <h1>Institution dashboard</h1>
-          <p>Here’s what’s happening today.</p>
+          <p>{orgName ? `${orgName} · ` : ''}Here’s what’s happening today.</p>
         </div>
       </header>
 
@@ -329,7 +352,8 @@ export function InstitutionDashboardPage({
 
         <button type="button" className="id-attention-item" onClick={() => goTo('staff')}>
           <span className="id-attention-dot id-attention-dot--purple" />
-          {data.pendingStaff} staff accounts pending activation
+          {data.revokedStaff} staff {data.revokedStaff === 1 ? 'account' : 'accounts'} with access
+          revoked
         </button>
 
         <button type="button" className="id-attention-item" onClick={() => goTo('sessions')}>
