@@ -1,4 +1,4 @@
-import type { Role } from '../../types';
+import type { InstitutionRole, Role } from '../../types';
 
 // The backend names the Deaf / Hard of Hearing role `deaf_hoh`; the web app calls it `deaf`.
 const FROM_API: Record<string, Role> = {
@@ -22,5 +22,14 @@ const DASHBOARDS: Record<Role, string> = {
   admin: '/dashboard/admin',
 };
 
-/** Where a signed-in user of this role lands. */
-export const dashboardPathFor = (role: Role) => DASHBOARDS[role];
+/** Converts the API's `institution_role` (ADMIN or STAFF) into the web app's value. */
+export function toInstitutionRole(apiRole: string | null | undefined): InstitutionRole | null {
+  return apiRole === 'ADMIN' || apiRole === 'STAFF' ? apiRole : null;
+}
+
+/** Where a staff member of an institution lands. */
+export const STAFF_DASHBOARD = '/dashboard/staff';
+
+/** Where a signed-in user lands. Institution staff have their own area, apart from the admin's. */
+export const dashboardPathFor = (role: Role, institutionRole?: InstitutionRole | null) =>
+  role === 'institution' && institutionRole === 'STAFF' ? STAFF_DASHBOARD : DASHBOARDS[role];
