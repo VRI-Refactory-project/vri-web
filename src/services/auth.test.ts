@@ -43,8 +43,20 @@ describe('signIn', () => {
         mustChangePassword: false,
         email: null,
         emailVerified: undefined,
+        institutionRole: null,
       },
     });
+  });
+
+  it('reads the role inside an institution account, so staff are told apart from admins', async () => {
+    mockFetch(200, {
+      access: 'a',
+      refresh: 'r',
+      user: { ...apiUser, role: 'institution', institution_role: 'STAFF' },
+    });
+    const session = await signIn('0772123456', 'secret');
+    expect(session.user.role).toBe('institution');
+    expect(session.user.institutionRole).toBe('STAFF');
   });
 
   it('surfaces the API error message', async () => {

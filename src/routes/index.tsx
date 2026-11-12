@@ -30,6 +30,9 @@ import { InstitutionAccountsPage } from '../pages/admin/InstitutionAccountsPage'
 import { InstitutionReviewPage } from '../pages/admin/InstitutionReviewPage';
 import { AvailabilityPage } from '../pages/interpreter/AvailabilityPage';
 import { InstitutionLayout } from '../features/institution/InstitutionLayout';
+import { InstitutionRoleRoute } from '../components/InstitutionRoleRoute';
+import { StaffLayout } from '../features/staff/StaffLayout';
+import { StaffDashboardPage } from '../features/staff/StaffDashboardPage';
 import { StaffManagementPage } from '../pages/institution/StaffManagementPage';
 import { ProfilePage as DeafProfilePage } from '../pages/deaf/ProfilePage';
 import { StartSessionPage } from '../pages/deaf/StartSessionPage';
@@ -178,17 +181,34 @@ const appRoutes: RouteObject[] = [
     element: <ProtectedRoute allow={['institution']} />,
     children: [
       {
-        path: '/dashboard/institution',
-        element: <InstitutionLayout />,
+        // The institution admin's area. Staff are sent to /dashboard/staff.
+        element: <InstitutionRoleRoute allow="ADMIN" />,
         children: [
-          { index: true, element: <InstitutionDashboardPage /> },
-          { path: 'staff', element: <StaffManagementPage /> },
-          { path: 'staff/new', element: <CreateStaffAccountPage /> },
-          { path: 'staff/created', element: <StaffAccountCreatedPage /> },
-          { path: 'sessions', element: <InstitutionSessionsPage /> },
-          { path: 'analytics', element: <InstitutionAnalyticsPage /> },
-          { path: 'settings', element: <InstitutionSettingsPage /> },
-          { path: 'profile', element: <InstitutionProfilePage /> },
+          {
+            path: '/dashboard/institution',
+            element: <InstitutionLayout />,
+            children: [
+              { index: true, element: <InstitutionDashboardPage /> },
+              { path: 'staff', element: <StaffManagementPage /> },
+              { path: 'staff/new', element: <CreateStaffAccountPage /> },
+              { path: 'staff/created', element: <StaffAccountCreatedPage /> },
+              { path: 'sessions', element: <InstitutionSessionsPage /> },
+              { path: 'analytics', element: <InstitutionAnalyticsPage /> },
+              { path: 'settings', element: <InstitutionSettingsPage /> },
+              { path: 'profile', element: <InstitutionProfilePage /> },
+            ],
+          },
+        ],
+      },
+      {
+        // The institution staff member's area (Figma: signconnect-staff-*).
+        element: <InstitutionRoleRoute allow="STAFF" />,
+        children: [
+          {
+            path: '/dashboard/staff',
+            element: <StaffLayout />,
+            children: [{ index: true, element: <StaffDashboardPage /> }],
+          },
         ],
       },
     ],
