@@ -88,6 +88,7 @@ export function UsersPage() {
           <option value="all-statuses">All statuses</option>
           <option value="verified">Verified</option>
           <option value="pending">Pending</option>
+          <option value="rejected">Rejected</option>
           <option value="suspended">Suspended</option>
         </select>
 
