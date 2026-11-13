@@ -82,6 +82,24 @@ export async function getCurrentUser(): Promise<AuthUser> {
   return toAuthUser(await api<ApiUser>('/api/v1/auth/me/'));
 }
 
+export interface MyAccount {
+  name: string;
+  email: string | null;
+  emailVerified: boolean;
+  phone: string;
+}
+
+/** The signed-in person's contact details, for the Profile page. */
+export async function getMyAccount(): Promise<MyAccount> {
+  const user = await api<ApiUser>('/api/v1/auth/me/');
+  return {
+    name: user.full_name,
+    email: user.email,
+    emailVerified: Boolean(user.email_verified),
+    phone: user.phone_number,
+  };
+}
+
 /** Cancels the refresh token on the server. Errors are ignored: the person is signed out here either way. */
 export const revokeSession = (refresh: string) =>
   api<{ detail: string }>('/api/v1/auth/logout/', {
