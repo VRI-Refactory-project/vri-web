@@ -83,9 +83,8 @@ export function CallScreen({
   ];
 
   // Without a choice: a shared screen first, then the other person, and only you when alone.
-  const automatic = tiles.find((t) => t.screen) ?? tiles.find((t) => !t.self) ?? tiles[0];
-  const main = tiles.find((t) => t.id === pinned) ?? automatic;
-  const side = tiles.filter((t) => t.id !== main.id);
+
+  const main = tiles.find((tile) => tile.id === pinned);
 
   const tileFor = (tile: Tile) => (
     <VideoTile
@@ -99,7 +98,7 @@ export function CallScreen({
       quality={tile.quality}
       highlight={tile.self || tile.name === highlightName}
       spotlighted={pinned === tile.id}
-      onSpotlight={() => setPinned(pinned === tile.id ? null : tile.id)}
+      onSpotlight={() => setPinned((current) => (current === tile.id ? null : tile.id))}
     />
   );
 
@@ -113,11 +112,19 @@ export function CallScreen({
           </span>
           {selfEmail && (
             <span className="ls-profile">
-              <span className="ls-profile__email">{selfEmail}</span>
+              <span className="ls-profile__email">{selfName}</span>
+
               {selfPicture ? (
-                <img className="ls-profile__photo" src={selfPicture} alt={selfName} />
+                <img
+                  className="ls-profile__photo"
+                  src={selfPicture}
+                  alt={`${selfName}'s profile`}
+                />
               ) : (
-                <span className="ls-profile__photo ls-profile__photo--initials" aria-hidden="true">
+                <span
+                  className="ls-profile__photo ls-profile__photo--initials"
+                  aria-label={`${selfName}'s profile`}
+                >
                   {initials(selfName)}
                 </span>
               )}
@@ -130,15 +137,30 @@ export function CallScreen({
 
       <div className="ls-body">
         <div className="ls-spot">
-          <div className="ls-main">{tileFor(main)}</div>
-          <div className="ls-side">
-            {side.map(tileFor)}
-            {call.others.length === 0 && (
-              <div className="vt ls-waiting" role="status">
-                Waiting for others to join…
+          {main ? (
+            <>
+              <div className="ls-main">{tileFor(main)}</div>
+
+              <div className="ls-side">
+                {tiles.filter((tile) => tile.id !== main.id).map(tileFor)}
               </div>
-            )}
-          </div>
+            </>
+          ) : (
+            <div
+              className="ls-grid"
+              style={{
+                gridTemplateColumns: `repeat(${Math.min(tiles.length, 4)}, minmax(0, 1fr))`,
+              }}
+            >
+              {tiles.map(tileFor)}
+            </div>
+          )}
+
+          {call.others.length === 0 && (
+            <div className="vt ls-waiting" role="status">
+              Waiting for others to join…
+            </div>
+          )}
         </div>
 
         {call.chatOpen && (
