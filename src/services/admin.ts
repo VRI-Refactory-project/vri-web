@@ -1,5 +1,3 @@
-
-
 // import { api } from './api';
 
 // /* ---------- Summary (existing endpoint) ---------- */
@@ -10,8 +8,8 @@
 //   interpreters: number;
 //   pendingVerifications: number;
 //   top_session_types?: { type: string; count: number }[];
-//   unread_notifications?: number; 
-//   available_interpreters?: number;   
+//   unread_notifications?: number;
+//   available_interpreters?: number;
 //   offline_interpreters?: number;
 // }
 
@@ -20,9 +18,9 @@
 //   institutions_pending_approval: number;
 //   users_by_role: Record<string, number>;
 //   top_session_types?: { type: string; count: number }[];
-//   unread_notifications?: number; 
-//   available_interpreters?: number;   
-//   offline_interpreters?: number;  
+//   unread_notifications?: number;
+//   available_interpreters?: number;
+//   offline_interpreters?: number;
 // }
 
 // export async function fetchAdminSummary(): Promise<AdminDashboardSummary> {
@@ -34,8 +32,8 @@
 //     institutions: byRole.institution ?? 0,
 //     interpreters: byRole.interpreter ?? 0,
 //     pendingVerifications: raw.interpreters_pending_verification,
-//     top_session_types: raw.top_session_types ?? [], 
-//     unread_notifications: raw.unread_notifications ?? 0, 
+//     top_session_types: raw.top_session_types ?? [],
+//     unread_notifications: raw.unread_notifications ?? 0,
 //   };
 // }
 
@@ -256,8 +254,6 @@
 //   }));
 // }
 
-
-
 import { api } from './api';
 
 /* ---------- Summary (existing endpoint) ---------- */
@@ -294,8 +290,8 @@ export async function fetchAdminSummary(): Promise<AdminDashboardSummary> {
     pendingVerifications: raw.interpreters_pending_verification,
     top_session_types: raw.top_session_types ?? [],
     unread_notifications: raw.unread_notifications ?? 0,
-    available_interpreters: raw.available_interpreters ?? 0,   // 👈 NEW
-    offline_interpreters: raw.offline_interpreters ?? 0,       // 👈 NEW
+    available_interpreters: raw.available_interpreters ?? 0, // 👈 NEW
+    offline_interpreters: raw.offline_interpreters ?? 0, // 👈 NEW
   };
 }
 
