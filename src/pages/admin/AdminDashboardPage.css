@@ -229,11 +229,18 @@
   gap: 14px;
 }
 
-.ad-panel-head {
+/* .ad-panel-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+} */
+
+.ad-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
 .ad-panel-head h3 {
