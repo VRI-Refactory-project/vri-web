@@ -16,6 +16,8 @@ interface Props {
   highlight?: boolean;
   muted?: boolean;
   profilePicture?: string | null; // NEW: Allow a profile picture URL
+  /** A shared screen: shown whole and not mirrored like a camera. */
+  screen?: boolean;
 }
 
 export function VideoTile({
@@ -26,6 +28,7 @@ export function VideoTile({
   highlight,
   muted,
   profilePicture,
+  screen,
 }: Props) {
   const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
@@ -35,7 +38,7 @@ export function VideoTile({
 
   return (
     <figure
-      className={`vt${large ? ' vt--large' : ''}${highlight ? ' vt--highlight' : ''}`}
+      className={`vt${large ? ' vt--large' : ''}${highlight ? ' vt--highlight' : ''}${screen ? ' vt--screen' : ''}`}
       aria-label={name}
     >
       <video
