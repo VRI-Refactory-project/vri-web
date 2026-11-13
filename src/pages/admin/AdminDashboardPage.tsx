@@ -1043,21 +1043,9 @@ import { useNavigate } from 'react-router-dom';
 const KPI_META = [
   { id: 'total-users', label: 'Total Users', trend: 'up' as const, Icon: Users, color: 'purple' },
   { id: 'dhh', label: 'DHH Users', trend: 'up' as const, Icon: Users, color: 'green' },
-  {
-    id: 'institutions',
-    label: 'Institutions',
-    trend: 'up' as const,
-    Icon: Building2,
-    color: 'blue',
-  },
+  { id: 'institutions', label: 'Institutions', trend: 'up' as const, Icon: Building2, color: 'blue' },
   { id: 'interpreters', label: 'Interpreters', trend: 'up' as const, Icon: Video, color: 'pink' },
-  {
-    id: 'pending',
-    label: 'Pending Verifications',
-    trend: 'down' as const,
-    Icon: ShieldCheck,
-    color: 'orange',
-  },
+  { id: 'pending', label: 'Pending Verifications', trend: 'down' as const, Icon: ShieldCheck, color: 'orange' },
 ];
 
 function todayLabel() {
@@ -1128,27 +1116,13 @@ export function AdminDashboardPage() {
         setUnreadCount(data.unread_notifications ?? 0);
       })
       .catch(() => setSummary(null));
-    fetchSessionActivity()
-      .then(setActivity)
-      .catch(() => setActivity([]));
-    fetchActivityFeed()
-      .then(setFeed)
-      .catch(() => setFeed([]));
-    fetchUserGrowth()
-      .then(setGrowth)
-      .catch(() => setGrowth([]));
-    fetchInterpreterPerformance()
-      .then(setPerformance)
-      .catch(() => setPerformance(null));
-    fetchVerificationStatus()
-      .then(setVerification)
-      .catch(() => setVerification(null));
-    fetchUpcomingSessions()
-      .then(setSessions)
-      .catch(() => setSessions([]));
-    fetchNotifications()
-      .then(setNotifications)
-      .catch(() => setNotifications([]));
+    fetchSessionActivity().then(setActivity).catch(() => setActivity([]));
+    fetchActivityFeed().then(setFeed).catch(() => setFeed([]));
+    fetchUserGrowth().then(setGrowth).catch(() => setGrowth([]));
+    fetchInterpreterPerformance().then(setPerformance).catch(() => setPerformance(null));
+    fetchVerificationStatus().then(setVerification).catch(() => setVerification(null));
+    fetchUpcomingSessions().then(setSessions).catch(() => setSessions([]));
+    fetchNotifications().then(setNotifications).catch(() => setNotifications([]));
   }, []);
 
   useEffect(() => {
@@ -1207,6 +1181,18 @@ export function AdminDashboardPage() {
 
   const activityMax = Math.max(1, ...(activity ?? []).map((x) => x.value));
   const yMax = Math.ceil(activityMax / 50) * 50 || 250;
+
+  // 👇 Placeholder maths for the Interpreter availability donut
+  const totalInterps = summary?.interpreters ?? 0;
+  const availableInterps = Math.round(totalInterps * 0.6);
+  const busyInterps = Math.round(totalInterps * 0.25);
+  const offlineInterps = totalInterps - availableInterps - busyInterps;
+
+  const availPct = totalInterps ? Math.round((availableInterps / totalInterps) * 100) : 0;
+  const busyPct = totalInterps ? Math.round((busyInterps / totalInterps) * 100) : 0;
+  const offlinePct = totalInterps ? 100 - availPct - busyPct : 0;
+
+  const availabilityDonut = `conic-gradient(#4b34a0 0 ${availPct}%, #16a34a ${availPct}% ${availPct + busyPct}%, #cbd5e1 ${availPct + busyPct}% 100%)`;
 
   return (
     <div className="ad-page">
@@ -1276,7 +1262,9 @@ export function AdminDashboardPage() {
                           <div>
                             <strong>{n.title}</strong>
                             {n.body && (
-                              <small style={{ display: 'block', color: '#6b7280' }}>{n.body}</small>
+                              <small style={{ display: 'block', color: '#6b7280' }}>
+                                {n.body}
+                              </small>
                             )}
                           </div>
                         </li>
@@ -1323,7 +1311,7 @@ export function AdminDashboardPage() {
         ))}
       </div>
 
-      {/* Row: Session activity | Active interpreters | Recent activity */}
+      {/* Row: Session activity | Interpreter availability | Recent activity */}
       <div className="ad-row ad-row--top" style={{ alignItems: 'start' }}>
         <div className="ad-panel">
           <div className="ad-panel-head" style={{ alignItems: 'flex-start' }}>
@@ -1457,71 +1445,59 @@ export function AdminDashboardPage() {
           )}
         </div>
 
-        {/* Active interpreters panel */}
+        {/* Interpreter availability donut */}
         <div className="ad-panel">
           <div className="ad-panel-head">
-            <h3>Active interpreters</h3>
-            <small>Right now</small>
+            <div>
+              <h3 style={{ margin: 0 }}>Interpreter availability</h3>
+              <small style={{ color: '#9ca3af', fontSize: '13px', fontWeight: 500 }}>
+                Right now
+              </small>
+            </div>
           </div>
 
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: '240px',
-              marginTop: '10px',
-            }}
-          >
-            <div
-              style={{
-                position: 'relative',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <div style={{ fontSize: '72px', fontWeight: 800, color: '#4b34a0', lineHeight: 1 }}>
-                {summary?.interpreters ?? 0}
+          <div className="ad-donut-wrap" style={{ marginTop: '24px' }}>
+            <div className="ad-donut" style={{ background: availabilityDonut }}>
+              <div className="ad-donut-hole">
+                <strong>{totalInterps}</strong>
+                <small>Total</small>
               </div>
-              <span
-                style={{
-                  position: 'absolute',
-                  top: 15,
-                  right: -24,
-                  width: '14px',
-                  height: '14px',
-                  background: '#16a34a',
-                  borderRadius: '50%',
-                  boxShadow: '0 0 0 4px rgba(22, 163, 74, 0.2)',
-                }}
-              />
             </div>
-
-            <p style={{ color: '#6b7280', fontSize: '14px', marginTop: '16px', fontWeight: 500 }}>
-              Registered interpreters
-            </p>
-
-            <button
-              onClick={() => navigate('/dashboard/admin/users')}
-              style={{
-                marginTop: '24px',
-                background: '#f4f1fa',
-                color: '#4b34a0',
-                border: 'none',
-                padding: '10px 20px',
-                borderRadius: '8px',
-                fontSize: '13px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'background 0.2s',
-              }}
-              onMouseOver={(e) => (e.currentTarget.style.background = '#ede9fe')}
-              onMouseOut={(e) => (e.currentTarget.style.background = '#f4f1fa')}
-            >
-              Manage interpreters
-            </button>
+            <div className="ad-legend" style={{ gap: '16px' }}>
+              <div>
+                <span className="ad-legend-dot" style={{ background: '#4b34a0' }} />
+                <div>
+                  <strong style={{ display: 'block', color: '#111827', fontSize: '13px' }}>
+                    Available
+                  </strong>
+                  <small style={{ color: '#9ca3af' }}>
+                    {availPct}% · {availableInterps}
+                  </small>
+                </div>
+              </div>
+              <div>
+                <span className="ad-legend-dot" style={{ background: '#16a34a' }} />
+                <div>
+                  <strong style={{ display: 'block', color: '#111827', fontSize: '13px' }}>
+                    In session / Busy
+                  </strong>
+                  <small style={{ color: '#9ca3af' }}>
+                    {busyPct}% · {busyInterps}
+                  </small>
+                </div>
+              </div>
+              <div>
+                <span className="ad-legend-dot" style={{ background: '#cbd5e1' }} />
+                <div>
+                  <strong style={{ display: 'block', color: '#111827', fontSize: '13px' }}>
+                    Offline
+                  </strong>
+                  <small style={{ color: '#9ca3af' }}>
+                    {offlinePct}% · {offlineInterps}
+                  </small>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
