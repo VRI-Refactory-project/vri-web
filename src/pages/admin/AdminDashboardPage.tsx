@@ -50,6 +50,14 @@
 //   });
 // }
 
+// // Status pill colours for the "Upcoming sessions" table
+// function statusStyle(status: string) {
+//   const s = status.toLowerCase();
+//   if (s === 'pending') return { bg: '#fef3c7', text: '#b45309' };
+//   if (s === 'cancelled') return { bg: '#fee2e2', text: '#b91c1c' };
+//   return { bg: '#dcfce7', text: '#15803d' }; // Scheduled / Confirmed / Completed
+// }
+
 // export function AdminDashboardPage() {
 //   const { session } = useAuth();
 //   const name = session?.user.name ?? 'Admin';
@@ -686,37 +694,87 @@
 
 //       {/* Upcoming sessions */}
 //       <div className="ad-panel">
-//         <div className="ad-panel-head">
-//           <h3>Upcoming sessions</h3>
-//           <small>Next 24 hours</small>
+//         <div className="ad-panel-head" style={{ alignItems: 'center' }}>
+//           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+//             <div style={{ color: '#4b34a0' }}>
+//               <Calendar size={20} />
+//             </div>
+//             <h3 style={{ margin: 0 }}>Upcoming sessions</h3>
+//           </div>
+//           <a
+//             href="/dashboard/admin/sessions"
+//             style={{ color: '#4b34a0', fontWeight: 600, fontSize: '13px', textDecoration: 'none' }}
+//           >
+//             View all
+//           </a>
 //         </div>
+
 //         {filteredSessions && filteredSessions.length > 0 ? (
 //           <table className="ad-table">
 //             <thead>
 //               <tr>
-//                 <th>ID</th>
-//                 <th>Date / Time</th>
-//                 <th>Client</th>
-//                 <th>Interpreter</th>
-//                 <th>Type</th>
-//                 <th>Status</th>
+//                 {['Time', 'User', 'Interpreter', 'Session type', 'Status'].map((h) => (
+//                   <th
+//                     key={h}
+//                     style={{
+//                       fontSize: '11px',
+//                       textTransform: 'uppercase',
+//                       letterSpacing: '0.5px',
+//                       color: '#9ca3af',
+//                     }}
+//                   >
+//                     {h}
+//                   </th>
+//                 ))}
 //               </tr>
 //             </thead>
 //             <tbody>
-//               {filteredSessions.map((s) => (
-//                 <tr key={s.id}>
-//                   <td>{s.id}</td>
-//                   <td>{s.date}</td>
-//                   <td>{s.client}</td>
-//                   <td>{s.interpreter}</td>
-//                   <td>{s.type}</td>
-//                   <td>
-//                     <span className={`ad-badge ad-badge--${s.status.toLowerCase()}`}>
-//                       {s.status}
-//                     </span>
-//                   </td>
-//                 </tr>
-//               ))}
+//               {filteredSessions.map((s) => {
+//                 const typeLabel = s.type ? s.type.charAt(0).toUpperCase() + s.type.slice(1) : '—';
+//                 const st = statusStyle(s.status);
+
+//                 return (
+//                   <tr key={s.id}>
+//                     <td style={{ color: '#6b7280', fontSize: '13px' }}>{s.date}</td>
+//                     <td style={{ fontWeight: 600, color: '#111827', fontSize: '13px' }}>
+//                       {s.client}
+//                     </td>
+//                     <td style={{ color: '#6b7280', fontSize: '13px' }}>{s.interpreter || '—'}</td>
+//                     <td>
+//                       <span
+//                         style={{
+//                           display: 'inline-block',
+//                           padding: '2px 8px',
+//                           borderRadius: '6px',
+//                           background: '#f4f1fa',
+//                           color: '#4b34a0',
+//                           fontSize: '12px',
+//                           fontWeight: 600,
+//                           textTransform: 'capitalize',
+//                         }}
+//                       >
+//                         {typeLabel}
+//                       </span>
+//                     </td>
+//                     <td>
+//                       <span
+//                         style={{
+//                           display: 'inline-block',
+//                           padding: '2px 8px',
+//                           borderRadius: '6px',
+//                           background: st.bg,
+//                           color: st.text,
+//                           fontSize: '12px',
+//                           fontWeight: 600,
+//                           textTransform: 'capitalize',
+//                         }}
+//                       >
+//                         {s.status}
+//                       </span>
+//                     </td>
+//                   </tr>
+//                 );
+//               })}
 //             </tbody>
 //           </table>
 //         ) : (
@@ -765,6 +823,11 @@ import {
   type VerificationStatusBreakdown,
   type SessionRow,
 } from '../../services/admin';
+import {
+  fetchNotifications,
+  markNotificationRead,
+  type AppNotification,
+} from '../../services/notifications';
 import './AdminDashboardPage.css';
 
 const KPI_META = [
@@ -805,13 +868,18 @@ export function AdminDashboardPage() {
   const [performance, setPerformance] = useState<InterpreterPerformance | null>(null);
   const [verification, setVerification] = useState<VerificationStatusBreakdown | null>(null);
   const [sessions, setSessions] = useState<SessionRow[] | null>(null);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [query, setQuery] = useState('');
   const [bellOpen, setBellOpen] = useState(false);
   const bellRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     fetchAdminSummary()
-      .then(setSummary)
+      .then((data) => {
+        setSummary(data);
+        setUnreadCount(data.unread_notifications ?? 0);
+      })
       .catch(() => setSummary(null));
     fetchSessionActivity()
       .then(setActivity)
@@ -834,6 +902,9 @@ export function AdminDashboardPage() {
     fetchUpcomingSessions()
       .then(setSessions)
       .catch(() => setSessions([]));
+    fetchNotifications()
+      .then(setNotifications)
+      .catch(() => setNotifications([]));
   }, []);
 
   useEffect(() => {
@@ -846,6 +917,22 @@ export function AdminDashboardPage() {
     document.addEventListener('mousedown', onClickOutside);
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, [bellOpen]);
+
+  const handleNotificationClick = async (n: AppNotification) => {
+    if (n.read_at) return;
+    // Optimistic update: mark read in local state and decrement the count
+    setNotifications((prev) =>
+      prev.map((x) => (x.id === n.id ? { ...x, read_at: new Date().toISOString() } : x)),
+    );
+    setUnreadCount((c) => Math.max(0, c - 1));
+    try {
+      await markNotificationRead(n.id);
+    } catch {
+      // Roll back on failure
+      setNotifications((prev) => prev.map((x) => (x.id === n.id ? { ...x, read_at: null } : x)));
+      setUnreadCount((c) => c + 1);
+    }
+  };
 
   const kpiValues: Record<string, string> = {
     'total-users': (summary?.totalUsers ?? 0).toLocaleString(),
@@ -907,22 +994,54 @@ export function AdminDashboardPage() {
               onClick={() => setBellOpen((v) => !v)}
             >
               <Bell size={17} />
-              {feed && feed.length > 0 && <span className="ad-dot" />}
+              {unreadCount > 0 && <span className="ad-dot" />}
             </button>
             {bellOpen && (
               <div className="ad-bell-panel" role="dialog" aria-label="Notifications">
-                <div className="ad-bell-header">Notifications</div>
-                {feed && feed.length > 0 ? (
+                <div className="ad-bell-header">
+                  Notifications
+                  {unreadCount > 0 && (
+                    <span
+                      style={{
+                        background: '#ef4444',
+                        color: 'white',
+                        borderRadius: '999px',
+                        padding: '1px 8px',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        marginLeft: '8px',
+                      }}
+                    >
+                      {unreadCount}
+                    </span>
+                  )}
+                </div>
+                {notifications.length > 0 ? (
                   <ul className="ad-bell-list">
-                    {feed.slice(0, 6).map((a, i) => (
-                      <li key={i}>
-                        <span className="ad-bell-dot" />
-                        <div>
-                          <strong>{a.text}</strong>
-                          <small>{a.time}</small>
-                        </div>
-                      </li>
-                    ))}
+                    {notifications.slice(0, 6).map((n) => {
+                      const isUnread = !n.read_at;
+                      return (
+                        <li
+                          key={n.id}
+                          onClick={() => handleNotificationClick(n)}
+                          style={{
+                            cursor: isUnread ? 'pointer' : 'default',
+                            background: isUnread ? '#f8fafc' : 'white',
+                          }}
+                        >
+                          <span
+                            className="ad-bell-dot"
+                            style={{ background: isUnread ? '#ef4444' : '#cbd5e1' }}
+                          />
+                          <div>
+                            <strong>{n.title}</strong>
+                            {n.body && (
+                              <small style={{ display: 'block', color: '#6b7280' }}>{n.body}</small>
+                            )}
+                          </div>
+                        </li>
+                      );
+                    })}
                   </ul>
                 ) : (
                   <p className="ad-bell-empty">No notifications yet.</p>
