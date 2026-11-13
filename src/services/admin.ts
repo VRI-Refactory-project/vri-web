@@ -1,3 +1,5 @@
+
+
 // import { api } from './api';
 
 // /* ---------- Summary (existing endpoint) ---------- */
@@ -8,6 +10,9 @@
 //   interpreters: number;
 //   pendingVerifications: number;
 //   top_session_types?: { type: string; count: number }[];
+//   unread_notifications?: number; 
+//   available_interpreters?: number;   
+//   offline_interpreters?: number;
 // }
 
 // interface ApiAdminDashboard {
@@ -15,6 +20,9 @@
 //   institutions_pending_approval: number;
 //   users_by_role: Record<string, number>;
 //   top_session_types?: { type: string; count: number }[];
+//   unread_notifications?: number; 
+//   available_interpreters?: number;   
+//   offline_interpreters?: number;  
 // }
 
 // export async function fetchAdminSummary(): Promise<AdminDashboardSummary> {
@@ -26,7 +34,8 @@
 //     institutions: byRole.institution ?? 0,
 //     interpreters: byRole.interpreter ?? 0,
 //     pendingVerifications: raw.interpreters_pending_verification,
-//     top_session_types: raw.top_session_types ?? [],
+//     top_session_types: raw.top_session_types ?? [], 
+//     unread_notifications: raw.unread_notifications ?? 0, 
 //   };
 // }
 
@@ -247,6 +256,8 @@
 //   }));
 // }
 
+
+
 import { api } from './api';
 
 /* ---------- Summary (existing endpoint) ---------- */
@@ -257,7 +268,9 @@ export interface AdminDashboardSummary {
   interpreters: number;
   pendingVerifications: number;
   top_session_types?: { type: string; count: number }[];
-  unread_notifications?: number; // 👈 NEW
+  unread_notifications?: number;
+  available_interpreters?: number;
+  offline_interpreters?: number;
 }
 
 interface ApiAdminDashboard {
@@ -265,7 +278,9 @@ interface ApiAdminDashboard {
   institutions_pending_approval: number;
   users_by_role: Record<string, number>;
   top_session_types?: { type: string; count: number }[];
-  unread_notifications?: number; // 👈 NEW
+  unread_notifications?: number;
+  available_interpreters?: number;
+  offline_interpreters?: number;
 }
 
 export async function fetchAdminSummary(): Promise<AdminDashboardSummary> {
@@ -277,8 +292,10 @@ export async function fetchAdminSummary(): Promise<AdminDashboardSummary> {
     institutions: byRole.institution ?? 0,
     interpreters: byRole.interpreter ?? 0,
     pendingVerifications: raw.interpreters_pending_verification,
-    top_session_types: raw.top_session_types ?? [], // 👈 FIXED
-    unread_notifications: raw.unread_notifications ?? 0, // 👈 NEW
+    top_session_types: raw.top_session_types ?? [],
+    unread_notifications: raw.unread_notifications ?? 0,
+    available_interpreters: raw.available_interpreters ?? 0,   // 👈 NEW
+    offline_interpreters: raw.offline_interpreters ?? 0,       // 👈 NEW
   };
 }
 
