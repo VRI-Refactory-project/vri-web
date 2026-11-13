@@ -218,3 +218,112 @@ body {
     grid-template-columns: 1fr !important;
   }
 }
+
+@media (max-width: 900px) {
+  /* Allow the dashboard shell to grow and scroll */
+  .dl-shell,
+  .admin-shell,
+  .institution-shell,
+  .interpreter-shell {
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow: visible !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* Allow the main content area to scroll */
+  .dl-main,
+  .admin-main,
+  .institution-main,
+  .interpreter-main {
+    height: auto !important;
+    overflow-y: visible !important;
+    padding: 16px !important;
+    width: 100% !important;
+  }
+
+  /* Make sure the body itself allows scrolling */
+  body {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    height: auto !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .landing {
+    /* 1. Let the page grow as tall as the content */
+    height: auto !important;
+    min-height: 100vh !important;
+
+    /* 2. Make the gradient stretch all the way down */
+    background-attachment: scroll !important;
+    background-size: cover !important;
+    background-repeat: no-repeat !important;
+
+    /* 3. Prevent the white background from showing at the bottom */
+    background-color: #2d1060 !important;
+  }
+
+  /* 4. Fix the order and layout of the hero section */
+  .landing-hero {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 20px !important;
+    gap: 20px !important;
+    width: 100% !important;
+    height: auto !important; /* Let the hero content grow */
+  }
+
+  /* 5. Flatten the wrappers to order the elements */
+  .landing-hero-left,
+  .landing-hero-right {
+    display: contents !important;
+  }
+
+  /* 6. Reorder: Badge -> Title -> Subtitle -> Image -> CTA -> Features */
+  .landing-badge {
+    order: 1 !important;
+    width: fit-content !important;
+  }
+  .landing-title {
+    order: 2 !important;
+    font-size: 2.2rem !important;
+    line-height: 1.2 !important;
+    color: #fff !important;
+  }
+  .landing-subtitle {
+    order: 3 !important;
+    font-size: 1rem !important;
+    color: #e2d6ff !important;
+  }
+  .landing-frame {
+    order: 4 !important;
+    width: 100% !important;
+    margin: 10px 0 !important;
+  }
+  .landing-cta {
+    order: 5 !important;
+    width: 100% !important;
+    justify-content: center !important;
+    margin: 10px 0 !important;
+  }
+  .landing-features {
+    order: 6 !important;
+    width: 100% !important;
+    margin-bottom: 40px !important;
+  }
+
+  /* 7. Hide the decorative backgrounds that might cause issues */
+  .landing-sweep,
+  .landing-halo {
+    display: none !important;
+  }
+
+  /* 8. Ensure text below the image is visible */
+  .landing-features li {
+    color: #fff !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+  }
+}
