@@ -34,7 +34,9 @@ export function ChangeTemporaryPasswordPage() {
   if (checking) return null;
   if (!session) return <Navigate to="/sign-in" replace />;
   if (!session.user.mustChangePassword) {
-    return <Navigate to={dashboardPathFor(session.user.role)} replace />;
+    return (
+      <Navigate to={dashboardPathFor(session.user.role, session.user.institutionRole)} replace />
+    );
   }
 
   const submit = async (e: FormEvent) => {
@@ -45,7 +47,9 @@ export function ChangeTemporaryPasswordPage() {
     try {
       const updated = await changePassword(current, next);
       login(updated);
-      navigate(dashboardPathFor(updated.user.role), { replace: true });
+      navigate(dashboardPathFor(updated.user.role, updated.user.institutionRole), {
+        replace: true,
+      });
     } catch (err) {
       setError(
         err instanceof ApiError

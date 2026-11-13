@@ -24,6 +24,7 @@ function renderPage(stored: AuthSession | null) {
           <Route path="/change-password" element={<ChangeTemporaryPasswordPage />} />
           <Route path="/sign-in" element={<p>sign in page</p>} />
           <Route path="/dashboard/institution" element={<p>institution home</p>} />
+          <Route path="/dashboard/staff" element={<p>staff home</p>} />
         </Routes>
       </MemoryRouter>
     </AuthProvider>,
@@ -80,5 +81,20 @@ describe('ChangeTemporaryPasswordPage', () => {
     await userEvent.type(screen.getByLabelText('Confirm new password'), 'Brand-New-Pass9!');
     await userEvent.click(screen.getByRole('button', { name: /save and continue/i }));
     expect(await screen.findByRole('alert')).toHaveTextContent('Current password is incorrect.');
+  });
+
+  it('lands institution staff on their own dashboard, not the administrator’s', async () => {
+    const staff = (mustChangePassword: boolean): AuthSession => ({
+      ...session(mustChangePassword),
+      user: { ...session(mustChangePassword).user, institutionRole: 'STAFF' },
+    });
+    vi.spyOn(auth, 'getCurrentUser').mockResolvedValue(staff(true).user);
+    vi.spyOn(auth, 'changePassword').mockResolvedValue(staff(false));
+    renderPage(staff(true));
+    await userEvent.type(await screen.findByLabelText('One-time password'), 'Temp#1234');
+    await userEvent.type(screen.getByLabelText('New password'), 'Brand-New-Pass9!');
+    await userEvent.type(screen.getByLabelText('Confirm new password'), 'Brand-New-Pass9!');
+    await userEvent.click(screen.getByRole('button', { name: /save and continue/i }));
+    expect(await screen.findByText('staff home')).toBeInTheDocument();
   });
 });
