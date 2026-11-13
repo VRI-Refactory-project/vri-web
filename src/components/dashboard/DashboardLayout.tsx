@@ -26,6 +26,8 @@ interface Props {
   accountTo: string;
   /** Text under the user's name. */
   accountLabel?: string;
+  /** The organisation the person belongs to, shown under the logo (institution staff). */
+  organisation?: string;
 }
 
 /** Sidebar and page frame shared by the role dashboards. */
@@ -35,6 +37,7 @@ export function DashboardLayout({
   badges = {},
   accountTo,
   accountLabel = 'View account',
+  organisation,
 }: Props) {
   const { session } = useAuth();
   const name = session?.user.name ?? '';
@@ -44,6 +47,11 @@ export function DashboardLayout({
     <div className="dl-shell">
       <aside className="dl-sidebar">
         <img className="dl-logo" src={logo} alt="SignConnect VRI Platform" />
+        {organisation && (
+          <p className="dl-org" title={organisation}>
+            {organisation}
+          </p>
+        )}
         <nav className="dl-nav" aria-label={navLabel}>
           {links.map(({ id, label, to, icon: Icon, end }) => {
             const count = badges[id] ?? 0;
