@@ -14,6 +14,8 @@ const room = vi.hoisted(() => {
     disconnect: vi.fn().mockResolvedValue(undefined),
     localParticipant: {
       publishTrack: vi.fn().mockResolvedValue(undefined),
+      publishData: vi.fn().mockResolvedValue(undefined),
+      setScreenShareEnabled: vi.fn().mockResolvedValue(undefined),
       getTrackPublication: (source: string) => publications.get(source),
     },
     on(event: string, handler: Handler) {
@@ -36,9 +38,12 @@ vi.mock('livekit-client', () => ({
     TrackMuted: 'trackMuted',
     TrackUnmuted: 'trackUnmuted',
     ParticipantNameChanged: 'participantNameChanged',
+    LocalTrackPublished: 'localTrackPublished',
+    LocalTrackUnpublished: 'localTrackUnpublished',
+    DataReceived: 'dataReceived',
     Disconnected: 'disconnected',
   },
-  Track: { Source: { Camera: 'camera', Microphone: 'microphone' } },
+  Track: { Source: { Camera: 'camera', Microphone: 'microphone', ScreenShare: 'screen_share' } },
 }));
 vi.mock('../../services/callToken', () => ({
   getCallToken: vi
@@ -47,7 +52,7 @@ vi.mock('../../services/callToken', () => ({
 }));
 
 import { getCallToken } from '../../services/callToken';
-import { createLiveKitConnection } from './callConnection';
+import { createLiveKitConnection, liveKitConnectionWith } from './callConnection';
 
 /** jsdom has no MediaStream; this keeps just the part the adapter uses. */
 class FakeStream {
@@ -68,6 +73,8 @@ beforeEach(() => {
   room.connect.mockClear();
   room.disconnect.mockClear();
   room.localParticipant.publishTrack.mockClear();
+  room.localParticipant.publishData.mockClear();
+  room.localParticipant.setScreenShareEnabled.mockClear();
   vi.mocked(getCallToken).mockClear();
 });
 
@@ -100,7 +107,9 @@ describe('createLiveKitConnection', () => {
       getTrackPublication: (source: string) =>
         source === 'camera'
           ? { track: { mediaStreamTrack: videoTrack }, isMuted: false }
-          : { track: { mediaStreamTrack: audioTrack }, isMuted: false },
+          : source === 'microphone'
+            ? { track: { mediaStreamTrack: audioTrack }, isMuted: false }
+            : undefined,
     });
     const connection = createLiveKitConnection(e);
 
@@ -181,5 +190,125 @@ describe('createLiveKitConnection', () => {
 
     expect(room.localParticipant.publishTrack).not.toHaveBeenCalled();
     expect(room.disconnect).toHaveBeenCalled();
+  });
+});
+
+describe('screen sharing, chat and devices', () => {
+  const encode = (value: unknown) => new TextEncoder().encode(JSON.stringify(value));
+
+  it('shows a shared screen as its own tile next to the person, not mirrored like a camera', async () => {
+    const e = events();
+    const screenTrack = { kind: 'video' };
+    room.remoteParticipants.set('user-9', {
+      identity: 'user-9',
+      name: 'Amina Okafor',
+      getTrackPublication: (source: string) =>
+        source === 'screen_share' ? { track: { mediaStreamTrack: screenTrack } } : undefined,
+    });
+    await createLiveKitConnection(e).join('7', null);
+
+    const [people] = e.onPeople.mock.calls.at(-1)!;
+    expect(people).toHaveLength(2);
+    expect(people[1]).toMatchObject({ id: 'user-9#screen', screen: true });
+    expect(people[1].stream.getVideoTracks()).toEqual([screenTrack]);
+  });
+
+  it('starts and stops sharing the screen, and reports a refused share as not sharing', async () => {
+    const e = { ...events(), onSharing: vi.fn() };
+    const connection = createLiveKitConnection(e);
+
+    await connection.setScreenShare!(true);
+    expect(room.localParticipant.setScreenShareEnabled).toHaveBeenCalledWith(true);
+
+    room.localParticipant.setScreenShareEnabled.mockRejectedValueOnce(new Error('cancelled'));
+    await connection.setScreenShare!(true);
+    expect(e.onSharing).toHaveBeenLastCalledWith(false);
+  });
+
+  it('tells the page when the browser’s own "Stop sharing" button is used', () => {
+    const e = { ...events(), onSharing: vi.fn() };
+    createLiveKitConnection(e);
+
+    room.handlers.get('localTrackPublished')!({ source: 'screen_share' });
+    expect(e.onSharing).toHaveBeenLastCalledWith(true);
+    room.handlers.get('localTrackUnpublished')!({ source: 'screen_share' });
+    expect(e.onSharing).toHaveBeenLastCalledWith(false);
+    room.handlers.get('localTrackPublished')!({ source: 'camera' });
+    expect(e.onSharing).toHaveBeenCalledTimes(2);
+  });
+
+  it('sends a chat message to the room and shows it to the sender straight away', () => {
+    const e = { ...events(), onChat: vi.fn() };
+    const connection = createLiveKitConnection(e);
+
+    connection.sendChat!('  Hello  ');
+
+    const [payload, options] = room.localParticipant.publishData.mock.calls[0];
+    expect(JSON.parse(new TextDecoder().decode(payload)).text).toBe('Hello');
+    expect(options).toMatchObject({ reliable: true, topic: 'chat' });
+    expect(e.onChat).toHaveBeenCalledWith(
+      expect.objectContaining({ from: 'You', text: 'Hello', mine: true }),
+    );
+
+    connection.sendChat!('   ');
+    expect(room.localParticipant.publishData).toHaveBeenCalledTimes(1);
+  });
+
+  it('passes on chat from others, and ignores other topics and broken messages', () => {
+    const e = { ...events(), onChat: vi.fn() };
+    createLiveKitConnection(e);
+    const received = room.handlers.get('dataReceived')!;
+    const amina = { identity: 'user-9', name: 'Amina Okafor' };
+
+    received(encode({ text: 'Hi there', at: 5 }), amina, undefined, 'chat');
+    received(encode({ text: 'ignored' }), amina, undefined, 'something-else');
+    received(new TextEncoder().encode('not json'), amina, undefined, 'chat');
+    received(encode({ text: 42 }), amina, undefined, 'chat');
+
+    expect(e.onChat).toHaveBeenCalledTimes(1);
+    expect(e.onChat).toHaveBeenCalledWith({
+      id: 'user-9-5',
+      from: 'Amina Okafor',
+      text: 'Hi there',
+      mine: false,
+      at: 5,
+    });
+  });
+
+  it('swaps the sent camera or microphone when another device is picked', async () => {
+    const replaceTrack = vi.fn().mockResolvedValue(undefined);
+    room.publications.set('microphone', { track: { replaceTrack } } as never);
+    const connection = createLiveKitConnection(events());
+    const next = { kind: 'audio' } as MediaStreamTrack;
+
+    await connection.replaceTrack!('audio', next);
+
+    expect(replaceTrack).toHaveBeenCalledWith(next);
+  });
+});
+
+describe('liveKitConnectionWith (the hearing guest)', () => {
+  it('joins with the token the guest already holds, without asking the signed-in token API', async () => {
+    const connection = liveKitConnectionWith(() =>
+      Promise.resolve({ token: 'guest-jwt', url: 'wss://live.example', room: 'session-7' }),
+    )(events());
+
+    await connection.join('', null);
+
+    expect(getCallToken).not.toHaveBeenCalled();
+    expect(room.connect).toHaveBeenCalledWith('wss://live.example', 'guest-jwt', {
+      rtcConfig: { iceServers: [] },
+    });
+  });
+
+  it('connects once when a join is cancelled and started again straight away', async () => {
+    const connection = createLiveKitConnection(events());
+
+    const first = connection.join('7', null);
+    connection.leave();
+    const second = connection.join('7', null);
+    await Promise.all([first, second]);
+
+    expect(room.connect).toHaveBeenCalledTimes(1);
   });
 });

@@ -5,9 +5,62 @@ import { AuthLayout } from '../../components/Authlayout'; // IMPORTED AuthLayout
 import { ApiError } from '../../services/api';
 import type { CallToken } from '../../services/callToken';
 import { getGuestLobby, joinAsGuest } from '../../services/guestSession';
-import { VideoRoom } from '../video/VideoRoom';
+import { CallScreen } from '../../components/session/CallScreen';
+import { liveKitConnectionWith } from '../session/callConnection';
+import { useCall } from '../session/useCall';
 
 type Mode = 'video' | 'audio' | 'listen';
+
+/**
+ * What each way of joining is allowed to send. "Audio only" never asks for a camera, and
+ * "Listen only" asks for neither, so the browser does not even show the permission box for them.
+ */
+const CALL_MODES: Record<Mode, { video: boolean; audio: boolean }> = {
+  video: { video: true, audio: true },
+  audio: { video: false, audio: true },
+  listen: { video: false, audio: false },
+};
+
+interface GuestCallProps {
+  token: CallToken;
+  mode: Mode;
+  onLeave: () => void;
+}
+
+/** The call for the hearing guest: the same screen the Deaf user and interpreter get. */
+function GuestCall({ token, mode, onLeave }: GuestCallProps) {
+  const call = useCall({
+    createConnection: liveKitConnectionWith(() => Promise.resolve(token)),
+    mode: CALL_MODES[mode],
+  });
+
+  // If the connection drops, go back to the waiting page, which checks the session again.
+  const { lost } = call;
+  useEffect(() => {
+    if (lost) onLeave();
+    // onLeave is a new function every render; only a drop should send the guest back.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lost]);
+
+  // Joins as soon as the browser has given the camera and microphone (or said no).
+  const { ready, join } = call;
+  useEffect(() => {
+    if (ready) void join();
+    // join changes every render; the call must start once, when ready turns true.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready]);
+
+  return (
+    <CallScreen
+      call={call}
+      selfName="Hearing guest"
+      onLeave={() => {
+        call.leave();
+        onLeave();
+      }}
+    />
+  );
+}
 type Phase = 'waiting' | 'ready' | 'closed' | 'invalid';
 
 const POLL_MS = 3000;
@@ -78,15 +131,7 @@ export function GuestSessionPage() {
   };
 
   if (call) {
-    return (
-      <VideoRoom
-        token={call.token}
-        serverUrl={call.url}
-        video={mode === 'video'}
-        audio={mode !== 'listen'}
-        onLeave={() => setCall(null)}
-      />
-    );
+    return <GuestCall token={call} mode={mode} onLeave={() => setCall(null)} />;
   }
 
   const canChoose = phase === 'waiting' || phase === 'ready';

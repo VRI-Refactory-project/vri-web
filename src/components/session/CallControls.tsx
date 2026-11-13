@@ -1,4 +1,18 @@
-import { Captions, Ellipsis, LogOut, Mic, MicOff, PhoneOff, Video, VideoOff } from 'lucide-react';
+import { useState } from 'react';
+import {
+  Captions,
+  ChevronUp,
+  Ellipsis,
+  LogOut,
+  MessageSquare,
+  Mic,
+  MicOff,
+  MonitorUp,
+  PhoneOff,
+  Video,
+  VideoOff,
+} from 'lucide-react';
+import type { MediaDevice } from '../../features/session/useLocalMedia';
 
 interface Props {
   micOn: boolean;
@@ -12,9 +26,72 @@ interface Props {
   canEnd?: boolean;
   /** The lobby preview only has the mic and camera buttons. */
   lobby?: boolean;
+  /** False for "Listen only": no Mute button at all. */
+  canMic?: boolean;
+  /** False for "Audio only" and "Listen only": no Video button at all. */
+  canCam?: boolean;
+  /** The microphones and cameras to pick from, and which one is in use. */
+  mics?: MediaDevice[];
+  cams?: MediaDevice[];
+  selectedMic?: string | null;
+  selectedCam?: string | null;
+  onPickDevice?: (kind: 'audio' | 'video', deviceId: string) => void;
+  /** Share screen. Leave out to hide the button. */
+  onShareScreen?: () => void;
+  sharing?: boolean;
+  /** Chat. Leave out to hide the button. */
+  onToggleChat?: () => void;
+  chatOpen?: boolean;
+  unread?: number;
 }
 
-/** The bar under the call: mute, video, leave, end call (starter only), and two later buttons. */
+interface DeviceMenuProps {
+  label: string;
+  devices: MediaDevice[];
+  selected?: string | null;
+  onPick: (deviceId: string) => void;
+}
+
+/** The small arrow beside Mute / Video that lists the devices to pick from. */
+function DeviceMenu({ label, devices, selected, onPick }: DeviceMenuProps) {
+  const [open, setOpen] = useState(false);
+  if (devices.length === 0) return null;
+  return (
+    <div className="cc__menu-wrap">
+      <button
+        type="button"
+        className="cc__chevron"
+        aria-label={label}
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <ChevronUp size={14} />
+      </button>
+      {open && (
+        <ul className="cc__menu" role="menu" aria-label={label}>
+          {devices.map((device) => (
+            <li key={device.id} role="none">
+              <button
+                type="button"
+                role="menuitemradio"
+                aria-checked={device.id === selected}
+                className={device.id === selected ? 'is-selected' : undefined}
+                onClick={() => {
+                  onPick(device.id);
+                  setOpen(false);
+                }}
+              >
+                {device.label}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/** The bar under the call: mute, video, share, chat, leave, end call (starter only), and two later buttons. */
 export function CallControls({
   micOn,
   camOn,
@@ -24,19 +101,86 @@ export function CallControls({
   onLeave,
   canEnd = true,
   lobby,
+  canMic = true,
+  canCam = true,
+  mics = [],
+  cams = [],
+  selectedMic,
+  selectedCam,
+  onPickDevice,
+  onShareScreen,
+  sharing,
+  onToggleChat,
+  chatOpen,
+  unread = 0,
 }: Props) {
   return (
     <div className="cc" role="toolbar" aria-label="Call controls">
-      <button type="button" className="cc__btn" onClick={onToggleMic} aria-pressed={!micOn}>
-        <span className="cc__icon">{micOn ? <Mic size={18} /> : <MicOff size={18} />}</span>
-        {micOn ? 'Mute' : 'Unmute'}
-      </button>
-      <button type="button" className="cc__btn" onClick={onToggleCam} aria-pressed={!camOn}>
-        <span className="cc__icon">{camOn ? <Video size={18} /> : <VideoOff size={18} />}</span>
-        {camOn ? 'Stop Video' : 'Start Video'}
-      </button>
+      {canMic && (
+        <div className="cc__group">
+          <button type="button" className="cc__btn" onClick={onToggleMic} aria-pressed={!micOn}>
+            <span className="cc__icon">{micOn ? <Mic size={18} /> : <MicOff size={18} />}</span>
+            {micOn ? 'Mute' : 'Unmute'}
+          </button>
+          {onPickDevice && (
+            <DeviceMenu
+              label="Choose microphone"
+              devices={mics}
+              selected={selectedMic}
+              onPick={(id) => onPickDevice('audio', id)}
+            />
+          )}
+        </div>
+      )}
+      {canCam && (
+        <div className="cc__group">
+          <button type="button" className="cc__btn" onClick={onToggleCam} aria-pressed={!camOn}>
+            <span className="cc__icon">{camOn ? <Video size={18} /> : <VideoOff size={18} />}</span>
+            {camOn ? 'Stop Video' : 'Start Video'}
+          </button>
+          {onPickDevice && (
+            <DeviceMenu
+              label="Choose camera"
+              devices={cams}
+              selected={selectedCam}
+              onPick={(id) => onPickDevice('video', id)}
+            />
+          )}
+        </div>
+      )}
       {!lobby && (
         <>
+          {onShareScreen && (
+            <button
+              type="button"
+              className="cc__btn"
+              onClick={onShareScreen}
+              aria-pressed={Boolean(sharing)}
+            >
+              <span className="cc__icon">
+                <MonitorUp size={18} />
+              </span>
+              {sharing ? 'Stop Sharing' : 'Share Screen'}
+            </button>
+          )}
+          {onToggleChat && (
+            <button
+              type="button"
+              className="cc__btn"
+              onClick={onToggleChat}
+              aria-pressed={Boolean(chatOpen)}
+            >
+              <span className="cc__icon">
+                <MessageSquare size={18} />
+                {unread > 0 && (
+                  <span className="cc__badge" aria-label={`${unread} unread messages`}>
+                    {unread}
+                  </span>
+                )}
+              </span>
+              Chat
+            </button>
+          )}
           {onLeave && (
             <button type="button" className="cc__btn" onClick={onLeave}>
               <span className="cc__icon">
