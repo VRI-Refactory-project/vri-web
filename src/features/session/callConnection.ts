@@ -1,5 +1,6 @@
-import { Room, RoomEvent, Track, type RemoteParticipant } from 'livekit-client';
+import { Room, RoomEvent, Track, VideoQuality, type RemoteParticipant } from 'livekit-client';
 import { getCallToken, type CallToken } from '../../services/callToken';
+import type { ConnectionQuality } from './videoQuality';
 
 /** Someone else in the call, with the stream the screen plays for them. */
 export interface RemotePerson {
@@ -10,6 +11,8 @@ export interface RemotePerson {
   cameraOff: boolean;
   /** True for a shared screen. It gets its own tile and is not mirrored like a camera. */
   screen?: boolean;
+  /** How good their connection is, shown as bars on their tile. */
+  quality?: ConnectionQuality;
 }
 
 /** One line in the call's chat. */
@@ -30,6 +33,8 @@ export interface CallEvents {
   onChat?(message: ChatMessage): void;
   /** Your own screen share started or stopped (the browser's "Stop sharing" button counts too). */
   onSharing?(on: boolean): void;
+  /** How good your own connection is. */
+  onSelfQuality?(quality: ConnectionQuality): void;
 }
 
 /**
@@ -48,11 +53,20 @@ export interface CallConnection {
   sendChat?(text: string): void;
   /** Swaps the camera or microphone being sent, after the viewer picks another device. */
   replaceTrack?(kind: 'audio' | 'video', track: MediaStreamTrack): Promise<void>;
+  /** Limits how sharp the video coming from the others may be, to save data. */
+  setIncomingQuality?(quality: 'low' | 'medium' | 'high'): void;
 }
 
 export type CreateConnection = (events: CallEvents) => CallConnection;
 
 const CHAT_TOPIC = 'chat';
+
+/** LiveKit reports quality as one of these words; anything else counts as unknown. */
+function toQuality(value: unknown): ConnectionQuality {
+  return value === 'excellent' || value === 'good' || value === 'poor' || value === 'lost'
+    ? value
+    : 'unknown';
+}
 const MAX_CHAT_LENGTH = 2000;
 
 /** Keeps one track of the given kind on the stream, swapping it when LiveKit gives a new one. */
@@ -92,6 +106,8 @@ export function liveKitConnectionWith(
     // Counts joins and leaves, so a join that was cancelled halfway (or replaced by a newer one,
     // as React's StrictMode does while developing) stops instead of connecting twice.
     let attempt = 0;
+    // Set when the person picks a video quality. Until then LiveKit chooses by itself.
+    let incoming: 'low' | 'medium' | 'high' | null = null;
 
     const streamFor = (key: string) => {
       const stream = streams.get(key) ?? new MediaStream();
@@ -107,7 +123,13 @@ export function liveKitConnectionWith(
       setStreamTrack(stream, 'audio', mic?.track?.mediaStreamTrack);
       const name = p.name || 'Participant';
       const people: RemotePerson[] = [
-        { id: p.identity, name, stream, cameraOff: !camera?.track || camera.isMuted },
+        {
+          id: p.identity,
+          name,
+          stream,
+          cameraOff: !camera?.track || camera.isMuted,
+          quality: toQuality(p.connectionQuality),
+        },
       ];
 
       // A shared screen is shown as one more tile next to the person.
@@ -131,6 +153,17 @@ export function liveKitConnectionWith(
     const send = () =>
       events.onPeople([...room.remoteParticipants.values()].flatMap((p) => toPeople(p)));
 
+    // Applies the chosen quality to every video coming in, including ones that arrive later.
+    const applyIncoming = () => {
+      if (!incoming) return;
+      const level = { low: VideoQuality.LOW, medium: VideoQuality.MEDIUM, high: VideoQuality.HIGH }[
+        incoming
+      ];
+      for (const p of room.remoteParticipants.values()) {
+        p.videoTrackPublications?.forEach((publication) => publication.setVideoQuality?.(level));
+      }
+    };
+
     room
       .on(RoomEvent.ParticipantConnected, send)
       .on(RoomEvent.ParticipantDisconnected, (p) => {
@@ -138,11 +171,18 @@ export function liveKitConnectionWith(
         streams.delete(`${p.identity}#screen`);
         send();
       })
-      .on(RoomEvent.TrackSubscribed, send)
+      .on(RoomEvent.TrackSubscribed, () => {
+        applyIncoming();
+        send();
+      })
       .on(RoomEvent.TrackUnsubscribed, send)
       .on(RoomEvent.TrackMuted, send)
       .on(RoomEvent.TrackUnmuted, send)
       .on(RoomEvent.ParticipantNameChanged, send)
+      .on(RoomEvent.ConnectionQualityChanged, (quality, participant) => {
+        if (participant.isLocal) events.onSelfQuality?.(toQuality(quality));
+        else send();
+      })
       .on(RoomEvent.LocalTrackPublished, (publication) => {
         if (publication.source === Track.Source.ScreenShare) events.onSharing?.(true);
       })
@@ -214,6 +254,10 @@ export function liveKitConnectionWith(
         const payload = new TextEncoder().encode(JSON.stringify({ text: body, at }));
         void room.localParticipant.publishData(payload, { reliable: true, topic: CHAT_TOPIC });
         events.onChat?.({ id: `me-${at}`, from: 'You', text: body, mine: true, at });
+      },
+      setIncomingQuality(quality) {
+        incoming = quality;
+        applyIncoming();
       },
       async replaceTrack(kind, track) {
         const source = kind === 'video' ? Track.Source.Camera : Track.Source.Microphone;

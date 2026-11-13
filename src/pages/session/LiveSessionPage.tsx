@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -10,20 +10,20 @@ import {
 } from 'lucide-react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { SessionStatusBanner } from '../../components/session/SessionStatusBanner';
+import { BrandMark } from '../../components/session/BrandMark';
 import { CallControls } from '../../components/session/CallControls';
+import { CallScreen } from '../../components/session/CallScreen';
 import { GuestInvitePanel } from '../../components/session/GuestInvitePanel';
 import { VideoTile } from '../../components/session/VideoTile';
-import { useLocalMedia } from '../../features/session/useLocalMedia';
+import { useCall } from '../../features/session/useCall';
 import { useAuth } from '../../hooks/useAuth';
 import {
   createLiveKitConnection,
   type CreateConnection,
-  type RemotePerson,
 } from '../../features/session/callConnection';
 import { labelFor } from '../../features/session/sessionStatus';
 import { openSessionSocket, type OpenSessionSocket } from '../../features/session/sessionSocket';
 import { ApiError, describeError } from '../../services/api';
-import { formatDuration } from '../../services/liveSession';
 import {
   submitSessionFeedback,
   type FeedbackCategory,
@@ -117,11 +117,14 @@ export function LiveSessionPage({
   const { session } = useAuth();
 
   const interpreterName = (location.state as { interpreterName?: string } | null)?.interpreterName;
-  const media = useLocalMedia();
+  // The camera, the connection, the others, chat, sharing and the timer: the same for every role.
+  const call = useCall({ createConnection });
+  const { media, leave } = call;
 
-  const [phase, setPhase] = useState<Phase>('lobby');
-  const [seconds, setSeconds] = useState(0);
-  const [others, setOthers] = useState<RemotePerson[]>([]);
+  const [rawPhase, setPhase] = useState<Phase>('lobby');
+  // A dropped connection puts the person back in the lobby, where they can join again.
+  const phase: Phase =
+    call.lost && (rawPhase === 'call' || rawPhase === 'confirmEnd') ? 'lobby' : rawPhase;
   const [joinError, setJoinError] = useState<string | null>(null);
   // How the session ended, so the ended screen says the right thing (V2-031, V2-034).
   const [endedState, setEndedState] = useState<SessionRequestState>('COMPLETED');
@@ -131,7 +134,6 @@ export function LiveSessionPage({
   const [endedByMe, setEndedByMe] = useState(false);
   // True for a person who only left the call. The session carries on for the others, so they may rejoin.
   const [leftEarly, setLeftEarly] = useState(false);
-  const startedAt = useRef(0);
   const home = homeOverride ?? HOME[viewerRole];
 
   // --- Feedback Wizard State ---
@@ -200,26 +202,13 @@ export function LiveSessionPage({
     }
   };
 
-  const [connection] = useState(() =>
-    createConnection({
-      onPeople: setOthers,
-      onLost: () => {
-        setJoinError('You were disconnected from the call. Join again to reconnect.');
-        setPhase('lobby');
-      },
-    }),
-  );
-
-  useEffect(() => () => connection.leave(), [connection]);
-
   // The server tells everyone when the session ends, whoever ended it (V2-034).
   useEffect(() => {
     if (!id) return;
     const socket = openSocket(id, {
       onStatus: (state) => {
         if (!FINAL_STATES.includes(state)) return;
-        connection.leave();
-        startedAt.current = 0;
+        leave();
         // The session is over for everyone now, so there is nothing left to rejoin.
         setLeftEarly(false);
         setEndedState(state);
@@ -227,52 +216,15 @@ export function LiveSessionPage({
       },
     });
     return () => socket.close();
-  }, [id, openSocket, connection]);
+  }, [id, openSocket, leave]);
 
   const join = async () => {
     setJoinError(null);
     setLeftEarly(false);
     setPhase('joining');
-    try {
-      await connection.join(id ?? '', media.stream);
-      connection.setMic(media.micOn);
-      connection.setCam(media.camOn);
-      startedAt.current = Date.now();
-      setSeconds(0);
-      setPhase('call');
-    } catch (err) {
-      setJoinError(describeError(err));
-      setPhase('lobby');
-    }
+    const joined = await call.join(id ?? '');
+    setPhase(joined ? 'call' : 'lobby');
   };
-
-  // Without access the buttons cannot work, so say why instead of doing nothing (V2-032 FE-05).
-  const [accessNotice, setAccessNotice] = useState<string | null>(null);
-  const toggleMic = () => {
-    if (media.blocked) {
-      setAccessNotice(media.error);
-      return;
-    }
-    media.toggleMic();
-    connection.setMic(!media.micOn);
-  };
-  const toggleCam = () => {
-    if (media.blocked) {
-      setAccessNotice(media.error);
-      return;
-    }
-    media.toggleCam();
-    connection.setCam(!media.camOn);
-  };
-
-  useEffect(() => {
-    if (phase !== 'call' && phase !== 'confirmEnd') return;
-    const timer = setInterval(
-      () => setSeconds(Math.floor((Date.now() - startedAt.current) / 1000)),
-      1000,
-    );
-    return () => clearInterval(timer);
-  }, [phase]);
 
   const cancelLobby = async () => {
     if (viewerRole === 'deaf' && id) {
@@ -300,16 +252,14 @@ export function LiveSessionPage({
       return;
     }
     setEnding(false);
-    connection.leave();
-    startedAt.current = 0;
+    leave();
     setEndedState('COMPLETED');
     setPhase('ended');
   };
 
   // Leaving ends nothing: the others stay in the session, and this person may rejoin (V2-033).
   const leaveCall = () => {
-    connection.leave();
-    startedAt.current = 0;
+    leave();
     setLeftEarly(true);
     setPhase('ended');
   };
@@ -536,64 +486,24 @@ export function LiveSessionPage({
 
   if (phase === 'call') {
     return (
-      <main className="ls ls--call">
-        <header className="ls-top">
-          <span className="ls-brand">SignConnect</span>
-          <span className="ls-timer" aria-label="Call length">
-            {formatDuration(seconds)}
-          </span>
-        </header>
-
-        {/* ADDED: The header row to align the banner and button side-by-side */}
-        <div className="ls-call-header">
-          <SessionStatusBanner
-            state="ACTIVE"
-            interpreterName={viewerRole === 'deaf' ? interpreterName : undefined}
-          />
-          {viewerRole === 'deaf' && id && <GuestInvitePanel sessionId={id} />}
-        </div>
-
-        <div className="ls-stage">
-          <VideoTile
-            name={selfName}
-            stream={media.stream}
-            cameraOff={!media.camOn}
-            muted
-            profilePicture={selfProfilePicture}
-            highlight
-          />
-          {others.map((person) => (
-            <VideoTile
-              key={person.id}
-              name={person.name}
-              stream={person.stream}
-              cameraOff={person.cameraOff}
-              highlight={person.name === interpreterName}
+      <CallScreen
+        call={call}
+        selfName={selfName}
+        selfPicture={selfProfilePicture}
+        selfEmail={session?.user?.email}
+        highlightName={viewerRole === 'deaf' ? interpreterName : undefined}
+        headerExtra={
+          <>
+            <SessionStatusBanner
+              state="ACTIVE"
+              interpreterName={viewerRole === 'deaf' ? interpreterName : undefined}
             />
-          ))}
-          {others.length === 0 && (
-            <div className="vt ls-waiting" role="status">
-              Waiting for others to join…
-            </div>
-          )}
-        </div>
-
-        {accessNotice && (
-          <p className="ls-error" role="alert">
-            {accessNotice}
-          </p>
-        )}
-
-        <CallControls
-          micOn={media.micOn}
-          camOn={media.camOn}
-          onToggleMic={toggleMic}
-          onToggleCam={toggleCam}
-          onEnd={() => setPhase('confirmEnd')}
-          onLeave={leaveCall}
-          canEnd={canEnd}
-        />
-      </main>
+            {viewerRole === 'deaf' && id && <GuestInvitePanel sessionId={id} />}
+          </>
+        }
+        onLeave={leaveCall}
+        onEnd={canEnd ? () => setPhase('confirmEnd') : undefined}
+      />
     );
   }
 
@@ -601,7 +511,7 @@ export function LiveSessionPage({
   return (
     <main className="ls">
       <header className="ls-top">
-        <span className="ls-brand">SignConnect</span>
+        <BrandMark />
       </header>
       <div className="ls-lobby">
         <div className="ls-preview">
@@ -617,8 +527,8 @@ export function LiveSessionPage({
             <CallControls
               micOn={media.micOn}
               camOn={media.camOn}
-              onToggleMic={toggleMic}
-              onToggleCam={toggleCam}
+              onToggleMic={call.toggleMic}
+              onToggleCam={call.toggleCam}
               onEnd={() => undefined}
               lobby
             />
@@ -638,9 +548,9 @@ export function LiveSessionPage({
             </p>
           )}
           <SessionStatusBanner state={BANNER[phase]} interpreterName={interpreterName} />
-          {(joinError ?? media.error) && (
+          {(joinError ?? call.error ?? media.error) && (
             <p className="ls-error" role="alert">
-              {joinError ?? media.error}
+              {joinError ?? call.error ?? media.error}
             </p>
           )}
           {viewerRole === 'deaf' && id && <GuestInvitePanel sessionId={id} />}

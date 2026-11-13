@@ -9,10 +9,16 @@ import {
   MicOff,
   MonitorUp,
   PhoneOff,
+  Signal,
   Video,
   VideoOff,
 } from 'lucide-react';
 import type { MediaDevice } from '../../features/session/useLocalMedia';
+import {
+  QUALITY_ORDER,
+  QUALITY_PRESETS,
+  type VideoQualityChoice,
+} from '../../features/session/videoQuality';
 
 interface Props {
   micOn: boolean;
@@ -39,6 +45,9 @@ interface Props {
   /** Share screen. Leave out to hide the button. */
   onShareScreen?: () => void;
   sharing?: boolean;
+  /** Video quality. Leave out to hide the button. */
+  quality?: VideoQualityChoice;
+  onPickQuality?: (choice: VideoQualityChoice) => void;
   /** Chat. Leave out to hide the button. */
   onToggleChat?: () => void;
   chatOpen?: boolean;
@@ -91,6 +100,54 @@ function DeviceMenu({ label, devices, selected, onPick }: DeviceMenuProps) {
   );
 }
 
+/** "Quality": a button that opens the list of video qualities to choose from. */
+function QualityMenu({
+  quality,
+  onPick,
+}: {
+  quality: VideoQualityChoice;
+  onPick: (choice: VideoQualityChoice) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="cc__menu-wrap">
+      <button
+        type="button"
+        className="cc__btn"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span className="cc__icon">
+          <Signal size={18} />
+        </span>
+        Quality
+      </button>
+      {open && (
+        <ul className="cc__menu" role="menu" aria-label="Video quality">
+          {QUALITY_ORDER.map((choice) => (
+            <li key={choice} role="none">
+              <button
+                type="button"
+                role="menuitemradio"
+                aria-checked={choice === quality}
+                className={choice === quality ? 'is-selected' : undefined}
+                onClick={() => {
+                  onPick(choice);
+                  setOpen(false);
+                }}
+              >
+                {QUALITY_PRESETS[choice].label}
+                <small className="cc__hint">{QUALITY_PRESETS[choice].hint}</small>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 /** The bar under the call: mute, video, share, chat, leave, end call (starter only), and two later buttons. */
 export function CallControls({
   micOn,
@@ -110,6 +167,8 @@ export function CallControls({
   onPickDevice,
   onShareScreen,
   sharing,
+  quality = 'auto',
+  onPickQuality,
   onToggleChat,
   chatOpen,
   unread = 0,
@@ -163,6 +222,7 @@ export function CallControls({
               {sharing ? 'Stop Sharing' : 'Share Screen'}
             </button>
           )}
+          {onPickQuality && <QualityMenu quality={quality} onPick={onPickQuality} />}
           {onToggleChat && (
             <button
               type="button"
