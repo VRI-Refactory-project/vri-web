@@ -15,6 +15,13 @@ const show = () =>
     </MemoryRouter>,
   );
 
+const showForStaff = () =>
+  render(
+    <MemoryRouter>
+      <SessionHistoryPage backTo="/dashboard/staff" detailsBase="/dashboard/staff/sessions" />
+    </MemoryRouter>,
+  );
+
 describe('SessionHistoryPage', () => {
   it('lists the sessions with their status', async () => {
     vi.mocked(getMySessions).mockResolvedValue([
@@ -68,5 +75,38 @@ describe('SessionHistoryPage', () => {
     vi.mocked(getMySessions).mockRejectedValue(new Error('down'));
     show();
     await waitFor(() => expect(screen.getByRole('alert')).toBeTruthy());
+  });
+
+  it('opens a session’s details from its row', async () => {
+    vi.mocked(getMySessions).mockResolvedValue([
+      {
+        id: '8',
+        status: 'completed',
+        interpreterName: 'Amina Okafor',
+        emergency: false,
+        createdAt: '2026-10-01T10:00:00',
+      },
+    ]);
+    show();
+    const row = await screen.findByRole('link', { name: /Amina Okafor/ });
+    expect(row.getAttribute('href')).toBe('/dashboard/deaf/sessions/8');
+  });
+
+  it('works inside the staff area too', async () => {
+    vi.mocked(getMySessions).mockResolvedValue([
+      {
+        id: '8',
+        status: 'completed',
+        interpreterName: 'Amina Okafor',
+        emergency: false,
+        createdAt: '2026-10-01T10:00:00',
+      },
+    ]);
+    showForStaff();
+    const row = await screen.findByRole('link', { name: /Amina Okafor/ });
+    expect(row.getAttribute('href')).toBe('/dashboard/staff/sessions/8');
+    expect(screen.getByRole('link', { name: /Back/ }).getAttribute('href')).toBe(
+      '/dashboard/staff',
+    );
   });
 });

@@ -246,3 +246,15 @@ a.sh-card:focus-visible {
   font-weight: 600;
   text-align: right;
 }
+
+/* History rows are links to the session's details */
+.sh-row--link {
+  color: inherit;
+  text-decoration: none;
+}
+.sh-row--link:hover {
+  background: #f8f7ff;
+}
+.sh-list li:last-child .sh-row {
+  border-bottom: 0;
+}

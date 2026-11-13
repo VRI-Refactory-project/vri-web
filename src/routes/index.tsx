@@ -153,6 +153,7 @@ const appRoutes: RouteObject[] = [
           { path: 'sessions', element: <SessionsHubPage /> },
           { path: 'sessions/history', element: <SessionHistoryPage /> },
           { path: 'sessions/new', element: <StartSessionPage /> },
+          { path: 'sessions/:id', element: <SessionDetailsPage /> },
           { path: 'schedule', element: <SchedulePage /> },
           { path: 'accessibility', element: <AccessibilityPage /> },
           { path: 'messages', element: <MessagesPage /> },
@@ -222,7 +223,19 @@ const appRoutes: RouteObject[] = [
               { index: true, element: <StaffDashboardPage /> },
               { path: 'start-session', element: <StartSessionPage /> },
               { path: 'schedule-session', element: <SchedulePage /> },
-              { path: 'sessions/:id', element: <SessionDetailsPage backTo="/dashboard/staff" /> },
+              {
+                path: 'sessions',
+                element: (
+                  <SessionHistoryPage
+                    backTo="/dashboard/staff"
+                    detailsBase="/dashboard/staff/sessions"
+                  />
+                ),
+              },
+              {
+                path: 'sessions/:id',
+                element: <SessionDetailsPage backTo="/dashboard/staff/sessions" />,
+              },
             ],
           },
         ],
