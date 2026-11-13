@@ -527,7 +527,6 @@ import {
   Building2,
   Video,
   ShieldCheck,
-  MapPin,
   Lightbulb,
   BarChart3,
 } from 'lucide-react';
@@ -537,7 +536,7 @@ import {
   fetchSessionActivity,
   fetchSessionTypes,
   fetchActivityFeed,
-  fetchTopLocations,
+  // fetchTopLocations,
   fetchUserGrowth,
   fetchInterpreterPerformance,
   fetchVerificationStatus,
@@ -546,7 +545,7 @@ import {
   type SessionActivityPoint,
   type SessionTypesBreakdown,
   type ActivityItem,
-  type LocationItem,
+  // type LocationItem,
   type GrowthPoint,
   type InterpreterPerformance,
   type VerificationStatusBreakdown,
@@ -580,7 +579,7 @@ export function AdminDashboardPage() {
   const [activity, setActivity] = useState<SessionActivityPoint[] | null>(null);
   const [types, setTypes] = useState<SessionTypesBreakdown | null>(null);
   const [feed, setFeed] = useState<ActivityItem[] | null>(null);
-  const [locations, setLocations] = useState<LocationItem[] | null>(null);
+  // const [locations, setLocations] = useState<LocationItem[] | null>(null);
   const [growth, setGrowth] = useState<GrowthPoint[] | null>(null);
   const [performance, setPerformance] = useState<InterpreterPerformance | null>(null);
   const [verification, setVerification] = useState<VerificationStatusBreakdown | null>(null);
@@ -602,9 +601,9 @@ export function AdminDashboardPage() {
     fetchActivityFeed()
       .then(setFeed)
       .catch(() => setFeed([]));
-    fetchTopLocations()
-      .then(setLocations)
-      .catch(() => setLocations([]));
+    // fetchTopLocations()
+    //   .then(setLocations)
+    //   .catch(() => setLocations([]));
     fetchUserGrowth()
       .then(setGrowth)
       .catch(() => setGrowth([]));
@@ -827,31 +826,57 @@ export function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Row: Top locations | User growth | Quick insights */}
+      {/* Row: Top session types | User growth | Quick insights */}
       <div className="ad-row ad-row--mid">
         <div className="ad-panel">
           <div className="ad-panel-head">
-            <h3>Top locations</h3>
-            <small>Users</small>
+            <h3>Top session types</h3>
+            <small>All time</small>
           </div>
-          {locations && locations.length > 0 ? (
-            <div className="ad-locations">
-              {locations.map((l) => (
-                <div key={l.label}>
-                  <div className="ad-loc-row">
-                    <span>
-                      <MapPin size={12} /> {l.label}
-                    </span>
-                    <span>{l.value}</span>
-                  </div>
-                  <div className="ad-loc-bar">
-                    <span style={{ width: `${l.pct}%` }} />
-                  </div>
-                </div>
-              ))}
+
+          {summary?.top_session_types && summary.top_session_types.length > 0 ? (
+            <div className="ad-locations" style={{ marginTop: '20px' }}>
+              {(() => {
+                const total = summary.top_session_types!.reduce((sum, item) => sum + item.count, 0);
+                const colors = ['#4b34a0', '#8b5cf6', '#c4b5fd', '#e5e7eb'];
+
+                return summary.top_session_types!.slice(0, 4).map((item, index) => {
+                  const percentage = total > 0 ? Math.round((item.count / total) * 100) : 0;
+                  const label = item.type.charAt(0).toUpperCase() + item.type.slice(1);
+
+                  return (
+                    <div key={index} style={{ marginBottom: index === 3 ? 0 : '16px' }}>
+                      <div className="ad-loc-row">
+                        <span style={{ fontWeight: 600, color: '#111827' }}>{label}</span>
+                        <span style={{ color: '#6b7280' }}>{percentage}%</span>
+                      </div>
+                      <div
+                        className="ad-loc-bar"
+                        style={{
+                          background: '#f3f4f6',
+                          height: '8px',
+                          borderRadius: '4px',
+                          marginTop: '6px',
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: `${percentage}%`,
+                            background: colors[index % colors.length],
+                            display: 'block',
+                            height: '100%',
+                            borderRadius: '4px',
+                            transition: 'width 0.5s ease-in-out',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
             </div>
           ) : (
-            <p className="ad-empty">No data yet.</p>
+            <p className="ad-empty">No session data yet.</p>
           )}
         </div>
 
@@ -884,15 +909,12 @@ export function AdminDashboardPage() {
                 fontWeight: 'bold',
               }}
             >
-              {growth && growth.length > 0
-                ? growth.reduce((acc, curr) => acc + curr.value, 0).toLocaleString()
-                : '0'}
+              {(summary?.totalUsers ?? 0).toLocaleString()}
             </div>
           </div>
 
           {growth && growth.length > 1 ? (
             <div style={{ position: 'relative', marginTop: '20px' }}>
-              {/* Y-Axis Labels */}
               <div
                 style={{
                   position: 'absolute',
@@ -906,13 +928,24 @@ export function AdminDashboardPage() {
                   color: '#9ca3af',
                 }}
               >
-                <span>15K</span>
-                <span>10K</span>
-                <span>5K</span>
-                <span>0</span>
+                {(() => {
+                  const max = Math.max(1, ...growth.map((g) => g.value));
+                  const formatY = (val: number) => {
+                    if (val >= 1000000) return `${(val / 1000000).toFixed(1)}M`;
+                    if (val >= 1000) return `${Math.round(val / 1000)}K`;
+                    return Math.round(val).toString();
+                  };
+                  return (
+                    <>
+                      <span>{formatY(max)}</span>
+                      <span>{formatY(max * 0.66)}</span>
+                      <span>{formatY(max * 0.33)}</span>
+                      <span>0</span>
+                    </>
+                  );
+                })()}
               </div>
 
-              {/* The Chart */}
               <svg viewBox="0 0 320 160" style={{ width: '100%', height: 180, marginLeft: '25px' }}>
                 <defs>
                   <linearGradient id="ug" x1="0" y1="0" x2="0" y2="1">
@@ -921,7 +954,6 @@ export function AdminDashboardPage() {
                   </linearGradient>
                 </defs>
 
-                {/* Horizontal Grid Lines */}
                 <line x1="0" y1="10" x2="320" y2="10" stroke="#f3f4f6" strokeWidth="1" />
                 <line x1="0" y1="50" x2="320" y2="50" stroke="#f3f4f6" strokeWidth="1" />
                 <line x1="0" y1="90" x2="320" y2="90" stroke="#f3f4f6" strokeWidth="1" />
@@ -966,7 +998,6 @@ export function AdminDashboardPage() {
                 })()}
               </svg>
 
-              {/* X-Axis Dates */}
               <div
                 style={{
                   display: 'flex',
@@ -977,11 +1008,9 @@ export function AdminDashboardPage() {
                   color: '#9ca3af',
                 }}
               >
-                <span>Sep 5</span>
-                <span>Sep 12</span>
-                <span>Sep 19</span>
-                <span>Sep 26</span>
-                <span>Oct 4</span>
+                {growth.map((g, i) => (
+                  <span key={i}>{g.label}</span>
+                ))}
               </div>
             </div>
           ) : (
