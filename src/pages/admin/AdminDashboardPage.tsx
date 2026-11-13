@@ -8,8 +8,8 @@
 //   Building2,
 //   Video,
 //   ShieldCheck,
-//   MapPin,
 //   Lightbulb,
+//   BarChart3,
 // } from 'lucide-react';
 // import { useAuth } from '../../hooks/useAuth';
 // import {
@@ -17,7 +17,7 @@
 //   fetchSessionActivity,
 //   fetchSessionTypes,
 //   fetchActivityFeed,
-//   fetchTopLocations,
+//   // fetchTopLocations,
 //   fetchUserGrowth,
 //   fetchInterpreterPerformance,
 //   fetchVerificationStatus,
@@ -26,7 +26,7 @@
 //   type SessionActivityPoint,
 //   type SessionTypesBreakdown,
 //   type ActivityItem,
-//   type LocationItem,
+//   // type LocationItem,
 //   type GrowthPoint,
 //   type InterpreterPerformance,
 //   type VerificationStatusBreakdown,
@@ -60,7 +60,7 @@
 //   const [activity, setActivity] = useState<SessionActivityPoint[] | null>(null);
 //   const [types, setTypes] = useState<SessionTypesBreakdown | null>(null);
 //   const [feed, setFeed] = useState<ActivityItem[] | null>(null);
-//   const [locations, setLocations] = useState<LocationItem[] | null>(null);
+//   // const [locations, setLocations] = useState<LocationItem[] | null>(null);
 //   const [growth, setGrowth] = useState<GrowthPoint[] | null>(null);
 //   const [performance, setPerformance] = useState<InterpreterPerformance | null>(null);
 //   const [verification, setVerification] = useState<VerificationStatusBreakdown | null>(null);
@@ -82,9 +82,9 @@
 //     fetchActivityFeed()
 //       .then(setFeed)
 //       .catch(() => setFeed([]));
-//     fetchTopLocations()
-//       .then(setLocations)
-//       .catch(() => setLocations([]));
+//     // fetchTopLocations()
+//     //   .then(setLocations)
+//     //   .catch(() => setLocations([]));
 //     fetchUserGrowth()
 //       .then(setGrowth)
 //       .catch(() => setGrowth([]));
@@ -307,67 +307,193 @@
 //         </div>
 //       </div>
 
-//       {/* Row: Top locations | User growth | Quick insights */}
+//       {/* Row: Top session types | User growth | Quick insights */}
 //       <div className="ad-row ad-row--mid">
 //         <div className="ad-panel">
 //           <div className="ad-panel-head">
-//             <h3>Top locations</h3>
-//             <small>Users</small>
+//             <h3>Top session types</h3>
+//             <small>All time</small>
 //           </div>
-//           {locations && locations.length > 0 ? (
-//             <div className="ad-locations">
-//               {locations.map((l) => (
-//                 <div key={l.label}>
-//                   <div className="ad-loc-row">
-//                     <span>
-//                       <MapPin size={12} /> {l.label}
-//                     </span>
-//                     <span>{l.value}</span>
-//                   </div>
-//                   <div className="ad-loc-bar">
-//                     <span style={{ width: `${l.pct}%` }} />
-//                   </div>
-//                 </div>
-//               ))}
+
+//           {summary?.top_session_types && summary.top_session_types.length > 0 ? (
+//             <div className="ad-locations" style={{ marginTop: '20px' }}>
+//               {(() => {
+//                 const total = summary.top_session_types!.reduce((sum, item) => sum + item.count, 0);
+//                 const colors = ['#4b34a0', '#8b5cf6', '#c4b5fd', '#e5e7eb'];
+
+//                 return summary.top_session_types!.slice(0, 4).map((item, index) => {
+//                   const percentage = total > 0 ? Math.round((item.count / total) * 100) : 0;
+//                   const label = item.type.charAt(0).toUpperCase() + item.type.slice(1);
+
+//                   return (
+//                     <div key={index} style={{ marginBottom: index === 3 ? 0 : '16px' }}>
+//                       <div className="ad-loc-row">
+//                         <span style={{ fontWeight: 600, color: '#111827' }}>{label}</span>
+//                         <span style={{ color: '#6b7280' }}>{percentage}%</span>
+//                       </div>
+//                       <div
+//                         className="ad-loc-bar"
+//                         style={{
+//                           background: '#f3f4f6',
+//                           height: '8px',
+//                           borderRadius: '4px',
+//                           marginTop: '6px',
+//                         }}
+//                       >
+//                         <span
+//                           style={{
+//                             width: `${percentage}%`,
+//                             background: colors[index % colors.length],
+//                             display: 'block',
+//                             height: '100%',
+//                             borderRadius: '4px',
+//                             transition: 'width 0.5s ease-in-out',
+//                           }}
+//                         />
+//                       </div>
+//                     </div>
+//                   );
+//                 });
+//               })()}
 //             </div>
 //           ) : (
-//             <p className="ad-empty">No data yet.</p>
+//             <p className="ad-empty">No session data yet.</p>
 //           )}
 //         </div>
 
 //         <div className="ad-panel">
-//           <div className="ad-panel-head">
-//             <h3>User growth</h3>
-//             <small>Last 8 months</small>
+//           <div className="ad-panel-head" style={{ alignItems: 'flex-start' }}>
+//             <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+//               <div
+//                 style={{
+//                   background: '#f3e8ff',
+//                   padding: '8px',
+//                   borderRadius: '8px',
+//                   color: '#4b34a0',
+//                 }}
+//               >
+//                 <BarChart3 size={18} />
+//               </div>
+//               <div>
+//                 <h3 style={{ margin: 0 }}>User growth</h3>
+//                 <small style={{ color: '#6b7280', fontSize: '12px' }}>Last 30 days</small>
+//               </div>
+//             </div>
+
+//             <div
+//               style={{
+//                 background: '#4b34a0',
+//                 color: 'white',
+//                 padding: '4px 10px',
+//                 borderRadius: '6px',
+//                 fontSize: '13px',
+//                 fontWeight: 'bold',
+//               }}
+//             >
+//               {(summary?.totalUsers ?? 0).toLocaleString()}
+//             </div>
 //           </div>
+
 //           {growth && growth.length > 1 ? (
-//             <svg viewBox="0 0 320 140" style={{ width: '100%', height: 160 }}>
-//               <defs>
-//                 <linearGradient id="ug" x1="0" y1="0" x2="0" y2="1">
-//                   <stop offset="0%" stopColor="#4b34a0" stopOpacity="0.25" />
-//                   <stop offset="100%" stopColor="#4b34a0" stopOpacity="0" />
-//                 </linearGradient>
-//               </defs>
-//               {(() => {
-//                 const max = Math.max(1, ...growth.map((g) => g.value));
-//                 const stepX = 300 / Math.max(1, growth.length - 1);
-//                 const points = growth.map((g, i) => {
-//                   const x = 10 + i * stepX;
-//                   const y = 130 - (g.value / max) * 110;
-//                   return { x, y };
-//                 });
-//                 const line = points
-//                   .map((p, i) => (i === 0 ? `M${p.x},${p.y}` : `L${p.x},${p.y}`))
-//                   .join(' ');
-//                 const area = `${line} L${points[points.length - 1].x},130 L${points[0].x},130 Z`;
-//                 return (
-//                   <>
-//                     <path d={area} fill="url(#ug)" />
-//                     <path d={line} stroke="#4b34a0" strokeWidth="2.5" fill="none" />
-//                   </>
-//                 );
-//               })()}
-//             </svg>
+//             <div style={{ position: 'relative', marginTop: '20px' }}>
+//               <div
+//                 style={{
+//                   position: 'absolute',
+//                   left: 0,
+//                   top: 0,
+//                   bottom: 30,
+//                   display: 'flex',
+//                   flexDirection: 'column',
+//                   justifyContent: 'space-between',
+//                   fontSize: '11px',
+//                   color: '#9ca3af',
+//                 }}
+//               >
+//                 {(() => {
+//                   const max = Math.max(1, ...growth.map((g) => g.value));
+//                   const formatY = (val: number) => {
+//                     if (val >= 1000000) return `${(val / 1000000).toFixed(1)}M`;
+//                     if (val >= 1000) return `${Math.round(val / 1000)}K`;
+//                     return Math.round(val).toString();
+//                   };
+//                   return (
+//                     <>
+//                       <span>{formatY(max)}</span>
+//                       <span>{formatY(max * 0.66)}</span>
+//                       <span>{formatY(max * 0.33)}</span>
+//                       <span>0</span>
+//                     </>
+//                   );
+//                 })()}
+//               </div>
+
+//               <svg viewBox="0 0 320 160" style={{ width: '100%', height: 180, marginLeft: '25px' }}>
+//                 <defs>
+//                   <linearGradient id="ug" x1="0" y1="0" x2="0" y2="1">
+//                     <stop offset="0%" stopColor="#4b34a0" stopOpacity="0.2" />
+//                     <stop offset="100%" stopColor="#4b34a0" stopOpacity="0" />
+//                   </linearGradient>
+//                 </defs>
+
+//                 <line x1="0" y1="10" x2="320" y2="10" stroke="#f3f4f6" strokeWidth="1" />
+//                 <line x1="0" y1="50" x2="320" y2="50" stroke="#f3f4f6" strokeWidth="1" />
+//                 <line x1="0" y1="90" x2="320" y2="90" stroke="#f3f4f6" strokeWidth="1" />
+//                 <line x1="0" y1="130" x2="320" y2="130" stroke="#f3f4f6" strokeWidth="1" />
+
+//                 {(() => {
+//                   const max = Math.max(1, ...growth.map((g) => g.value));
+//                   const stepX = 300 / Math.max(1, growth.length - 1);
+//                   const points = growth.map((g, i) => {
+//                     const x = 10 + i * stepX;
+//                     const y = 130 - (g.value / max) * 110;
+//                     return { x, y };
+//                   });
+//                   const line = points
+//                     .map((p, i) => (i === 0 ? `M${p.x},${p.y}` : `L${p.x},${p.y}`))
+//                     .join(' ');
+//                   const area = `${line} L${points[points.length - 1].x},130 L${points[0].x},130 Z`;
+
+//                   const lastPoint = points[points.length - 1];
+
+//                   return (
+//                     <>
+//                       <path d={area} fill="url(#ug)" />
+//                       <path
+//                         d={line}
+//                         stroke="#4b34a0"
+//                         strokeWidth="3"
+//                         fill="none"
+//                         strokeLinecap="round"
+//                         strokeLinejoin="round"
+//                       />
+//                       <circle
+//                         cx={lastPoint.x}
+//                         cy={lastPoint.y}
+//                         r="4"
+//                         fill="#4b34a0"
+//                         stroke="white"
+//                         strokeWidth="2"
+//                       />
+//                     </>
+//                   );
+//                 })()}
+//               </svg>
+
+//               <div
+//                 style={{
+//                   display: 'flex',
+//                   justifyContent: 'space-between',
+//                   marginLeft: '25px',
+//                   marginTop: '8px',
+//                   fontSize: '11px',
+//                   color: '#9ca3af',
+//                 }}
+//               >
+//                 {growth.map((g, i) => (
+//                   <span key={i}>{g.label}</span>
+//                 ))}
+//               </div>
+//             </div>
 //           ) : (
 //             <p className="ad-empty">No data yet.</p>
 //           )}
@@ -517,6 +643,8 @@
 //   );
 // }
 
+
+
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Search,
@@ -529,6 +657,8 @@ import {
   ShieldCheck,
   Lightbulb,
   BarChart3,
+  Clock,
+  CheckCircle2,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import {
@@ -536,7 +666,6 @@ import {
   fetchSessionActivity,
   fetchSessionTypes,
   fetchActivityFeed,
-  // fetchTopLocations,
   fetchUserGrowth,
   fetchInterpreterPerformance,
   fetchVerificationStatus,
@@ -545,7 +674,6 @@ import {
   type SessionActivityPoint,
   type SessionTypesBreakdown,
   type ActivityItem,
-  // type LocationItem,
   type GrowthPoint,
   type InterpreterPerformance,
   type VerificationStatusBreakdown,
@@ -579,7 +707,6 @@ export function AdminDashboardPage() {
   const [activity, setActivity] = useState<SessionActivityPoint[] | null>(null);
   const [types, setTypes] = useState<SessionTypesBreakdown | null>(null);
   const [feed, setFeed] = useState<ActivityItem[] | null>(null);
-  // const [locations, setLocations] = useState<LocationItem[] | null>(null);
   const [growth, setGrowth] = useState<GrowthPoint[] | null>(null);
   const [performance, setPerformance] = useState<InterpreterPerformance | null>(null);
   const [verification, setVerification] = useState<VerificationStatusBreakdown | null>(null);
@@ -601,9 +728,6 @@ export function AdminDashboardPage() {
     fetchActivityFeed()
       .then(setFeed)
       .catch(() => setFeed([]));
-    // fetchTopLocations()
-    //   .then(setLocations)
-    //   .catch(() => setLocations([]));
     fetchUserGrowth()
       .then(setGrowth)
       .catch(() => setGrowth([]));
@@ -1055,24 +1179,58 @@ export function AdminDashboardPage() {
       <div className="ad-row ad-row--bottom">
         <div className="ad-panel">
           <div className="ad-panel-head">
-            <h3>Interpreter performance</h3>
-            <small>Avg. session duration</small>
+            <div>
+              <h3 style={{ margin: 0 }}>Interpreter performance</h3>
+              <small style={{ color: '#6b7280', fontSize: '13px' }}>
+                Average response time & session completion rate
+              </small>
+            </div>
           </div>
+
           {performance ? (
-            <>
-              <div className="ad-metric">
-                <span>Sessions this week</span>
-                <strong>{performance.sessionsThisWeek}</strong>
+            <div style={{ display: 'flex', gap: '16px', marginTop: '20px' }}>
+              
+              {/* Left Card: Avg Response Time */}
+              <div style={{ flex: 1, background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ background: '#ede9fe', color: '#6d28d9', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Clock size={20} />
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      Avg. response time
+                    </span>
+                    <h2 style={{ margin: '2px 0', fontSize: '24px', color: '#111827' }}>
+                      {performance.avgResponseTime}
+                    </h2>
+                  </div>
+                </div>
+                <div style={{ marginTop: '12px', fontSize: '13px', fontWeight: 600, color: '#16a34a' }}>
+                  ↑ {performance.responseTrend} <span style={{ color: '#9ca3af', fontWeight: 400 }}>vs. last 7 days</span>
+                </div>
               </div>
-              <div className="ad-metric">
-                <span>Avg. duration</span>
-                <strong>{performance.avgDuration}</strong>
+
+              {/* Right Card: Completion Rate */}
+              <div style={{ flex: 1, background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ background: '#dcfce7', color: '#16a34a', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <CheckCircle2 size={20} />
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      Session completion rate
+                    </span>
+                    <h2 style={{ margin: '2px 0', fontSize: '24px', color: '#111827' }}>
+                      {performance.completionRate}
+                    </h2>
+                  </div>
+                </div>
+                <div style={{ marginTop: '12px', fontSize: '13px', fontWeight: 600, color: '#16a34a' }}>
+                  ↑ {performance.completionTrend} <span style={{ color: '#9ca3af', fontWeight: 400 }}>vs. last 7 days</span>
+                </div>
               </div>
-              <div className="ad-metric">
-                <span>Completion rate</span>
-                <strong>{performance.completionRate}</strong>
-              </div>
-            </>
+
+            </div>
           ) : (
             <p className="ad-empty">No data yet.</p>
           )}
