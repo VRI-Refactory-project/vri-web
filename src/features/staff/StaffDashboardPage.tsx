@@ -5,6 +5,7 @@ import { formatWhen, STATUS_LABEL, titleFor } from '../../features/sessions/sess
 import { useAuth } from '../../hooks/useAuth';
 import { getInstitutionOverview } from '../../services/institutionDashboard';
 import { getMySessions, type HistoryItem } from '../../services/mySessions';
+import { MiniCalendar } from './MiniCalendar';
 import './StaffDashboardPage.css';
 
 const BASE = '/dashboard/staff';
@@ -86,31 +87,36 @@ export function StaffDashboardPage() {
         <Hand className="sd-hero-icon" size={44} aria-hidden="true" />
       </section>
 
+      <section className="sd-calendar" aria-label="Your calendar">
+        <MiniCalendar items={items ?? []} detailsBase={`${BASE}/sessions`} />
+      </section>
+
       <section aria-labelledby="sd-active">
         <h2 id="sd-active" className="sd-heading">
           Active session
         </h2>
         <div className="sd-card sd-card--accent">
-          <div className="sd-empty">
-            <span className="sd-tile">
-              <Video size={20} aria-hidden="true" />
-            </span>
-            {inProgress ? (
-              <>
-                <strong>
-                  {inProgress.status === 'waiting'
-                    ? 'Looking for an interpreter'
-                    : `Matched with ${titleFor(inProgress)}`}
-                </strong>
-                <span>Started {formatWhen(inProgress.createdAt)}</span>
-              </>
-            ) : (
-              <>
-                <strong>No active session</strong>
-                <span>You&apos;re not connected to an interpreter right now.</span>
-              </>
-            )}
-          </div>
+          {inProgress ? (
+            <Link to={`${BASE}/sessions/${inProgress.id}`} className="sd-empty sd-empty--link">
+              <span className="sd-tile">
+                <Video size={20} aria-hidden="true" />
+              </span>
+              <strong>
+                {inProgress.status === 'waiting'
+                  ? 'Looking for an interpreter'
+                  : `Matched with ${titleFor(inProgress)}`}
+              </strong>
+              <span>Started {formatWhen(inProgress.createdAt)}</span>
+            </Link>
+          ) : (
+            <div className="sd-empty">
+              <span className="sd-tile">
+                <Video size={20} aria-hidden="true" />
+              </span>
+              <strong>No active session</strong>
+              <span>You&apos;re not connected to an interpreter right now.</span>
+            </div>
+          )}
         </div>
       </section>
 
@@ -131,17 +137,20 @@ export function StaffDashboardPage() {
           {recent.length > 0 && (
             <ul className="sd-list">
               {recent.map((item) => (
-                <li key={item.id} className="sd-row">
-                  <span className="sd-tile">
-                    <Video size={18} aria-hidden="true" />
-                  </span>
-                  <span className="sd-row-text">
-                    <strong>{formatWhen(item.createdAt)}</strong>
-                    <span>{titleFor(item)}</span>
-                  </span>
-                  <span className={`sd-pill sd-pill--${item.status}`}>
-                    {STATUS_LABEL[item.status]}
-                  </span>
+                <li key={item.id}>
+                  <Link to={`${BASE}/sessions/${item.id}`} className="sd-row sd-row--link">
+                    <span className="sd-tile">
+                      <Video size={18} aria-hidden="true" />
+                    </span>
+                    <span className="sd-row-text">
+                      <strong>{formatWhen(item.createdAt)}</strong>
+                      <span>{titleFor(item)}</span>
+                    </span>
+                    <span className={`sd-pill sd-pill--${item.status}`}>
+                      {STATUS_LABEL[item.status]}
+                    </span>
+                    <ChevronRight size={16} aria-hidden="true" />
+                  </Link>
                 </li>
               ))}
             </ul>

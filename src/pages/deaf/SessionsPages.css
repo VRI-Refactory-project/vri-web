@@ -200,3 +200,49 @@ a.sh-card:focus-visible {
   opacity: 0.6;
   cursor: wait;
 }
+
+/* Session details (shared by the deaf and staff areas) */
+.sdp-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid #ece9f7;
+  border-radius: 16px;
+}
+.sdp-who {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.sdp-who div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sdp-who span:not(.sh-card-icon) {
+  font-size: 13px;
+  color: #64748b;
+}
+.sdp-rows {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+.sdp-rows > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  border-top: 1px solid #f1f0f7;
+}
+.sdp-rows dt {
+  color: #64748b;
+  font-size: 13px;
+}
+.sdp-rows dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+}

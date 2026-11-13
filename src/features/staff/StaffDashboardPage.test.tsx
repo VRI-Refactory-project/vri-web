@@ -5,17 +5,26 @@ import { StaffDashboardPage } from './StaffDashboardPage';
 import type { HistoryItem } from '../../services/mySessions';
 
 vi.mock('../../hooks/useAuth', () => ({
-  useAuth: () => ({ session: { user: { name: 'Sarah Kimuli', role: 'institution' } } }),
+  useAuth: () => ({
+    session: { user: { name: 'Sarah Kimuli', role: 'institution' } },
+  }),
 }));
 
 // A plain function, not a spy: the test runner reports any rejected promise a spy returns, even one
 // the page handles, and one test here needs the list to fail to load.
-const source = vi.hoisted(() => ({ load: (() => Promise.resolve([])) as () => Promise<unknown> }));
-vi.mock('../../services/mySessions', () => ({ getMySessions: () => source.load() }));
+const source = vi.hoisted(() => ({
+  load: (() => Promise.resolve([])) as () => Promise<unknown>,
+}));
+vi.mock('../../services/mySessions', () => ({
+  getMySessions: () => source.load(),
+}));
 
 // The institution's name comes from a second call. A plain function again, for the same reason.
 const institution = vi.hoisted(() => ({
-  load: (() => Promise.resolve({ name: 'Northside Medical Center' })) as () => Promise<unknown>,
+  load: (() =>
+    Promise.resolve({
+      name: 'Northside Medical Center',
+    })) as () => Promise<unknown>,
 }));
 vi.mock('../../services/institutionDashboard', () => ({
   getInstitutionOverview: () => institution.load(),
@@ -73,7 +82,11 @@ describe('StaffDashboardPage', () => {
         item({ id: '1', status: 'completed', interpreterName: 'Amina Okafor' }),
         item({ id: '2', status: 'missed', interpreterName: null }),
         item({ id: '3', status: 'completed', interpreterName: 'Grace Lee' }),
-        item({ id: '4', status: 'completed', interpreterName: 'Fourth Person' }),
+        item({
+          id: '4',
+          status: 'completed',
+          interpreterName: 'Fourth Person',
+        }),
       ]);
     renderPage();
     expect(await screen.findByText('Amina Okafor')).toBeInTheDocument();
@@ -86,7 +99,9 @@ describe('StaffDashboardPage', () => {
   it('shows a request that is still looking as the active session', async () => {
     source.load = () => Promise.resolve([item({ status: 'waiting', interpreterName: null })]);
     renderPage();
-    const active = await screen.findByRole('region', { name: 'Active session' });
+    const active = await screen.findByRole('region', {
+      name: 'Active session',
+    });
     expect(await within(active).findByText('Looking for an interpreter')).toBeInTheDocument();
     expect(screen.queryByText('No active session')).not.toBeInTheDocument();
   });
@@ -96,5 +111,31 @@ describe('StaffDashboardPage', () => {
     renderPage();
     expect(await screen.findByText('You have no sessions yet.')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Start Session' })).toBeInTheDocument();
+  });
+
+  it('opens a session’s details from the recent list', async () => {
+    source.load = () => Promise.resolve([item({ id: '7', interpreterName: 'Amina Okafor' })]);
+    renderPage();
+    const row = await screen.findByRole('link', { name: /Amina Okafor/ });
+    expect(row).toHaveAttribute('href', '/dashboard/staff/sessions/7');
+  });
+
+  it('opens the details of the session that is still looking', async () => {
+    source.load = () =>
+      Promise.resolve([item({ id: '9', status: 'waiting', interpreterName: null })]);
+    renderPage();
+    const active = await screen.findByRole('region', {
+      name: 'Active session',
+    });
+    const link = await within(active).findByRole('link');
+    expect(link).toHaveAttribute('href', '/dashboard/staff/sessions/9');
+  });
+
+  it('shows the calendar with the month and today picked', async () => {
+    renderPage();
+    const calendar = screen.getByRole('region', { name: 'Calendar' });
+    expect(within(calendar).getByRole('button', { name: 'Next month' })).toBeInTheDocument();
+    expect(within(calendar).getByText('No sessions this day.')).toBeInTheDocument();
+    expect(await screen.findByText('No active session')).toBeInTheDocument();
   });
 });

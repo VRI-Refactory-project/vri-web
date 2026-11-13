@@ -38,6 +38,7 @@ import { ProfilePage as DeafProfilePage } from '../pages/deaf/ProfilePage';
 import { StartSessionPage } from '../pages/deaf/StartSessionPage';
 import { SessionsHubPage } from '../pages/deaf/SessionsHubPage';
 import { SessionHistoryPage } from '../pages/deaf/SessionHistoryPage';
+import { SessionDetailsPage } from '../pages/deaf/SessionDetailsPage';
 import { AccessibilityPage } from '../pages/deaf/AccessibilityPage';
 import { WalletPage } from '../pages/deaf/WalletPage';
 import { MessagesPage } from '../pages/deaf/MessagesPage';
@@ -221,6 +222,7 @@ const appRoutes: RouteObject[] = [
               { index: true, element: <StaffDashboardPage /> },
               { path: 'start-session', element: <StartSessionPage /> },
               { path: 'schedule-session', element: <SchedulePage /> },
+              { path: 'sessions/:id', element: <SessionDetailsPage backTo="/dashboard/staff" /> },
             ],
           },
         ],
