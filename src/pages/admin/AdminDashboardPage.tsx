@@ -32,6 +32,11 @@
 //   type VerificationStatusBreakdown,
 //   type SessionRow,
 // } from '../../services/admin';
+// import {
+//   fetchNotifications,
+//   markNotificationRead,
+//   type AppNotification,
+// } from '../../services/notifications';
 // import './AdminDashboardPage.css';
 
 // const KPI_META = [
@@ -72,13 +77,18 @@
 //   const [performance, setPerformance] = useState<InterpreterPerformance | null>(null);
 //   const [verification, setVerification] = useState<VerificationStatusBreakdown | null>(null);
 //   const [sessions, setSessions] = useState<SessionRow[] | null>(null);
+//   const [notifications, setNotifications] = useState<AppNotification[]>([]);
+//   const [unreadCount, setUnreadCount] = useState(0);
 //   const [query, setQuery] = useState('');
 //   const [bellOpen, setBellOpen] = useState(false);
 //   const bellRef = useRef<HTMLDivElement | null>(null);
 
 //   useEffect(() => {
 //     fetchAdminSummary()
-//       .then(setSummary)
+//       .then((data) => {
+//         setSummary(data);
+//         setUnreadCount(data.unread_notifications ?? 0);
+//       })
 //       .catch(() => setSummary(null));
 //     fetchSessionActivity()
 //       .then(setActivity)
@@ -101,6 +111,9 @@
 //     fetchUpcomingSessions()
 //       .then(setSessions)
 //       .catch(() => setSessions([]));
+//     fetchNotifications()
+//       .then(setNotifications)
+//       .catch(() => setNotifications([]));
 //   }, []);
 
 //   useEffect(() => {
@@ -113,6 +126,22 @@
 //     document.addEventListener('mousedown', onClickOutside);
 //     return () => document.removeEventListener('mousedown', onClickOutside);
 //   }, [bellOpen]);
+
+//   const handleNotificationClick = async (n: AppNotification) => {
+//     if (n.read_at) return;
+//     // Optimistic update: mark read in local state and decrement the count
+//     setNotifications((prev) =>
+//       prev.map((x) => (x.id === n.id ? { ...x, read_at: new Date().toISOString() } : x)),
+//     );
+//     setUnreadCount((c) => Math.max(0, c - 1));
+//     try {
+//       await markNotificationRead(n.id);
+//     } catch {
+//       // Roll back on failure
+//       setNotifications((prev) => prev.map((x) => (x.id === n.id ? { ...x, read_at: null } : x)));
+//       setUnreadCount((c) => c + 1);
+//     }
+//   };
 
 //   const kpiValues: Record<string, string> = {
 //     'total-users': (summary?.totalUsers ?? 0).toLocaleString(),
@@ -174,22 +203,54 @@
 //               onClick={() => setBellOpen((v) => !v)}
 //             >
 //               <Bell size={17} />
-//               {feed && feed.length > 0 && <span className="ad-dot" />}
+//               {unreadCount > 0 && <span className="ad-dot" />}
 //             </button>
 //             {bellOpen && (
 //               <div className="ad-bell-panel" role="dialog" aria-label="Notifications">
-//                 <div className="ad-bell-header">Notifications</div>
-//                 {feed && feed.length > 0 ? (
+//                 <div className="ad-bell-header">
+//                   Notifications
+//                   {unreadCount > 0 && (
+//                     <span
+//                       style={{
+//                         background: '#ef4444',
+//                         color: 'white',
+//                         borderRadius: '999px',
+//                         padding: '1px 8px',
+//                         fontSize: '11px',
+//                         fontWeight: 700,
+//                         marginLeft: '8px',
+//                       }}
+//                     >
+//                       {unreadCount}
+//                     </span>
+//                   )}
+//                 </div>
+//                 {notifications.length > 0 ? (
 //                   <ul className="ad-bell-list">
-//                     {feed.slice(0, 6).map((a, i) => (
-//                       <li key={i}>
-//                         <span className="ad-bell-dot" />
-//                         <div>
-//                           <strong>{a.text}</strong>
-//                           <small>{a.time}</small>
-//                         </div>
-//                       </li>
-//                     ))}
+//                     {notifications.slice(0, 6).map((n) => {
+//                       const isUnread = !n.read_at;
+//                       return (
+//                         <li
+//                           key={n.id}
+//                           onClick={() => handleNotificationClick(n)}
+//                           style={{
+//                             cursor: isUnread ? 'pointer' : 'default',
+//                             background: isUnread ? '#f8fafc' : 'white',
+//                           }}
+//                         >
+//                           <span
+//                             className="ad-bell-dot"
+//                             style={{ background: isUnread ? '#ef4444' : '#cbd5e1' }}
+//                           />
+//                           <div>
+//                             <strong>{n.title}</strong>
+//                             {n.body && (
+//                               <small style={{ display: 'block', color: '#6b7280' }}>{n.body}</small>
+//                             )}
+//                           </div>
+//                         </li>
+//                       );
+//                     })}
 //                   </ul>
 //                 ) : (
 //                   <p className="ad-bell-empty">No notifications yet.</p>
@@ -831,11 +892,23 @@ import {
 import './AdminDashboardPage.css';
 
 const KPI_META = [
-  { id: 'total-users', label: 'Total Users', trend: 'up' as const, Icon: Users },
-  { id: 'dhh', label: 'DHH Users', trend: 'up' as const, Icon: Users },
-  { id: 'institutions', label: 'Institutions', trend: 'up' as const, Icon: Building2 },
-  { id: 'interpreters', label: 'Interpreters', trend: 'up' as const, Icon: Video },
-  { id: 'pending', label: 'Pending Verifications', trend: 'down' as const, Icon: ShieldCheck },
+  { id: 'total-users', label: 'Total Users', trend: 'up' as const, Icon: Users, color: 'purple' },
+  { id: 'dhh', label: 'DHH Users', trend: 'up' as const, Icon: Users, color: 'green' },
+  {
+    id: 'institutions',
+    label: 'Institutions',
+    trend: 'up' as const,
+    Icon: Building2,
+    color: 'blue',
+  },
+  { id: 'interpreters', label: 'Interpreters', trend: 'up' as const, Icon: Video, color: 'pink' },
+  {
+    id: 'pending',
+    label: 'Pending Verifications',
+    trend: 'down' as const,
+    Icon: ShieldCheck,
+    color: 'orange',
+  },
 ];
 
 function todayLabel() {
@@ -920,7 +993,6 @@ export function AdminDashboardPage() {
 
   const handleNotificationClick = async (n: AppNotification) => {
     if (n.read_at) return;
-    // Optimistic update: mark read in local state and decrement the count
     setNotifications((prev) =>
       prev.map((x) => (x.id === n.id ? { ...x, read_at: new Date().toISOString() } : x)),
     );
@@ -928,7 +1000,6 @@ export function AdminDashboardPage() {
     try {
       await markNotificationRead(n.id);
     } catch {
-      // Roll back on failure
       setNotifications((prev) => prev.map((x) => (x.id === n.id ? { ...x, read_at: null } : x)));
       setUnreadCount((c) => c + 1);
     }
@@ -967,6 +1038,10 @@ export function AdminDashboardPage() {
       ),
     );
   }, [sessions, needle]);
+
+  // Scale for the Session activity chart
+  const activityMax = Math.max(1, ...(activity ?? []).map((x) => x.value));
+  const yMax = Math.ceil(activityMax / 50) * 50 || 250;
 
   return (
     <div className="ad-page">
@@ -1069,10 +1144,10 @@ export function AdminDashboardPage() {
 
       {/* KPI cards */}
       <div className="ad-kpis">
-        {KPI_META.map(({ id, label, trend, Icon }) => (
+        {KPI_META.map(({ id, label, trend, Icon, color }) => (
           <div key={id} className="ad-kpi">
             <div className="ad-kpi-head">
-              <span className="ad-kpi-icon">
+              <span className={`ad-kpi-icon ad-kpi-icon--${color}`}>
                 <Icon size={14} />
               </span>
               <span>{label}</span>
@@ -1085,22 +1160,138 @@ export function AdminDashboardPage() {
 
       {/* Row: Session activity | Session types | Recent activity */}
       <div className="ad-row ad-row--top">
+        {/* Session activity panel — no dropdown, no box */}
         <div className="ad-panel">
-          <div className="ad-panel-head">
-            <h3>Session activity</h3>
-            <small>Last 7 days</small>
+          <div className="ad-panel-head" style={{ alignItems: 'flex-start' }}>
+            <div>
+              <h3 style={{ margin: 0 }}>Session activity</h3>
+            </div>
+            <div
+              style={{
+                fontSize: '13px',
+                color: '#9ca3af',
+                fontWeight: 500,
+                marginTop: '2px',
+              }}
+            >
+              Last 7 days
+            </div>
           </div>
+
           {activity && activity.length > 0 ? (
-            <div className="ad-bars">
-              {activity.map((b) => {
-                const max = Math.max(1, ...activity.map((x) => x.value));
-                return (
-                  <div key={b.label}>
-                    <div className="ad-bar" style={{ height: `${(b.value / max) * 100}%` }} />
-                    <span className="ad-bar-label">{b.label}</span>
-                  </div>
-                );
-              })}
+            <div style={{ display: 'flex', marginTop: '20px', height: '260px' }}>
+              {/* Y-Axis Labels */}
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  paddingBottom: '24px',
+                  fontSize: '11px',
+                  color: '#9ca3af',
+                  width: '30px',
+                }}
+              >
+                {[
+                  yMax,
+                  Math.round(yMax * 0.8),
+                  Math.round(yMax * 0.6),
+                  Math.round(yMax * 0.4),
+                  Math.round(yMax * 0.2),
+                  0,
+                ].map((v) => (
+                  <span key={v}>{v}</span>
+                ))}
+              </div>
+
+              {/* Bars area */}
+              <div style={{ flex: 1, position: 'relative' }}>
+                {/* Grid lines */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: '24px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <div key={i} style={{ borderBottom: '1px dashed #f1f5f9', width: '100%' }} />
+                  ))}
+                  <div style={{ borderBottom: '1px solid #e2e8f0', width: '100%' }} />
+                </div>
+
+                {/* Bars */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: '24px',
+                    display: 'flex',
+                    alignItems: 'flex-end',
+                    justifyContent: 'space-around',
+                    zIndex: 1,
+                    gap: '8px',
+                  }}
+                >
+                  {activity.map((b) => {
+                    const heightPct = Math.min(100, (b.value / yMax) * 100);
+                    return (
+                      <div
+                        key={b.label}
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          height: '100%',
+                          justifyContent: 'flex-end',
+                          flex: 1,
+                          maxWidth: '40px',
+                        }}
+                      >
+                        <div
+                          style={{
+                            height: `${heightPct}%`,
+                            width: '100%',
+                            background: '#4b34a0',
+                            borderRadius: '6px 6px 0 0',
+                            transition: 'height 0.5s ease',
+                            minHeight: '4px',
+                          }}
+                          title={`${b.label}: ${b.value}`}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* X-Axis labels */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    display: 'flex',
+                    justifyContent: 'space-around',
+                    fontSize: '11px',
+                    color: '#9ca3af',
+                    gap: '8px',
+                  }}
+                >
+                  {activity.map((b) => (
+                    <span key={b.label} style={{ flex: 1, textAlign: 'center' }}>
+                      {b.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
           ) : (
             <p className="ad-empty">No data yet.</p>
