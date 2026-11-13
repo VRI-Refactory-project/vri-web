@@ -997,6 +997,7 @@
 //   );
 // }
 
+
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Search,
@@ -1019,7 +1020,6 @@ import { useAuth } from '../../hooks/useAuth';
 import {
   fetchAdminSummary,
   fetchSessionActivity,
-  fetchSessionTypes,
   fetchActivityFeed,
   fetchUserGrowth,
   fetchInterpreterPerformance,
@@ -1027,7 +1027,6 @@ import {
   fetchUpcomingSessions,
   type AdminDashboardSummary,
   type SessionActivityPoint,
-  type SessionTypesBreakdown,
   type ActivityItem,
   type GrowthPoint,
   type InterpreterPerformance,
@@ -1045,21 +1044,9 @@ import { useNavigate } from 'react-router-dom';
 const KPI_META = [
   { id: 'total-users', label: 'Total Users', trend: 'up' as const, Icon: Users, color: 'purple' },
   { id: 'dhh', label: 'DHH Users', trend: 'up' as const, Icon: Users, color: 'green' },
-  {
-    id: 'institutions',
-    label: 'Institutions',
-    trend: 'up' as const,
-    Icon: Building2,
-    color: 'blue',
-  },
+  { id: 'institutions', label: 'Institutions', trend: 'up' as const, Icon: Building2, color: 'blue' },
   { id: 'interpreters', label: 'Interpreters', trend: 'up' as const, Icon: Video, color: 'pink' },
-  {
-    id: 'pending',
-    label: 'Pending Verifications',
-    trend: 'down' as const,
-    Icon: ShieldCheck,
-    color: 'orange',
-  },
+  { id: 'pending', label: 'Pending Verifications', trend: 'down' as const, Icon: ShieldCheck, color: 'orange' },
 ];
 
 function todayLabel() {
@@ -1112,7 +1099,6 @@ export function AdminDashboardPage() {
 
   const [summary, setSummary] = useState<AdminDashboardSummary | null>(null);
   const [activity, setActivity] = useState<SessionActivityPoint[] | null>(null);
-  const [types, setTypes] = useState<SessionTypesBreakdown | null>(null);
   const [feed, setFeed] = useState<ActivityItem[] | null>(null);
   const [growth, setGrowth] = useState<GrowthPoint[] | null>(null);
   const [performance, setPerformance] = useState<InterpreterPerformance | null>(null);
@@ -1131,30 +1117,13 @@ export function AdminDashboardPage() {
         setUnreadCount(data.unread_notifications ?? 0);
       })
       .catch(() => setSummary(null));
-    fetchSessionActivity()
-      .then(setActivity)
-      .catch(() => setActivity([]));
-    fetchSessionTypes()
-      .then(setTypes)
-      .catch(() => setTypes(null));
-    fetchActivityFeed()
-      .then(setFeed)
-      .catch(() => setFeed([]));
-    fetchUserGrowth()
-      .then(setGrowth)
-      .catch(() => setGrowth([]));
-    fetchInterpreterPerformance()
-      .then(setPerformance)
-      .catch(() => setPerformance(null));
-    fetchVerificationStatus()
-      .then(setVerification)
-      .catch(() => setVerification(null));
-    fetchUpcomingSessions()
-      .then(setSessions)
-      .catch(() => setSessions([]));
-    fetchNotifications()
-      .then(setNotifications)
-      .catch(() => setNotifications([]));
+    fetchSessionActivity().then(setActivity).catch(() => setActivity([]));
+    fetchActivityFeed().then(setFeed).catch(() => setFeed([]));
+    fetchUserGrowth().then(setGrowth).catch(() => setGrowth([]));
+    fetchInterpreterPerformance().then(setPerformance).catch(() => setPerformance(null));
+    fetchVerificationStatus().then(setVerification).catch(() => setVerification(null));
+    fetchUpcomingSessions().then(setSessions).catch(() => setSessions([]));
+    fetchNotifications().then(setNotifications).catch(() => setNotifications([]));
   }, []);
 
   useEffect(() => {
@@ -1189,11 +1158,6 @@ export function AdminDashboardPage() {
     interpreters: (summary?.interpreters ?? 0).toLocaleString(),
     pending: (summary?.pendingVerifications ?? 0).toLocaleString(),
   };
-
-  const totalSessions = types?.total ?? 0;
-  const vriPct = totalSessions ? Math.round(((types?.vri ?? 0) / totalSessions) * 100) : 0;
-  const onsitePct = totalSessions ? Math.round(((types?.onsite ?? 0) / totalSessions) * 100) : 0;
-  const donutBg = `conic-gradient(#4b34a0 0 ${vriPct}%, #16a34a ${vriPct}% ${vriPct + onsitePct}%, #cbd5e1 ${vriPct + onsitePct}% 100%)`;
 
   const vTotal = verification?.total ?? 0;
   const bar = (n: number) => (vTotal ? `${Math.round((n / vTotal) * 100)}%` : '0%');
@@ -1287,7 +1251,9 @@ export function AdminDashboardPage() {
                           <div>
                             <strong>{n.title}</strong>
                             {n.body && (
-                              <small style={{ display: 'block', color: '#6b7280' }}>{n.body}</small>
+                              <small style={{ display: 'block', color: '#6b7280' }}>
+                                {n.body}
+                              </small>
                             )}
                           </div>
                         </li>
@@ -1334,8 +1300,8 @@ export function AdminDashboardPage() {
         ))}
       </div>
 
-      {/* Row: Session activity | Session types | Recent activity */}
-      <div className="ad-row ad-row--top">
+      {/* Row: Session activity | Active interpreters | Recent activity */}
+      <div className="ad-row ad-row--top" style={{ alignItems: 'start' }}>
         <div className="ad-panel">
           <div className="ad-panel-head" style={{ alignItems: 'flex-start' }}>
             <div>
@@ -1468,36 +1434,65 @@ export function AdminDashboardPage() {
           )}
         </div>
 
+        {/* Active interpreters panel */}
         <div className="ad-panel">
           <div className="ad-panel-head">
-            <h3>Session types</h3>
+            <h3>Active interpreters</h3>
+            <small>Right now</small>
           </div>
-          {types ? (
-            <div className="ad-donut-wrap">
-              <div className="ad-donut" style={{ background: donutBg }}>
-                <div className="ad-donut-hole">
-                  <strong>{totalSessions}</strong>
-                  <small>Total</small>
-                </div>
+
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '240px',
+              marginTop: '10px',
+            }}
+          >
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ fontSize: '72px', fontWeight: 800, color: '#4b34a0', lineHeight: 1 }}>
+                {summary?.interpreters ?? 0}
               </div>
-              <div className="ad-legend">
-                <div>
-                  <span className="ad-legend-dot" style={{ background: '#4b34a0' }} />
-                  Video call (VRI) · {types.vri}
-                </div>
-                <div>
-                  <span className="ad-legend-dot" style={{ background: '#16a34a' }} />
-                  On-site · {types.onsite}
-                </div>
-                <div>
-                  <span className="ad-legend-dot" style={{ background: '#cbd5e1' }} />
-                  Still waiting · {types.pending}
-                </div>
-              </div>
+              <span
+                style={{
+                  position: 'absolute',
+                  top: 15,
+                  right: -24,
+                  width: '14px',
+                  height: '14px',
+                  background: '#16a34a',
+                  borderRadius: '50%',
+                  boxShadow: '0 0 0 4px rgba(22, 163, 74, 0.2)',
+                }}
+              />
             </div>
-          ) : (
-            <p className="ad-empty">No data yet.</p>
-          )}
+
+            <p style={{ color: '#6b7280', fontSize: '14px', marginTop: '16px', fontWeight: 500 }}>
+              Registered interpreters
+            </p>
+
+            <button
+              onClick={() => navigate('/dashboard/admin/users')}
+              style={{
+                marginTop: '24px',
+                background: '#f4f1fa',
+                color: '#4b34a0',
+                border: 'none',
+                padding: '10px 20px',
+                borderRadius: '8px',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'background 0.2s',
+              }}
+              onMouseOver={(e) => (e.currentTarget.style.background = '#ede9fe')}
+              onMouseOut={(e) => (e.currentTarget.style.background = '#f4f1fa')}
+            >
+              Manage interpreters
+            </button>
+          </div>
         </div>
 
         <div className="ad-panel">
@@ -1587,7 +1582,7 @@ export function AdminDashboardPage() {
       </div>
 
       {/* Row: Top session types | User growth | Quick insights */}
-      <div className="ad-row ad-row--mid">
+      <div className="ad-row ad-row--mid" style={{ alignItems: 'start' }}>
         <div className="ad-panel">
           <div className="ad-panel-head">
             <h3>Top session types</h3>
@@ -1812,7 +1807,7 @@ export function AdminDashboardPage() {
       </div>
 
       {/* Row: Interpreter performance | Verification status */}
-      <div className="ad-row ad-row--bottom">
+      <div className="ad-row ad-row--bottom" style={{ alignItems: 'start' }}>
         <div className="ad-panel">
           <div className="ad-panel-head">
             <div>
