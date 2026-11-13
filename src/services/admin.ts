@@ -1,4 +1,3 @@
-// // src/services/admin.ts
 // import { api } from './api';
 
 // /* ---------- Summary (existing endpoint) ---------- */
@@ -15,6 +14,7 @@
 //   interpreters_pending_verification: number;
 //   institutions_pending_approval: number;
 //   users_by_role: Record<string, number>;
+//   top_session_types?: { type: string; count: number }[];
 // }
 
 // export async function fetchAdminSummary(): Promise<AdminDashboardSummary> {
@@ -26,6 +26,7 @@
 //     institutions: byRole.institution ?? 0,
 //     interpreters: byRole.interpreter ?? 0,
 //     pendingVerifications: raw.interpreters_pending_verification,
+//     top_session_types: raw.top_session_types ?? [],
 //   };
 // }
 
@@ -244,7 +245,6 @@
 //   }));
 // }
 
-// src/services/admin.ts
 import { api } from './api';
 
 /* ---------- Summary (existing endpoint) ---------- */
@@ -261,7 +261,7 @@ interface ApiAdminDashboard {
   interpreters_pending_verification: number;
   institutions_pending_approval: number;
   users_by_role: Record<string, number>;
-  top_session_types?: { type: string; count: number }[]; // 👈 Added this
+  top_session_types?: { type: string; count: number }[];
 }
 
 export async function fetchAdminSummary(): Promise<AdminDashboardSummary> {
@@ -273,7 +273,7 @@ export async function fetchAdminSummary(): Promise<AdminDashboardSummary> {
     institutions: byRole.institution ?? 0,
     interpreters: byRole.interpreter ?? 0,
     pendingVerifications: raw.interpreters_pending_verification,
-    top_session_types: raw.top_session_types ?? [], // 👈 Added this
+    top_session_types: raw.top_session_types ?? [],
   };
 }
 
@@ -404,26 +404,28 @@ export async function fetchUserGrowth(): Promise<GrowthPoint[]> {
 
 /* ---------- Interpreter performance ---------- */
 export interface InterpreterPerformance {
-  sessionsThisWeek: number;
-  avgDuration: string;
+  avgResponseTime: string;
   completionRate: string;
+  responseTrend: string;
+  completionTrend: string;
 }
 
-interface ApiPerformance {
-  sessions_this_week?: number;
-  avg_duration?: string;
-  completion_rate?: string | number;
+interface ApiPerformancePayload {
+  avg_response_time?: string;
+  completion_rate?: number;
+  response_trend?: string;
+  completion_trend?: string;
 }
 
 export async function fetchInterpreterPerformance(): Promise<InterpreterPerformance> {
-  const raw = await api<ApiPerformance>('/api/v1/dashboard/admin/interpreter-performance/');
+  // Reads from the same admin dashboard endpoint (avoids a second request)
+  const raw = await api<{ performance?: ApiPerformancePayload }>('/api/v1/dashboard/admin/');
+  const p = raw.performance ?? {};
   return {
-    sessionsThisWeek: raw.sessions_this_week ?? 0,
-    avgDuration: raw.avg_duration ?? '—',
-    completionRate:
-      typeof raw.completion_rate === 'number'
-        ? `${raw.completion_rate}%`
-        : (raw.completion_rate ?? '—'),
+    avgResponseTime: p.avg_response_time ?? '0m 0s',
+    completionRate: `${p.completion_rate ?? 0}%`,
+    responseTrend: p.response_trend ?? '+0%',
+    completionTrend: p.completion_trend ?? '+0%',
   };
 }
 
