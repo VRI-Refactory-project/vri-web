@@ -10,6 +10,8 @@
 //   ShieldCheck,
 //   Lightbulb,
 //   BarChart3,
+//   Clock,
+//   CheckCircle2,
 // } from 'lucide-react';
 // import { useAuth } from '../../hooks/useAuth';
 // import {
@@ -17,7 +19,6 @@
 //   fetchSessionActivity,
 //   fetchSessionTypes,
 //   fetchActivityFeed,
-//   // fetchTopLocations,
 //   fetchUserGrowth,
 //   fetchInterpreterPerformance,
 //   fetchVerificationStatus,
@@ -26,7 +27,6 @@
 //   type SessionActivityPoint,
 //   type SessionTypesBreakdown,
 //   type ActivityItem,
-//   // type LocationItem,
 //   type GrowthPoint,
 //   type InterpreterPerformance,
 //   type VerificationStatusBreakdown,
@@ -60,7 +60,6 @@
 //   const [activity, setActivity] = useState<SessionActivityPoint[] | null>(null);
 //   const [types, setTypes] = useState<SessionTypesBreakdown | null>(null);
 //   const [feed, setFeed] = useState<ActivityItem[] | null>(null);
-//   // const [locations, setLocations] = useState<LocationItem[] | null>(null);
 //   const [growth, setGrowth] = useState<GrowthPoint[] | null>(null);
 //   const [performance, setPerformance] = useState<InterpreterPerformance | null>(null);
 //   const [verification, setVerification] = useState<VerificationStatusBreakdown | null>(null);
@@ -82,9 +81,6 @@
 //     fetchActivityFeed()
 //       .then(setFeed)
 //       .catch(() => setFeed([]));
-//     // fetchTopLocations()
-//     //   .then(setLocations)
-//     //   .catch(() => setLocations([]));
 //     fetchUserGrowth()
 //       .then(setGrowth)
 //       .catch(() => setGrowth([]));
@@ -536,24 +532,116 @@
 //       <div className="ad-row ad-row--bottom">
 //         <div className="ad-panel">
 //           <div className="ad-panel-head">
-//             <h3>Interpreter performance</h3>
-//             <small>Avg. session duration</small>
+//             <div>
+//               <h3 style={{ margin: 0 }}>Interpreter performance</h3>
+//               <small style={{ color: '#6b7280', fontSize: '13px' }}>
+//                 Average response time & session completion rate
+//               </small>
+//             </div>
 //           </div>
+
 //           {performance ? (
-//             <>
-//               <div className="ad-metric">
-//                 <span>Sessions this week</span>
-//                 <strong>{performance.sessionsThisWeek}</strong>
+//             <div style={{ display: 'flex', gap: '16px', marginTop: '20px' }}>
+//               {/* Left Card: Avg Response Time */}
+//               <div
+//                 style={{
+//                   flex: 1,
+//                   background: '#f8fafc',
+//                   padding: '16px',
+//                   borderRadius: '12px',
+//                   border: '1px solid #f1f5f9',
+//                 }}
+//               >
+//                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+//                   <div
+//                     style={{
+//                       background: '#ede9fe',
+//                       color: '#6d28d9',
+//                       width: '40px',
+//                       height: '40px',
+//                       borderRadius: '50%',
+//                       display: 'flex',
+//                       alignItems: 'center',
+//                       justifyContent: 'center',
+//                     }}
+//                   >
+//                     <Clock size={20} />
+//                   </div>
+//                   <div>
+//                     <span
+//                       style={{
+//                         fontSize: '12px',
+//                         color: '#64748b',
+//                         fontWeight: 600,
+//                         textTransform: 'uppercase',
+//                         letterSpacing: '0.5px',
+//                       }}
+//                     >
+//                       Avg. response time
+//                     </span>
+//                     <h2 style={{ margin: '2px 0', fontSize: '24px', color: '#111827' }}>
+//                       {performance.avgResponseTime}
+//                     </h2>
+//                   </div>
+//                 </div>
+//                 <div
+//                   style={{ marginTop: '12px', fontSize: '13px', fontWeight: 600, color: '#16a34a' }}
+//                 >
+//                   ↑ {performance.responseTrend}{' '}
+//                   <span style={{ color: '#9ca3af', fontWeight: 400 }}>vs. last 7 days</span>
+//                 </div>
 //               </div>
-//               <div className="ad-metric">
-//                 <span>Avg. duration</span>
-//                 <strong>{performance.avgDuration}</strong>
+
+//               {/* Right Card: Completion Rate */}
+//               <div
+//                 style={{
+//                   flex: 1,
+//                   background: '#f8fafc',
+//                   padding: '16px',
+//                   borderRadius: '12px',
+//                   border: '1px solid #f1f5f9',
+//                 }}
+//               >
+//                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+//                   <div
+//                     style={{
+//                       background: '#dcfce7',
+//                       color: '#16a34a',
+//                       width: '40px',
+//                       height: '40px',
+//                       borderRadius: '50%',
+//                       display: 'flex',
+//                       alignItems: 'center',
+//                       justifyContent: 'center',
+//                     }}
+//                   >
+//                     <CheckCircle2 size={20} />
+//                   </div>
+//                   <div>
+//                     <span
+//                       style={{
+//                         fontSize: '12px',
+//                         color: '#64748b',
+//                         fontWeight: 600,
+//                         textTransform: 'uppercase',
+//                         letterSpacing: '0.5px',
+//                       }}
+//                     >
+//                       Session completion rate
+//                     </span>
+//                     <h2 style={{ margin: '2px 0', fontSize: '24px', color: '#111827' }}>
+//                       {performance.completionRate}
+//                     </h2>
+//                   </div>
+//                 </div>
+//                 <div
+//                   style={{ marginTop: '12px', fontSize: '13px', fontWeight: 600, color: '#16a34a' }}
+//                 >
+//                   ↑ {performance.completionTrend}{' '}
+//                   <span style={{ color: '#9ca3af', fontWeight: 400 }}>vs. last 7 days</span>
+//                 </div>
 //               </div>
-//               <div className="ad-metric">
-//                 <span>Completion rate</span>
-//                 <strong>{performance.completionRate}</strong>
-//               </div>
-//             </>
+//             </div>
 //           ) : (
 //             <p className="ad-empty">No data yet.</p>
 //           )}
@@ -693,6 +781,14 @@ function todayLabel() {
     month: 'short',
     year: 'numeric',
   });
+}
+
+// Status pill colours for the "Upcoming sessions" table
+function statusStyle(status: string) {
+  const s = status.toLowerCase();
+  if (s === 'pending') return { bg: '#fef3c7', text: '#b45309' };
+  if (s === 'cancelled') return { bg: '#fee2e2', text: '#b91c1c' };
+  return { bg: '#dcfce7', text: '#15803d' }; // Scheduled / Confirmed / Completed
 }
 
 export function AdminDashboardPage() {
@@ -1331,37 +1427,87 @@ export function AdminDashboardPage() {
 
       {/* Upcoming sessions */}
       <div className="ad-panel">
-        <div className="ad-panel-head">
-          <h3>Upcoming sessions</h3>
-          <small>Next 24 hours</small>
+        <div className="ad-panel-head" style={{ alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <div style={{ color: '#4b34a0' }}>
+              <Calendar size={20} />
+            </div>
+            <h3 style={{ margin: 0 }}>Upcoming sessions</h3>
+          </div>
+          <a
+            href="/dashboard/admin/sessions"
+            style={{ color: '#4b34a0', fontWeight: 600, fontSize: '13px', textDecoration: 'none' }}
+          >
+            View all
+          </a>
         </div>
+
         {filteredSessions && filteredSessions.length > 0 ? (
           <table className="ad-table">
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Date / Time</th>
-                <th>Client</th>
-                <th>Interpreter</th>
-                <th>Type</th>
-                <th>Status</th>
+                {['Time', 'User', 'Interpreter', 'Session type', 'Status'].map((h) => (
+                  <th
+                    key={h}
+                    style={{
+                      fontSize: '11px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                      color: '#9ca3af',
+                    }}
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
-              {filteredSessions.map((s) => (
-                <tr key={s.id}>
-                  <td>{s.id}</td>
-                  <td>{s.date}</td>
-                  <td>{s.client}</td>
-                  <td>{s.interpreter}</td>
-                  <td>{s.type}</td>
-                  <td>
-                    <span className={`ad-badge ad-badge--${s.status.toLowerCase()}`}>
-                      {s.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+              {filteredSessions.map((s) => {
+                const typeLabel = s.type ? s.type.charAt(0).toUpperCase() + s.type.slice(1) : '—';
+                const st = statusStyle(s.status);
+
+                return (
+                  <tr key={s.id}>
+                    <td style={{ color: '#6b7280', fontSize: '13px' }}>{s.date}</td>
+                    <td style={{ fontWeight: 600, color: '#111827', fontSize: '13px' }}>
+                      {s.client}
+                    </td>
+                    <td style={{ color: '#6b7280', fontSize: '13px' }}>{s.interpreter || '—'}</td>
+                    <td>
+                      <span
+                        style={{
+                          display: 'inline-block',
+                          padding: '2px 8px',
+                          borderRadius: '6px',
+                          background: '#f4f1fa',
+                          color: '#4b34a0',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          textTransform: 'capitalize',
+                        }}
+                      >
+                        {typeLabel}
+                      </span>
+                    </td>
+                    <td>
+                      <span
+                        style={{
+                          display: 'inline-block',
+                          padding: '2px 8px',
+                          borderRadius: '6px',
+                          background: st.bg,
+                          color: st.text,
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          textTransform: 'capitalize',
+                        }}
+                      >
+                        {s.status}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         ) : (
