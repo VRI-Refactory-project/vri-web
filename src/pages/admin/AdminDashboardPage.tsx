@@ -1,3 +1,4 @@
+
 // import { useEffect, useMemo, useRef, useState } from 'react';
 // import {
 //   Search,
@@ -38,13 +39,26 @@
 //   type AppNotification,
 // } from '../../services/notifications';
 // import './AdminDashboardPage.css';
+// import { useNavigate } from 'react-router-dom';
 
 // const KPI_META = [
-//   { id: 'total-users', label: 'Total Users', trend: 'up' as const, Icon: Users },
-//   { id: 'dhh', label: 'DHH Users', trend: 'up' as const, Icon: Users },
-//   { id: 'institutions', label: 'Institutions', trend: 'up' as const, Icon: Building2 },
-//   { id: 'interpreters', label: 'Interpreters', trend: 'up' as const, Icon: Video },
-//   { id: 'pending', label: 'Pending Verifications', trend: 'down' as const, Icon: ShieldCheck },
+//   { id: 'total-users', label: 'Total Users', trend: 'up' as const, Icon: Users, color: 'purple' },
+//   { id: 'dhh', label: 'DHH Users', trend: 'up' as const, Icon: Users, color: 'green' },
+//   {
+//     id: 'institutions',
+//     label: 'Institutions',
+//     trend: 'up' as const,
+//     Icon: Building2,
+//     color: 'blue',
+//   },
+//   { id: 'interpreters', label: 'Interpreters', trend: 'up' as const, Icon: Video, color: 'pink' },
+//   {
+//     id: 'pending',
+//     label: 'Pending Verifications',
+//     trend: 'down' as const,
+//     Icon: ShieldCheck,
+//     color: 'orange',
+//   },
 // ];
 
 // function todayLabel() {
@@ -65,6 +79,7 @@
 
 // export function AdminDashboardPage() {
 //   const { session } = useAuth();
+//   const navigate = useNavigate(); 
 //   const name = session?.user.name ?? 'Admin';
 //   const role = session?.user.role ?? 'admin';
 //   const initial = name.trim().charAt(0).toUpperCase() || '?';
@@ -129,7 +144,6 @@
 
 //   const handleNotificationClick = async (n: AppNotification) => {
 //     if (n.read_at) return;
-//     // Optimistic update: mark read in local state and decrement the count
 //     setNotifications((prev) =>
 //       prev.map((x) => (x.id === n.id ? { ...x, read_at: new Date().toISOString() } : x)),
 //     );
@@ -137,7 +151,6 @@
 //     try {
 //       await markNotificationRead(n.id);
 //     } catch {
-//       // Roll back on failure
 //       setNotifications((prev) => prev.map((x) => (x.id === n.id ? { ...x, read_at: null } : x)));
 //       setUnreadCount((c) => c + 1);
 //     }
@@ -176,6 +189,10 @@
 //       ),
 //     );
 //   }, [sessions, needle]);
+
+//   // Scale for the Session activity chart
+//   const activityMax = Math.max(1, ...(activity ?? []).map((x) => x.value));
+//   const yMax = Math.ceil(activityMax / 50) * 50 || 250;
 
 //   return (
 //     <div className="ad-page">
@@ -278,10 +295,10 @@
 
 //       {/* KPI cards */}
 //       <div className="ad-kpis">
-//         {KPI_META.map(({ id, label, trend, Icon }) => (
+//         {KPI_META.map(({ id, label, trend, Icon, color }) => (
 //           <div key={id} className="ad-kpi">
 //             <div className="ad-kpi-head">
-//               <span className="ad-kpi-icon">
+//               <span className={`ad-kpi-icon ad-kpi-icon--${color}`}>
 //                 <Icon size={14} />
 //               </span>
 //               <span>{label}</span>
@@ -294,22 +311,138 @@
 
 //       {/* Row: Session activity | Session types | Recent activity */}
 //       <div className="ad-row ad-row--top">
+//         {/* Session activity panel — no dropdown, no box */}
 //         <div className="ad-panel">
-//           <div className="ad-panel-head">
-//             <h3>Session activity</h3>
-//             <small>Last 7 days</small>
+//           <div className="ad-panel-head" style={{ alignItems: 'flex-start' }}>
+//             <div>
+//               <h3 style={{ margin: 0 }}>Session activity</h3>
+//             </div>
+//             <div
+//               style={{
+//                 fontSize: '13px',
+//                 color: '#9ca3af',
+//                 fontWeight: 500,
+//                 marginTop: '2px',
+//               }}
+//             >
+//               Last 7 days
+//             </div>
 //           </div>
+
 //           {activity && activity.length > 0 ? (
-//             <div className="ad-bars">
-//               {activity.map((b) => {
-//                 const max = Math.max(1, ...activity.map((x) => x.value));
-//                 return (
-//                   <div key={b.label}>
-//                     <div className="ad-bar" style={{ height: `${(b.value / max) * 100}%` }} />
-//                     <span className="ad-bar-label">{b.label}</span>
-//                   </div>
-//                 );
-//               })}
+//             <div style={{ display: 'flex', marginTop: '20px', height: '260px' }}>
+//               {/* Y-Axis Labels */}
+//               <div
+//                 style={{
+//                   display: 'flex',
+//                   flexDirection: 'column',
+//                   justifyContent: 'space-between',
+//                   paddingBottom: '24px',
+//                   fontSize: '11px',
+//                   color: '#9ca3af',
+//                   width: '30px',
+//                 }}
+//               >
+//                 {[
+//                   yMax,
+//                   Math.round(yMax * 0.8),
+//                   Math.round(yMax * 0.6),
+//                   Math.round(yMax * 0.4),
+//                   Math.round(yMax * 0.2),
+//                   0,
+//                 ].map((v) => (
+//                   <span key={v}>{v}</span>
+//                 ))}
+//               </div>
+
+//               {/* Bars area */}
+//               <div style={{ flex: 1, position: 'relative' }}>
+//                 {/* Grid lines */}
+//                 <div
+//                   style={{
+//                     position: 'absolute',
+//                     top: 0,
+//                     left: 0,
+//                     right: 0,
+//                     bottom: '24px',
+//                     display: 'flex',
+//                     flexDirection: 'column',
+//                     justifyContent: 'space-between',
+//                   }}
+//                 >
+//                   {[0, 1, 2, 3, 4].map((i) => (
+//                     <div key={i} style={{ borderBottom: '1px dashed #f1f5f9', width: '100%' }} />
+//                   ))}
+//                   <div style={{ borderBottom: '1px solid #e2e8f0', width: '100%' }} />
+//                 </div>
+
+//                 {/* Bars */}
+//                 <div
+//                   style={{
+//                     position: 'absolute',
+//                     top: 0,
+//                     left: 0,
+//                     right: 0,
+//                     bottom: '24px',
+//                     display: 'flex',
+//                     alignItems: 'flex-end',
+//                     justifyContent: 'space-around',
+//                     zIndex: 1,
+//                     gap: '8px',
+//                   }}
+//                 >
+//                   {activity.map((b) => {
+//                     const heightPct = Math.min(100, (b.value / yMax) * 100);
+//                     return (
+//                       <div
+//                         key={b.label}
+//                         style={{
+//                           display: 'flex',
+//                           flexDirection: 'column',
+//                           alignItems: 'center',
+//                           height: '100%',
+//                           justifyContent: 'flex-end',
+//                           flex: 1,
+//                           maxWidth: '40px',
+//                         }}
+//                       >
+//                         <div
+//                           style={{
+//                             height: `${heightPct}%`,
+//                             width: '100%',
+//                             background: '#4b34a0',
+//                             borderRadius: '6px 6px 0 0',
+//                             transition: 'height 0.5s ease',
+//                             minHeight: '4px',
+//                           }}
+//                           title={`${b.label}: ${b.value}`}
+//                         />
+//                       </div>
+//                     );
+//                   })}
+//                 </div>
+
+//                 {/* X-Axis labels */}
+//                 <div
+//                   style={{
+//                     position: 'absolute',
+//                     bottom: 0,
+//                     left: 0,
+//                     right: 0,
+//                     display: 'flex',
+//                     justifyContent: 'space-around',
+//                     fontSize: '11px',
+//                     color: '#9ca3af',
+//                     gap: '8px',
+//                   }}
+//                 >
+//                   {activity.map((b) => (
+//                     <span key={b.label} style={{ flex: 1, textAlign: 'center' }}>
+//                       {b.label}
+//                     </span>
+//                   ))}
+//                 </div>
+//               </div>
 //             </div>
 //           ) : (
 //             <p className="ad-empty">No data yet.</p>
@@ -351,6 +484,21 @@
 //         <div className="ad-panel">
 //           <div className="ad-panel-head">
 //             <h3>Recent activity</h3>
+//             <button 
+//               type="button"
+//               onClick={() => navigate('/dashboard/admin/audit-logs')} 
+//               style={{ 
+//                 background: 'none', 
+//                 border: 'none', 
+//                 color: '#4b34a0', 
+//                 fontWeight: 600, 
+//                 fontSize: '13px', 
+//                 cursor: 'pointer',
+//                 padding: 0
+//               }}
+//             >
+//               View all
+//             </button>
 //           </div>
 //           {filteredFeed && filteredFeed.length > 0 ? (
 //             <div className="ad-feed">
@@ -850,6 +998,8 @@
 //   );
 // }
 
+
+
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Search,
@@ -864,6 +1014,9 @@ import {
   BarChart3,
   Clock,
   CheckCircle2,
+  UserPlus,
+  XCircle,
+  LifeBuoy,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import {
@@ -890,25 +1043,14 @@ import {
   type AppNotification,
 } from '../../services/notifications';
 import './AdminDashboardPage.css';
+import { useNavigate } from 'react-router-dom';
 
 const KPI_META = [
   { id: 'total-users', label: 'Total Users', trend: 'up' as const, Icon: Users, color: 'purple' },
   { id: 'dhh', label: 'DHH Users', trend: 'up' as const, Icon: Users, color: 'green' },
-  {
-    id: 'institutions',
-    label: 'Institutions',
-    trend: 'up' as const,
-    Icon: Building2,
-    color: 'blue',
-  },
+  { id: 'institutions', label: 'Institutions', trend: 'up' as const, Icon: Building2, color: 'blue' },
   { id: 'interpreters', label: 'Interpreters', trend: 'up' as const, Icon: Video, color: 'pink' },
-  {
-    id: 'pending',
-    label: 'Pending Verifications',
-    trend: 'down' as const,
-    Icon: ShieldCheck,
-    color: 'orange',
-  },
+  { id: 'pending', label: 'Pending Verifications', trend: 'down' as const, Icon: ShieldCheck, color: 'orange' },
 ];
 
 function todayLabel() {
@@ -924,11 +1066,37 @@ function statusStyle(status: string) {
   const s = status.toLowerCase();
   if (s === 'pending') return { bg: '#fef3c7', text: '#b45309' };
   if (s === 'cancelled') return { bg: '#fee2e2', text: '#b91c1c' };
-  return { bg: '#dcfce7', text: '#15803d' }; // Scheduled / Confirmed / Completed
+  return { bg: '#dcfce7', text: '#15803d' };
+}
+
+// 👇 Helper to choose the icon + colours based on the activity text
+function getActivityIcon(text: string) {
+  const t = text.toLowerCase();
+
+  if (t.includes('signed in') || t.includes('sign-in'))
+    return { Icon: Users, bg: '#e0f2fe', color: '#0284c7' };
+
+  if (t.includes('video') || t.includes('session') || t.includes('call'))
+    return { Icon: Video, bg: '#dcfce7', color: '#16a34a' };
+
+  if (t.includes('register') || t.includes('new user'))
+    return { Icon: UserPlus, bg: '#f3e8ff', color: '#9333ea' };
+
+  if (t.includes('verification') || t.includes('verified') || t.includes('approved'))
+    return { Icon: ShieldCheck, bg: '#e0f2fe', color: '#0284c7' };
+
+  if (t.includes('reject') || t.includes('failed') || t.includes('error'))
+    return { Icon: XCircle, bg: '#fee2e2', color: '#ef4444' };
+
+  if (t.includes('request') || t.includes('offer') || t.includes('interpreter'))
+    return { Icon: LifeBuoy, bg: '#fef3c7', color: '#b45309' };
+
+  return { Icon: Lightbulb, bg: '#f3f4f6', color: '#6b7280' };
 }
 
 export function AdminDashboardPage() {
   const { session } = useAuth();
+  const navigate = useNavigate();
   const name = session?.user.name ?? 'Admin';
   const role = session?.user.role ?? 'admin';
   const initial = name.trim().charAt(0).toUpperCase() || '?';
@@ -954,30 +1122,14 @@ export function AdminDashboardPage() {
         setUnreadCount(data.unread_notifications ?? 0);
       })
       .catch(() => setSummary(null));
-    fetchSessionActivity()
-      .then(setActivity)
-      .catch(() => setActivity([]));
-    fetchSessionTypes()
-      .then(setTypes)
-      .catch(() => setTypes(null));
-    fetchActivityFeed()
-      .then(setFeed)
-      .catch(() => setFeed([]));
-    fetchUserGrowth()
-      .then(setGrowth)
-      .catch(() => setGrowth([]));
-    fetchInterpreterPerformance()
-      .then(setPerformance)
-      .catch(() => setPerformance(null));
-    fetchVerificationStatus()
-      .then(setVerification)
-      .catch(() => setVerification(null));
-    fetchUpcomingSessions()
-      .then(setSessions)
-      .catch(() => setSessions([]));
-    fetchNotifications()
-      .then(setNotifications)
-      .catch(() => setNotifications([]));
+    fetchSessionActivity().then(setActivity).catch(() => setActivity([]));
+    fetchSessionTypes().then(setTypes).catch(() => setTypes(null));
+    fetchActivityFeed().then(setFeed).catch(() => setFeed([]));
+    fetchUserGrowth().then(setGrowth).catch(() => setGrowth([]));
+    fetchInterpreterPerformance().then(setPerformance).catch(() => setPerformance(null));
+    fetchVerificationStatus().then(setVerification).catch(() => setVerification(null));
+    fetchUpcomingSessions().then(setSessions).catch(() => setSessions([]));
+    fetchNotifications().then(setNotifications).catch(() => setNotifications([]));
   }, []);
 
   useEffect(() => {
@@ -1039,7 +1191,6 @@ export function AdminDashboardPage() {
     );
   }, [sessions, needle]);
 
-  // Scale for the Session activity chart
   const activityMax = Math.max(1, ...(activity ?? []).map((x) => x.value));
   const yMax = Math.ceil(activityMax / 50) * 50 || 250;
 
@@ -1111,7 +1262,9 @@ export function AdminDashboardPage() {
                           <div>
                             <strong>{n.title}</strong>
                             {n.body && (
-                              <small style={{ display: 'block', color: '#6b7280' }}>{n.body}</small>
+                              <small style={{ display: 'block', color: '#6b7280' }}>
+                                {n.body}
+                              </small>
                             )}
                           </div>
                         </li>
@@ -1160,7 +1313,6 @@ export function AdminDashboardPage() {
 
       {/* Row: Session activity | Session types | Recent activity */}
       <div className="ad-row ad-row--top">
-        {/* Session activity panel — no dropdown, no box */}
         <div className="ad-panel">
           <div className="ad-panel-head" style={{ alignItems: 'flex-start' }}>
             <div>
@@ -1180,7 +1332,6 @@ export function AdminDashboardPage() {
 
           {activity && activity.length > 0 ? (
             <div style={{ display: 'flex', marginTop: '20px', height: '260px' }}>
-              {/* Y-Axis Labels */}
               <div
                 style={{
                   display: 'flex',
@@ -1204,9 +1355,7 @@ export function AdminDashboardPage() {
                 ))}
               </div>
 
-              {/* Bars area */}
               <div style={{ flex: 1, position: 'relative' }}>
-                {/* Grid lines */}
                 <div
                   style={{
                     position: 'absolute',
@@ -1225,7 +1374,6 @@ export function AdminDashboardPage() {
                   <div style={{ borderBottom: '1px solid #e2e8f0', width: '100%' }} />
                 </div>
 
-                {/* Bars */}
                 <div
                   style={{
                     position: 'absolute',
@@ -1271,7 +1419,6 @@ export function AdminDashboardPage() {
                   })}
                 </div>
 
-                {/* X-Axis labels */}
                 <div
                   style={{
                     position: 'absolute',
@@ -1331,18 +1478,80 @@ export function AdminDashboardPage() {
         </div>
 
         <div className="ad-panel">
-          <div className="ad-panel-head">
+          <div className="ad-panel-head" style={{ alignItems: 'center' }}>
             <h3>Recent activity</h3>
+            <button
+              type="button"
+              onClick={() => navigate('/dashboard/admin/audit-logs')}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#4b34a0',
+                fontWeight: 600,
+                fontSize: '13px',
+                cursor: 'pointer',
+                padding: 0,
+              }}
+            >
+              View all
+            </button>
           </div>
           {filteredFeed && filteredFeed.length > 0 ? (
             <div className="ad-feed">
-              {filteredFeed.map((a, i) => (
-                <div key={i} className="ad-feed-item">
-                  <span className="ad-feed-dot" />
-                  <span>{a.text}</span>
-                  <span className="ad-feed-time">{a.time}</span>
-                </div>
-              ))}
+              {filteredFeed.map((a, i) => {
+                const { Icon, bg, color } = getActivityIcon(a.text);
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '12px',
+                      padding: '12px 0',
+                      borderBottom: '1px solid #f1f5f9',
+                    }}
+                  >
+                    <div
+                      style={{
+                        background: bg,
+                        color: color,
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Icon size={16} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <p
+                        style={{
+                          margin: 0,
+                          fontSize: '13px',
+                          color: '#111827',
+                          fontWeight: 500,
+                          lineHeight: 1.4,
+                        }}
+                      >
+                        {a.text}
+                      </p>
+                    </div>
+                    <span
+                      style={{
+                        fontSize: '11px',
+                        color: '#9ca3af',
+                        whiteSpace: 'nowrap',
+                        marginTop: '2px',
+                      }}
+                    >
+                      {a.time}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <p className="ad-empty">
@@ -1593,7 +1802,6 @@ export function AdminDashboardPage() {
 
           {performance ? (
             <div style={{ display: 'flex', gap: '16px', marginTop: '20px' }}>
-              {/* Left Card: Avg Response Time */}
               <div
                 style={{
                   flex: 1,
@@ -1643,7 +1851,6 @@ export function AdminDashboardPage() {
                 </div>
               </div>
 
-              {/* Right Card: Completion Rate */}
               <div
                 style={{
                   flex: 1,
