@@ -1,0 +1,125 @@
+/* ========================================= */
+/* GLOBAL RESPONSIVE RULES (All Pages)       */
+/* ========================================= */
+
+/* --- 1. Prevent horizontal scroll on small screens --- */
+html,
+body {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* --- 2. Make images and videos scale --- */
+img,
+video,
+canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+/* --- 3. Force grids to stack on mobile --- */
+@media (max-width: 900px) {
+  /* Any grid with 2 or more columns collapses to 1 */
+  [class*='grid'],
+  [class*='row'],
+  [class*='-row'],
+  [class*='layout'] {
+    grid-template-columns: 1fr !important;
+    flex-direction: column !important;
+  }
+
+  /* Dashboard sidebars move to the top or bottom */
+  [class*='sidebar'],
+  [class*='side'] {
+    width: 100% !important;
+    max-width: 100% !important;
+    position: relative !important;
+    height: auto !important;
+  }
+}
+
+/* --- 4. Fix two-column forms (like First Name | Last Name) --- */
+@media (max-width: 600px) {
+  [class*='row'],
+  [class*='-row'] {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+/* --- 5. Make tables scrollable on mobile --- */
+@media (max-width: 768px) {
+  table,
+  .table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* --- 6. Adjust paddings and font sizes for phones --- */
+@media (max-width: 600px) {
+  body {
+    font-size: 14px;
+  }
+
+  h1 {
+    font-size: 1.4rem !important;
+  }
+  h2 {
+    font-size: 1.2rem !important;
+  }
+  h3 {
+    font-size: 1.05rem !important;
+  }
+
+  /* Forms should be easier to tap */
+  input,
+  select,
+  textarea,
+  button {
+    font-size: 16px !important; /* Prevents zoom on iOS */
+    min-height: 44px !important; /* Tap target size */
+  }
+}
+
+/* --- 7. Fix the Live Session video grid on mobile --- */
+@media (max-width: 768px) {
+  .ls-stage {
+    grid-template-columns: 1fr !important;
+    gap: 0.5rem !important;
+  }
+
+  .ls--call .ls-stage {
+    grid-template-columns: 1fr !important;
+  }
+
+  .cc {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+/* --- 8. Fix the Auth pages (Lobby, Register, etc.) --- */
+@media (max-width: 900px) {
+  .ls-lobby,
+  [class*='auth'] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* --- 9. Modals should take full width on mobile --- */
+@media (max-width: 600px) {
+  .modal-content,
+  [class*='modal'] {
+    width: 95% !important;
+    max-width: 95% !important;
+    padding: 16px !important;
+  }
+}
