@@ -2,15 +2,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap');
 
 :root {
-  /* Colors from your spec */
   --color-primary: #382c77;
   --color-bg-page: #f5f4fb;
   --color-bg-form: #ffffff;
   --color-border: #cbd5e1;
   --color-text-main: #1e293b;
   --color-text-muted: #64748b;
-
-  /* Properties */
   --radius-form: 15px;
   --font-main: 'Manrope', sans-serif;
 }
@@ -26,6 +23,9 @@ body {
   background-color: var(--color-bg-page);
   color: var(--color-text-main);
   -webkit-font-smoothing: antialiased;
+  /* CRITICAL FIX: No horizontal scrolling */
+  overflow-x: hidden;
+  width: 100%;
 }
 
 /* --- Shared Form Styles --- */
@@ -35,13 +35,11 @@ body {
   flex-direction: column;
   gap: 8px;
 }
-
 .form-group label {
   font-size: 14px;
   font-weight: 600;
   color: var(--color-text-main);
 }
-
 .form-input {
   width: 100%;
   padding: 12px 16px;
@@ -52,11 +50,9 @@ body {
   outline: none;
   transition: border-color 0.2s ease;
 }
-
 .form-input:focus {
   border-color: var(--color-primary);
 }
-
 .btn-primary {
   width: 100%;
   background-color: var(--color-primary);
@@ -74,33 +70,33 @@ body {
   gap: 8px;
   transition: opacity 0.2s ease;
 }
-
 .btn-primary:hover {
   opacity: 0.9;
 }
 
 /* ========================================= */
-/* --- MOBILE RESPONSIVE FIXES (Global) --- */
+/* --- MOBILE FIXES (Global) --- */
 /* ========================================= */
 
 @media (max-width: 900px) {
-  /* 1. Allow scrolling everywhere on mobile */
+  /* 1. Allow vertical scrolling everywhere, but NO horizontal */
   html,
   body,
   #root {
     overflow-y: auto !important;
+    overflow-x: hidden !important;
     height: auto !important;
+    width: 100% !important;
     -webkit-overflow-scrolling: touch;
   }
 
-  /* 2. Fix the AuthShell (Login, Register, Role Selection) */
+  /* 2. Fix AuthShell (Login, Register, Role Selection) */
   .as-page {
-    background-attachment: scroll !important; /* Fixes mobile scroll bug */
+    background-attachment: scroll !important;
     height: auto !important;
     min-height: 100vh !important;
     overflow: visible !important;
-    display: flex !important;
-    flex-direction: column !important;
+    width: 100% !important;
   }
 
   .as-main {
@@ -109,19 +105,26 @@ body {
     padding: 0 16px 40px 16px !important;
     gap: 16px !important;
     height: auto !important;
-    min-height: unset !important;
+    width: 100% !important;
+    max-width: 100vw !important;
   }
 
-  /* 3. Fix the Auth Cards (Forms) */
   .as-card {
     width: 100% !important;
     max-width: 100% !important;
     margin: 0 !important;
     padding: 24px 16px !important;
-    box-sizing: border-box !important;
   }
 
-  /* 4. Fix the Form Rows (Stack them) */
+  .as-logo img {
+    height: 60px !important;
+  }
+  .as-header {
+    height: 70px !important;
+    padding: 0 16px !important;
+  }
+
+  /* 3. Stack form rows */
   .ca-row,
   .inst-row,
   [class*='-row'] {
@@ -130,57 +133,57 @@ body {
     gap: 12px !important;
   }
 
-  /* 5. Hide the floating video widget */
-  .ca-video-widget {
-    display: none !important;
-  }
-
-  /* 6. Fix the Role Selection Cards */
-  .rs-cards {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 16px !important;
-    height: auto !important;
-  }
-
-  .rs-card {
-    height: 380px !important;
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-
-  /* 7. Fix the Landing Page (Image on top, text below) */
+  /* 4. Fix the Landing Page (Image first, then text/buttons) */
   .landing {
     height: auto !important;
     min-height: 100vh !important;
     overflow: visible !important;
     background-attachment: scroll !important;
+    width: 100% !important;
   }
 
   .landing-hero {
     display: flex !important;
     flex-direction: column !important;
     padding: 20px !important;
-    gap: 32px !important;
+    gap: 20px !important;
+    width: 100% !important;
   }
 
+  /* Flatten the containers so we can order the items */
+  .landing-hero-left,
   .landing-hero-right {
+    display: contents !important;
+  }
+
+  /* Order: Badge -> Title -> Subtitle -> Image -> CTA -> Features */
+  .landing-badge {
     order: 1 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    transform: none !important;
+    width: fit-content !important;
   }
-
-  .landing-hero-left {
+  .landing-title {
     order: 2 !important;
-    padding: 0 !important;
+    font-size: 2.2rem !important;
+    line-height: 1.2 !important;
   }
-
-  .landing-hero-image {
-    position: static !important;
+  .landing-subtitle {
+    order: 3 !important;
+    font-size: 1rem !important;
+  }
+  .landing-frame {
+    order: 4 !important;
     width: 100% !important;
-    height: auto !important;
-    border-radius: 16px !important;
+    margin: 10px 0 !important;
+  }
+  .landing-cta {
+    order: 5 !important;
+    width: 100% !important;
+    justify-content: center !important;
+    margin: 10px 0 !important;
+  }
+  .landing-features {
+    order: 6 !important;
+    width: 100% !important;
   }
 
   .landing-sweep,
@@ -188,48 +191,30 @@ body {
     display: none !important;
   }
 
-  /* 8. Fix Live Session */
+  /* 5. Role Selection Cards */
+  .rs-cards {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    width: 100% !important;
+  }
+  .rs-card {
+    height: 380px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* 6. Hide the video widget */
+  .ca-video-widget {
+    display: none !important;
+  }
+
+  /* 7. Live Session */
   .ls-stage {
     grid-template-columns: 1fr !important;
     height: auto !important;
   }
   .ls-lobby {
     grid-template-columns: 1fr !important;
-  }
-}
-
-/* --- MOBILE SIDEBAR TOGGLE --- */
-.mobile-menu-btn {
-  display: none;
-}
-
-@media (max-width: 900px) {
-  .mobile-menu-btn {
-    display: block;
-    position: fixed;
-    top: 16px;
-    left: 16px;
-    z-index: 1001;
-    background: #382c77;
-    color: white;
-    border: none;
-    padding: 10px;
-    border-radius: 8px;
-    cursor: pointer;
-  }
-
-  .sidebar {
-    position: fixed !important;
-    top: 0;
-    left: -300px !important;
-    height: 100vh !important;
-    width: 280px !important;
-    z-index: 1000;
-    transition: left 0.3s ease;
-    flex-direction: column !important;
-  }
-
-  .sidebar--open {
-    left: 0 !important;
   }
 }
