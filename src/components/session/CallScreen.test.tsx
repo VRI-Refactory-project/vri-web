@@ -43,26 +43,34 @@ function fakeCall(overrides: Partial<Record<string, unknown>> = {}): Call {
   } as unknown as Call;
 }
 
+const gridTiles = () => within(document.querySelector('.ls-grid') as HTMLElement);
 const mainTile = () => within(document.querySelector('.ls-main') as HTMLElement);
 const sideTiles = () => within(document.querySelector('.ls-side') as HTMLElement);
 
 describe('CallScreen', () => {
-  it('makes the other person the big tile and puts you beside them', () => {
+  it('shows all participants in a horizontal grid by default', () => {
     render(<CallScreen call={fakeCall()} selfName="Shadia" onLeave={vi.fn()} />);
 
-    expect(mainTile().getByLabelText('Amina Okafor')).toBeInTheDocument();
-    expect(sideTiles().getByLabelText('Shadia')).toBeInTheDocument();
-    expect(sideTiles().getByLabelText('Ivan Koreta')).toBeInTheDocument();
+    const grid = document.querySelector('.ls-grid');
+
+    expect(grid).toBeInTheDocument();
+    expect(grid).toHaveStyle({
+      gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+    });
+
+    expect(gridTiles().getByLabelText('Shadia')).toBeInTheDocument();
+    expect(gridTiles().getByLabelText('Amina Okafor')).toBeInTheDocument();
+    expect(gridTiles().getByLabelText('Ivan Koreta')).toBeInTheDocument();
   });
 
   it('shows only you when you are alone, with a waiting note', () => {
     render(<CallScreen call={fakeCall({ others: [] })} selfName="Shadia" onLeave={vi.fn()} />);
 
-    expect(mainTile().getByLabelText('Shadia')).toBeInTheDocument();
+    expect(gridTiles().getByLabelText('Shadia')).toBeInTheDocument();
     expect(screen.getByText(/waiting for others/i)).toBeInTheDocument();
   });
 
-  it('puts a shared screen in the big tile', () => {
+  it('keeps a shared screen in the participant grid by default', () => {
     const others = [
       { id: 'u9', name: 'Amina Okafor', stream: null, cameraOff: true },
       {
@@ -73,22 +81,36 @@ describe('CallScreen', () => {
         screen: true,
       },
     ];
+
     render(<CallScreen call={fakeCall({ others })} selfName="Shadia" onLeave={vi.fn()} />);
 
-    expect(mainTile().getByLabelText('Amina Okafor’s screen')).toBeInTheDocument();
+    expect(gridTiles().getByLabelText('Amina Okafor')).toBeInTheDocument();
+    expect(gridTiles().getByLabelText('Amina Okafor’s screen')).toBeInTheDocument();
   });
 
-  it('spotlights the tile the person picks, and goes back when it is picked again', async () => {
+  it('spotlights the tile the person picks, and returns to the grid when picked again', async () => {
     render(<CallScreen call={fakeCall()} selfName="Shadia" onLeave={vi.fn()} />);
 
+    // Initially, everyone is in the grid.
+    expect(gridTiles().getByLabelText('Shadia')).toBeInTheDocument();
+    expect(gridTiles().getByLabelText('Amina Okafor')).toBeInTheDocument();
+    expect(gridTiles().getByLabelText('Ivan Koreta')).toBeInTheDocument();
+
+    // Select Ivan.
     await userEvent.click(screen.getByRole('button', { name: 'Spotlight Ivan Koreta' }));
+
     expect(mainTile().getByLabelText('Ivan Koreta')).toBeInTheDocument();
+    expect(sideTiles().getByLabelText('Shadia')).toBeInTheDocument();
     expect(sideTiles().getByLabelText('Amina Okafor')).toBeInTheDocument();
 
+    // Remove spotlight.
     await userEvent.click(
       screen.getByRole('button', { name: 'Remove spotlight from Ivan Koreta' }),
     );
-    expect(mainTile().getByLabelText('Amina Okafor')).toBeInTheDocument();
+
+    expect(gridTiles().getByLabelText('Shadia')).toBeInTheDocument();
+    expect(gridTiles().getByLabelText('Amina Okafor')).toBeInTheDocument();
+    expect(gridTiles().getByLabelText('Ivan Koreta')).toBeInTheDocument();
   });
 
   it('shows connection bars on each tile, including your own', () => {
@@ -111,7 +133,8 @@ describe('CallScreen', () => {
 
     expect(screen.getByText('SignConnect')).toBeInTheDocument();
     expect(screen.getByLabelText('Call length')).toHaveTextContent('1:05');
-    expect(screen.getByText('shadia@example.com')).toBeInTheDocument();
+    expect(document.querySelector('.ls-profile__email')).toHaveTextContent('Shadia Nalubega');
+    expect(document.querySelector('.ls-profile__photo')).toBeInTheDocument();
   });
 
   it('shows no profile for a guest, who has no account', () => {
