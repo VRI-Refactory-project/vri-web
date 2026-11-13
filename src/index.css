@@ -19,3 +19,98 @@ body {
   font-size: 1.125rem;
   cursor: pointer;
 }
+
+:root {
+  font-family: 'Manrope', system-ui, sans-serif;
+  line-height: 1.5;
+}
+body {
+  margin: 0;
+}
+.page {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+.role-options {
+  display: grid;
+  gap: 1rem;
+}
+.role-options button {
+  padding: 1rem;
+  font-size: 1.125rem;
+  cursor: pointer;
+}
+
+/* ========================================= */
+/* --- MOBILE RESPONSIVE FIXES --- */
+/* ========================================= */
+
+@media (max-width: 900px) {
+  /* 1. Allow scrolling on auth/landing pages on mobile */
+  body,
+  html {
+    overflow-y: auto !important;
+    height: auto !important;
+  }
+
+  /* 2. Fix the Landing Page stacking */
+  .landing-hero,
+  .hero-container,
+  [class*='landing'] {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 24px;
+    padding: 16px !important;
+  }
+
+  /* Ensure the image comes AFTER the text on mobile */
+  .landing-hero img,
+  .hero-image {
+    order: 2;
+    width: 100%;
+    max-width: 100%;
+    margin-top: 20px;
+  }
+
+  /* Ensure the buttons come AFTER the image */
+  .landing-hero .buttons,
+  .hero-buttons {
+    order: 3;
+  }
+
+  /* 3. Fix the Role Selection cards */
+  .role-grid,
+  .roles-container,
+  [class*='role'] {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px;
+    padding: 16px !important;
+  }
+
+  /* 4. Fix the Auth Forms (Make them full width and scrollable) */
+  .auth-card,
+  [class*='auth-card'],
+  [class*='as-card'] {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 20px !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  /* 5. Hide the floating video widget on mobile */
+  .ca-video-widget,
+  [class*='video-widget'] {
+    display: none !important;
+  }
+
+  /* 6. Fix the 2-column layouts in forms (First Name | Last Name) */
+  .ca-row,
+  [class*='row'] {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px;
+  }
+}

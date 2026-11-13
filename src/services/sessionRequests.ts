@@ -56,6 +56,8 @@ export const toSessionState = (status: string): SessionRequestState =>
 interface ApiSessionRequest {
   id: number | string;
   status: string;
+  /** How the call is going (V2-011). Falls back to `status` when the API does not send it. */
+  display_status?: string;
   created_at: string;
   /** Only filled in once an interpreter has accepted (status ASSIGNED). */
   interpreter?: MatchedInterpreter | null;
@@ -65,7 +67,7 @@ function fromApi(raw: ApiSessionRequest): SessionRequest {
   return {
     id: String(raw.id),
     // An unknown status is treated as still waiting, so the screen keeps polling.
-    state: toSessionState(raw.status),
+    state: toSessionState(raw.display_status ?? raw.status),
     createdAt: raw.created_at,
     interpreter: raw.interpreter ?? undefined,
   };

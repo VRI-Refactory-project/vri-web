@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Calendar, Check, ChevronLeft, User, Video, ArrowRight, Lightbulb } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { useRequesterPaths } from '../../features/dashboard/requesterPaths';
 import { useSessionRequest } from '../../hooks/useSessionRequest';
 import './StartSessionPage.css';
 
@@ -122,6 +123,7 @@ interface Props {
  * itself belongs to the live-session story.
  */
 export function StartSessionPage({ pollMs }: Props) {
+  const paths = useRequesterPaths();
   const { request, error, busy, start, cancel } = useSessionRequest(pollMs);
   const [params] = useSearchParams();
   // The dashboard's Emergency Request button opens this page with ?priority=emergency.
@@ -162,7 +164,7 @@ export function StartSessionPage({ pollMs }: Props) {
             </div>
           </dl>
           <Link
-            to={`/live/deaf/${request.id}`}
+            to={paths.live(request.id)}
             state={{ interpreterName: request.interpreter?.name }}
             className="ss-btn ss-btn--primary"
           >
@@ -200,7 +202,7 @@ export function StartSessionPage({ pollMs }: Props) {
       <div className="ss-bg-decor ss-bg-decor--top" />
       <div className="ss-bg-decor ss-bg-decor--bottom" />
 
-      <Link to="/dashboard/deaf" className="ss-back">
+      <Link to={paths.home} className="ss-back">
         <ChevronLeft size={18} aria-hidden="true" /> Back
       </Link>
 

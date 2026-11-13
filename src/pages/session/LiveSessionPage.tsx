@@ -51,6 +51,8 @@ const HOME = { deaf: '/dashboard/deaf', interpreter: '/dashboard/interpreter' } 
 
 interface Props {
   viewerRole: 'deaf' | 'interpreter';
+  /** Where to go when the session is over. Defaults to the role's own dashboard. */
+  home?: string;
   createConnection?: CreateConnection;
   /** How the page hears that the session ended. Tests pass a fake one. */
   openSocket?: OpenSessionSocket;
@@ -105,6 +107,7 @@ function categoryOf(issues: string[], comment: string): FeedbackCategory | undef
  */
 export function LiveSessionPage({
   viewerRole,
+  home: homeOverride,
   createConnection = createLiveKitConnection,
   openSocket = openSessionSocket,
 }: Props) {
@@ -129,7 +132,7 @@ export function LiveSessionPage({
   // True for a person who only left the call. The session carries on for the others, so they may rejoin.
   const [leftEarly, setLeftEarly] = useState(false);
   const startedAt = useRef(0);
-  const home = HOME[viewerRole];
+  const home = homeOverride ?? HOME[viewerRole];
 
   // --- Feedback Wizard State ---
   const [rating, setRating] = useState(0);

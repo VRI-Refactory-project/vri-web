@@ -33,11 +33,16 @@ import { InstitutionLayout } from '../features/institution/InstitutionLayout';
 import { InstitutionRoleRoute } from '../components/InstitutionRoleRoute';
 import { StaffLayout } from '../features/staff/StaffLayout';
 import { StaffDashboardPage } from '../features/staff/StaffDashboardPage';
+import { StaffChatPage } from '../features/staff/StaffChatPage';
+import { MyProfilePage } from '../features/staff/MyProfilePage';
+import { StaffSettingsPage } from '../features/staff/StaffSettingsPage';
+import { StaffHelpPage } from '../features/staff/StaffHelpPage';
 import { StaffManagementPage } from '../pages/institution/StaffManagementPage';
 import { ProfilePage as DeafProfilePage } from '../pages/deaf/ProfilePage';
 import { StartSessionPage } from '../pages/deaf/StartSessionPage';
 import { SessionsHubPage } from '../pages/deaf/SessionsHubPage';
 import { SessionHistoryPage } from '../pages/deaf/SessionHistoryPage';
+import { SessionDetailsPage } from '../pages/deaf/SessionDetailsPage';
 import { AccessibilityPage } from '../pages/deaf/AccessibilityPage';
 import { WalletPage } from '../pages/deaf/WalletPage';
 import { MessagesPage } from '../pages/deaf/MessagesPage';
@@ -115,6 +120,16 @@ const appRoutes: RouteObject[] = [
     children: [{ path: '/live/deaf/:id', element: <LiveSessionPage viewerRole="deaf" /> }],
   },
   {
+    // Institution staff request interpreters like a Deaf person does, so they join as the requester.
+    element: <ProtectedRoute allow={['institution']} />,
+    children: [
+      {
+        path: '/live/institution/:id',
+        element: <LiveSessionPage viewerRole="deaf" home="/dashboard/staff" />,
+      },
+    ],
+  },
+  {
     element: <ProtectedRoute allow={['interpreter']} />,
     children: [
       { path: '/live/interpreter/:id', element: <LiveSessionPage viewerRole="interpreter" /> },
@@ -142,6 +157,7 @@ const appRoutes: RouteObject[] = [
           { path: 'sessions', element: <SessionsHubPage /> },
           { path: 'sessions/history', element: <SessionHistoryPage /> },
           { path: 'sessions/new', element: <StartSessionPage /> },
+          { path: 'sessions/:id', element: <SessionDetailsPage /> },
           { path: 'schedule', element: <SchedulePage /> },
           { path: 'accessibility', element: <AccessibilityPage /> },
           { path: 'messages', element: <MessagesPage /> },
@@ -207,7 +223,28 @@ const appRoutes: RouteObject[] = [
           {
             path: '/dashboard/staff',
             element: <StaffLayout />,
-            children: [{ index: true, element: <StaffDashboardPage /> }],
+            children: [
+              { index: true, element: <StaffDashboardPage /> },
+              { path: 'start-session', element: <StartSessionPage /> },
+              { path: 'schedule-session', element: <SchedulePage /> },
+              {
+                path: 'sessions',
+                element: (
+                  <SessionHistoryPage
+                    backTo="/dashboard/staff"
+                    detailsBase="/dashboard/staff/sessions"
+                  />
+                ),
+              },
+              {
+                path: 'sessions/:id',
+                element: <SessionDetailsPage backTo="/dashboard/staff/sessions" />,
+              },
+              { path: 'chat', element: <StaffChatPage /> },
+              { path: 'profile', element: <MyProfilePage /> },
+              { path: 'settings', element: <StaffSettingsPage /> },
+              { path: 'help', element: <StaffHelpPage /> },
+            ],
           },
         ],
       },
