@@ -38,11 +38,13 @@ vi.mock('livekit-client', () => ({
     TrackMuted: 'trackMuted',
     TrackUnmuted: 'trackUnmuted',
     ParticipantNameChanged: 'participantNameChanged',
+    ConnectionQualityChanged: 'connectionQualityChanged',
     LocalTrackPublished: 'localTrackPublished',
     LocalTrackUnpublished: 'localTrackUnpublished',
     DataReceived: 'dataReceived',
     Disconnected: 'disconnected',
   },
+  VideoQuality: { LOW: 0, MEDIUM: 1, HIGH: 2 },
   Track: { Source: { Camera: 'camera', Microphone: 'microphone', ScreenShare: 'screen_share' } },
 }));
 vi.mock('../../services/callToken', () => ({
@@ -310,5 +312,69 @@ describe('liveKitConnectionWith (the hearing guest)', () => {
     await Promise.all([first, second]);
 
     expect(room.connect).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('connection quality and video quality', () => {
+  it('reports how good each person’s connection is', async () => {
+    const e = events();
+    room.remoteParticipants.set('user-9', {
+      identity: 'user-9',
+      name: 'Amina Okafor',
+      connectionQuality: 'poor',
+      getTrackPublication: () => undefined,
+    });
+    await createLiveKitConnection(e).join('7', null);
+
+    const [people] = e.onPeople.mock.calls.at(-1)!;
+    expect(people[0].quality).toBe('poor');
+  });
+
+  it('tells the page about your own connection, and refreshes the others when theirs changes', () => {
+    const e = { ...events(), onSelfQuality: vi.fn() };
+    createLiveKitConnection(e);
+    const changed = room.handlers.get('connectionQualityChanged')!;
+
+    changed('good', { isLocal: true });
+    expect(e.onSelfQuality).toHaveBeenCalledWith('good');
+
+    changed('not-a-quality', { isLocal: true });
+    expect(e.onSelfQuality).toHaveBeenLastCalledWith('unknown');
+
+    const before = e.onPeople.mock.calls.length;
+    changed('lost', { isLocal: false });
+    expect(e.onPeople.mock.calls.length).toBe(before + 1);
+  });
+
+  it('limits the video coming from everyone to the quality the person chose', () => {
+    const setVideoQuality = vi.fn();
+    room.remoteParticipants.set('user-9', {
+      identity: 'user-9',
+      name: 'Amina Okafor',
+      videoTrackPublications: new Map([['camera', { setVideoQuality }]]),
+      getTrackPublication: () => undefined,
+    });
+    const connection = createLiveKitConnection(events());
+
+    connection.setIncomingQuality!('low');
+    expect(setVideoQuality).toHaveBeenLastCalledWith(0);
+
+    connection.setIncomingQuality!('high');
+    expect(setVideoQuality).toHaveBeenLastCalledWith(2);
+  });
+
+  it('leaves video quality to LiveKit until the person picks one', () => {
+    const setVideoQuality = vi.fn();
+    room.remoteParticipants.set('user-9', {
+      identity: 'user-9',
+      name: 'Amina Okafor',
+      videoTrackPublications: new Map([['camera', { setVideoQuality }]]),
+      getTrackPublication: () => undefined,
+    });
+    createLiveKitConnection(events());
+
+    room.handlers.get('trackSubscribed')!();
+
+    expect(setVideoQuality).not.toHaveBeenCalled();
   });
 });

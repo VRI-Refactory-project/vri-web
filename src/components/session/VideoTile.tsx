@@ -1,12 +1,7 @@
 import { useEffect, useRef } from 'react';
-
-const initials = (name: string) =>
-  name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0].toUpperCase())
-    .join('');
+import { Maximize2, Minimize2 } from 'lucide-react';
+import { barsFor, type ConnectionQuality } from '../../features/session/videoQuality';
+import { initials } from './initials';
 
 interface Props {
   name: string;
@@ -18,6 +13,28 @@ interface Props {
   profilePicture?: string | null; // NEW: Allow a profile picture URL
   /** A shared screen: shown whole and not mirrored like a camera. */
   screen?: boolean;
+  /** How good this person's connection is, shown as bars. Leave out to hide them. */
+  quality?: ConnectionQuality;
+  /** Makes this tile the big one (or puts it back). Leave out to hide the button. */
+  onSpotlight?: () => void;
+  /** True while this tile is the one the person picked to be the big one. */
+  spotlighted?: boolean;
+}
+
+/** Three bars that fill up with the quality of someone's connection. */
+function NetworkBars({ quality }: { quality: ConnectionQuality }) {
+  const filled = barsFor(quality);
+  return (
+    <span
+      className={`vt__bars vt__bars--${quality}`}
+      role="img"
+      aria-label={`Connection: ${quality}`}
+    >
+      {[1, 2, 3].map((bar) => (
+        <i key={bar} className={bar <= filled ? 'is-on' : undefined} />
+      ))}
+    </span>
+  );
 }
 
 export function VideoTile({
@@ -29,6 +46,9 @@ export function VideoTile({
   muted,
   profilePicture,
   screen,
+  quality,
+  onSpotlight,
+  spotlighted,
 }: Props) {
   const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
@@ -69,6 +89,20 @@ export function VideoTile({
             {initials(name)}
           </span>
         ))}
+
+      {quality && quality !== 'unknown' && <NetworkBars quality={quality} />}
+
+      {onSpotlight && (
+        <button
+          type="button"
+          className="vt__spot"
+          onClick={onSpotlight}
+          aria-label={spotlighted ? `Remove spotlight from ${name}` : `Spotlight ${name}`}
+          aria-pressed={Boolean(spotlighted)}
+        >
+          {spotlighted ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+        </button>
+      )}
 
       <figcaption className="vt__name">{name}</figcaption>
     </figure>

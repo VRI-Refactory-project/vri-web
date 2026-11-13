@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { describeError } from '../../services/api';
 import type { ChatMessage, CreateConnection, RemotePerson } from './callConnection';
 import { useLocalMedia } from './useLocalMedia';
+import { QUALITY_PRESETS, type ConnectionQuality, type VideoQualityChoice } from './videoQuality';
 
 /** What the person is allowed to send. "Audio only" is { video: false }, "Listen only" is neither. */
 export interface CallMode {
@@ -27,6 +28,8 @@ export function useCall({ createConnection, mode = { video: true, audio: true } 
   // How many messages were there when the chat was last open, so the rest count as unread.
   const [seenCount, setSeenCount] = useState(0);
   const [sharing, setSharing] = useState(false);
+  const [selfQuality, setSelfQuality] = useState<ConnectionQuality>('unknown');
+  const [quality, setQuality] = useState<VideoQualityChoice>('auto');
   const [phase, setPhase] = useState<'idle' | 'joining' | 'live'>('idle');
   // True when the connection dropped without the person leaving.
   const [lost, setLost] = useState(false);
@@ -47,6 +50,7 @@ export function useCall({ createConnection, mode = { video: true, audio: true } 
       },
       onChat: (message) => setMessages((all) => [...all, message]),
       onSharing: setSharing,
+      onSelfQuality: setSelfQuality,
     }),
   );
 
@@ -56,7 +60,8 @@ export function useCall({ createConnection, mode = { video: true, audio: true } 
   const needsMedia = mode.video || mode.audio;
   const ready = !needsMedia || media.stream !== null || media.blocked;
 
-  const join = async (sessionId = '') => {
+  /** Joins the room. True when the person is in, false when it failed (the reason is in `error`). */
+  const join = async (sessionId = ''): Promise<boolean> => {
     setError(null);
     setLost(false);
     setPhase('joining');
@@ -67,18 +72,21 @@ export function useCall({ createConnection, mode = { video: true, audio: true } 
       startedAt.current = Date.now();
       setSeconds(0);
       setPhase('live');
+      return true;
     } catch (err) {
       setError(describeError(err));
       setPhase('idle');
+      return false;
     }
   };
 
-  const leave = () => {
+  // Stable, so a page can use it inside an effect without resubscribing on every render.
+  const leave = useCallback(() => {
     connection.leave();
     startedAt.current = 0;
     setSharing(false);
     setPhase('idle');
-  };
+  }, [connection]);
 
   useEffect(() => {
     if (phase !== 'live') return;
@@ -114,6 +122,14 @@ export function useCall({ createConnection, mode = { video: true, audio: true } 
     if (track) await connection.replaceTrack?.(kind, track);
   };
 
+  // Picks how sharp the video is, both what you receive and what you send.
+  const pickQuality = (choice: VideoQualityChoice) => {
+    setQuality(choice);
+    const preset = QUALITY_PRESETS[choice];
+    connection.setIncomingQuality?.(preset.incoming);
+    void media.setVideoLimits(preset.outgoing);
+  };
+
   const openChat = (open: boolean) => {
     setChatOpen(open);
     // Everything up to now has been seen, whether the chat is opening or closing.
@@ -131,6 +147,8 @@ export function useCall({ createConnection, mode = { video: true, audio: true } 
     chatOpen,
     unread,
     sharing,
+    selfQuality,
+    quality,
     phase,
     lost,
     error,
@@ -143,6 +161,7 @@ export function useCall({ createConnection, mode = { video: true, audio: true } 
     toggleCam,
     toggleShare,
     pickDevice,
+    pickQuality,
     openChat,
     sendChat: (text: string) => connection.sendChat?.(text),
   };

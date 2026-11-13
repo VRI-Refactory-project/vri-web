@@ -64,6 +64,26 @@ describe('CallControls', () => {
   });
 });
 
+describe('CallControls quality menu', () => {
+  it('lists the qualities, marks the one in use and passes on the one picked', async () => {
+    const onPickQuality = vi.fn();
+    render(<CallControls {...base} quality="auto" onPickQuality={onPickQuality} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /quality/i }));
+    expect(screen.getByRole('menuitemradio', { name: /auto/i })).toBeChecked();
+    await userEvent.click(screen.getByRole('menuitemradio', { name: /data saver/i }));
+
+    expect(onPickQuality).toHaveBeenCalledWith('data_saver');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
+  it('is not in the lobby preview', () => {
+    render(<CallControls {...base} lobby onPickQuality={vi.fn()} />);
+
+    expect(screen.queryByRole('button', { name: /quality/i })).not.toBeInTheDocument();
+  });
+});
+
 describe('ChatPanel', () => {
   it('shows the messages and sends what is typed, then clears the box', async () => {
     const onSend = vi.fn();

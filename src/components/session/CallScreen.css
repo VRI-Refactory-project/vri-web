@@ -19,9 +19,152 @@
   min-height: 0;
 }
 
-.ls-body > .ls-stage {
+.ls-body > .ls-spot {
   flex: 1;
   min-width: 0;
+}
+
+/* Top-right: the timer, then the signed-in person's email and photo (Figma). */
+.ls-top__right {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.ls-profile {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.ls-profile__email {
+  font-size: 0.85rem;
+  color: #3b2579;
+}
+
+.ls-profile__photo {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.ls-profile__photo--initials {
+  display: grid;
+  place-items: center;
+  background: #4a3a86;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+/* One big tile with the others in a column beside it (Figma). */
+.ls-spot {
+  display: flex;
+  gap: 1rem;
+  min-height: 0;
+}
+
+.ls-main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+}
+
+.ls-main .vt {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+}
+
+.ls-side {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 14rem;
+  flex-shrink: 0;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.ls-side .vt {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  flex-shrink: 0;
+}
+
+/* The three connection bars at the bottom-left of a tile. */
+.vt__bars {
+  position: absolute;
+  left: 0.75rem;
+  bottom: 0.75rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 0.3rem 0.4rem;
+  border-radius: 0.5rem;
+  background: rgba(27, 18, 64, 0.65);
+}
+
+.vt__bars i {
+  display: block;
+  width: 4px;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.vt__bars i:nth-child(1) {
+  height: 6px;
+}
+.vt__bars i:nth-child(2) {
+  height: 10px;
+}
+.vt__bars i:nth-child(3) {
+  height: 14px;
+}
+
+.vt__bars i.is-on {
+  background: #4ade80;
+}
+.vt__bars--poor i.is-on {
+  background: #fbbf24;
+}
+.vt__bars--lost i {
+  background: #ef4444;
+}
+
+/* The spotlight button at the top-right of a tile. */
+.vt__spot {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: rgba(27, 18, 64, 0.65);
+  color: #fff;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.vt:hover .vt__spot,
+.vt__spot:focus-visible,
+.vt__spot[aria-pressed='true'] {
+  opacity: 1;
+}
+
+/* Quality menu items show a small hint under the name. */
+.cc__hint {
+  display: block;
+  font-size: 0.7rem;
+  opacity: 0.75;
 }
 
 /* A shared screen is shown whole, never mirrored or cropped. */
@@ -224,8 +367,18 @@
 }
 
 @media (max-width: 800px) {
-  .ls-body {
+  .ls-body,
+  .ls-spot {
     flex-direction: column;
+  }
+  .ls-side {
+    flex-direction: row;
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .ls-side .vt {
+    width: 12rem;
   }
   .chat {
     width: 100%;

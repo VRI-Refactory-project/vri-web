@@ -143,6 +143,24 @@ export function useLocalMedia({ video = true, audio = true }: LocalMediaOptions 
     [],
   );
 
+  /** Limits the size and speed of the video being sent, to save data (or restores the full size). */
+  const setVideoLimits = useCallback(
+    async (limits: { width: number; height: number; frameRate: number }) => {
+      const track = live.current?.getVideoTracks()[0];
+      if (!track?.applyConstraints) return;
+      try {
+        await track.applyConstraints({
+          width: { ideal: limits.width },
+          height: { ideal: limits.height },
+          frameRate: { ideal: limits.frameRate },
+        });
+      } catch {
+        // This camera cannot do that size; it keeps sending what it already was.
+      }
+    },
+    [],
+  );
+
   return {
     stream,
     error,
@@ -154,6 +172,7 @@ export function useLocalMedia({ video = true, audio = true }: LocalMediaOptions 
     selectedMic,
     selectedCam,
     selectDevice,
+    setVideoLimits,
     toggleMic: () => toggle('audio'),
     toggleCam: () => toggle('video'),
   };
