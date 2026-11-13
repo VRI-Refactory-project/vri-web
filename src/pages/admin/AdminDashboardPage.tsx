@@ -643,8 +643,6 @@
 //   );
 // }
 
-
-
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Search,
@@ -1189,15 +1187,41 @@ export function AdminDashboardPage() {
 
           {performance ? (
             <div style={{ display: 'flex', gap: '16px', marginTop: '20px' }}>
-              
               {/* Left Card: Avg Response Time */}
-              <div style={{ flex: 1, background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
+              <div
+                style={{
+                  flex: 1,
+                  background: '#f8fafc',
+                  padding: '16px',
+                  borderRadius: '12px',
+                  border: '1px solid #f1f5f9',
+                }}
+              >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ background: '#ede9fe', color: '#6d28d9', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div
+                    style={{
+                      background: '#ede9fe',
+                      color: '#6d28d9',
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
                     <Clock size={20} />
                   </div>
                   <div>
-                    <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    <span
+                      style={{
+                        fontSize: '12px',
+                        color: '#64748b',
+                        fontWeight: 600,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                      }}
+                    >
                       Avg. response time
                     </span>
                     <h2 style={{ margin: '2px 0', fontSize: '24px', color: '#111827' }}>
@@ -1205,19 +1229,49 @@ export function AdminDashboardPage() {
                     </h2>
                   </div>
                 </div>
-                <div style={{ marginTop: '12px', fontSize: '13px', fontWeight: 600, color: '#16a34a' }}>
-                  ↑ {performance.responseTrend} <span style={{ color: '#9ca3af', fontWeight: 400 }}>vs. last 7 days</span>
+                <div
+                  style={{ marginTop: '12px', fontSize: '13px', fontWeight: 600, color: '#16a34a' }}
+                >
+                  ↑ {performance.responseTrend}{' '}
+                  <span style={{ color: '#9ca3af', fontWeight: 400 }}>vs. last 7 days</span>
                 </div>
               </div>
 
               {/* Right Card: Completion Rate */}
-              <div style={{ flex: 1, background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
+              <div
+                style={{
+                  flex: 1,
+                  background: '#f8fafc',
+                  padding: '16px',
+                  borderRadius: '12px',
+                  border: '1px solid #f1f5f9',
+                }}
+              >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ background: '#dcfce7', color: '#16a34a', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div
+                    style={{
+                      background: '#dcfce7',
+                      color: '#16a34a',
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
                     <CheckCircle2 size={20} />
                   </div>
                   <div>
-                    <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    <span
+                      style={{
+                        fontSize: '12px',
+                        color: '#64748b',
+                        fontWeight: 600,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                      }}
+                    >
                       Session completion rate
                     </span>
                     <h2 style={{ margin: '2px 0', fontSize: '24px', color: '#111827' }}>
@@ -1225,11 +1279,13 @@ export function AdminDashboardPage() {
                     </h2>
                   </div>
                 </div>
-                <div style={{ marginTop: '12px', fontSize: '13px', fontWeight: 600, color: '#16a34a' }}>
-                  ↑ {performance.completionTrend} <span style={{ color: '#9ca3af', fontWeight: 400 }}>vs. last 7 days</span>
+                <div
+                  style={{ marginTop: '12px', fontSize: '13px', fontWeight: 600, color: '#16a34a' }}
+                >
+                  ↑ {performance.completionTrend}{' '}
+                  <span style={{ color: '#9ca3af', fontWeight: 400 }}>vs. last 7 days</span>
                 </div>
               </div>
-
             </div>
           ) : (
             <p className="ad-empty">No data yet.</p>

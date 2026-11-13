@@ -14,7 +14,7 @@
 //   interpreters_pending_verification: number;
 //   institutions_pending_approval: number;
 //   users_by_role: Record<string, number>;
-//   top_session_types?: { type: string; count: number }[]; 
+//   top_session_types?: { type: string; count: number }[];
 // }
 
 // export async function fetchAdminSummary(): Promise<AdminDashboardSummary> {
@@ -26,7 +26,7 @@
 //     institutions: byRole.institution ?? 0,
 //     interpreters: byRole.interpreter ?? 0,
 //     pendingVerifications: raw.interpreters_pending_verification,
-//     top_session_types: raw.top_session_types ?? [], 
+//     top_session_types: raw.top_session_types ?? [],
 //   };
 // }
 
@@ -245,9 +245,6 @@
 //   }));
 // }
 
-
-
-
 import { api } from './api';
 
 /* ---------- Summary (existing endpoint) ---------- */
@@ -413,9 +410,16 @@ export interface InterpreterPerformance {
   completionTrend: string;
 }
 
+interface ApiPerformancePayload {
+  avg_response_time?: string;
+  completion_rate?: number;
+  response_trend?: string;
+  completion_trend?: string;
+}
+
 export async function fetchInterpreterPerformance(): Promise<InterpreterPerformance> {
   // Reads from the same admin dashboard endpoint (avoids a second request)
-  const raw = await api<{ performance: any }>('/api/v1/dashboard/admin/');
+  const raw = await api<{ performance?: ApiPerformancePayload }>('/api/v1/dashboard/admin/');
   const p = raw.performance ?? {};
   return {
     avgResponseTime: p.avg_response_time ?? '0m 0s',
