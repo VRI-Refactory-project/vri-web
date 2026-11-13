@@ -1013,7 +1013,7 @@ import {
   CheckCircle2,
   UserPlus,
   XCircle,
-  LifeBuoy,
+  Headphones,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import {
@@ -1078,7 +1078,7 @@ function statusStyle(status: string) {
   return { bg: '#dcfce7', text: '#15803d' };
 }
 
-// 👇 Helper to choose the icon + colours based on the activity text
+// Helper to choose the icon + colours based on the activity text
 function getActivityIcon(text: string) {
   const t = text.toLowerCase();
 
@@ -1098,7 +1098,7 @@ function getActivityIcon(text: string) {
     return { Icon: XCircle, bg: '#fee2e2', color: '#ef4444' };
 
   if (t.includes('request') || t.includes('offer') || t.includes('interpreter'))
-    return { Icon: LifeBuoy, bg: '#fef3c7', color: '#b45309' };
+    return { Icon: Headphones, bg: '#fef3c7', color: '#b45309' };
 
   return { Icon: Lightbulb, bg: '#f3f4f6', color: '#6b7280' };
 }
@@ -1521,7 +1521,7 @@ export function AdminDashboardPage() {
           </div>
           {filteredFeed && filteredFeed.length > 0 ? (
             <div className="ad-feed">
-              {filteredFeed.map((a, i) => {
+              {filteredFeed.slice(0, 5).map((a, i) => {
                 const { Icon, bg, color } = getActivityIcon(a.text);
                 return (
                   <div
