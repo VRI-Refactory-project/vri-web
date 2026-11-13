@@ -990,3 +990,17 @@
 .id-dashboard-footer {
   font-size: 12px !important;
 }
+
+@media (max-width: 900px) {
+  .id-kpis,
+  .id-departments {
+    grid-template-columns: 1fr !important;
+  }
+  .id-table {
+    display: block !important;
+    overflow-x: auto !important;
+  }
+  .id-quick-actions {
+    flex-direction: column !important;
+  }
+}

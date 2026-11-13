@@ -923,3 +923,34 @@ button.view-all:hover {
   background: #fee2e2; /* Soft red */
   color: #b91c1c; /* Dark red */
 }
+
+@media (max-width: 900px) {
+  .dashboard-layout {
+    flex-direction: column !important;
+  }
+  .sidebar {
+    width: 100% !important;
+    min-height: auto !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    padding: 16px !important;
+    position: relative !important;
+  }
+  .main-content {
+    padding: 16px !important;
+    margin: 0 !important;
+  }
+  .stats-grid,
+  .interpreter-grid,
+  .quick-actions {
+    grid-template-columns: 1fr !important;
+  }
+  .hero-banner {
+    flex-direction: column !important;
+    height: auto !important;
+    padding: 24px !important;
+  }
+  .hero-content {
+    max-width: 100% !important;
+  }
+}

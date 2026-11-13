@@ -78,3 +78,158 @@ body {
 .btn-primary:hover {
   opacity: 0.9;
 }
+
+/* ========================================= */
+/* --- MOBILE RESPONSIVE FIXES (Global) --- */
+/* ========================================= */
+
+@media (max-width: 900px) {
+  /* 1. Allow scrolling everywhere on mobile */
+  html,
+  body,
+  #root {
+    overflow-y: auto !important;
+    height: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* 2. Fix the AuthShell (Login, Register, Role Selection) */
+  .as-page {
+    background-attachment: scroll !important; /* Fixes mobile scroll bug */
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow: visible !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .as-main {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 0 16px 40px 16px !important;
+    gap: 16px !important;
+    height: auto !important;
+    min-height: unset !important;
+  }
+
+  /* 3. Fix the Auth Cards (Forms) */
+  .as-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 24px 16px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 4. Fix the Form Rows (Stack them) */
+  .ca-row,
+  .inst-row,
+  [class*='-row'] {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  /* 5. Hide the floating video widget */
+  .ca-video-widget {
+    display: none !important;
+  }
+
+  /* 6. Fix the Role Selection Cards */
+  .rs-cards {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    height: auto !important;
+  }
+
+  .rs-card {
+    height: 380px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* 7. Fix the Landing Page (Image on top, text below) */
+  .landing {
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow: visible !important;
+    background-attachment: scroll !important;
+  }
+
+  .landing-hero {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 20px !important;
+    gap: 32px !important;
+  }
+
+  .landing-hero-right {
+    order: 1 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    transform: none !important;
+  }
+
+  .landing-hero-left {
+    order: 2 !important;
+    padding: 0 !important;
+  }
+
+  .landing-hero-image {
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    border-radius: 16px !important;
+  }
+
+  .landing-sweep,
+  .landing-halo {
+    display: none !important;
+  }
+
+  /* 8. Fix Live Session */
+  .ls-stage {
+    grid-template-columns: 1fr !important;
+    height: auto !important;
+  }
+  .ls-lobby {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* --- MOBILE SIDEBAR TOGGLE --- */
+.mobile-menu-btn {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .mobile-menu-btn {
+    display: block;
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 1001;
+    background: #382c77;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  .sidebar {
+    position: fixed !important;
+    top: 0;
+    left: -300px !important;
+    height: 100vh !important;
+    width: 280px !important;
+    z-index: 1000;
+    transition: left 0.3s ease;
+    flex-direction: column !important;
+  }
+
+  .sidebar--open {
+    left: 0 !important;
+  }
+}
