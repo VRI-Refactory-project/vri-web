@@ -739,3 +739,33 @@
   width: auto !important;
   margin-top: 0 !important;
 }
+
+/* ========================================= */
+/* --- MOBILE RESPONSIVE FIXES --- */
+/* ========================================= */
+
+@media (max-width: 768px) {
+  .ls-stage {
+    grid-template-columns: 1fr !important;
+    height: auto !important;
+    min-height: 50vh !important;
+  }
+
+  .ls--call .ls-stage {
+    grid-template-columns: 1fr !important;
+  }
+
+  .cc {
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 8px !important;
+  }
+
+  .ls-lobby {
+    grid-template-columns: 1fr !important;
+  }
+
+  .ls-card {
+    padding: 20px !important;
+  }
+}
