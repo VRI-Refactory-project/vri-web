@@ -997,7 +997,6 @@
 //   );
 // }
 
-
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Search,
@@ -1044,9 +1043,21 @@ import { useNavigate } from 'react-router-dom';
 const KPI_META = [
   { id: 'total-users', label: 'Total Users', trend: 'up' as const, Icon: Users, color: 'purple' },
   { id: 'dhh', label: 'DHH Users', trend: 'up' as const, Icon: Users, color: 'green' },
-  { id: 'institutions', label: 'Institutions', trend: 'up' as const, Icon: Building2, color: 'blue' },
+  {
+    id: 'institutions',
+    label: 'Institutions',
+    trend: 'up' as const,
+    Icon: Building2,
+    color: 'blue',
+  },
   { id: 'interpreters', label: 'Interpreters', trend: 'up' as const, Icon: Video, color: 'pink' },
-  { id: 'pending', label: 'Pending Verifications', trend: 'down' as const, Icon: ShieldCheck, color: 'orange' },
+  {
+    id: 'pending',
+    label: 'Pending Verifications',
+    trend: 'down' as const,
+    Icon: ShieldCheck,
+    color: 'orange',
+  },
 ];
 
 function todayLabel() {
@@ -1117,13 +1128,27 @@ export function AdminDashboardPage() {
         setUnreadCount(data.unread_notifications ?? 0);
       })
       .catch(() => setSummary(null));
-    fetchSessionActivity().then(setActivity).catch(() => setActivity([]));
-    fetchActivityFeed().then(setFeed).catch(() => setFeed([]));
-    fetchUserGrowth().then(setGrowth).catch(() => setGrowth([]));
-    fetchInterpreterPerformance().then(setPerformance).catch(() => setPerformance(null));
-    fetchVerificationStatus().then(setVerification).catch(() => setVerification(null));
-    fetchUpcomingSessions().then(setSessions).catch(() => setSessions([]));
-    fetchNotifications().then(setNotifications).catch(() => setNotifications([]));
+    fetchSessionActivity()
+      .then(setActivity)
+      .catch(() => setActivity([]));
+    fetchActivityFeed()
+      .then(setFeed)
+      .catch(() => setFeed([]));
+    fetchUserGrowth()
+      .then(setGrowth)
+      .catch(() => setGrowth([]));
+    fetchInterpreterPerformance()
+      .then(setPerformance)
+      .catch(() => setPerformance(null));
+    fetchVerificationStatus()
+      .then(setVerification)
+      .catch(() => setVerification(null));
+    fetchUpcomingSessions()
+      .then(setSessions)
+      .catch(() => setSessions([]));
+    fetchNotifications()
+      .then(setNotifications)
+      .catch(() => setNotifications([]));
   }, []);
 
   useEffect(() => {
@@ -1251,9 +1276,7 @@ export function AdminDashboardPage() {
                           <div>
                             <strong>{n.title}</strong>
                             {n.body && (
-                              <small style={{ display: 'block', color: '#6b7280' }}>
-                                {n.body}
-                              </small>
+                              <small style={{ display: 'block', color: '#6b7280' }}>{n.body}</small>
                             )}
                           </div>
                         </li>
@@ -1451,7 +1474,14 @@ export function AdminDashboardPage() {
               marginTop: '10px',
             }}
           >
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div
+              style={{
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
               <div style={{ fontSize: '72px', fontWeight: 800, color: '#4b34a0', lineHeight: 1 }}>
                 {summary?.interpreters ?? 0}
               </div>
