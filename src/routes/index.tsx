@@ -33,6 +33,10 @@ import { InstitutionLayout } from '../features/institution/InstitutionLayout';
 import { InstitutionRoleRoute } from '../components/InstitutionRoleRoute';
 import { StaffLayout } from '../features/staff/StaffLayout';
 import { StaffDashboardPage } from '../features/staff/StaffDashboardPage';
+import { StaffChatPage } from '../features/staff/StaffChatPage';
+import { MyProfilePage } from '../features/staff/MyProfilePage';
+import { StaffSettingsPage } from '../features/staff/StaffSettingsPage';
+import { StaffHelpPage } from '../features/staff/StaffHelpPage';
 import { StaffManagementPage } from '../pages/institution/StaffManagementPage';
 import { ProfilePage as DeafProfilePage } from '../pages/deaf/ProfilePage';
 import { StartSessionPage } from '../pages/deaf/StartSessionPage';
@@ -236,6 +240,10 @@ const appRoutes: RouteObject[] = [
                 path: 'sessions/:id',
                 element: <SessionDetailsPage backTo="/dashboard/staff/sessions" />,
               },
+              { path: 'chat', element: <StaffChatPage /> },
+              { path: 'profile', element: <MyProfilePage /> },
+              { path: 'settings', element: <StaffSettingsPage /> },
+              { path: 'help', element: <StaffHelpPage /> },
             ],
           },
         ],
