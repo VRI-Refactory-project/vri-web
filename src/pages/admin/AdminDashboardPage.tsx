@@ -1208,15 +1208,17 @@ export function AdminDashboardPage() {
   const activityMax = Math.max(1, ...(activity ?? []).map((x) => x.value));
   const yMax = Math.ceil(activityMax / 50) * 50 || 250;
 
-  // 👇 Placeholder maths for the Interpreter availability donut
+  // Real interpreter availability from backend
   const totalInterps = summary?.interpreters ?? 0;
-  const availableInterps = Math.round(totalInterps * 0.6);
-  const busyInterps = Math.round(totalInterps * 0.25);
-  const offlineInterps = totalInterps - availableInterps - busyInterps;
+  // const availableInterps = (summary as any)?.available_interpreters ?? 0;
+  // const offlineInterps = (summary as any)?.offline_interpreters ?? 0;
+  const availableInterps = summary?.available_interpreters ?? 0;
+  const offlineInterps = summary?.offline_interpreters ?? 0;
+  const busyInterps = 0; // No busy state yet
 
   const availPct = totalInterps ? Math.round((availableInterps / totalInterps) * 100) : 0;
-  const busyPct = totalInterps ? Math.round((busyInterps / totalInterps) * 100) : 0;
-  const offlinePct = totalInterps ? 100 - availPct - busyPct : 0;
+  const busyPct = 0;
+  const offlinePct = totalInterps ? 100 - availPct : 0;
 
   const availabilityDonut = `conic-gradient(#4b34a0 0 ${availPct}%, #16a34a ${availPct}% ${availPct + busyPct}%, #cbd5e1 ${availPct + busyPct}% 100%)`;
 
@@ -1335,27 +1337,20 @@ export function AdminDashboardPage() {
         ))}
       </div>
 
-      {/* Row: Session activity | Interpreter availability | Recent activity */}
-      <div className="ad-row ad-row--top" style={{ alignItems: 'start' }}>
-        <div className="ad-panel">
+      {/* Row 1: Session activity | Interpreter availability | Recent activity */}
+      <div className="ad-row ad-row--top" style={{ alignItems: 'stretch' }}>
+        <div className="ad-panel" style={{ display: 'flex', flexDirection: 'column' }}>
           <div className="ad-panel-head" style={{ alignItems: 'flex-start' }}>
             <div>
               <h3 style={{ margin: 0 }}>Session activity</h3>
             </div>
-            <div
-              style={{
-                fontSize: '13px',
-                color: '#9ca3af',
-                fontWeight: 500,
-                marginTop: '2px',
-              }}
-            >
+            <div style={{ fontSize: '13px', color: '#9ca3af', fontWeight: 500, marginTop: '2px' }}>
               Last 7 days
             </div>
           </div>
 
           {activity && activity.length > 0 ? (
-            <div style={{ display: 'flex', marginTop: '20px', height: '260px' }}>
+            <div style={{ display: 'flex', marginTop: '20px', height: '260px', flex: 1 }}>
               <div
                 style={{
                   display: 'flex',
@@ -1470,7 +1465,7 @@ export function AdminDashboardPage() {
         </div>
 
         {/* Interpreter availability donut */}
-        <div className="ad-panel">
+        <div className="ad-panel" style={{ display: 'flex', flexDirection: 'column' }}>
           <div className="ad-panel-head">
             <div>
               <h3 style={{ margin: 0 }}>Interpreter availability</h3>
@@ -1480,7 +1475,10 @@ export function AdminDashboardPage() {
             </div>
           </div>
 
-          <div className="ad-donut-wrap" style={{ marginTop: '24px' }}>
+          <div
+            className="ad-donut-wrap"
+            style={{ marginTop: '24px', height: '100%', alignItems: 'center' }}
+          >
             <div className="ad-donut" style={{ background: availabilityDonut }}>
               <div className="ad-donut-hole">
                 <strong>{totalInterps}</strong>
@@ -1525,7 +1523,7 @@ export function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="ad-panel">
+        <div className="ad-panel" style={{ display: 'flex', flexDirection: 'column' }}>
           <div className="ad-panel-head" style={{ alignItems: 'center' }}>
             <h3>Recent activity</h3>
             <button
@@ -1611,8 +1609,8 @@ export function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Row: Top session types | User growth | Quick insights */}
-      <div className="ad-row ad-row--mid" style={{ alignItems: 'start' }}>
+      {/* Row 2: Top session types | User growth | Quick insights */}
+      <div className="ad-row ad-row--mid" style={{ alignItems: 'stretch' }}>
         <div className="ad-panel">
           <div className="ad-panel-head">
             <h3>Top session types</h3>
@@ -1836,8 +1834,8 @@ export function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Row: Interpreter performance | Verification status */}
-      <div className="ad-row ad-row--bottom" style={{ alignItems: 'start' }}>
+      {/* Row 3: Interpreter performance | Verification status */}
+      <div className="ad-row ad-row--bottom" style={{ alignItems: 'stretch' }}>
         <div className="ad-panel">
           <div className="ad-panel-head">
             <div>
@@ -1953,19 +1951,26 @@ export function AdminDashboardPage() {
           )}
         </div>
 
-        <div className="ad-panel">
+        <div className="ad-panel" style={{ display: 'flex', flexDirection: 'column' }}>
           <div className="ad-panel-head">
             <h3>Verification status</h3>
           </div>
           {verification ? (
-            <>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                flex: 1,
+              }}
+            >
               <div className="ad-vbar">
                 <span style={{ width: bar(verification.approved), background: '#16a34a' }} />
                 <span style={{ width: bar(verification.pending), background: '#f59e0b' }} />
                 <span style={{ width: bar(verification.rejected), background: '#ef4444' }} />
                 <span style={{ width: bar(verification.flagged), background: '#4b34a0' }} />
               </div>
-              <div className="ad-vlegend">
+              <div className="ad-vlegend" style={{ marginTop: '24px' }}>
                 <span>
                   <i style={{ background: '#16a34a' }} />
                   Approved · {verification.approved}
@@ -1983,7 +1988,7 @@ export function AdminDashboardPage() {
                   Flagged · {verification.flagged}
                 </span>
               </div>
-            </>
+            </div>
           ) : (
             <p className="ad-empty">No data yet.</p>
           )}
