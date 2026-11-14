@@ -65,10 +65,11 @@ const refreshOnce = () => {
 const NO_REFRESH = ['/api/v1/auth/login/', '/api/v1/auth/token/refresh/'];
 
 function send(path: string, init: RequestInit) {
-  // For FormData the browser must set Content-Type itself (it adds the multipart boundary).
   const isFormData = init.body instanceof FormData;
+
   return fetch(`${BASE_URL}${path}`, {
     ...init,
+    credentials: 'include',
     headers: {
       ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
       ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
@@ -93,4 +94,24 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     throw new ApiError(res.status, errorMessage(body) ?? res.statusText, body);
   }
   return res.status === 204 ? (undefined as T) : ((await res.json()) as T);
+}
+
+export async function apiBlob(path: string, init: RequestInit = {}): Promise<Blob> {
+  let res = await send(path, init);
+
+  if (res.status === 401 && authToken && refreshHandler && !NO_REFRESH.includes(path)) {
+    const renewed = await refreshOnce();
+
+    if (renewed) {
+      authToken = renewed;
+      res = await send(path, init);
+    }
+  }
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new ApiError(res.status, errorMessage(body) ?? res.statusText);
+  }
+
+  return res.blob();
 }
