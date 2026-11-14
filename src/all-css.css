@@ -132,72 +132,8 @@ body {
     gap: 12px !important;
   }
 
-  /* 4. Fix the Landing Page */
-  .landing {
-    height: auto !important;
-    min-height: 100vh !important;
-    overflow: visible !important;
-    background-attachment: scroll !important;
-    background-size: cover !important;
-    background-repeat: no-repeat !important;
-    background-color: #2d1060 !important;
-    width: 100% !important;
-  }
-
-  .landing-hero {
-    display: flex !important;
-    flex-direction: column !important;
-    padding: 20px !important;
-    gap: 20px !important;
-    width: 100% !important;
-    height: auto !important;
-  }
-
-  .landing-hero-left,
-  .landing-hero-right {
-    display: contents !important;
-  }
-
-  .landing-badge {
-    order: 1 !important;
-    width: fit-content !important;
-  }
-  .landing-title {
-    order: 2 !important;
-    font-size: 2.2rem !important;
-    line-height: 1.2 !important;
-    color: #fff !important;
-  }
-  .landing-subtitle {
-    order: 3 !important;
-    font-size: 1rem !important;
-    color: #e2d6ff !important;
-  }
-  .landing-frame {
-    order: 4 !important;
-    width: 100% !important;
-    margin: 10px 0 !important;
-  }
-  .landing-cta {
-    order: 5 !important;
-    width: 100% !important;
-    justify-content: center !important;
-    margin: 10px 0 !important;
-  }
-  .landing-features {
-    order: 6 !important;
-    width: 100% !important;
-    margin-bottom: 40px !important;
-  }
-
-  .landing-sweep,
-  .landing-halo {
-    display: none !important;
-  }
-  .landing-features li {
-    color: #fff !important;
-    background: rgba(255, 255, 255, 0.1) !important;
-  }
+  /* 4. CHANGED: the landing page rules were REMOVED from here.
+        They now live at the bottom of src/pages/landing/LandingPage.css */
 
   /* 5. Role Selection Cards */
   .rs-cards {
@@ -301,8 +237,12 @@ body {
     overflow-y: auto !important;
   }
 
-  /* 11. Fix Button Wrapping (Prevent two lines) */
-  button,
+  /* 11. Fix Button Wrapping (Prevent two lines)
+         CHANGED: ":where(:not(...))" skips the two landing buttons
+         (Sign Up and Get Started) so this rule stops shrinking them.
+         ":where" adds no extra priority, so the .cc__btn rule below
+         still wins exactly like before. */
+  button:where(:not(.landing-cta, .landing-signup)),
   .btn,
   .ls-btn,
   .ia-button,
@@ -330,10 +270,8 @@ body {
 /* ========================================= */
 
 @media (max-width: 900px) {
-  /* 1. Fix the Landing Page Logo */
-  .landing-logo-icon {
-    height: 40px !important;
-  }
+  /* 1. CHANGED: the ".landing-logo-icon" rule was REMOVED from here.
+        The logo is now handled in LandingPage.css */
 
   /* 2. Fix the Role Selection Cards Text Wrapping */
   .rs-card {

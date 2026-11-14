@@ -371,25 +371,95 @@
   box-shadow: 0 0 0 3px #d8d3f0;
 }
 
-/* --- Responsive: one column under 900px --- */
+/* ========================================================= */
+/* --- MOBILE / TABLET (900px and narrower) ---              */
+/* Web is untouched: none of this runs above 900px.          */
+/* Everything for the landing page lives HERE, not in all-css */
+/* ========================================================= */
 @media (max-width: 900px) {
-  .landing-hero {
-    grid-template-columns: minmax(0, 1fr);
-    align-items: start;
+  /* 1. THE BACKGROUND FIX.
+        The page was locked to one screen height (max-height: 100vh).
+        Let it grow with the content, so the purple gradient
+        stretches all the way down. */
+  .landing {
+    height: auto;
+    max-height: none;
+    min-height: 100dvh;
+    overflow-x: hidden;
   }
 
+  /* The curved light sweep is drawn for a wide screen; hide it on phones. */
+  .landing-sweep,
+  .landing-halo {
+    display: none;
+  }
+
+  /* 2. HEADER: show only the logo word, smaller. Login/Sign Up stay on the right. */
+  .landing-logo,
+  .landing-nav {
+    transform: none; /* the small desktop nudges are not needed here */
+  }
+  .landing-logo-icon {
+    display: none;
+  }
+  .landing-logo-word {
+    height: 28px;
+  }
+  .landing-header {
+    padding-top: 1rem;
+  }
+
+  /* 3. HERO: one single column, stacked top to bottom. */
+  .landing-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.25rem;
+    margin-top: 0;
+    padding: 1.5rem var(--landing-gutter) 3rem;
+  }
+
+  /* "display: contents" makes these two wrappers invisible to layout.
+     Their children (badge, title, photo, button...) then become direct
+     children of .landing-hero, so we can put them in any order. */
+  .landing-hero-left,
   .landing-hero-right {
-    justify-self: center;
+    display: contents;
+  }
+
+  /* 4. THE ORDER YOU ASKED FOR:
+        pill -> heading -> paragraph -> woman's photo -> Get Started -> other pills */
+  .landing-badge {
+    order: 1;
+    align-self: flex-start;
+  }
+  .landing-title {
+    order: 2;
+  }
+  .landing-title + .landing-subtitle {
+    order: 3; /* "Connect instantly with certified..." */
+  }
+  .landing-frame {
+    order: 4; /* the photo */
+    width: 100%;
     max-width: 420px;
+    align-self: center;
+  }
+  .landing-cta {
+    order: 5;
+    width: 100%;
+    justify-content: center;
+    animation: none; /* a sliding full-width button would push off the screen */
+  }
+  .landing-cta + .landing-subtitle {
+    order: 6; /* "Communication for Everyone" */
+  }
+  .landing-features {
+    order: 7;
   }
 }
 
 @media (max-width: 480px) {
-  .landing-cta {
-    width: 100%;
-    justify-content: center;
-  }
-
   .landing-features li {
     width: 100%;
     box-sizing: border-box;
