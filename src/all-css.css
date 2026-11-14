@@ -421,3 +421,39 @@ body {
     width: 100% !important;
   }
 }
+
+/* ========================================= */
+/* --- ADMIN / DASHBOARD FIXES (mobile) --- */
+/* ========================================= */
+
+@media (max-width: 900px) {
+  /* 1. Leave room at the top for the menu button so nothing overlaps it */
+  .dl-main {
+    padding: 76px 16px 16px !important;
+  }
+
+  /* 2. Tables: scroll sideways inside their own box, show every column.
+        The columns hidden by the earlier rules are brought back. */
+  table,
+  .ia-table,
+  .vp-table,
+  .rc-table,
+  .audit-table {
+    display: block !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  th,
+  td {
+    white-space: nowrap !important;
+    padding-right: 20px !important;
+  }
+  .ia-table th:nth-child(4),
+  .ia-table td:nth-child(4),
+  .vp-table th:nth-child(3),
+  .vp-table td:nth-child(3) {
+    display: table-cell !important;
+  }
+}

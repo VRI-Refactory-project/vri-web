@@ -1077,7 +1077,9 @@ export function AdminDashboardPage() {
           </div>
 
           {performance ? (
+            // MOBILE EDIT A: className added so the two cards can stack on phones
             <div
+              className="ad-perf-cards"
               style={{
                 display: 'flex',
                 gap: '16px',
@@ -1085,7 +1087,9 @@ export function AdminDashboardPage() {
               }}
             >
               {/* Response time */}
+              {/* MOBILE EDIT B: className added */}
               <div
+                className="ad-perf-card"
                 style={{
                   flex: 1,
                   background: '#f8fafc',
@@ -1162,7 +1166,9 @@ export function AdminDashboardPage() {
               </div>
 
               {/* Completion rate */}
+              {/* MOBILE EDIT C: className added */}
               <div
+                className="ad-perf-card"
                 style={{
                   flex: 1,
                   background: '#f8fafc',
