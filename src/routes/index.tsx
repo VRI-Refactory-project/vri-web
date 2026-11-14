@@ -46,6 +46,7 @@ import { SessionDetailsPage } from '../pages/deaf/SessionDetailsPage';
 import { AccessibilityPage } from '../pages/deaf/AccessibilityPage';
 import { WalletPage } from '../pages/deaf/WalletPage';
 import { MessagesPage } from '../pages/deaf/MessagesPage';
+import { CommunityPage } from '../pages/deaf/CommunityPage';
 import { SchedulePage } from '../pages/deaf/SchedulePage';
 import { SettingsPage as DeafSettingsPage } from '../pages/deaf/SettingsPage';
 import { LiveSessionPage } from '../pages/session/LiveSessionPage';
@@ -161,6 +162,7 @@ const appRoutes: RouteObject[] = [
           { path: 'schedule', element: <SchedulePage /> },
           { path: 'accessibility', element: <AccessibilityPage /> },
           { path: 'messages', element: <MessagesPage /> },
+          { path: 'messages/community', element: <CommunityPage /> },
           { path: 'wallet', element: <WalletPage /> },
           { path: 'profile', element: <DeafProfilePage /> },
           { path: 'settings', element: <DeafSettingsPage /> },
