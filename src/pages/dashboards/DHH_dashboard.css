@@ -954,3 +954,71 @@ button.view-all:hover {
     max-width: 100% !important;
   }
 }
+
+/* ================================================= */
+/* --- MOBILE: deaf user dashboard hero banner ---   */
+/* (only runs on screens 900px and narrower)         */
+/* ================================================= */
+
+@media (max-width: 900px) {
+  /* The banner stacks: text and buttons on top, photo underneath */
+  .hero-banner {
+    flex-direction: column !important;
+    align-items: stretch !important; /* children use the full banner width */
+    padding: 24px 20px 0 !important; /* no bottom padding: the photo sits flush at the bottom */
+  }
+
+  .hero-content {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  /* --- Buttons: side by side, equal width, smaller text on ONE line --- */
+  .hero-buttons-group {
+    width: 100% !important;
+    gap: 8px !important;
+    flex-wrap: nowrap !important;
+  }
+
+  .hero-buttons-group button {
+    flex: 1 1 0 !important; /* both buttons share the row equally */
+    min-width: 0 !important; /* allow them to shrink */
+    justify-content: center !important;
+    gap: 5px !important;
+    padding: 10px 6px !important;
+    font-size: clamp(10px, 3vw, 13px) !important; /* text scales with the screen */
+    white-space: nowrap !important; /* never wraps to a second line */
+  }
+
+  .hero-buttons-group button svg {
+    width: 14px !important;
+    height: 14px !important;
+    flex: none;
+  }
+
+  /* --- Photo: no longer hidden behind the text --- */
+  .hero-image-container {
+    position: relative !important; /* was "absolute" (floating behind the text) */
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+    width: auto !important;
+    height: clamp(220px, 50vw, 380px) !important;
+    margin: 20px -20px 0 !important; /* stretches to the banner edges */
+    justify-content: center !important;
+  }
+
+  .hero-banner-image {
+    object-position: center 30% !important; /* keeps the person's face in view */
+    /* fade from the purple at the top, instead of the sideways fade used on web */
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black 25%) !important;
+    mask-image: linear-gradient(to bottom, transparent, black 25%) !important;
+  }
+}
+
+/* Very small phones: hide the button icons so the words keep their space */
+@media (max-width: 360px) {
+  .hero-buttons-group button svg {
+    display: none !important;
+  }
+}
