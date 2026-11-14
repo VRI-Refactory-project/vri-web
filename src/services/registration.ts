@@ -1,20 +1,16 @@
 import { normalizePhone } from '../lib/validation';
-import { api } from './api';
+import { checkBackendConnection } from '../lib/connectivity';
+import { api, ApiError } from './api';
 import { toSession, type LoginResponse } from './auth';
 import type { AuthSession } from '../types';
-
-// V2-001 / V2-002 / V2-003 / V2-005: self-registration. Each endpoint creates the account and
-// answers 201 with the same payload as sign-in, so the user is signed in straight away.
 
 export interface DeafRegistration {
   name: string;
   phone: string;
   password: string;
-  /** Optional for deaf users. Without an email they cannot use password recovery. */
   email?: string;
 }
 
-/** Must match the library in the API (apps/interpreters/specialisations.py). */
 export type Specialisation =
   | 'GENERAL'
   | 'MEDICAL'
@@ -37,9 +33,7 @@ export interface InterpreterRegistration {
   phone: string;
   email: string;
   password: string;
-  /** Everything the interpreter covers. */
   specialisations?: Specialisation[];
-  /** Required by the API when `specialisations` includes OTHER. */
   specialisationOther?: string;
 }
 
@@ -53,15 +47,24 @@ export interface InstitutionRegistration {
   password: string;
   organisationName: string;
   organisationType: OrganisationType;
-  /** What the institution is, in the person's own words. Only sent when the type is OTHER. */
   organisationTypeOther?: string;
 }
 
 async function register(path: string, body: Record<string, unknown>): Promise<AuthSession> {
+  const isConnected = await checkBackendConnection();
+
+  if (!isConnected) {
+    throw new ApiError(
+      0,
+      'Your connection is unavailable. Please reconnect to the internet before creating your account.',
+    );
+  }
+
   const res = await api<LoginResponse>(`/api/v1/auth/register/${path}/`, {
     method: 'POST',
     body: JSON.stringify(body),
   });
+
   return toSession(res);
 }
 
@@ -100,8 +103,6 @@ export const registerInstitution = (d: InstitutionRegistration) =>
       : {}),
   });
 
-// --- NEW: Institution License Upload ---
-
 export interface InstitutionLicensePayload {
   licenseType: string;
   issuingAuthority: string;
@@ -109,11 +110,8 @@ export interface InstitutionLicensePayload {
 }
 
 export async function uploadInstitutionLicense(data: FormData): Promise<void> {
-  await api('/api/v1/institutions/upload-license/', {
+  await api('/api/v1/institutions/me/document/', {
     method: 'POST',
     body: data,
-    // Note: Do NOT set Content-Type header manually here.
-    // The browser automatically sets it to multipart/form-data with the correct boundary
-    // when you pass a FormData object as the body.
   });
 }

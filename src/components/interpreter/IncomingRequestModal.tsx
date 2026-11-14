@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PhoneIncoming } from 'lucide-react';
 import { describeError } from '../../services/api';
 import {
@@ -25,16 +26,20 @@ interface Props {
 /**
  * Pop-up for an interpreter when a request is offered to them. It checks for offers while the
  * interpreter is signed in and shows the first one with a countdown. The interpreter can accept
- * or decline it (V2-010); neither takes them anywhere. An unanswered offer expires on the server
- * and moves on to the next interpreter.
+ * or decline it (V2-010). Declining takes them nowhere; accepting shows a Join Session button
+ * that opens the session lobby. An unanswered offer expires on the server and moves on to the
+ * next interpreter.
  */
 export function IncomingRequestModal({ pollMs = DEFAULT_POLL_MS }: Props) {
+  const navigate = useNavigate();
   const [offers, setOffers] = useState<IncomingOffer[]>([]);
   // Offers already answered or closed here, so the next check does not bring them back.
   const [handled, setHandled] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [accepted, setAccepted] = useState(false);
+  // The session the interpreter was just assigned to, for the Join Session button.
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
 
   // A failed check just leaves the pop-up as it is: it must never block the dashboard.
@@ -76,7 +81,16 @@ export function IncomingRequestModal({ pollMs = DEFAULT_POLL_MS }: Props) {
         <p className="modal__text">
           You are now assigned to this request. You are marked unavailable until you switch back on.
         </p>
-        <button className="modal__primary" type="button" onClick={() => setAccepted(false)}>
+        {sessionId && (
+          <button
+            className="modal__primary"
+            type="button"
+            onClick={() => navigate(`/live/interpreter/${sessionId}`)}
+          >
+            Join Session
+          </button>
+        )}
+        <button className="modal__secondary" type="button" onClick={() => setAccepted(false)}>
           Close
         </button>
       </Modal>
@@ -94,9 +108,12 @@ export function IncomingRequestModal({ pollMs = DEFAULT_POLL_MS }: Props) {
     setBusy(true);
     setError('');
     try {
-      await respondToOffer(offer.id, action);
+      const answer = await respondToOffer(offer.id, action);
       setHandled((ids) => [...ids, offer.id]);
-      if (action === 'accept') setAccepted(true);
+      if (action === 'accept') {
+        setSessionId(answer.requestId ?? null);
+        setAccepted(true);
+      }
     } catch (err) {
       // A 409 means the offer ran out; the next check drops it, and this shows why.
       setError(describeError(err));

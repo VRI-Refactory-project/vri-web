@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Bell,
-  CalendarDays,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -13,11 +12,19 @@ import {
   Save,
   Trash2,
   X,
+  Calendar as CalendarIcon, // Added for the new calendar design
 } from 'lucide-react';
 import { describeError } from '../../services/api';
-import { interpreterApi } from '../../services/interpreterApi';
+import { AvailabilitySaveError, interpreterApi } from '../../services/interpreterApi';
 import { useAuth } from '../../hooks/useAuth';
+import {
+  datesInRange,
+  formatShortDate,
+  rangeLengthDays,
+  validateDateRange,
+} from '../../lib/dateRange';
 import './AvailabilityPage.css';
+// import './AvailabilityPage.css';
 
 type DayName = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
 
@@ -125,15 +132,25 @@ export function AvailabilityPage() {
   const [editingDay, setEditingDay] = useState<DayName | null>(null);
   const [exceptionToDelete, setExceptionToDelete] = useState<string | null>(null);
 
+  // The range picked on the calendar: first click = start, second click = end.
+  const [rangeStart, setRangeStart] = useState<string | null>(null);
+  const [rangeEnd, setRangeEnd] = useState<string | null>(null);
+  // Set when the modal is waiting for the user to confirm replacing existing exceptions.
+  const [confirmReplace, setConfirmReplace] = useState(false);
+  // The exception opened with Edit, so it is not counted as an overlap with itself.
+  const [editingExceptionId, setEditingExceptionId] = useState<string | null>(null);
+
   const [month, setMonth] = useState(() => {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), 1);
   });
 
   const [selectedDate, setSelectedDate] = useState(toDateKey(new Date()));
+  const todayKey = toDateKey(new Date());
 
   const [draft, setDraft] = useState({
     date: toDateKey(new Date()),
+    endDate: toDateKey(new Date()),
     type: 'unavailable' as 'unavailable' | 'modified',
     start: '08:00',
     end: '17:00',
@@ -218,7 +235,30 @@ export function AvailabilityPage() {
 
       setNotice('Your weekly availability has been saved.');
     } catch (err) {
-      setError(describeError(err));
+      if (err instanceof AvailabilitySaveError) {
+        // The weekly hours were saved first. Say exactly which one-off dates were not.
+        const parts = [
+          `Your weekly hours were saved. ${
+            err.savedCount > 0
+              ? `${err.savedCount} exception date(s) were saved.`
+              : 'No exception dates were saved.'
+          }`,
+        ];
+        if (err.failedDates.length) {
+          parts.push(
+            `These dates could not be saved: ${err.failedDates.map(formatShortDate).join(', ')}.`,
+          );
+        }
+        if (err.failedRemovals.length) {
+          parts.push(
+            `These could not be removed: ${err.failedRemovals.map(formatShortDate).join(', ')}.`,
+          );
+        }
+        parts.push('Select Save changes to try again.');
+        setError(parts.join(' '));
+      } else {
+        setError(describeError(err));
+      }
     } finally {
       setSaving(false);
     }
@@ -242,9 +282,12 @@ export function AvailabilityPage() {
 
   const openAddDialog = () => {
     setEditingDay(null);
+    setEditingExceptionId(null);
+    setConfirmReplace(false);
 
     setDraft({
-      date: selectedDate,
+      date: rangeStart ?? selectedDate,
+      endDate: rangeEnd ?? rangeStart ?? selectedDate,
       type: 'unavailable',
       start: '08:00',
       end: '17:00',
@@ -259,6 +302,7 @@ export function AvailabilityPage() {
 
     setDraft({
       date: selectedDate,
+      endDate: selectedDate,
       type: item.enabled ? 'modified' : 'unavailable',
       start: item.start,
       end: item.end,
@@ -288,8 +332,9 @@ export function AvailabilityPage() {
       return;
     }
 
-    if (!draft.date) {
-      setError('Select a date for this exception.');
+    const problem = validateDateRange(draft.date, draft.endDate, todayKey);
+    if (problem) {
+      setError(problem);
       return;
     }
 
@@ -298,30 +343,79 @@ export function AvailabilityPage() {
       return;
     }
 
-    const exception: AvailabilityException = {
-      id: `exception-${Date.now()}`,
-      date: draft.date,
+    // Days that already have a different exception would be replaced: ask first.
+    if (overlapDates.length > 0 && !confirmReplace) {
+      setConfirmReplace(true);
+      return;
+    }
+
+    commitRange();
+  };
+
+  // Every day in the modal's range, and the ones that already have an exception.
+  const modalDates = modalOpen && !editingDay ? datesInRange(draft.date, draft.endDate) : [];
+  const overlapDates = modalDates.filter((date) =>
+    exceptions.some((item) => item.date === date && item.id !== editingExceptionId),
+  );
+
+  // Adds one exception per day in the range, replacing any that were already there.
+  const commitRange = () => {
+    const dates = datesInRange(draft.date, draft.endDate);
+    const covered = new Set(dates);
+    const note = draft.note.trim();
+
+    const added: AvailabilityException[] = dates.map((date) => ({
+      id: `exception-${date}`,
+      date,
       unavailable: draft.type === 'unavailable',
       ...(draft.type === 'modified' ? { start: draft.start, end: draft.end } : {}),
-      note: draft.note.trim(),
-    };
+      note,
+    }));
 
-    setExceptions((current) => [
-      ...current.filter((item) => item.date !== exception.date),
-      exception,
-    ]);
+    setExceptions((current) => [...current.filter((item) => !covered.has(item.date)), ...added]);
 
-    setSelectedDate(exception.date);
-    setMonth(new Date(`${exception.date}T12:00:00`));
+    setSelectedDate(draft.date);
+    setMonth(new Date(`${draft.date}T12:00:00`));
+    setRangeStart(null);
+    setRangeEnd(null);
+    setConfirmReplace(false);
+    setEditingExceptionId(null);
     setModalOpen(false);
-    setNotice('Exception added locally. Select Save changes to persist it.');
+    setNotice(
+      dates.length === 1
+        ? 'Exception added locally. Select Save changes to persist it.'
+        : `${dates.length} days added locally. Select Save changes to persist them.`,
+    );
+  };
+
+  // First click starts a range, second click ends it. Clicking again starts a new one.
+  const handleDayClick = (dateKey: string) => {
+    setError('');
+    setNotice('');
+    setSelectedDate(dateKey);
+
+    if (rangeStart === null || rangeEnd !== null) {
+      setRangeStart(dateKey);
+      setRangeEnd(null);
+      return;
+    }
+
+    const first = dateKey < rangeStart ? dateKey : rangeStart;
+    const last = dateKey < rangeStart ? rangeStart : dateKey;
+    const problem = validateDateRange(first, last, todayKey);
+    if (problem) {
+      setError(problem);
+      return;
+    }
+
+    setRangeStart(first);
+    setRangeEnd(last);
   };
 
   const selectedException = exceptions.find((item) => item.date === selectedDate);
 
   const calendarDays = useMemo(() => {
     const firstWeekday = new Date(month.getFullYear(), month.getMonth(), 1).getDay();
-
     const daysInMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
 
     return [
@@ -500,132 +594,181 @@ export function AvailabilityPage() {
         </section>
 
         <aside className="availability-panel exceptions-panel">
-          <h2>Exceptions</h2>
-          <p className="availability-panel-description">Dates when your normal schedule changes</p>
+          {/* PROFESSIONAL CALENDAR START */}
+          <div className="av-calendar-card">
+            <div className="av-cal-header">
+              <div>
+                <h3 className="av-cal-title">Exceptions</h3>
+                <p className="av-cal-subtitle">Dates when your normal schedule changes</p>
+              </div>
+            </div>
 
-          <div className="availability-calendar">
-            <div className="availability-calendar-heading">
+            <div className="av-cal-nav">
               <button
                 type="button"
-                className="availability-icon-button"
+                className="av-cal-nav-btn"
                 aria-label="Previous month"
                 onClick={() => changeMonth(-1)}
               >
-                <ChevronLeft size={20} />
+                <ChevronLeft size={18} />
               </button>
-
-              <strong>{monthLabel}</strong>
-
+              <span className="av-cal-month">{monthLabel}</span>
               <button
                 type="button"
-                className="availability-icon-button"
+                className="av-cal-nav-btn"
                 aria-label="Next month"
                 onClick={() => changeMonth(1)}
               >
-                <ChevronRight size={20} />
+                <ChevronRight size={18} />
               </button>
             </div>
 
-            <div className="availability-calendar-grid availability-calendar-weekdays">
+            <div className="av-cal-grid">
               {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
-                <span key={`${day}-${index}`}>{day}</span>
+                <div key={`header-${index}`} className="av-cal-day-header">
+                  {day}
+                </div>
               ))}
-            </div>
 
-            <div className="availability-calendar-grid">
               {calendarDays.map((day, index) => {
                 if (day === null) {
-                  return <span key={`blank-${index}`} />;
+                  return <div key={`blank-${index}`} />;
                 }
 
                 const dateKey = toDateKey(new Date(month.getFullYear(), month.getMonth(), day));
-
                 const exception = exceptions.find((item) => item.date === dateKey);
-                const selected = selectedDate === dateKey;
+                const isSelected = selectedDate === dateKey;
+                const isUnavailable = exception?.unavailable;
+                const isModified = exception && !exception.unavailable;
+                const inRange =
+                  rangeStart !== null &&
+                  rangeEnd !== null &&
+                  dateKey >= rangeStart &&
+                  dateKey <= rangeEnd;
+                const isRangeEdge = dateKey === rangeStart || dateKey === rangeEnd;
 
                 return (
                   <button
                     type="button"
                     key={dateKey}
-                    className={[
-                      'availability-calendar-day',
-                      selected ? 'is-selected' : '',
-                      exception?.unavailable ? 'is-unavailable' : '',
-                      exception && !exception.unavailable ? 'is-modified' : '',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
+                    className={`av-cal-day ${isSelected ? 'av-cal-day--selected' : ''} ${isUnavailable ? 'av-cal-day--unavailable' : ''} ${isModified ? 'av-cal-day--modified' : ''} ${inRange ? 'av-cal-day--in-range' : ''} ${isRangeEdge ? 'av-cal-day--range-edge' : ''}`}
+                    onClick={() => handleDayClick(dateKey)}
                     aria-label={`${formatDate(dateKey)}${exception ? ', has an exception' : ''}`}
-                    aria-pressed={selected}
-                    onClick={() => setSelectedDate(dateKey)}
                   >
                     {day}
-                    {exception && <span />}
+                    {isSelected && <span className="av-cal-day-dot"></span>}
                   </button>
                 );
               })}
             </div>
-          </div>
 
-          <div className="availability-legend">
-            <span>
-              <i className="legend-unavailable" /> Unavailable
-            </span>
-            <span>
-              <i className="legend-modified" /> Modified hours
-            </span>
-          </div>
+            <div className="av-cal-legend">
+              <div className="av-cal-legend-item">
+                <span className="av-cal-dot av-cal-dot--red"></span>
+                Unavailable
+              </div>
+              <div className="av-cal-legend-item">
+                <span className="av-cal-dot av-cal-dot--green"></span>
+                Modified hours
+              </div>
+            </div>
 
-          <div className="availability-selected-exception">
-            <CalendarDays size={22} />
-            <div>
-              <strong>{formatDate(selectedDate)}</strong>
-              <p>
+            {rangeStart && (
+              <div className="av-cal-range-info">
+                <span>
+                  {rangeEnd
+                    ? `${formatShortDate(rangeStart)} – ${formatShortDate(rangeEnd)} (${rangeLengthDays(rangeStart, rangeEnd)} days)`
+                    : `From ${formatShortDate(rangeStart)}. Click an end date.`}
+                </span>
+                <button
+                  type="button"
+                  className="av-cal-range-clear"
+                  onClick={() => {
+                    setRangeStart(null);
+                    setRangeEnd(null);
+                  }}
+                >
+                  Clear
+                </button>
+              </div>
+            )}
+
+            <div className="av-cal-selected-info">
+              <div className="av-cal-info-header">
+                <CalendarIcon size={18} className="av-cal-info-icon" />
+                <h4>{formatDate(selectedDate)}</h4>
+              </div>
+              <p className="av-cal-info-text">
                 {selectedException
                   ? selectedException.unavailable
                     ? 'Unavailable all day'
                     : `Modified hours: ${formatTime(selectedException.start ?? '08:00')} – ${formatTime(selectedException.end ?? '17:00')}`
                   : 'No exception for this date'}
               </p>
-
-              {selectedException?.note && <small>{selectedException.note}</small>}
+              {selectedException?.note && (
+                <p className="av-cal-info-text" style={{ marginTop: '4px', fontStyle: 'italic' }}>
+                  {selectedException.note}
+                </p>
+              )}
             </div>
+
+            {selectedException && (
+              <div
+                className="availability-exception-actions"
+                style={{ marginBottom: '16px', padding: '0 16px' }}
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDraft({
+                      date: selectedException.date,
+                      endDate: selectedException.date,
+                      type: selectedException.unavailable ? 'unavailable' : 'modified',
+                      start: selectedException.start ?? '08:00',
+                      end: selectedException.end ?? '17:00',
+                      note: selectedException.note ?? '',
+                    });
+                    setEditingDay(null);
+                    setEditingExceptionId(selectedException.id);
+                    setConfirmReplace(false);
+                    setModalOpen(true);
+                  }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#6d28d9',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                    fontSize: '13px',
+                  }}
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  className="is-danger"
+                  onClick={() => setExceptionToDelete(selectedException.id)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#ef4444',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                    fontSize: '13px',
+                    marginLeft: '16px',
+                  }}
+                >
+                  Remove
+                </button>
+              </div>
+            )}
+
+            <button type="button" className="av-cal-add-btn" onClick={openAddDialog}>
+              <Plus size={18} />
+              Add exception for a date
+            </button>
           </div>
-
-          {selectedException && (
-            <div className="availability-exception-actions">
-              <button
-                type="button"
-                onClick={() => {
-                  setDraft({
-                    date: selectedException.date,
-                    type: selectedException.unavailable ? 'unavailable' : 'modified',
-                    start: selectedException.start ?? '08:00',
-                    end: selectedException.end ?? '17:00',
-                    note: selectedException.note ?? '',
-                  });
-
-                  setEditingDay(null);
-                  setModalOpen(true);
-                }}
-              >
-                Edit
-              </button>
-
-              <button
-                type="button"
-                className="is-danger"
-                onClick={() => setExceptionToDelete(selectedException.id)}
-              >
-                Remove
-              </button>
-            </div>
-          )}
-
-          <button type="button" className="availability-add-exception" onClick={openAddDialog}>
-            <Plus size={20} />
-            Add exception for a date
-          </button>
+          {/* PROFESSIONAL CALENDAR END */}
         </aside>
       </div>
 
@@ -668,20 +811,44 @@ export function AvailabilityPage() {
 
             <div className="availability-modal-body">
               {!editingDay && (
-                <label className="availability-form-field">
-                  <span>Date</span>
-                  <input
-                    type="date"
-                    value={draft.date}
-                    onChange={(event) =>
-                      setDraft((current) => ({
-                        ...current,
-                        date: event.target.value,
-                      }))
-                    }
-                    required
-                  />
-                </label>
+                <div className="availability-date-range">
+                  <label className="availability-form-field">
+                    <span>Start date</span>
+                    <input
+                      type="date"
+                      min={todayKey}
+                      value={draft.date}
+                      onChange={(event) =>
+                        setDraft((current) => ({
+                          ...current,
+                          date: event.target.value,
+                          // Keep the end on or after the new start.
+                          endDate:
+                            current.endDate < event.target.value
+                              ? event.target.value
+                              : current.endDate,
+                        }))
+                      }
+                      required
+                    />
+                  </label>
+
+                  <label className="availability-form-field">
+                    <span>End date</span>
+                    <input
+                      type="date"
+                      min={draft.date || todayKey}
+                      value={draft.endDate}
+                      onChange={(event) =>
+                        setDraft((current) => ({
+                          ...current,
+                          endDate: event.target.value,
+                        }))
+                      }
+                      required
+                    />
+                  </label>
+                </div>
               )}
 
               <fieldset className="availability-choice-group">
@@ -777,6 +944,13 @@ export function AvailabilityPage() {
                 </label>
               )}
 
+              {confirmReplace && (
+                <p className="availability-modal-error" role="alert">
+                  These dates already have an exception and will be replaced:{' '}
+                  {overlapDates.map(formatShortDate).join(', ')}.
+                </p>
+              )}
+
               {error && (
                 <p className="availability-modal-error" role="alert">
                   {error}
@@ -785,18 +959,45 @@ export function AvailabilityPage() {
             </div>
 
             <div className="availability-modal-footer">
-              <button
-                type="button"
-                className="availability-secondary-button"
-                onClick={() => setModalOpen(false)}
-              >
-                Cancel
-              </button>
+              {confirmReplace ? (
+                <>
+                  <button
+                    type="button"
+                    className="availability-secondary-button"
+                    onClick={() => setConfirmReplace(false)}
+                  >
+                    Back
+                  </button>
 
-              <button type="button" className="availability-primary-button" onClick={saveDialog}>
-                <Check size={17} />
-                Save
-              </button>
+                  <button
+                    type="button"
+                    className="availability-primary-button"
+                    onClick={commitRange}
+                  >
+                    <Check size={17} />
+                    Replace and add
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    className="availability-secondary-button"
+                    onClick={() => setModalOpen(false)}
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="button"
+                    className="availability-primary-button"
+                    onClick={saveDialog}
+                  >
+                    <Check size={17} />
+                    Save
+                  </button>
+                </>
+              )}
             </div>
           </section>
         </div>

@@ -5,9 +5,6 @@ import { needsEmailVerification } from '../../features/auth/emailGate';
 import { useAuth } from '../../hooks/useAuth';
 import './VerifyEmailPage.css';
 
-// IMPORT THE LOGO HERE (from src/assets)
-import logoIcon from '../../assets/no_bg.png';
-
 const safePath = (value: unknown): string | null =>
   typeof value === 'string' && value.startsWith('/') && !value.startsWith('//') ? value : null;
 
@@ -17,27 +14,22 @@ export function VerifyEmailPage() {
 
   const storedNext = sessionStorage.getItem('nextAfterVerification');
   const stateNext = safePath((location.state as { next?: unknown } | null)?.next);
-  let next = safePath(storedNext) ?? stateNext;
+  const next = safePath(storedNext) ?? stateNext;
 
   if (!session) return <Navigate to="/sign-in" replace />;
 
   if (!needsEmailVerification(session.user)) {
-    if (!next && session.user.role === 'institution') {
-      next = '/register/institution/upload-license';
+    // If they are an institution, force them to upload the license
+    if (session.user.role === 'institution') {
+      return <Navigate to="/register/institution/upload-license" replace />;
     }
 
     sessionStorage.removeItem('nextAfterVerification');
-
     return <Navigate to={next ?? dashboardPathFor(session.user.role)} replace />;
   }
 
   return (
     <main className="verify-page">
-      {/* USE THE IMPORTED LOGO VARIABLE HERE */}
-      <div className="verify-logo">
-        <img src={logoIcon} alt="SignConnect" />
-      </div>
-
       <VerifyEmailModal required onSignOut={logout} />
     </main>
   );

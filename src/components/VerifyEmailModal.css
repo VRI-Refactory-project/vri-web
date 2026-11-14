@@ -242,3 +242,14 @@
 .modal:has(.verify-modal) .modal__header {
   display: none !important;
 }
+
+/* ---------- Code countdown ---------- */
+.verify-modal__timer {
+  margin: -10px 0 18px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.verify-modal__timer--expired {
+  color: #b91c1c;
+}

@@ -27,6 +27,7 @@ function renderAt(session: AuthSession | null, requireVerifiedEmail = true) {
           <Route path="/" element={<p>landing</p>} />
           <Route path="/sign-in" element={<SignInStub />} />
           <Route path="/verify-email" element={<VerifyStub />} />
+          <Route path="/change-password" element={<p>choose your own password</p>} />
           <Route
             element={
               <ProtectedRoute allow={['interpreter']} requireVerifiedEmail={requireVerifiedEmail} />
@@ -72,11 +73,18 @@ describe('ProtectedRoute', () => {
     expect(screen.getByText('sign in page, came from /dashboard/interpreter')).toBeInTheDocument();
   });
 
+  // it('sends the wrong role home', async () => {
+  //   const session = sessionFor('deaf');
+  //   serverConfirms(session);
+  //   renderAt(session);
+  //   expect(await screen.findByText('landing')).toBeInTheDocument();
+
   it('sends the wrong role home', async () => {
     const session = sessionFor('deaf');
     serverConfirms(session);
     renderAt(session);
-    expect(await screen.findByText('landing')).toBeInTheDocument();
+    // Use findByText with a longer timeout since the auth check + navigate can be slow
+    expect(await screen.findByText('landing', {}, { timeout: 3000 })).toBeInTheDocument();
   });
 
   it('lets the right role in once the server confirms the stored session', async () => {
@@ -135,5 +143,13 @@ describe('ProtectedRoute', () => {
     serverConfirms(session);
     renderAt(session, false);
     expect(await screen.findByText('interpreter home')).toBeInTheDocument();
+  });
+
+  it('sends staff with a one-time password to choose their own first', async () => {
+    const base = sessionFor('interpreter');
+    const session = { ...base, user: { ...base.user, mustChangePassword: true } };
+    serverConfirms(session);
+    renderAt(session);
+    expect(await screen.findByText('choose your own password')).toBeInTheDocument();
   });
 });

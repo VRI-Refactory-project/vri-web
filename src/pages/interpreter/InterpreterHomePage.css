@@ -4,7 +4,6 @@
   color: #1f2937;
 }
 
-/* TOP NAVIGATION BAR */
 .ih-topbar {
   display: flex;
   align-items: center;
@@ -53,42 +52,6 @@
   border: 2px solid transparent;
 }
 
-.ih-user-profile {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-}
-
-.ih-avatar-sm {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.ih-user-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.ih-user-name {
-  font-size: 13px;
-  font-weight: 700;
-  color: #382c77;
-}
-
-.ih-user-role {
-  font-size: 11px;
-  color: #7a44d7;
-}
-
-.ih-chevron-down {
-  color: #9ca3af;
-  margin-left: 2px;
-}
-
-/* --- MAIN LAYOUT GRID --- */
 .ih-content-wrapper {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 320px;
@@ -106,7 +69,7 @@
 
 .ih-dashboard-split {
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
+  grid-template-columns: 1.1fr 0.9fr;
   gap: 24px;
   align-items: start;
 }
@@ -122,7 +85,6 @@
   min-width: 0;
 }
 
-/* --- WELCOME BANNER --- */
 .ih-banner {
   display: flex;
   align-items: stretch;
@@ -155,7 +117,6 @@
   letter-spacing: -0.03em;
 }
 
-/* NEW: Image Container Styles */
 .ih-banner-image-container {
   flex: 1;
   position: relative;
@@ -170,7 +131,6 @@
   height: 100%;
   object-fit: cover;
   object-position: center left;
-  /* This mask creates the fading effect so the image blends into the purple background */
   mask-image: linear-gradient(to right, transparent, black 30%);
   -webkit-mask-image: linear-gradient(to right, transparent, black 30%);
 }
@@ -195,10 +155,9 @@
   line-height: 1.5;
 }
 
-/* --- STATS ROW --- */
 .ih-stats-row {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -281,7 +240,6 @@
   color: #10b981;
 }
 
-/* --- GENERIC SECTION HEADERS --- */
 .ih-section {
   min-width: 0;
 }
@@ -330,7 +288,6 @@
   transform: translateX(2px);
 }
 
-/* --- GENERIC CARDS --- */
 .ih-card {
   background: #fff;
   border: none;
@@ -338,7 +295,6 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
 }
 
-/* --- NEXT SESSION CARD (UPDATED LAYOUT) --- */
 .ih-next-session-wrapper {
   padding: 20px;
   border-radius: 16px;
@@ -439,6 +395,27 @@
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(109, 40, 217, 0.3);
 }
+/* "Join session" is a link, so it needs button-like layout. */
+a.ih-btn-primary {
+  display: inline-block;
+  text-decoration: none;
+}
+
+/* Initial on a coloured circle, for a person with no photo. */
+.ih-avatar-initial {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3e8ff;
+  color: #6d28d9;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.ih-empty-note {
+  margin: 0;
+  padding: 8px 0;
+}
 
 .ih-btn-secondary {
   border: 1px solid #e5e7eb;
@@ -452,7 +429,6 @@
   transition: all 0.2s ease;
 }
 
-/* --- LIST ITEMS (Upcoming Sessions) --- */
 .ih-list-card-transparent {
   display: flex;
   flex-direction: column;
@@ -504,13 +480,14 @@
   color: #7d7d8b;
 }
 
-/* --- RECENT ACTIVITY WRAPPER & TIMELINE --- */
 .ih-activity-wrapper {
   padding: 20px;
   border-radius: 16px;
   border: 1px solid #f1edf9;
   background: #ffffff;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
 }
 
 .ih-activity-wrapper .ih-section-header {
@@ -523,30 +500,41 @@
   display: flex;
   flex-direction: column;
   padding: 0;
-  height: 100%;
+  max-height: 380px;
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 
-/* The row */
+.ih-activity-card::-webkit-scrollbar {
+  width: 6px;
+}
+.ih-activity-card::-webkit-scrollbar-track {
+  background: transparent;
+}
+.ih-activity-card::-webkit-scrollbar-thumb {
+  background-color: #e2e8f0;
+  border-radius: 10px;
+}
+
 .ih-timeline-item {
   display: flex;
   align-items: flex-start;
   position: relative;
-  padding-bottom: 20px; /* Tighter spacing */
+  padding-bottom: 20px;
 }
 
 .ih-timeline-item:last-child {
   padding-bottom: 0;
 }
 
-/* The vertical line */
 .ih-timeline-item::before {
   content: '';
   position: absolute;
-  top: 14px; /* Starts right below the first dot */
-  left: 5.5px; /* Perfectly centers an 11px dot */
+  top: 14px;
+  left: 5.5px;
   bottom: -10px;
   width: 2px;
-  background-color: #e2e8f0; /* Slightly softer grey */
+  background-color: #e2e8f0;
   z-index: 0;
 }
 
@@ -554,20 +542,18 @@
   display: none;
 }
 
-/* The colored dot */
 .ih-timeline-marker {
   width: 11px;
   height: 11px;
   border-radius: 50%;
   margin-top: 5px;
-  margin-right: 14px; /* Brings the dot closer to the avatar */
+  margin-right: 14px;
   flex-shrink: 0;
   z-index: 1;
 }
 
-/* The avatar */
 .ih-timeline-avatar {
-  width: 34px; /* Slightly smaller to match target */
+  width: 34px;
   height: 34px;
   border-radius: 50%;
   object-fit: cover;
@@ -576,7 +562,24 @@
   z-index: 1;
 }
 
-/* The text */
+/* Circle with the first letter, used when the person has no photo */
+.ih-timeline-avatar-initial {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3e8ff;
+  color: #6d28d9;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* The line between items goes through the middle of the avatar */
+.ih-timeline-item-avatar::before {
+  top: 34px;
+  left: 16px;
+  bottom: -4px;
+}
+
 .ih-timeline-content {
   flex: 1;
   padding-top: 2px;
@@ -584,7 +587,7 @@
 
 .ih-timeline-content p {
   margin: 0 0 4px 0;
-  color: #1e293b; /* Darker text */
+  color: #1e293b;
   font-size: 13px;
   line-height: 1.4;
 }
@@ -594,7 +597,6 @@
   font-size: 12px;
 }
 
-/* Dot colors */
 .bg-green {
   background-color: #10b981;
 }
@@ -604,8 +606,10 @@
 .bg-blue {
   background-color: #3b82f6;
 }
+.bg-gray-300 {
+  background-color: #d1d5db;
+}
 
-/* --- RIGHT SIDEBAR (Availability & Calendar) --- */
 .ih-right-column {
   min-width: 0;
   display: flex;
@@ -614,10 +618,15 @@
 }
 
 .ih-availability-card {
-  padding: 14px 12px 12px;
+  height: 220px; /* same height as the banner */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* status row at the top, button at the bottom */
+  padding: 20px 16px 16px;
   background: #fbf9ff;
   border-color: #e8e1f3;
-  margin-top: 20px;
+  /* margin-top: 20px;  <- delete this line */
 }
 
 .ih-availability-row {
@@ -655,7 +664,15 @@
   background: #d9d7ea;
   cursor: pointer;
 }
+.ih-availability-dot-off {
+  background: #b8b5c9;
+  box-shadow: 0 0 0 3px rgba(184, 181, 201, 0.2);
+}
 
+.ih-availability-toggle:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 .ih-availability-toggle.active {
   background: #6d4ad8;
   box-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
@@ -694,6 +711,10 @@
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
+  display: block;
+  box-sizing: border-box;
+  text-align: center;
+  text-decoration: none;
 }
 
 .ih-calendar-card {
@@ -857,7 +878,6 @@
   font-weight: 700;
 }
 
-/* --- RESPONSIVE --- */
 @media (max-width: 1200px) {
   .ih-dashboard-split {
     grid-template-columns: 1fr;
@@ -868,21 +888,14 @@
   .ih-content-wrapper {
     grid-template-columns: 1fr;
   }
-
   .ih-right-column {
     flex-direction: row;
     flex-wrap: wrap;
   }
-
   .ih-right-column > * {
     flex: 1;
     min-width: 300px;
-  }
-}
-
-@media (max-width: 860px) {
-  .ih-stats-row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    height: auto;
   }
 }
 
@@ -890,15 +903,61 @@
   .ih-stats-row {
     grid-template-columns: 1fr;
   }
-
   .ih-list-item {
     grid-template-columns: auto 1fr auto;
   }
-
   .ih-list-time {
     grid-column: 2 / -1;
     justify-self: start;
     text-align: left;
     margin-top: 8px;
+  }
+}
+
+/* Recent sessions (right column): a name, time and length on the left, a Details link on the right */
+.ih-recent-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid #f1edf9;
+}
+
+.ih-recent-item:last-child {
+  border-bottom: none;
+}
+
+a.ih-recent-details {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #f3e8ff;
+  color: #6d28d9;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .ih-content-wrapper {
+    grid-template-columns: 1fr !important;
+  }
+  .ih-dashboard-split {
+    grid-template-columns: 1fr !important;
+  }
+  .ih-right-column {
+    flex-direction: column !important;
+  }
+  .ih-stats-row {
+    grid-template-columns: 1fr !important;
+  }
+  .ih-banner {
+    flex-direction: column !important;
+    height: auto !important;
+  }
+  .ih-banner-text {
+    max-width: 100% !important;
+    padding: 24px !important;
   }
 }

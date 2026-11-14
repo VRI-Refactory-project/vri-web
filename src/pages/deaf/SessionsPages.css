@@ -154,6 +154,7 @@ a.sh-card:focus-visible {
   background: #eceff3;
   color: #475569;
 }
+.sh-pill--completed,
 .sh-pill--matched {
   background: #e1f5ea;
   color: #15803d;
@@ -176,4 +177,84 @@ a.sh-card:focus-visible {
   border-radius: 12px;
   background: #fdecec;
   color: #7f1d1d;
+}
+/* Browser notifications card on the Settings page */
+.sh-notify {
+  margin-top: 12px;
+}
+.sh-notify-error {
+  color: #b42318;
+}
+.sh-notify-button {
+  flex: none;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 10px;
+  background: #3b2579;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.sh-notify-button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* Session details (shared by the deaf and staff areas) */
+.sdp-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid #ece9f7;
+  border-radius: 16px;
+}
+.sdp-who {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.sdp-who div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sdp-who span:not(.sh-card-icon) {
+  font-size: 13px;
+  color: #64748b;
+}
+.sdp-rows {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+.sdp-rows > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  border-top: 1px solid #f1f0f7;
+}
+.sdp-rows dt {
+  color: #64748b;
+  font-size: 13px;
+}
+.sdp-rows dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+}
+
+/* History rows are links to the session's details */
+.sh-row--link {
+  color: inherit;
+  text-decoration: none;
+}
+.sh-row--link:hover {
+  background: #f8f7ff;
+}
+.sh-list li:last-child .sh-row {
+  border-bottom: 0;
 }

@@ -214,6 +214,38 @@ body {
   overflow: hidden;
 }
 
+/* NEW: The container for the image */
+.hero-image-container {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 45%; /* Takes up the right 45% of the banner */
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  pointer-events: none; /* So the image doesn't block clicking the buttons */
+}
+
+/* NEW: The image itself with a fade effect */
+.hero-banner-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center left; /* Keeps the person in view */
+
+  /* This creates a smooth fade from left to right */
+  mask-image: linear-gradient(to right, transparent, black 40%);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 40%);
+}
+
+/* NEW: Make sure the text stays above the image */
+.hero-content {
+  position: relative;
+  z-index: 2; /* Ensures text and buttons are clickable and readable */
+  max-width: 60%; /* Prevents text from spilling into the image area */
+}
+
 .hero-tag {
   font-size: 11px;
   font-weight: 700;
@@ -331,11 +363,16 @@ body {
   gap: 16px;
   cursor: pointer;
   text-align: left;
-  transition: border-color 0.2s;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .action-card:hover {
-  border-color: var(--primary);
+  transform: translateX(6px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08); /* Adds the floating shadow */
+  border-color: #d8b4fe; /* Changes the border to light purple */
 }
 
 .action-icon {
@@ -384,6 +421,16 @@ body {
   padding: 20px;
   display: flex;
   flex-direction: column;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px); /* Moves the card up by 5 pixels */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08); /* Adds a soft shadow to make it look like it's floating */
+  border-color: #d8b4fe; /* Optional: changes the border to a light purple on hover */
 }
 
 .stat-label {
@@ -422,13 +469,21 @@ body {
 }
 
 .view-all {
-  color: var(--primary);
-  font-size: 14px;
-  font-weight: 500;
-  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  color: #3b2579; /* or your brand purple */
+  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 4px;
+  font-weight: 600;
+}
+
+.view-all:hover {
+  text-decoration: underline;
 }
 
 /* ── SESSIONS ────────────────────────────────────────────── */
@@ -643,6 +698,30 @@ body {
   display: none;
 }
 
+.stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+.stat-icon {
+  color: #8b5cf6;
+  background-color: #f3e8ff;
+  padding: 6px;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+}
+
+/* Make sure the stat-label sits correctly inside the new flex container */
+.stat-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 0;
+}
+
 /* ── RESPONSIVE ──────────────────────────────────────────── */
 @media (max-width: 1024px) {
   .stats-grid {
@@ -693,5 +772,185 @@ body {
   }
   .hero-illustration {
     display: none;
+  }
+}
+
+/* Ensure the button looks exactly like the old link */
+button.view-all {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+}
+button.view-all:hover {
+  opacity: 0.8;
+}
+
+/* --- Upcoming Sessions Grid --- */
+.session-grid {
+  display: grid;
+  /* This automatically creates 2 columns on desktop, 1 on mobile */
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.session-card {
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid #ece9f7;
+  border-radius: 16px;
+  padding: 20px;
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+  cursor: pointer;
+}
+
+.session-card:hover {
+  box-shadow: 0 8px 24px rgba(59, 37, 121, 0.08);
+  transform: translateY(-3px);
+  border-color: #d8d0f0;
+}
+
+/* Top row (Date + Badge) */
+.session-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.session-date-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f4f1fa;
+  color: #3b2579;
+  border-radius: 12px;
+  padding: 8px 12px;
+  min-width: 56px;
+}
+
+.session-date-month {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.session-date-day {
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+/* Middle Details */
+.session-details {
+  flex: 1;
+  margin-bottom: 20px;
+}
+
+.session-details h4 {
+  margin: 0 0 6px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.session-details p {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Bottom Footer */
+.session-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 14px;
+  border-top: 1px solid #f1f0f7;
+  color: #3b2579;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.session-card-footer .session-arrow {
+  color: #3b2579;
+  transition: transform 0.2s ease;
+}
+
+.session-card:hover .session-card-footer .session-arrow {
+  transform: translateX(4px); /* Arrow slides right on hover */
+}
+
+/* --- Dynamic Badges --- */
+.badge {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.badge-pending {
+  background: #fef3c7; /* Soft yellow */
+  color: #b45309; /* Dark amber */
+}
+
+.badge-confirmed {
+  background: #dcfce7; /* Soft green */
+  color: #15803d; /* Dark green */
+}
+
+.badge-cancelled {
+  background: #fee2e2; /* Soft red */
+  color: #b91c1c; /* Dark red */
+}
+
+@media (max-width: 900px) {
+  .dashboard-layout {
+    flex-direction: column !important;
+  }
+  .sidebar {
+    width: 100% !important;
+    min-height: auto !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    padding: 16px !important;
+    position: relative !important;
+  }
+  .main-content {
+    padding: 16px !important;
+    margin: 0 !important;
+  }
+  .stats-grid,
+  .interpreter-grid,
+  .quick-actions {
+    grid-template-columns: 1fr !important;
+  }
+  .hero-banner {
+    flex-direction: column !important;
+    height: auto !important;
+    padding: 24px !important;
+  }
+  .hero-content {
+    max-width: 100% !important;
   }
 }

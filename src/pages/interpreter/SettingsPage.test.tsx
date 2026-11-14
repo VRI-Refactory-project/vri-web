@@ -1,8 +1,19 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import * as notificationSettings from '../../features/interpreter/notificationSettings';
+import { DEFAULT_SETTINGS } from '../../features/interpreter/settings';
 import { InterpreterSettingsPage } from './SettingsPage';
+
+vi.mock('../../features/interpreter/notificationSettings');
+const mocked = vi.mocked(notificationSettings);
+
+beforeEach(() => {
+  mocked.loadNotificationSettings.mockResolvedValue(DEFAULT_SETTINGS.notifications);
+  // The server answers with what it was sent.
+  mocked.saveNotificationSettings.mockImplementation(async (value) => value);
+});
 
 const renderPage = () =>
   render(

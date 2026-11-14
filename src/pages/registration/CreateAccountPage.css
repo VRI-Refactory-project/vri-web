@@ -394,3 +394,102 @@ select.ca-input {
   border-radius: 2px;
   transition: width 0.2s linear;
 }
+
+/* --- Specialisation picker: removable chips + menu --- */
+.ca-spec {
+  position: relative;
+}
+
+.ca-chips {
+  list-style: none;
+  margin: 0 0 0.5rem;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.ca-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.4rem 0.3rem 0.7rem;
+  background: var(--ca-bg-input);
+  border: 1px solid var(--ca-purple);
+  border-radius: 999px;
+  color: var(--ca-purple);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.ca-chip-remove {
+  display: grid;
+  place-items: center;
+  width: 1.2rem;
+  height: 1.2rem;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ca-purple);
+  cursor: pointer;
+}
+
+.ca-chip-remove:hover,
+.ca-chip-remove:focus-visible {
+  background: var(--ca-purple);
+  color: #fff;
+}
+
+.ca-spec .ca-input-wrap + .ca-input-wrap {
+  margin-top: 0.5rem;
+}
+
+.ca-spec-trigger {
+  text-align: left;
+  cursor: pointer;
+  color: var(--ca-text-muted);
+}
+
+.ca-spec-chevron {
+  position: absolute;
+  right: 1rem;
+  color: var(--ca-text-muted);
+  pointer-events: none;
+  display: grid;
+}
+
+.ca-spec-menu {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0.4rem;
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: #fff;
+  border: 1px solid var(--ca-input-border);
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(56, 44, 119, 0.12);
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.ca-spec-option {
+  width: 100%;
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.875rem;
+  color: var(--ca-text);
+  cursor: pointer;
+}
+
+.ca-spec-option:hover,
+.ca-spec-option:focus-visible {
+  background: var(--ca-bg-input);
+  color: var(--ca-purple);
+}

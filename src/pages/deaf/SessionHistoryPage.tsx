@@ -1,4 +1,4 @@
-import { ChevronLeft, Search, Video } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, Video } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -12,10 +12,18 @@ import { describeError } from '../../services/api';
 import { getMySessions, type HistoryItem } from '../../services/mySessions';
 import './SessionsPages.css';
 
-const FILTERS: StatusFilter[] = ['all', 'matched', 'waiting', 'cancelled', 'missed'];
+const FILTERS: StatusFilter[] = ['all', 'matched', 'completed', 'waiting', 'cancelled', 'missed'];
 
 /** The person's past requests with who answered them, searchable and filterable by status. */
-export function SessionHistoryPage() {
+export function SessionHistoryPage({
+  backTo = '/dashboard/deaf/sessions',
+  detailsBase = '/dashboard/deaf/sessions',
+}: {
+  /** Where Back goes. */
+  backTo?: string;
+  /** Rows open `${detailsBase}/<id>`. */
+  detailsBase?: string;
+}) {
   const [items, setItems] = useState<HistoryItem[] | null>(null);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
@@ -38,7 +46,7 @@ export function SessionHistoryPage() {
 
   return (
     <div className="sh-page">
-      <Link to="/dashboard/deaf/sessions" className="sh-back">
+      <Link to={backTo} className="sh-back">
         <ChevronLeft size={18} aria-hidden /> Back
       </Link>
       <header className="sh-header">
@@ -86,18 +94,23 @@ export function SessionHistoryPage() {
       {shown.length > 0 && (
         <ul className="sh-list">
           {shown.map((item) => (
-            <li key={item.id} className="sh-row">
-              <span className="sh-card-icon">
-                <Video size={20} aria-hidden />
-              </span>
-              <span className="sh-row-text">
-                <strong>{titleFor(item)}</strong>
-                <span>
-                  {formatWhen(item.createdAt)}
-                  {item.emergency ? ' · Emergency' : ''}
+            <li key={item.id}>
+              <Link to={`${detailsBase}/${item.id}`} className="sh-row sh-row--link">
+                <span className="sh-card-icon">
+                  <Video size={20} aria-hidden />
                 </span>
-              </span>
-              <span className={`sh-pill sh-pill--${item.status}`}>{STATUS_LABEL[item.status]}</span>
+                <span className="sh-row-text">
+                  <strong>{titleFor(item)}</strong>
+                  <span>
+                    {formatWhen(item.createdAt)}
+                    {item.emergency ? ' · Emergency' : ''}
+                  </span>
+                </span>
+                <span className={`sh-pill sh-pill--${item.status}`}>
+                  {STATUS_LABEL[item.status]}
+                </span>
+                <ChevronRight size={16} aria-hidden />
+              </Link>
             </li>
           ))}
         </ul>

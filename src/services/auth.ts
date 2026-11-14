@@ -1,5 +1,5 @@
 import { api } from './api';
-import { toRole } from '../features/auth/roles';
+import { toInstitutionRole, toRole } from '../features/auth/roles';
 import type { AuthSession, AuthUser } from '../types';
 
 // Shapes returned by the Django API (apps/accounts: LoginView, RefreshView, UserSerializer).
@@ -11,6 +11,7 @@ interface ApiUser {
   role: string;
   must_change_password: boolean;
   email_verified?: boolean;
+  institution_role?: string | null;
 }
 
 export interface LoginResponse {
@@ -32,6 +33,7 @@ export function toAuthUser(user: ApiUser): AuthUser {
     mustChangePassword: user.must_change_password,
     email: user.email,
     emailVerified: user.email_verified,
+    institutionRole: toInstitutionRole(user.institution_role),
   };
 }
 
@@ -78,6 +80,24 @@ export const refreshAccessToken = (refresh: string) =>
  */
 export async function getCurrentUser(): Promise<AuthUser> {
   return toAuthUser(await api<ApiUser>('/api/v1/auth/me/'));
+}
+
+export interface MyAccount {
+  name: string;
+  email: string | null;
+  emailVerified: boolean;
+  phone: string;
+}
+
+/** The signed-in person's contact details, for the Profile page. */
+export async function getMyAccount(): Promise<MyAccount> {
+  const user = await api<ApiUser>('/api/v1/auth/me/');
+  return {
+    name: user.full_name,
+    email: user.email,
+    emailVerified: Boolean(user.email_verified),
+    phone: user.phone_number,
+  };
 }
 
 /** Cancels the refresh token on the server. Errors are ignored: the person is signed out here either way. */

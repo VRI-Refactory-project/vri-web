@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowLeft, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { NotificationsCard } from '../../components/interpreter/settings/NotificationsCard';
@@ -6,6 +6,11 @@ import { PreferencesCard } from '../../components/interpreter/settings/Preferenc
 import { PrivacyCard } from '../../components/interpreter/settings/PrivacyCard';
 import { SecurityCard } from '../../components/interpreter/settings/SecurityCard';
 import { INTERPRETER_BASE } from '../../features/interpreter/navigation';
+import {
+  loadNotificationSettings,
+  saveNotificationSettings,
+} from '../../features/interpreter/notificationSettings';
+import { describeError } from '../../services/api';
 import {
   DEFAULT_SETTINGS,
   sameSettings,
@@ -21,22 +26,53 @@ export function InterpreterSettingsPage() {
   const [saved, setSaved] = useState<InterpreterSettings>(DEFAULT_SETTINGS);
   const [settings, setSettings] = useState<InterpreterSettings>(DEFAULT_SETTINGS);
   const [justSaved, setJustSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  // Show the notification choices the person saved before. If they cannot be loaded, the page
+  // simply starts from the defaults.
+  useEffect(() => {
+    let cancelled = false;
+    loadNotificationSettings().then(
+      (notifications) => {
+        if (cancelled) return;
+        setSaved((current) => ({ ...current, notifications }));
+        setSettings((current) => ({ ...current, notifications }));
+      },
+      () => {},
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const hasChanges = !sameSettings(settings, saved);
 
   function updateGroup<G extends SettingsGroup>(group: G, value: InterpreterSettings[G]) {
     setSettings((current) => ({ ...current, [group]: value }));
     setJustSaved(false);
+    setSaveError(null);
   }
 
   const discardChanges = () => setSettings(saved);
 
-  const savePreferences = () => {
-    // Static for now: kept until the page is reloaded. When the settings endpoint exists,
-    // send `settings` to it here and only then mark them saved.
-    setSaved(settings);
-    setJustSaved(true);
-  };
+  // Only the notification choices are saved on the server so far. Privacy and account preferences
+  // are kept until the page is reloaded; when their endpoints exist, save them here too.
+  async function savePreferences() {
+    setSaving(true);
+    setSaveError(null);
+    try {
+      const notifications = await saveNotificationSettings(settings.notifications);
+      const next = { ...settings, notifications };
+      setSaved(next);
+      setSettings(next);
+      setJustSaved(true);
+    } catch (err) {
+      setSaveError(describeError(err));
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <div className="is-page">
@@ -66,6 +102,11 @@ export function InterpreterSettingsPage() {
       </div>
 
       <footer className="is-actions">
+        {saveError && (
+          <p className="is-notice is-notice--error" role="alert">
+            {saveError}
+          </p>
+        )}
         {justSaved && (
           <p className="is-notice" role="status">
             Preferences saved.
@@ -77,8 +118,8 @@ export function InterpreterSettingsPage() {
         <button
           type="button"
           className="is-button is-button--primary"
-          onClick={savePreferences}
-          disabled={!hasChanges}
+          onClick={() => void savePreferences()}
+          disabled={!hasChanges || saving}
         >
           <Check size={18} aria-hidden="true" />
           Save preferences

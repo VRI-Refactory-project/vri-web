@@ -7,9 +7,21 @@ export const setAuthToken = (token: string | null) => {
 
 export class ApiError extends Error {
   status: number;
-  constructor(status: number, message: string) {
+  body: unknown;
+
+  constructor(status: number, message: string, body?: unknown) {
     super(message);
     this.status = status;
+    this.body = body;
+  }
+
+  fieldError(field: string): string | undefined {
+    if (!this.body || typeof this.body !== 'object') return undefined;
+
+    const value = (this.body as Record<string, unknown>)[field];
+    const first = Array.isArray(value) ? value[0] : value;
+
+    return typeof first === 'string' ? first : undefined;
   }
 }
 
@@ -79,7 +91,7 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   }
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new ApiError(res.status, errorMessage(body) ?? res.statusText);
+    throw new ApiError(res.status, errorMessage(body) ?? res.statusText, body);
   }
   return res.status === 204 ? (undefined as T) : ((await res.json()) as T);
 }

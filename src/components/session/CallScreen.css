@@ -1,0 +1,436 @@
+/* The SignConnect logo beside the name, in the call header. */
+.ls-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ls-brand__logo {
+  height: 2rem;
+  width: 2rem;
+  object-fit: contain;
+}
+
+/* The tiles and the chat sit side by side; the tiles take whatever the chat leaves. */
+.ls-body {
+  display: flex;
+  gap: 1rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.ls-body > .ls-spot {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Top-right: the timer, then the signed-in person's email and photo (Figma). */
+.ls-top__right {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.ls-profile {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.ls-profile__email {
+  font-size: 0.85rem;
+  color: #3b2579;
+}
+
+.ls-profile__photo {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.ls-profile__photo--initials {
+  display: grid;
+  place-items: center;
+  background: #4a3a86;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+/* One big tile with the others in a column beside it (Figma). */
+
+/* The video stage stays separate from the chat panel. */
+.ls-spot {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  gap: 1rem;
+}
+
+/* Default layout: participant tiles share one row,
+   then wrap into another row after four. */
+.ls-grid {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  gap: 1rem;
+  grid-auto-rows: minmax(0, 1fr);
+  align-content: stretch;
+}
+
+.ls-grid > .vt {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  aspect-ratio: auto;
+}
+
+/* Spotlight mode: large participant on the left,
+   remaining participants on the right INSIDE the video stage. */
+.ls-main {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+.ls-main > .vt {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+}
+
+.ls-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 14rem;
+  flex-shrink: 0;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.ls-side > .vt {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  flex-shrink: 0;
+}
+
+/* Spotlight control appears on hover or keyboard focus. */
+.vt__spot {
+  opacity: 0;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+  transform: scale(0.94);
+}
+
+.vt:hover .vt__spot,
+.vt:focus-within .vt__spot,
+.vt__spot:focus-visible,
+.vt__spot[aria-pressed='true'] {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Keep the chat on the right, outside the video stage. */
+.ls-body > .chat {
+  flex: 0 0 20rem;
+  width: 20rem;
+  min-width: 0;
+}
+
+/* The three connection bars at the bottom-left of a tile. */
+.vt__bars {
+  position: absolute;
+  left: 0.75rem;
+  bottom: 0.75rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 0.3rem 0.4rem;
+  border-radius: 0.5rem;
+  background: rgba(27, 18, 64, 0.65);
+}
+
+.vt__bars i {
+  display: block;
+  width: 4px;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.vt__bars i:nth-child(1) {
+  height: 6px;
+}
+.vt__bars i:nth-child(2) {
+  height: 10px;
+}
+.vt__bars i:nth-child(3) {
+  height: 14px;
+}
+
+.vt__bars i.is-on {
+  background: #4ade80;
+}
+.vt__bars--poor i.is-on {
+  background: #fbbf24;
+}
+.vt__bars--lost i {
+  background: #ef4444;
+}
+
+/* The spotlight button at the top-right of a tile. */
+.vt__spot {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: rgba(27, 18, 64, 0.65);
+  color: #fff;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.vt:hover .vt__spot,
+.vt__spot:focus-visible,
+.vt__spot[aria-pressed='true'] {
+  opacity: 1;
+}
+
+/* Quality menu items show a small hint under the name. */
+.cc__hint {
+  display: block;
+  font-size: 0.7rem;
+  opacity: 0.75;
+}
+
+/* A shared screen is shown whole, never mirrored or cropped. */
+.vt--screen .vt__video {
+  transform: none;
+  object-fit: contain;
+}
+
+/* --- Mic and camera groups with the device arrow --- */
+.cc__group {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.1rem;
+}
+
+.cc__chevron {
+  display: grid;
+  place-items: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  margin-top: 0.55rem;
+  border: 0;
+  border-radius: 50%;
+  background: #4a3a86;
+  color: #e8e4f8;
+  cursor: pointer;
+}
+
+.cc__menu-wrap {
+  position: relative;
+}
+
+.cc__menu {
+  position: absolute;
+  bottom: calc(100% + 0.9rem);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  min-width: 14rem;
+  max-width: 20rem;
+  margin: 0;
+  padding: 0.4rem;
+  list-style: none;
+  background: #2a1b5c;
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 24px rgba(42, 27, 92, 0.45);
+}
+
+.cc__menu button {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: none;
+  color: #e8e4f8;
+  font: inherit;
+  font-size: 0.85rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cc__menu button:hover,
+.cc__menu button.is-selected {
+  background: #4a3a86;
+}
+
+/* Unread chat count on the Chat button. */
+.cc__icon {
+  position: relative;
+}
+
+.cc__badge {
+  position: absolute;
+  top: -0.25rem;
+  right: -0.25rem;
+  min-width: 1.1rem;
+  height: 1.1rem;
+  padding: 0 0.25rem;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1.1rem;
+  text-align: center;
+}
+
+/* --- Chat panel --- */
+.chat {
+  display: flex;
+  flex-direction: column;
+  width: 20rem;
+  flex-shrink: 0;
+  min-height: 0;
+  background: #fff;
+  border: 1px solid #cfcae6;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.chat__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: #2a1b5c;
+  color: #fff;
+}
+
+.chat__head h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.chat__close {
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  color: #e8e4f8;
+  cursor: pointer;
+}
+
+.chat__list {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 0.75rem;
+  list-style: none;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.chat__empty {
+  color: #6b6785;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.chat__msg {
+  display: flex;
+  flex-direction: column;
+  align-self: flex-start;
+  max-width: 85%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  background: #f1eefb;
+  overflow-wrap: anywhere;
+}
+
+.chat__msg--mine {
+  align-self: flex-end;
+  background: #e0d9f7;
+}
+
+.chat__from {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #3b2579;
+}
+
+.chat__text {
+  font-size: 0.9rem;
+  color: #1b1240;
+}
+
+.chat__form {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-top: 1px solid #e4e0f3;
+}
+
+.chat__form input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid #cfcae6;
+  border-radius: 0.6rem;
+  font: inherit;
+}
+
+.chat__form button {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  border: 0;
+  border-radius: 0.6rem;
+  background: #4a3a86;
+  color: #fff;
+  cursor: pointer;
+}
+
+.chat__form button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 800px) {
+  .ls-body,
+  .ls-spot {
+    flex-direction: column;
+  }
+  .ls-side {
+    flex-direction: row;
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .ls-side .vt {
+    width: 12rem;
+  }
+  .chat {
+    width: 100%;
+    max-height: 40%;
+  }
+}

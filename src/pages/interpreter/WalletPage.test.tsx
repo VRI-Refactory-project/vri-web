@@ -152,12 +152,13 @@ describe('InterpreterWalletPage', () => {
     expect(await screen.findByText('No transactions yet.')).toBeInTheDocument();
   });
 
-  it('says plainly when payments are not live, without inventing amounts', async () => {
+  // 👇 UPDATED TEST 👇
+  it('shows dashes instead of inventing amounts when payments are not live', async () => {
     vi.mocked(getInterpreterWallet).mockResolvedValue(null);
     renderPage();
 
-    expect(await screen.findByRole('status')).toHaveTextContent('Payments are not live yet.');
-    expect(screen.getAllByText('—')).toHaveLength(3);
+    // We removed the banner, so we just check that the 3 stat cards show dashes
+    expect(await screen.findAllByText('—')).toHaveLength(3);
   });
 
   it('shows the payout method', async () => {

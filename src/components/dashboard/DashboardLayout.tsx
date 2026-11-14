@@ -1,49 +1,66 @@
+import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import type { LucideIcon } from 'lucide-react';
+import { Menu, X, type LucideIcon } from 'lucide-react';
 import logo from '../../assets/no_bg.png';
 import { useAuth } from '../../hooks/useAuth';
 import './DashboardLayout.css';
 
-/** One sidebar entry. Each role defines its own list (see features/<role>/navigation.ts). */
 export interface NavItem {
-  /** Stable key, used to attach badges. Does not change when the label is reworded. */
   id: string;
-  /** The words shown in the sidebar. Free to differ per role. */
   label: string;
   to: string;
   icon: LucideIcon;
-  /** Match the path exactly (use for the Home entry). */
   end?: boolean;
 }
 
 interface Props {
   links: NavItem[];
-  /** Accessible name of the navigation landmark, e.g. "Interpreter". */
   navLabel: string;
-  /** Small counts shown on an entry, keyed by NavItem.id. Zero or missing hides the badge. */
   badges?: Record<string, number>;
-  /** Where the account block at the bottom leads. */
   accountTo: string;
-  /** Text under the user's name. */
   accountLabel?: string;
+  organisation?: string;
 }
 
-/** Sidebar and page frame shared by the role dashboards. */
 export function DashboardLayout({
   links,
   navLabel,
   badges = {},
   accountTo,
   accountLabel = 'View account',
+  organisation,
 }: Props) {
   const { session } = useAuth();
   const name = session?.user.name ?? '';
   const initial = name.trim().charAt(0).toUpperCase() || 'NM';
 
+  // NEW: State for the mobile sidebar
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   return (
     <div className="dl-shell">
-      <aside className="dl-sidebar">
+      {/* NEW: Mobile Toggle Button (Visible only on small screens) */}
+      <button
+        className="dl-mobile-toggle"
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        aria-label="Toggle Sidebar"
+      >
+        {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+      </button>
+
+      {/* NEW: Overlay to close sidebar when clicking outside */}
+      {isSidebarOpen && (
+        <div className="dl-sidebar-overlay" onClick={() => setIsSidebarOpen(false)} />
+      )}
+
+      {/* Added dynamic class for mobile */}
+      <aside className={`dl-sidebar ${isSidebarOpen ? 'dl-sidebar--open' : ''}`}>
         <img className="dl-logo" src={logo} alt="SignConnect VRI Platform" />
+        {organisation && (
+          <p className="dl-org" title={organisation}>
+            {organisation}
+          </p>
+        )}
         <nav className="dl-nav" aria-label={navLabel}>
           {links.map(({ id, label, to, icon: Icon, end }) => {
             const count = badges[id] ?? 0;
@@ -52,6 +69,8 @@ export function DashboardLayout({
                 key={id}
                 to={to}
                 end={end}
+                // Close sidebar on navigation for mobile
+                onClick={() => setIsSidebarOpen(false)}
                 className={({ isActive }) => (isActive ? 'dl-link dl-link--active' : 'dl-link')}
               >
                 <Icon size={16} aria-hidden="true" />
@@ -65,7 +84,7 @@ export function DashboardLayout({
             );
           })}
         </nav>
-        <NavLink to={accountTo} className="dl-account">
+        <NavLink to={accountTo} className="dl-account" onClick={() => setIsSidebarOpen(false)}>
           <span className="dl-avatar" aria-hidden="true">
             {initial}
           </span>

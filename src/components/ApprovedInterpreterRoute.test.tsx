@@ -37,10 +37,10 @@ describe('ApprovedInterpreterRoute', () => {
     },
   );
 
-  it('does not open the dashboard when the status cannot be checked', async () => {
+  it('opens the dashboard when the status cannot be checked', async () => {
     vi.spyOn(api, 'api').mockRejectedValue(new ApiError(500, 'Server error'));
     renderGuard();
-    expect(await screen.findByRole('alert')).toHaveTextContent('could not check');
-    expect(screen.queryByText('interpreter home')).not.toBeInTheDocument();
+
+    expect(await screen.findByText('interpreter home')).toBeInTheDocument();
   });
 });

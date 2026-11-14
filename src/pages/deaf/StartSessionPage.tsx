@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Calendar, Check, ChevronLeft, User, Video } from 'lucide-react';
+import { Calendar, Check, ChevronLeft, User, Video, ArrowRight, Lightbulb } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { useRequesterPaths } from '../../features/dashboard/requesterPaths';
 import { useSessionRequest } from '../../hooks/useSessionRequest';
 import './StartSessionPage.css';
 
@@ -32,7 +33,10 @@ function useWaited(createdAt: string) {
 function WhatHappensNext() {
   return (
     <aside className="ss-next" aria-labelledby="ss-next-title">
-      <h2 id="ss-next-title">What happens next</h2>
+      <div className="ss-next-header">
+        <Lightbulb size={22} className="ss-next-icon" />
+        <h2 id="ss-next-title">What happens next?</h2>
+      </div>
       <ol>
         {STEPS.map((text, index) => (
           <li key={text}>
@@ -119,6 +123,7 @@ interface Props {
  * itself belongs to the live-session story.
  */
 export function StartSessionPage({ pollMs }: Props) {
+  const paths = useRequesterPaths();
   const { request, error, busy, start, cancel } = useSessionRequest(pollMs);
   const [params] = useSearchParams();
   // The dashboard's Emergency Request button opens this page with ?priority=emergency.
@@ -159,7 +164,7 @@ export function StartSessionPage({ pollMs }: Props) {
             </div>
           </dl>
           <Link
-            to={`/live/deaf/${request.id}`}
+            to={paths.live(request.id)}
             state={{ interpreterName: request.interpreter?.name }}
             className="ss-btn ss-btn--primary"
           >
@@ -193,15 +198,22 @@ export function StartSessionPage({ pollMs }: Props) {
 
   return (
     <div className="ss-page">
-      <Link to="/dashboard/deaf" className="ss-back">
+      {/* Background Decorations */}
+      <div className="ss-bg-decor ss-bg-decor--top" />
+      <div className="ss-bg-decor ss-bg-decor--bottom" />
+
+      <Link to={paths.home} className="ss-back">
         <ChevronLeft size={18} aria-hidden="true" /> Back
       </Link>
-      <h1 className="ss-title">Start a VRI session</h1>
-      <p className="ss-subtitle">
-        {emergency
-          ? 'Emergency request: you will go to the front of the queue.'
-          : 'How would you like to connect?'}
-      </p>
+
+      <div className="ss-header-content">
+        <h1 className="ss-title">Start a VRI session</h1>
+        <p className="ss-subtitle">
+          {emergency
+            ? 'Emergency request: you will go to the front of the queue.'
+            : 'How would you like to connect?'}
+        </p>
+      </div>
 
       {error && (
         <p className="ss-alert" role="alert">
@@ -221,14 +233,14 @@ export function StartSessionPage({ pollMs }: Props) {
               <Video size={22} />
             </span>
             <h2 id="ss-connect-title">Connect</h2>
-            <p>Find an available Ugandan Sign Language interpreter</p>
+            <p>Find an available Ugandan Sign Language interpreter.</p>
             <button
               type="button"
               className="ss-btn ss-btn--light"
               onClick={() => start(emergency ? 'EMERGENCY' : undefined)}
               disabled={busy}
             >
-              Connect now
+              Connect now <ArrowRight size={18} />
             </button>
           </section>
 
@@ -238,10 +250,10 @@ export function StartSessionPage({ pollMs }: Props) {
             </span>
             <div className="ss-schedule-text">
               <h2 id="ss-schedule-title">Schedule for later</h2>
-              <p>Choose a date and time that works for you</p>
+              <p>Choose a date and time that works for you.</p>
             </div>
             <button type="button" className="ss-btn ss-btn--outline" disabled>
-              Schedule a session
+              Schedule a session <ArrowRight size={16} />
             </button>
           </section>
         </div>

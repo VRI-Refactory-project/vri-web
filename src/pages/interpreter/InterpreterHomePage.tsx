@@ -1,88 +1,97 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  Bell,
-  ChevronDown,
-  Calendar,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
-  MessageSquare,
-  Video,
-  Sun,
-} from 'lucide-react';
+import { Bell, Calendar, ChevronLeft, ChevronRight, Clock, Sun } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { INTERPRETER_BASE } from '../../features/interpreter/navigation';
+import {
+  reasonText,
+  useAvailability,
+  useInterpreterHome,
+} from '../../features/interpreter/homeData';
+import { upcomingBooking, useBookedSessions } from '../../features/interpreter/bookedSessions';
+import { dayLabel, formatDuration } from '../../services/interpreterSessions';
+import {
+  recentSessions,
+  sessionsOn,
+  sessionsThisWeek,
+  timeOf,
+  useMySessions,
+} from '../../features/interpreter/homeSessions';
 import './InterpreterHomePage.css';
 import bannerImage from '../../assets/suit.png';
 
 const calendarDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const calendarNumbers = [
-  null,
-  null,
-  null,
-  null,
-  5,
-  6,
-  7,
-  8,
-  9,
-  10,
-  11,
-  12,
-  13,
-  14,
-  15,
-  16,
-  17,
-  18,
-  19,
-  20,
-  21,
-  22,
-  23,
-  24,
-  25,
-];
+
+function monthGrid(month: Date): (number | null)[] {
+  const blanks = (new Date(month.getFullYear(), month.getMonth(), 1).getDay() + 6) % 7;
+  const lastDay = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+  return [
+    ...Array<null>(blanks).fill(null),
+    ...Array.from({ length: lastDay }, (_, index) => index + 1),
+  ];
+}
+
+function dayPill(date: Date) {
+  const weekday = date.toLocaleDateString('en-US', { weekday: 'short' });
+  const month = date.toLocaleDateString('en-US', { month: 'short' });
+  return `${weekday}, ${date.getDate()} ${month} ${date.getFullYear()}`;
+}
+
+/** "Good morning", "Good afternoon" or "Good evening", from the time on the user's device. */
+function greeting(date = new Date()) {
+  const hour = date.getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 18) return 'Good afternoon';
+  return 'Good evening';
+}
+
+/** A person's photo, or their first letter on a coloured circle when they have none. */
+function Avatar({ name, photo }: { name: string; photo: string | null }) {
+  if (photo) return <img src={photo} alt={name} className="ih-avatar-md" />;
+  return <span className="ih-avatar-md ih-avatar-initial">{name.charAt(0).toUpperCase()}</span>;
+}
 
 export function InterpreterHomePage() {
   const { session } = useAuth();
-  const firstName = session?.user.name?.split(' ')[0] || 'Sarah';
+  const firstName = session?.user.name?.split(' ')[0] || 'there';
+  const { data: home } = useInterpreterHome();
+  const { available, reason, setAvailable, loading, saving, error } = useAvailability();
+  const { sessions } = useMySessions();
+  const { bookings } = useBookedSessions();
+  const today = new Date();
+  const next = upcomingBooking(bookings);
+  const recent = recentSessions(sessions);
+  const sessionsToday = sessionsOn(sessions, today);
+  const sessionsWeek = sessionsThisWeek(sessions, today);
+  const [viewMonth, setViewMonth] = useState(
+    () => new Date(today.getFullYear(), today.getMonth(), 1),
+  );
+  const monthLabel = viewMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const isThisMonth =
+    viewMonth.getFullYear() === today.getFullYear() && viewMonth.getMonth() === today.getMonth();
+  const shiftMonth = (by: number) =>
+    setViewMonth(new Date(viewMonth.getFullYear(), viewMonth.getMonth() + by, 1));
 
   return (
     <div className="ih-page">
-      {/* TOP NAVIGATION BAR */}
       <header className="ih-topbar">
         <div className="ih-topbar-actions">
           <button className="ih-icon-btn relative" aria-label="Notifications">
             <Bell size={20} className="ih-icon" />
             <span className="ih-notification-dot"></span>
           </button>
-
-          <div className="ih-user-profile">
-            <img
-              src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80"
-              alt="Sarah Mitchell"
-              className="ih-avatar-sm"
-            />
-            <div className="ih-user-info">
-              <span className="ih-user-name">Sarah Mitchell</span>
-              <span className="ih-user-role">Interpreter</span>
-            </div>
-            <ChevronDown size={16} className="ih-chevron-down" />
-          </div>
         </div>
       </header>
 
       <div className="ih-content-wrapper">
-        {/* MAIN CONTENT AREA */}
         <div className="ih-main-section">
-          {/* Welcome Banner */}
           <section className="ih-banner" aria-label="Greeting">
             <div className="ih-banner-text">
               <h1>
                 <span className="ih-sun-icon">
                   <Sun size={24} />
                 </span>
-                Good morning, {firstName}
+                {greeting()}, {firstName}
               </h1>
               <p className="ih-banner-sub">Bridging communication. Expanding access.</p>
               <p className="ih-banner-desc">
@@ -91,166 +100,120 @@ export function InterpreterHomePage() {
               </p>
             </div>
 
-            {/* NEW: Image Container */}
             <div className="ih-banner-image-container">
-              <img
-                src={bannerImage} // <--- CHANGED TO USE YOUR LOCAL IMAGE
-                alt="Sign language interpreter"
-                className="ih-banner-image"
-              />
+              <img src={bannerImage} alt="Sign language interpreter" className="ih-banner-image" />
             </div>
           </section>
 
-          {/* Stats Row */}
           <div className="ih-stats-row">
+            {/* Pending Requests Card */}
             <div className="ih-stat-box">
               <div className="ih-stat-header">
                 <Clock size={20} className="ih-icon-blue" />
-                <span className="ih-trend trend-green">+2 new</span>
+                <span className="ih-trend trend-green">
+                  {home.availableRequests > 0 ? 'Needs reply' : 'All clear'}
+                </span>
               </div>
-              <h2>5</h2>
+              <h2>{home.availableRequests}</h2>
               <p>Pending requests</p>
             </div>
 
             <div className="ih-stat-box">
               <div className="ih-stat-header">
                 <Calendar size={20} className="ih-icon-purple" />
-                <span className="ih-trend trend-purple">+1 today</span>
+                <span className="ih-trend trend-purple">{sessionsToday.length} today</span>
               </div>
-              <h2>3</h2>
+              <h2>{sessionsWeek.length}</h2>
               <p>This week&apos;s sessions</p>
-            </div>
-
-            <div className="ih-stat-box">
-              <div className="ih-stat-header">
-                <MessageSquare size={20} className="ih-icon-teal" />
-                <span className="ih-trend trend-muted">All read</span>
-              </div>
-              <h2>0</h2>
-              <p>Unread messages</p>
             </div>
           </div>
 
-          {/* THE NEW ALIGNMENT GRID */}
           <div className="ih-dashboard-split">
-            {/* LEFT COLUMN: Next Session & Upcoming */}
             <div className="ih-split-left">
-              {/* Next session */}
               <section className="ih-section">
                 <div className="ih-next-session-wrapper">
                   <div className="ih-section-header">
                     <h3>
-                      <Calendar size={18} className="ih-section-icon" /> Next session
+                      <Calendar size={18} className="ih-section-icon" /> Upcoming session
                     </h3>
-                    <Link to="#" className="ih-section-link">
+                    <Link to={`${INTERPRETER_BASE}/sessions`} className="ih-section-link">
                       View all <ChevronRight size={14} />
                     </Link>
                   </div>
 
-                  <div className="ih-next-session-content">
-                    <div className="ih-next-header">
-                      <img
-                        src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80"
-                        alt="James Carter"
-                        className="ih-avatar-md"
-                      />
-                      <div>
-                        <h4>
-                          James Carter <span className="ih-badge-verified">✓</span>
-                        </h4>
-                        <p className="ih-meta">Deaf User • Kampala, Uganda</p>
+                  {next ? (
+                    <div className="ih-next-session-content">
+                      <div className="ih-next-header">
+                        <Avatar name={next.withName} photo={next.photo} />
+                        <div>
+                          <h4>{next.withName}</h4>
+                          <p className="ih-meta">
+                            Deaf User • {next.confirmed ? 'Confirmed' : 'Awaiting confirmation'}
+                          </p>
+                        </div>
                       </div>
-                      <ChevronRight
-                        size={18}
-                        className="ih-chevron"
-                        style={{ marginLeft: 'auto' }}
-                      />
-                    </div>
 
-                    <div className="ih-next-details">
-                      <p>
-                        <Calendar size={14} className="ih-meta-icon" /> Today, 10:30 AM - 11:00 AM
-                      </p>
-                      <p>
-                        <Video size={14} className="ih-meta-icon" /> Video call
-                      </p>
+                      <div className="ih-next-details">
+                        <p>
+                          <Calendar size={14} className="ih-meta-icon" />{' '}
+                          {dayLabel(next.startsAt, today)}, {timeOf(next.startsAt)}
+                        </p>
+                        <p>
+                          <Clock size={14} className="ih-meta-icon" />{' '}
+                          {formatDuration(next.durationMinutes)} • {next.typeLabel}
+                        </p>
+                      </div>
                     </div>
-
-                    <div className="ih-next-actions">
-                      <button className="ih-btn-primary" type="button">
-                        Join session
-                      </button>
-                      <button className="ih-btn-secondary" type="button">
-                        View details
-                      </button>
-                    </div>
-                  </div>
+                  ) : (
+                    <p className="ih-time-label ih-empty-note">No upcoming sessions booked.</p>
+                  )}
                 </div>
               </section>
 
-              {/* Upcoming Sessions */}
               <section className="ih-section">
                 <div className="ih-next-session-wrapper">
                   <div className="ih-section-header">
                     <h3>
-                      <Calendar size={18} className="ih-section-icon" /> Upcoming sessions
+                      <Calendar size={18} className="ih-section-icon" /> Booked sessions
                     </h3>
-                    <Link to="#" className="ih-section-link">
+                    <Link to={`${INTERPRETER_BASE}/sessions`} className="ih-section-link">
                       View all <ChevronRight size={14} />
                     </Link>
                   </div>
 
-                  <div className="ih-list-card-transparent">
-                    <div className="ih-list-item">
-                      <img
-                        src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80"
-                        alt="Priya Sharma"
-                        className="ih-avatar-md"
-                      />
-                      <div className="ih-list-info">
-                        <h4>
-                          Priya Sharma <span className="ih-badge-verified">✓</span>
-                        </h4>
-                        <p className="ih-meta">Interpreter • Kampala, Uganda</p>
-                      </div>
-                      <div className="ih-list-time">
-                        <p>Today, 2:00 PM - 2:30 PM</p>
-                        <p className="ih-meta-inline">
-                          <Video size={12} className="ih-meta-icon" /> Video call
-                        </p>
-                      </div>
-                      <ChevronRight size={18} className="ih-chevron" />
+                  {bookings.length === 0 ? (
+                    <p className="ih-time-label ih-empty-note">No sessions have been booked yet.</p>
+                  ) : (
+                    <div className="ih-list-card-transparent">
+                      {bookings.slice(0, 4).map((booking, index, shown) => (
+                        <div
+                          className={`ih-list-item${index === shown.length - 1 ? ' ih-list-item-last' : ''}`}
+                          key={booking.id}
+                        >
+                          <Avatar name={booking.withName} photo={booking.photo} />
+                          <div className="ih-list-info">
+                            <h4>{booking.withName}</h4>
+                            <p className="ih-meta">{booking.typeLabel}</p>
+                          </div>
+                          <div className="ih-list-time">
+                            <p>
+                              {dayLabel(booking.startsAt, today)}, {timeOf(booking.startsAt)}
+                            </p>
+                            <p className="ih-meta-inline">
+                              <Clock size={12} className="ih-meta-icon" />{' '}
+                              {formatDuration(booking.durationMinutes)}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-
-                    <div className="ih-list-item ih-list-item-last">
-                      <img
-                        src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=200&q=80"
-                        alt="Grace Nsubuga"
-                        className="ih-avatar-md"
-                      />
-                      <div className="ih-list-info">
-                        <h4>
-                          Grace Nsubuga <span className="ih-badge-verified">✓</span>
-                        </h4>
-                        <p className="ih-meta">Interpreter • Entebbe, Uganda</p>
-                      </div>
-                      <div className="ih-list-time">
-                        <p>Tomorrow, 4:00 PM - 4:30 PM</p>
-                        <p className="ih-meta-inline">
-                          <Video size={12} className="ih-meta-icon" /> Video call
-                        </p>
-                      </div>
-                      <ChevronRight size={18} className="ih-chevron" />
-                    </div>
-                  </div>
+                  )}
                 </div>
               </section>
             </div>
 
-            {/* RIGHT COLUMN: Recent Activity */}
             <div className="ih-split-right">
               <section className="ih-section">
-                {/* Wrapper that holds the header and the list */}
                 <div className="ih-activity-wrapper">
                   <div
                     className="ih-section-header"
@@ -261,110 +224,72 @@ export function InterpreterHomePage() {
                     }}
                   >
                     <h3>
-                      <Clock size={18} className="ih-section-icon" /> Recent activity
+                      <Clock size={18} className="ih-section-icon" /> Recent sessions
                     </h3>
+                    <Link to={`${INTERPRETER_BASE}/sessions`} className="ih-section-link">
+                      View all <ChevronRight size={14} />
+                    </Link>
                   </div>
 
-                  <div
-                    className="ih-activity-card"
-                    style={{ padding: 0, boxShadow: 'none', background: 'transparent' }}
-                  >
-                    <div className="ih-timeline-item">
-                      <div className="ih-timeline-marker bg-green"></div>
-                      <img
-                        src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80"
-                        alt="James"
-                        className="ih-timeline-avatar"
-                      />
-                      <div className="ih-timeline-content">
-                        <p>You accepted James Carter's connection request</p>
-                        <span className="ih-time-label">2 hours ago</span>
-                      </div>
-                    </div>
+                  {recent.length === 0 && <p className="ih-time-label">No sessions yet.</p>}
 
-                    <div className="ih-timeline-item">
-                      <div className="ih-timeline-marker bg-purple"></div>
-                      <img
-                        src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80"
-                        alt="Priya"
-                        className="ih-timeline-avatar"
-                      />
-                      <div className="ih-timeline-content">
-                        <p>Priya Sharma sent you a connection request</p>
-                        <span className="ih-time-label">4 hours ago</span>
+                  {recent.map((session) => (
+                    <div className="ih-recent-item" key={session.id}>
+                      <Avatar name={session.withName} photo={session.photo} />
+                      <div className="ih-list-info">
+                        <h4>{session.withName}</h4>
+                        <p className="ih-meta">
+                          {dayLabel(session.startedAt, today)}, {timeOf(session.startedAt)}
+                          {session.durationMinutes
+                            ? ` · ${formatDuration(session.durationMinutes)}`
+                            : ''}
+                        </p>
                       </div>
+                      <Link to={`${INTERPRETER_BASE}/sessions`} className="ih-recent-details">
+                        Details
+                      </Link>
                     </div>
-
-                    <div className="ih-timeline-item">
-                      <div className="ih-timeline-marker bg-purple"></div>
-                      <img
-                        src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80"
-                        alt="Alex"
-                        className="ih-timeline-avatar"
-                      />
-                      <div className="ih-timeline-content">
-                        <p>Alex Johnson accepted your connection request</p>
-                        <span className="ih-time-label">Yesterday</span>
-                      </div>
-                    </div>
-
-                    <div className="ih-timeline-item">
-                      <div className="ih-timeline-marker bg-purple"></div>
-                      <img
-                        src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=100&q=80"
-                        alt="Grace"
-                        className="ih-timeline-avatar"
-                      />
-                      <div className="ih-timeline-content">
-                        <p>You started a chat with Grace Nsubuga</p>
-                        <span className="ih-time-label">Yesterday</span>
-                      </div>
-                    </div>
-
-                    <div className="ih-timeline-item">
-                      <div className="ih-timeline-marker bg-blue"></div>
-                      <img
-                        src="https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?auto=format&fit=crop&w=100&q=80"
-                        alt="Daniel"
-                        className="ih-timeline-avatar"
-                      />
-                      <div className="ih-timeline-content">
-                        <p>You received a connection request from Daniel Ochieng</p>
-                        <span className="ih-time-label">2 days ago</span>
-                      </div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </section>
             </div>
           </div>
         </div>
 
-        {/* RIGHT SIDEBAR (Availability & Calendar) */}
         <aside className="ih-right-column">
           <div className="ih-card ih-availability-card">
             <div className="ih-availability-row">
               <div className="ih-availability-status">
-                <span className="ih-availability-dot" aria-hidden="true" />
-                <span>Available for requests</span>
+                <span
+                  className={`ih-availability-dot${available ? '' : ' ih-availability-dot-off'}`}
+                  aria-hidden="true"
+                />
+                <span>{available ? 'Available for requests' : 'Not available'}</span>
               </div>
 
               <button
                 type="button"
-                className="ih-availability-toggle active"
+                className={`ih-availability-toggle${available ? ' active' : ''}`}
                 aria-label="Toggle availability"
+                aria-pressed={available}
+                disabled={loading || saving}
+                onClick={() => setAvailable(!available)}
               >
                 <span className="ih-availability-knob" aria-hidden="true" />
               </button>
             </div>
 
             <p className="ih-availability-copy">
-              You&apos;ll receive connection requests and messages when you&apos;re online.
+              {error ||
+                (available
+                  ? reasonText(reason) ||
+                    "You'll receive connection requests and messages when you're online."
+                  : "You won't receive requests while you're switched off.")}
             </p>
 
-            <button type="button" className="ih-availability-button">
+            <Link to={`${INTERPRETER_BASE}/availability`} className="ih-availability-button">
               Update availability
-            </button>
+            </Link>
           </div>
 
           <div className="ih-card ih-calendar-card">
@@ -373,26 +298,29 @@ export function InterpreterHomePage() {
             </h3>
 
             <div className="ih-cal-header">
-              <button type="button" aria-label="Previous month">
+              <button type="button" aria-label="Previous month" onClick={() => shiftMonth(-1)}>
                 <ChevronLeft size={14} />
               </button>
-              <span>October 2026</span>
-              <button type="button" aria-label="Next month">
+              <span>{monthLabel}</span>
+              <button type="button" aria-label="Next month" onClick={() => shiftMonth(1)}>
                 <ChevronRight size={14} />
               </button>
             </div>
 
-            <div className="ih-cal-grid" aria-label="October calendar">
+            <div className="ih-cal-grid" aria-label={`${monthLabel} calendar`}>
               {calendarDays.map((day) => (
                 <span key={day} className="ih-cal-day-name">
                   {day}
                 </span>
               ))}
-
-              {calendarNumbers.map((day, index) => (
+              {monthGrid(viewMonth).map((day, index) => (
                 <span
                   key={`${day ?? 'empty'}-${index}`}
-                  className={day === 14 ? 'ih-cal-day ih-cal-day-active' : 'ih-cal-day'}
+                  className={
+                    isThisMonth && day === today.getDate()
+                      ? 'ih-cal-day ih-cal-day-active'
+                      : 'ih-cal-day'
+                  }
                 >
                   {day ?? ''}
                 </span>
@@ -401,37 +329,19 @@ export function InterpreterHomePage() {
 
             <div className="ih-today-schedule">
               <h4>
-                Today&apos;s schedule <span className="ih-date-pill">Wed, 14 Oct 2026</span>
+                Today&apos;s schedule <span className="ih-date-pill">{dayPill(today)}</span>
               </h4>
 
-              <div className="ih-schedule-item">
-                <span className="ih-dot ih-dot-purple" aria-hidden="true" />
-                <div>
-                  <p>10:30 AM - 11:00 AM &nbsp; James Carter</p>
-                  <span className="ih-time-label">Video call</span>
-                </div>
-              </div>
-
-              <div className="ih-schedule-item">
-                <span className="ih-dot ih-dot-green" aria-hidden="true" />
-                <div>
-                  <p>2:00 PM - 2:30 PM &nbsp; Priya Sharma</p>
-                  <span className="ih-time-label">Video call</span>
-                </div>
-              </div>
-
-              <div className="ih-schedule-item">
-                <span className="ih-dot ih-dot-blue" aria-hidden="true" />
-                <div>
-                  <p>4:00 PM - 4:30 PM &nbsp; Grace Nsubuga</p>
-                  <span className="ih-time-label">Video call</span>
-                </div>
-              </div>
+              {sessionsToday.length === 0 ? (
+                <p className="ih-time-label">No sessions today.</p>
+              ) : (
+                sessionsToday.map((session) => (
+                  <p className="ih-time-label" key={session.id}>
+                    {timeOf(session.startedAt)} · {session.withName}
+                  </p>
+                ))
+              )}
             </div>
-
-            <button type="button" className="ih-btn-calendar">
-              View full calendar <span aria-hidden="true">→</span>
-            </button>
           </div>
         </aside>
       </div>

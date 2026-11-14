@@ -1,11 +1,11 @@
 import { useRef, useState, type DragEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload } from 'lucide-react';
+import { Upload, ChevronRight } from 'lucide-react';
 import { AuthShell } from '../../components/AuthShell';
 import { FLOWS } from '../../features/registration/flows';
 import { describeError } from '../../services/api';
 import { uploadInstitutionLicense } from '../../services/registration';
-import './UploadCertificationsPage.css'; // Reusing the exact same CSS as the interpreter page
+import './AuthPages.css';
 
 export const UploadInstitutionLicense = () => {
   const navigate = useNavigate();
@@ -20,7 +20,6 @@ export const UploadInstitutionLicense = () => {
   const [error, setError] = useState<string>();
   const [submitting, setSubmitting] = useState(false);
 
-  // Replicating the interpreter's file validation exactly
   const accept = (selected: File | undefined) => {
     if (!selected) return;
 
@@ -55,9 +54,10 @@ export const UploadInstitutionLicense = () => {
     setError(undefined);
     try {
       const formData = new FormData();
-      formData.append('license', file);
-      formData.append('licenseType', licenseType);
-      formData.append('issuingAuthority', issuingAuthority);
+      // CHANGED: Backend expects 'document' and 'document_type'
+      formData.append('document', file);
+      formData.append('document_type', licenseType);
+      formData.append('issuing_authority', issuingAuthority);
 
       await uploadInstitutionLicense(formData);
       navigate('/register/pending', { replace: true });
@@ -70,68 +70,72 @@ export const UploadInstitutionLicense = () => {
 
   return (
     <AuthShell steps={FLOWS.institution} current={3}>
-      <form className="cert-page__content" onSubmit={handleSubmit} noValidate>
-        <h1>Upload your license</h1>
-        <p className="cert-page__subtitle">
+      <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+        <h1
+          style={{
+            fontSize: '1.5rem',
+            fontWeight: 800,
+            color: '#382c77',
+            margin: '0 0 8px',
+            textAlign: 'center',
+          }}
+        >
+          Upload your license
+        </h1>
+        <p
+          style={{ color: '#6b6785', fontSize: '0.9rem', margin: '0 0 24px', textAlign: 'center' }}
+        >
           Upload your institution's operating license or accreditation for verification.
         </p>
 
-        <fieldset className="cert-card">
-          <legend className="visually-hidden">Institution License</legend>
-
-          {/* Exact same dropzone structure as the interpreter page */}
-          <div
-            className={`dropzone${dragging ? ' dropzone--active' : ''}`}
-            onDragOver={(e) => {
-              e.preventDefault();
-              setDragging(true);
-            }}
-            onDragLeave={() => setDragging(false)}
-            onDrop={onDrop}
-          >
-            <span className="dropzone__icon" aria-hidden="true">
-              <Upload size={20} />
-            </span>
-            <p className="dropzone__title">Upload license document</p>
-
-            {file ? (
-              <p className="dropzone__file">{file.name}</p>
-            ) : (
-              <>
-                <p className="dropzone__hint">Drag and drop your file here</p>
-                <p className="dropzone__hint">or</p>
-              </>
-            )}
-
-            <button
-              type="button"
-              className="btn btn--outline"
+        <form onSubmit={handleSubmit} noValidate>
+          <div className="form-group">
+            <label>Institution Document</label>
+            <div
+              style={{
+                border: dragging ? '2px dashed #382c77' : '2px dashed #cbd5e1',
+                borderRadius: '12px',
+                padding: '32px',
+                textAlign: 'center',
+                backgroundColor: dragging ? '#f3f0ff' : '#f8fafc',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
               onClick={() => inputRef.current?.click()}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragging(true);
+              }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={onDrop}
             >
-              {file ? 'Replace file' : 'Browse files'}
-            </button>
-
-            <input
-              ref={inputRef}
-              type="file"
-              className="visually-hidden"
-              accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
-              onChange={(e) => accept(e.target.files?.[0])}
-            />
-
-            <p className="dropzone__limits">PDF, JPG or PNG, 10 MB max</p>
-
+              <Upload size={32} color="#382c77" style={{ margin: '0 auto 12px' }} />
+              <p style={{ margin: '0 0 8px', fontWeight: 600, color: '#1e293b' }}>
+                {file ? file.name : 'Click to browse or drag and drop'}
+              </p>
+              <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>
+                PDF, JPG, or PNG (Max 10MB)
+              </p>
+              <input
+                ref={inputRef}
+                type="file"
+                accept=".pdf, .jpg, .jpeg, .png"
+                style={{ display: 'none' }}
+                onChange={(e) => accept(e.target.files?.[0])}
+              />
+            </div>
             {fileError && (
-              <p className="field-error" role="alert">
+              <p className="field-error" style={{ marginTop: '8px' }} role="alert">
                 {fileError}
               </p>
             )}
           </div>
 
-          <div className="field">
+          <div className="form-group">
             <label htmlFor="license-type">Document type *</label>
             <select
               id="license-type"
+              className="form-input"
               value={licenseType}
               onChange={(e) => setLicenseType(e.target.value)}
             >
@@ -142,28 +146,34 @@ export const UploadInstitutionLicense = () => {
             </select>
           </div>
 
-          <div className="field">
+          <div className="form-group">
             <label htmlFor="issuing-authority">Issuing authority *</label>
             <input
               id="issuing-authority"
               type="text"
+              className="form-input"
               placeholder="e.g., Ministry of Health, URSB"
               value={issuingAuthority}
               onChange={(e) => setIssuingAuthority(e.target.value)}
             />
           </div>
-        </fieldset>
 
-        {error && (
-          <p className="form-error" role="alert">
-            {error}
-          </p>
-        )}
+          {error && (
+            <p className="form-error" role="alert">
+              {error}
+            </p>
+          )}
 
-        <button type="submit" className="btn btn--primary" disabled={submitting}>
-          {submitting ? 'Uploading...' : 'Submit for Review'}
-        </button>
-      </form>
+          <button
+            type="submit"
+            className="btn-primary"
+            style={{ marginTop: '16px' }}
+            disabled={submitting}
+          >
+            {submitting ? 'Uploading...' : 'Submit for Review'} <ChevronRight size={18} />
+          </button>
+        </form>
+      </div>
     </AuthShell>
   );
 };

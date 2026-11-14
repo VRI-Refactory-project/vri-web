@@ -17,6 +17,20 @@ const BASE = '/api/v1/interpreters/me/availability';
 
 const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
+/**
+ * Some one-off dates could not be saved or removed. The weekly hours were saved before this was
+ * thrown. Saving again is safe: each date is written with the same values.
+ */
+export class AvailabilitySaveError extends Error {
+  constructor({ savedCount, failedDates, failedRemovals }) {
+    super('Some availability changes could not be saved.');
+    this.name = 'AvailabilitySaveError';
+    this.savedCount = savedCount;
+    this.failedDates = failedDates;
+    this.failedRemovals = failedRemovals;
+  }
+}
+
 const pad = (n) => String(n).padStart(2, '0');
 const dateKey = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const monthKey = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
@@ -94,33 +108,47 @@ export const interpreterApi = {
       ),
     );
 
-    // 2. One-off dates removed on the page.
+    // 2. One-off dates removed on the page. A date that has no saved change any more (404) is done.
     const keptDates = new Set(exceptions.map((e) => e.date));
-    await Promise.all(
-      [...loadedExceptionDates]
-        .filter((d) => !keptDates.has(d) && d >= today)
-        .map((d) => api(`${BASE}/exceptions/${d}/`, { method: 'DELETE' }).catch(() => undefined)),
+    const removed = [...loadedExceptionDates].filter((d) => !keptDates.has(d) && d >= today);
+    const removeResults = await Promise.allSettled(
+      removed.map((d) => api(`${BASE}/exceptions/${d}/`, { method: 'DELETE' })),
+    );
+    const failedRemovals = removed.filter(
+      (_, i) => removeResults[i].status === 'rejected' && removeResults[i].reason?.status !== 404,
     );
 
     // 3. One-off dates added or changed. Saving the default week above may have cleared one that
-    //    sits on a weekday's next date, so every upcoming one is written again.
-    await Promise.all(
-      exceptions
-        .filter((e) => e.date >= today)
-        .map((e) =>
-          api(`${BASE}/days/${e.date}/`, {
-            method: 'PATCH',
-            body: JSON.stringify({
-              is_available: !e.unavailable,
-              start_time: e.unavailable ? null : e.start,
-              end_time: e.unavailable ? null : e.end,
-              repeat_weekly: false,
-            }),
+    //    sits on a weekday's next date, so every upcoming one is written again. Each date is
+    //    saved on its own, so one failure does not stop the others; the failures are reported.
+    const upcoming = exceptions.filter((e) => e.date >= today);
+    const saveResults = await Promise.allSettled(
+      upcoming.map((e) =>
+        api(`${BASE}/days/${e.date}/`, {
+          method: 'PATCH',
+          body: JSON.stringify({
+            is_available: !e.unavailable,
+            start_time: e.unavailable ? null : e.start,
+            end_time: e.unavailable ? null : e.end,
+            repeat_weekly: false,
           }),
-        ),
+        }),
+      ),
     );
+    const failedDates = upcoming
+      .filter((_, i) => saveResults[i].status === 'rejected')
+      .map((e) => e.date);
 
-    loadedExceptionDates = new Set(exceptions.map((e) => e.date));
+    // Keep failed removals in the loaded set so the next save tries them again.
+    loadedExceptionDates = new Set([...exceptions.map((e) => e.date), ...failedRemovals]);
+
+    if (failedDates.length || failedRemovals.length) {
+      throw new AvailabilitySaveError({
+        savedCount: upcoming.length - failedDates.length,
+        failedDates,
+        failedRemovals,
+      });
+    }
   },
 
   /** The dashboard switch. */

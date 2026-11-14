@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api, describeError } from '../../services/api';
+import { getIncomingOffers } from '../../services/interpreterOffers';
 
 export interface CompletedSession {
   id: string;
@@ -42,7 +43,22 @@ const SAMPLE_HOME: InterpreterHome = {
 };
 
 export function useInterpreterHome(): { data: InterpreterHome } {
-  return { data: SAMPLE_HOME };
+  const [availableRequests, setAvailableRequests] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    getIncomingOffers().then(
+      (offers) => {
+        if (!cancelled) setAvailableRequests(offers.length);
+      },
+      () => {},
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return { data: { ...SAMPLE_HOME, availableRequests } };
 }
 
 /** Why an approved or unapproved interpreter cannot be offered a request right now. */
