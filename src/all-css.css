@@ -23,7 +23,6 @@ body {
   background-color: var(--color-bg-page);
   color: var(--color-text-main);
   -webkit-font-smoothing: antialiased;
-  /* CRITICAL FIX: No horizontal scrolling */
   overflow-x: hidden;
   width: 100%;
 }
@@ -133,156 +132,32 @@ body {
     gap: 12px !important;
   }
 
-  /* 4. Fix the Landing Page (Image first, then text/buttons) */
+  /* 4. Fix the Landing Page */
   .landing {
     height: auto !important;
     min-height: 100vh !important;
     overflow: visible !important;
-    background-attachment: scroll !important;
-    width: 100% !important;
-  }
-
-  .landing-hero {
-    display: flex !important;
-    flex-direction: column !important;
-    padding: 20px !important;
-    gap: 20px !important;
-    width: 100% !important;
-  }
-
-  /* Flatten the containers so we can order the items */
-  .landing-hero-left,
-  .landing-hero-right {
-    display: contents !important;
-  }
-
-  /* Order: Badge -> Title -> Subtitle -> Image -> CTA -> Features */
-  .landing-badge {
-    order: 1 !important;
-    width: fit-content !important;
-  }
-  .landing-title {
-    order: 2 !important;
-    font-size: 2.2rem !important;
-    line-height: 1.2 !important;
-  }
-  .landing-subtitle {
-    order: 3 !important;
-    font-size: 1rem !important;
-  }
-  .landing-frame {
-    order: 4 !important;
-    width: 100% !important;
-    margin: 10px 0 !important;
-  }
-  .landing-cta {
-    order: 5 !important;
-    width: 100% !important;
-    justify-content: center !important;
-    margin: 10px 0 !important;
-  }
-  .landing-features {
-    order: 6 !important;
-    width: 100% !important;
-  }
-
-  .landing-sweep,
-  .landing-halo {
-    display: none !important;
-  }
-
-  /* 5. Role Selection Cards */
-  .rs-cards {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 16px !important;
-    width: 100% !important;
-  }
-  .rs-card {
-    height: 380px !important;
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-
-  /* 6. Hide the video widget */
-  .ca-video-widget {
-    display: none !important;
-  }
-
-  /* 7. Live Session */
-  .ls-stage {
-    grid-template-columns: 1fr !important;
-    height: auto !important;
-  }
-  .ls-lobby {
-    grid-template-columns: 1fr !important;
-  }
-}
-
-@media (max-width: 900px) {
-  /* Allow the dashboard shell to grow and scroll */
-  .dl-shell,
-  .admin-shell,
-  .institution-shell,
-  .interpreter-shell {
-    height: auto !important;
-    min-height: 100vh !important;
-    overflow: visible !important;
-    display: flex !important;
-    flex-direction: column !important;
-  }
-
-  /* Allow the main content area to scroll */
-  .dl-main,
-  .admin-main,
-  .institution-main,
-  .interpreter-main {
-    height: auto !important;
-    overflow-y: visible !important;
-    padding: 16px !important;
-    width: 100% !important;
-  }
-
-  /* Make sure the body itself allows scrolling */
-  body {
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    height: auto !important;
-  }
-}
-
-@media (max-width: 900px) {
-  .landing {
-    /* 1. Let the page grow as tall as the content */
-    height: auto !important;
-    min-height: 100vh !important;
-
-    /* 2. Make the gradient stretch all the way down */
     background-attachment: scroll !important;
     background-size: cover !important;
     background-repeat: no-repeat !important;
-
-    /* 3. Prevent the white background from showing at the bottom */
     background-color: #2d1060 !important;
+    width: 100% !important;
   }
 
-  /* 4. Fix the order and layout of the hero section */
   .landing-hero {
     display: flex !important;
     flex-direction: column !important;
     padding: 20px !important;
     gap: 20px !important;
     width: 100% !important;
-    height: auto !important; /* Let the hero content grow */
+    height: auto !important;
   }
 
-  /* 5. Flatten the wrappers to order the elements */
   .landing-hero-left,
   .landing-hero-right {
     display: contents !important;
   }
 
-  /* 6. Reorder: Badge -> Title -> Subtitle -> Image -> CTA -> Features */
   .landing-badge {
     order: 1 !important;
     width: fit-content !important;
@@ -315,15 +190,137 @@ body {
     margin-bottom: 40px !important;
   }
 
-  /* 7. Hide the decorative backgrounds that might cause issues */
   .landing-sweep,
   .landing-halo {
     display: none !important;
   }
-
-  /* 8. Ensure text below the image is visible */
   .landing-features li {
     color: #fff !important;
     background: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  /* 5. Role Selection Cards */
+  .rs-cards {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    width: 100% !important;
+  }
+  .rs-card {
+    height: 380px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* 6. Hide the video widget */
+  .ca-video-widget {
+    display: none !important;
+  }
+
+  /* 7. Fix Dashboards Scrolling */
+  .dl-shell,
+  .admin-shell,
+  .institution-shell,
+  .interpreter-shell {
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow: visible !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .dl-main,
+  .admin-main,
+  .institution-main,
+  .interpreter-main {
+    height: auto !important;
+    overflow-y: visible !important;
+    padding: 16px !important;
+    width: 100% !important;
+  }
+
+  /* 8. Fix Admin Tables (Horizontal Scroll inside container) */
+  .table-wrap,
+  [class*='table-wrap'],
+  .ia-table-wrap,
+  .vp-table-wrap,
+  .rc-table-wrap,
+  .audit-table-wrap {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table,
+  .ia-table,
+  .vp-table,
+  .rc-table,
+  .audit-table {
+    min-width: 600px !important;
+    font-size: 12px !important;
+  }
+
+  /* 9. Fix In-Session Layout (Header Stacking & Video Grid) */
+  .ls-call-header {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    width: 100% !important;
+    margin-bottom: 16px !important;
+  }
+
+  .ls-call-header > * {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .ls-stage {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    height: auto !important;
+  }
+
+  .ls-stage > .vt {
+    aspect-ratio: 4 / 3 !important;
+    min-height: 200px !important;
+  }
+
+  /* 10. Fix Chat Window Height */
+  .chat,
+  [class*='chat'] {
+    max-height: 60vh !important;
+    min-height: 300px !important;
+    width: 100% !important;
+  }
+
+  .chat__list,
+  .chat__messages,
+  [class*='chat'] ul {
+    max-height: 40vh !important;
+    overflow-y: auto !important;
+  }
+
+  /* 11. Fix Button Wrapping (Prevent two lines) */
+  button,
+  .btn,
+  .ls-btn,
+  .ia-button,
+  .cc__btn {
+    white-space: nowrap !important;
+    min-width: 0 !important;
+    font-size: 13px !important;
+    padding: 10px 14px !important;
+  }
+
+  .cc__btn {
+    flex: 1 1 auto !important;
+    white-space: normal !important;
+    font-size: 10px !important;
+  }
+
+  .ls-call-header .ls-btn {
+    white-space: normal !important;
+    text-align: center;
   }
 }
