@@ -3,25 +3,72 @@ import type { InstitutionRole } from '../types';
 import { api } from './api';
 
 export interface InstitutionOverview {
-  /** The institution's name. */
   name: string;
-  /** What the signed-in person is inside it. */
   role: InstitutionRole | null;
-  staff: { total: number; active: number; revoked: number };
+  staff: {
+    total: number;
+    active: number;
+    revoked: number;
+  };
+}
+
+export interface InstitutionDashboardData {
+  institutionName: string;
+  staff: {
+    total: number;
+    active: number;
+    revoked: number;
+  };
+  sessions: {
+    totalRequests: number;
+    pendingRequests: number;
+    completedRequests: number;
+    cancelledRequests: number;
+    failedRequests: number;
+    totalVideoSessions: number;
+    waitingVideoSessions: number;
+    connectingVideoSessions: number;
+    connectedVideoSessions: number;
+    endedVideoSessions: number;
+    failedVideoSessions: number;
+    averageCallDurationSeconds: number;
+  };
 }
 
 interface ApiOverview {
-  institution: { organisation_name: string };
+  institution: {
+    organisation_name: string;
+  };
   institutional_role?: string | null;
-  staff_summary: { total: number; active: number; revoked: number };
+  staff_summary: {
+    total: number;
+    active: number;
+    revoked: number;
+  };
+  session_analytics: {
+    total_requests: number;
+    pending_requests: number;
+    assigned_requests: number;
+    completed_requests: number;
+    cancelled_requests: number;
+    failed_requests: number;
+    total_video_sessions: number;
+    waiting_video_sessions: number;
+    connecting_video_sessions: number;
+    connected_video_sessions: number;
+    ended_video_sessions: number;
+    failed_video_sessions: number;
+    average_call_duration_seconds: number;
+  };
 }
 
-/**
- * GET /api/v1/dashboard/institution/: the institution, the caller's role in it and how many staff
- * it has. Open to both the institution's admins and its staff.
- */
+async function fetchInstitutionDashboard(): Promise<ApiOverview> {
+  return api<ApiOverview>('/api/v1/dashboard/institution/');
+}
+
 export async function getInstitutionOverview(): Promise<InstitutionOverview> {
-  const raw = await api<ApiOverview>('/api/v1/dashboard/institution/');
+  const raw = await fetchInstitutionDashboard();
+
   return {
     name: raw.institution.organisation_name,
     role: toInstitutionRole(raw.institutional_role),
@@ -29,6 +76,30 @@ export async function getInstitutionOverview(): Promise<InstitutionOverview> {
       total: raw.staff_summary.total,
       active: raw.staff_summary.active,
       revoked: raw.staff_summary.revoked,
+    },
+  };
+}
+
+export async function getInstitutionDashboardData(): Promise<InstitutionDashboardData> {
+  const raw = await fetchInstitutionDashboard();
+  const analytics = raw.session_analytics;
+
+  return {
+    institutionName: raw.institution.organisation_name,
+    staff: raw.staff_summary,
+    sessions: {
+      totalRequests: analytics.total_requests,
+      pendingRequests: analytics.pending_requests,
+      completedRequests: analytics.completed_requests,
+      cancelledRequests: analytics.cancelled_requests,
+      failedRequests: analytics.failed_requests,
+      totalVideoSessions: analytics.total_video_sessions,
+      waitingVideoSessions: analytics.waiting_video_sessions,
+      connectingVideoSessions: analytics.connecting_video_sessions,
+      connectedVideoSessions: analytics.connected_video_sessions,
+      endedVideoSessions: analytics.ended_video_sessions,
+      failedVideoSessions: analytics.failed_video_sessions,
+      averageCallDurationSeconds: analytics.average_call_duration_seconds,
     },
   };
 }
