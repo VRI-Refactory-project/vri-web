@@ -123,10 +123,10 @@ body {
     padding: 0 16px !important;
   }
 
-  /* 3. Stack form rows */
+  /* 3. Stack form rows (sign-up and login pages only) */
   .ca-row,
   .inst-row,
-  [class*='-row'] {
+  .as-page [class*='-row'] {
     display: flex !important;
     flex-direction: column !important;
     gap: 12px !important;
@@ -405,5 +405,72 @@ body {
   .vp-table th:nth-child(3),
   .vp-table td:nth-child(3) {
     display: table-cell !important;
+  }
+}
+
+/* ========================================= */
+/* --- MOBILE SIDEBAR: same look as web ---  */
+/* (all roles that use DashboardLayout)      */
+/* ========================================= */
+
+@media (max-width: 900px) {
+  /* The sidebar becomes a full-height column that can scroll on short phones */
+  .dl-sidebar {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100vh !important;
+    height: 100dvh !important; /* uses the visible screen height on phones */
+    overflow-y: auto !important;
+  }
+
+  /* Logo and organisation name keep their size and are never squashed */
+  .dl-logo,
+  .dl-org {
+    flex: none !important;
+  }
+
+  /* The menu list takes all the free space, which pushes the account
+     block (avatar + name) down to the bottom, like on web */
+  .dl-nav {
+    flex: 1 0 auto !important;
+  }
+
+  /* Account block stays pinned at the bottom */
+  .dl-account {
+    flex: none !important;
+    margin-top: auto !important;
+  }
+}
+
+/* ========================================= */
+/* --- TABLES: shrink to fit, keep design --- */
+/* ========================================= */
+
+@media (max-width: 900px) {
+  /* The table fills the screen width and its columns share the space */
+  table,
+  .ia-table,
+  .vp-table,
+  .rc-table,
+  .audit-table {
+    display: table !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    table-layout: auto !important;
+    font-size: 11px !important;
+  }
+
+  /* Smaller cells, and words may wrap onto a second line */
+  th,
+  td {
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    padding: 8px 6px !important;
+  }
+
+  /* Status pills and badges inside tables get a little smaller too */
+  td span {
+    font-size: 10px !important;
   }
 }
