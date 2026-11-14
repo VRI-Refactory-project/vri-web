@@ -404,6 +404,20 @@
   }
   .landing-logo-word {
     height: 28px;
+    /* Keep Login and Sign Up on one line, never wrapping */
+    .landing-nav {
+      flex-shrink: 0;
+      gap: 0.5rem;
+    }
+    .landing-login,
+    .landing-signup {
+      white-space: nowrap;
+      font-size: 1rem;
+    }
+    .landing-signup {
+      padding: 0 1rem;
+      min-height: 38px;
+    }
   }
   .landing-header {
     padding-top: 1rem;
