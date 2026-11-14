@@ -144,9 +144,11 @@
   }
 
   .rs-card {
-    height: 320px;
+    /* Same height as the web card, so the person's photo sits below the
+       text exactly like the web design instead of being squashed */
+    height: 460px;
     width: 100%;
-    max-width: 520px;
+    max-width: 420px;
     margin-inline: auto;
   }
 }

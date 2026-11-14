@@ -132,21 +132,10 @@ body {
     gap: 12px !important;
   }
 
-  /* 4. CHANGED: the landing page rules were REMOVED from here.
-        They now live at the bottom of src/pages/landing/LandingPage.css */
+  /* 4. The landing page rules live in src/pages/landing/LandingPage.css */
 
-  /* 5. Role Selection Cards */
-  .rs-cards {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 16px !important;
-    width: 100% !important;
-  }
-  .rs-card {
-    height: 380px !important;
-    width: 100% !important;
-    max-width: 100% !important;
-  }
+  /* 5. Role selection: nothing here on purpose.
+        The page's own RoleSelectionPage.css stacks the cards on phones. */
 
   /* 6. Hide the video widget */
   .ca-video-widget {
@@ -238,11 +227,10 @@ body {
   }
 
   /* 11. Fix Button Wrapping (Prevent two lines)
-         CHANGED: ":where(:not(...))" skips the two landing buttons
-         (Sign Up and Get Started) so this rule stops shrinking them.
-         ":where" adds no extra priority, so the .cc__btn rule below
-         still wins exactly like before. */
-  button:where(:not(.landing-cta, .landing-signup)),
+         ":where(:not(...))" skips the landing buttons (Sign Up, Get Started)
+         AND the role selection cards (.rs-card), because those cards are
+         buttons too and must keep their own text wrapping and layout. */
+  button:where(:not(.landing-cta, .landing-signup, .rs-card)),
   .btn,
   .ls-btn,
   .ia-button,
@@ -270,45 +258,7 @@ body {
 /* ========================================= */
 
 @media (max-width: 900px) {
-  /* 1. CHANGED: the ".landing-logo-icon" rule was REMOVED from here.
-        The logo is now handled in LandingPage.css */
-
-  /* 2. Fix the Role Selection Cards Text Wrapping */
-  .rs-card {
-    height: 400px !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: flex-start !important;
-  }
-  .rs-card-text-overlay {
-    position: relative !important; /* Stops absolute positioning from pushing text out */
-    padding: 20px !important;
-    height: auto !important;
-    width: 100% !important;
-    background: #f8f9fa; /* Light background so text is readable */
-    z-index: 10 !important;
-  }
-  .rs-card-bg-image {
-    position: absolute !important;
-    top: 120px !important; /* Push image down below the text */
-    left: 0 !important;
-    width: 100% !important;
-    height: calc(100% - 120px) !important;
-    object-fit: cover !important;
-    z-index: 1 !important;
-  }
-  .rs-card-title {
-    color: #000 !important;
-    font-size: 1.2rem !important;
-    white-space: normal !important;
-  }
-  .rs-card-desc {
-    color: #333 !important;
-    font-size: 0.85rem !important;
-    white-space: normal !important;
-  }
-
-  /* 3. Fix the Admin Tables */
+  /* 1. Fix the Admin Tables */
   /* Force the table container to scroll, not the page */
   .ia-table-wrap,
   .vp-table-wrap,
@@ -336,7 +286,7 @@ body {
     display: none !important;
   }
 
-  /* 4. Fix the Admin Dashboard Small Cards (Screenshot 2) */
+  /* 2. Fix the Admin Dashboard Small Cards */
   .ad-row--top,
   .ad-row--mid,
   .ad-row--bottom {
@@ -348,7 +298,7 @@ body {
     max-width: 100% !important;
   }
 
-  /* 5. Fix the Credential Review Page (Screenshot 3) */
+  /* 3. Fix the Credential Review Page */
   .crp-grid {
     grid-template-columns: 1fr !important; /* Stack columns */
     width: 100% !important;
@@ -366,7 +316,7 @@ body {
     padding: 16px !important;
   }
 
-  /* 6. Fix the Sidebar Squeezing (Screenshot 5 & 6) */
+  /* 4. Fix the Sidebar Squeezing */
   /* Force it to look exactly like the web version */
   .dl-sidebar,
   .sidebar {
@@ -398,7 +348,7 @@ body {
     display: block !important; /* Show text on mobile sidebar */
   }
 
-  /* 7. Fix the Admin Dashboard Header Overflow (3rd last image) */
+  /* 5. Fix the Admin Dashboard Header Overflow */
   .ad-topbar {
     flex-direction: column !important;
     align-items: stretch !important;
@@ -413,7 +363,7 @@ body {
     width: 100% !important;
   }
 
-  /* 8. Force ALL grids to single column so nothing goes left */
+  /* 6. Force ALL grids to single column so nothing goes left */
   .ad-kpis,
   .ia-stats,
   .vp-stats {
