@@ -205,12 +205,44 @@
 // }
 
 import { useState } from 'react';
-import { Download } from 'lucide-react';
+import { Download, Loader2 } from 'lucide-react';
+import { apiBlob, describeError } from '../../services/api';
 import './InstitutionAnalyticsPage.css';
 
 export function InstitutionAnalyticsPage() {
   // 1. State to make the buttons interactive
   const [chartFilter, setChartFilter] = useState<'Daily' | 'Weekly' | 'Monthly'>('Daily');
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+  const handleExportReport = async () => {
+    try {
+      setIsExporting(true);
+      setExportError(null);
+
+      const pdfBlob = await apiBlob('/api/v1/dashboard/institution/export/');
+
+      // Create a temporary URL for the PDF.
+      const pdfUrl = window.URL.createObjectURL(pdfBlob);
+
+      // Create a temporary download link.
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = 'institution-analytics-report.pdf';
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Release the temporary URL after the download starts.
+      window.setTimeout(() => {
+        window.URL.revokeObjectURL(pdfUrl);
+      }, 1000);
+    } catch (error) {
+      setExportError(describeError(error));
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
     <div className="analytics-page">
@@ -220,9 +252,25 @@ export function InstitutionAnalyticsPage() {
           <h1>Analytics</h1>
           <p>Understand SignConnect usage across your institution.</p>
         </div>
-        <button className="btn-export">
-          <Download size={16} /> Export report
+        <button className="btn-export" onClick={handleExportReport} disabled={isExporting}>
+          {isExporting ? (
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              Generating report...
+            </>
+          ) : (
+            <>
+              <Download size={16} />
+              Export report
+            </>
+          )}
         </button>
+
+        {exportError && (
+          <p role="alert" className="text-error">
+            {exportError}
+          </p>
+        )}
       </header>
 
       {/* Filters */}
