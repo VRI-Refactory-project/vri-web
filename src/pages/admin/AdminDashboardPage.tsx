@@ -1,5 +1,3 @@
-
-
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Search,
@@ -104,11 +102,7 @@ function getActivityIcon(text: string) {
     return { Icon: Users, bg: '#e0f2fe', color: '#0284c7' };
   }
 
-  if (
-    value.includes('video') ||
-    value.includes('session') ||
-    value.includes('call')
-  ) {
+  if (value.includes('video') || value.includes('session') || value.includes('call')) {
     return { Icon: Video, bg: '#dcfce7', color: '#16a34a' };
   }
 
@@ -116,27 +110,15 @@ function getActivityIcon(text: string) {
     return { Icon: UserPlus, bg: '#f3e8ff', color: '#9333ea' };
   }
 
-  if (
-    value.includes('verification') ||
-    value.includes('verified') ||
-    value.includes('approved')
-  ) {
+  if (value.includes('verification') || value.includes('verified') || value.includes('approved')) {
     return { Icon: ShieldCheck, bg: '#e0f2fe', color: '#0284c7' };
   }
 
-  if (
-    value.includes('reject') ||
-    value.includes('failed') ||
-    value.includes('error')
-  ) {
+  if (value.includes('reject') || value.includes('failed') || value.includes('error')) {
     return { Icon: XCircle, bg: '#fee2e2', color: '#ef4444' };
   }
 
-  if (
-    value.includes('request') ||
-    value.includes('offer') ||
-    value.includes('interpreter')
-  ) {
+  if (value.includes('request') || value.includes('offer') || value.includes('interpreter')) {
     return { Icon: Headphones, bg: '#fef3c7', color: '#b45309' };
   }
 
@@ -156,10 +138,8 @@ export function AdminDashboardPage() {
   const [activity, setActivity] = useState<SessionActivityPoint[] | null>(null);
   const [feed, setFeed] = useState<ActivityItem[] | null>(null);
   const [growth, setGrowth] = useState<GrowthPoint[] | null>(null);
-  const [performance, setPerformance] =
-    useState<InterpreterPerformance | null>(null);
-  const [verification, setVerification] =
-    useState<VerificationStatusBreakdown | null>(null);
+  const [performance, setPerformance] = useState<InterpreterPerformance | null>(null);
+  const [verification, setVerification] = useState<VerificationStatusBreakdown | null>(null);
   const [sessions, setSessions] = useState<SessionRow[] | null>(null);
 
   // Notification data
@@ -214,10 +194,7 @@ export function AdminDashboardPage() {
     if (!bellOpen) return;
 
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        bellRef.current &&
-        !bellRef.current.contains(event.target as Node)
-      ) {
+      if (bellRef.current && !bellRef.current.contains(event.target as Node)) {
         setBellOpen(false);
       }
     };
@@ -235,9 +212,7 @@ export function AdminDashboardPage() {
 
     setNotifications((previous) =>
       previous.map((item) =>
-        item.id === notification.id
-          ? { ...item, read_at: new Date().toISOString() }
-          : item,
+        item.id === notification.id ? { ...item, read_at: new Date().toISOString() } : item,
       ),
     );
 
@@ -248,11 +223,7 @@ export function AdminDashboardPage() {
     } catch {
       // Restore unread status if the request fails
       setNotifications((previous) =>
-        previous.map((item) =>
-          item.id === notification.id
-            ? { ...item, read_at: null }
-            : item,
-        ),
+        previous.map((item) => (item.id === notification.id ? { ...item, read_at: null } : item)),
       );
 
       setUnreadCount((count) => count + 1);
@@ -272,9 +243,7 @@ export function AdminDashboardPage() {
   const verificationTotal = verification?.total ?? 0;
 
   const getVerificationPercentage = (value: number) =>
-    verificationTotal
-      ? `${Math.round((value / verificationTotal) * 100)}%`
-      : '0%';
+    verificationTotal ? `${Math.round((value / verificationTotal) * 100)}%` : '0%';
 
   // Search filtering
   const searchTerm = query.trim().toLowerCase();
@@ -282,30 +251,21 @@ export function AdminDashboardPage() {
   const filteredFeed = useMemo(() => {
     if (!feed || !searchTerm) return feed;
 
-    return feed.filter((item) =>
-      item.text.toLowerCase().includes(searchTerm),
-    );
+    return feed.filter((item) => item.text.toLowerCase().includes(searchTerm));
   }, [feed, searchTerm]);
 
   const filteredSessions = useMemo(() => {
     if (!sessions || !searchTerm) return sessions;
 
     return sessions.filter((item) =>
-      [
-        item.id,
-        item.client,
-        item.interpreter,
-        item.type,
-        item.status,
-      ].some((value) => value.toLowerCase().includes(searchTerm)),
+      [item.id, item.client, item.interpreter, item.type, item.status].some((value) =>
+        value.toLowerCase().includes(searchTerm),
+      ),
     );
   }, [sessions, searchTerm]);
 
   // Session activity chart scale
-  const activityMax = Math.max(
-    1,
-    ...(activity ?? []).map((item) => item.value),
-  );
+  const activityMax = Math.max(1, ...(activity ?? []).map((item) => item.value));
 
   const yMax = Math.ceil(activityMax / 50) * 50 || 250;
 
@@ -317,15 +277,11 @@ export function AdminDashboardPage() {
   // Busy status is not currently supplied by the backend
   const busyInterps = 0;
 
-  const availPct = totalInterps
-    ? Math.round((availableInterps / totalInterps) * 100)
-    : 0;
+  const availPct = totalInterps ? Math.round((availableInterps / totalInterps) * 100) : 0;
 
   const busyPct = 0;
 
-  const offlinePct = totalInterps
-    ? 100 - availPct
-    : 0;
+  const offlinePct = totalInterps ? 100 - availPct : 0;
 
   const availabilityDonut = `conic-gradient(
     #4b34a0 0 ${availPct}%,
@@ -368,14 +324,9 @@ export function AdminDashboardPage() {
             </button>
 
             {bellOpen && (
-              <div
-                className="ad-bell-panel"
-                role="dialog"
-                aria-label="Notifications"
-              >
+              <div className="ad-bell-panel" role="dialog" aria-label="Notifications">
                 <div className="ad-bell-header">
                   Notifications
-
                   {unreadCount > 0 && (
                     <span
                       style={{
@@ -401,9 +352,7 @@ export function AdminDashboardPage() {
                       return (
                         <li
                           key={notification.id}
-                          onClick={() =>
-                            handleNotificationClick(notification)
-                          }
+                          onClick={() => handleNotificationClick(notification)}
                           style={{
                             cursor: isUnread ? 'pointer' : 'default',
                             background: isUnread ? '#f8fafc' : 'white',
@@ -412,9 +361,7 @@ export function AdminDashboardPage() {
                           <span
                             className="ad-bell-dot"
                             style={{
-                              background: isUnread
-                                ? '#ef4444'
-                                : '#cbd5e1',
+                              background: isUnread ? '#ef4444' : '#cbd5e1',
                             }}
                           />
 
@@ -437,9 +384,7 @@ export function AdminDashboardPage() {
                     })}
                   </ul>
                 ) : (
-                  <p className="ad-bell-empty">
-                    No notifications yet.
-                  </p>
+                  <p className="ad-bell-empty">No notifications yet.</p>
                 )}
               </div>
             )}
@@ -451,9 +396,7 @@ export function AdminDashboardPage() {
 
             <span className="ad-user-text">
               <strong>{name}</strong>
-              <small>
-                {role.charAt(0).toUpperCase() + role.slice(1)}
-              </small>
+              <small>{role.charAt(0).toUpperCase() + role.slice(1)}</small>
             </span>
 
             <ChevronDown size={14} />
@@ -479,27 +422,16 @@ export function AdminDashboardPage() {
               <span>{label}</span>
             </div>
 
-            <div className="ad-kpi-value">
-              {kpiValues[id]}
-            </div>
+            <div className="ad-kpi-value">{kpiValues[id]}</div>
           </div>
         ))}
       </div>
 
       {/* Row 1: Session activity, interpreter availability and recent activity */}
-      <div
-        className="ad-row ad-row--top"
-        style={{ alignItems: 'stretch' }}
-      >
+      <div className="ad-row ad-row--top" style={{ alignItems: 'stretch' }}>
         {/* Session activity */}
-        <div
-          className="ad-panel"
-          style={{ display: 'flex', flexDirection: 'column' }}
-        >
-          <div
-            className="ad-panel-head"
-            style={{ alignItems: 'flex-start' }}
-          >
+        <div className="ad-panel" style={{ display: 'flex', flexDirection: 'column' }}>
+          <div className="ad-panel-head" style={{ alignItems: 'flex-start' }}>
             <div>
               <h3 style={{ margin: 0 }}>Session activity</h3>
             </div>
@@ -596,10 +528,7 @@ export function AdminDashboardPage() {
                   }}
                 >
                   {activity.map((item) => {
-                    const heightPct = Math.min(
-                      100,
-                      (item.value / yMax) * 100,
-                    );
+                    const heightPct = Math.min(100, (item.value / yMax) * 100);
 
                     return (
                       <div
@@ -645,10 +574,7 @@ export function AdminDashboardPage() {
                   }}
                 >
                   {activity.map((item) => (
-                    <span
-                      key={item.label}
-                      style={{ flex: 1, textAlign: 'center' }}
-                    >
+                    <span key={item.label} style={{ flex: 1, textAlign: 'center' }}>
                       {item.label}
                     </span>
                   ))}
@@ -661,10 +587,7 @@ export function AdminDashboardPage() {
         </div>
 
         {/* Interpreter availability */}
-        <div
-          className="ad-panel"
-          style={{ display: 'flex', flexDirection: 'column' }}
-        >
+        <div className="ad-panel" style={{ display: 'flex', flexDirection: 'column' }}>
           <div className="ad-panel-head">
             <div>
               <h3 style={{ margin: 0 }}>Interpreter availability</h3>
@@ -689,10 +612,7 @@ export function AdminDashboardPage() {
               alignItems: 'center',
             }}
           >
-            <div
-              className="ad-donut"
-              style={{ background: availabilityDonut }}
-            >
+            <div className="ad-donut" style={{ background: availabilityDonut }}>
               <div className="ad-donut-hole">
                 <strong>{totalInterps}</strong>
                 <small>Total</small>
@@ -701,10 +621,7 @@ export function AdminDashboardPage() {
 
             <div className="ad-legend" style={{ gap: '16px' }}>
               <div>
-                <span
-                  className="ad-legend-dot"
-                  style={{ background: '#4b34a0' }}
-                />
+                <span className="ad-legend-dot" style={{ background: '#4b34a0' }} />
 
                 <div>
                   <strong
@@ -724,10 +641,7 @@ export function AdminDashboardPage() {
               </div>
 
               <div>
-                <span
-                  className="ad-legend-dot"
-                  style={{ background: '#16a34a' }}
-                />
+                <span className="ad-legend-dot" style={{ background: '#16a34a' }} />
 
                 <div>
                   <strong
@@ -747,10 +661,7 @@ export function AdminDashboardPage() {
               </div>
 
               <div>
-                <span
-                  className="ad-legend-dot"
-                  style={{ background: '#cbd5e1' }}
-                />
+                <span className="ad-legend-dot" style={{ background: '#cbd5e1' }} />
 
                 <div>
                   <strong
@@ -773,14 +684,8 @@ export function AdminDashboardPage() {
         </div>
 
         {/* Recent activity */}
-        <div
-          className="ad-panel"
-          style={{ display: 'flex', flexDirection: 'column' }}
-        >
-          <div
-            className="ad-panel-head"
-            style={{ alignItems: 'center' }}
-          >
+        <div className="ad-panel" style={{ display: 'flex', flexDirection: 'column' }}>
+          <div className="ad-panel-head" style={{ alignItems: 'center' }}>
             <h3>Recent activity</h3>
 
             <button
@@ -871,10 +776,7 @@ export function AdminDashboardPage() {
       </div>
 
       {/* Row 2: Top session types, user growth and quick insights */}
-      <div
-        className="ad-row ad-row--mid"
-        style={{ alignItems: 'stretch' }}
-      >
+      <div className="ad-row ad-row--mid" style={{ alignItems: 'stretch' }}>
         {/* Top session types */}
         <div className="ad-panel">
           <div className="ad-panel-head">
@@ -882,83 +784,61 @@ export function AdminDashboardPage() {
             <small>All time</small>
           </div>
 
-          {summary?.top_session_types &&
-          summary.top_session_types.length > 0 ? (
-            <div
-              className="ad-locations"
-              style={{ marginTop: '20px' }}
-            >
+          {summary?.top_session_types && summary.top_session_types.length > 0 ? (
+            <div className="ad-locations" style={{ marginTop: '20px' }}>
               {(() => {
-                const total = summary.top_session_types.reduce(
-                  (sum, item) => sum + item.count,
-                  0,
-                );
+                const total = summary.top_session_types.reduce((sum, item) => sum + item.count, 0);
 
-                const colors = [
-                  '#4b34a0',
-                  '#8b5cf6',
-                  '#c4b5fd',
-                  '#e5e7eb',
-                ];
+                const colors = ['#4b34a0', '#8b5cf6', '#c4b5fd', '#e5e7eb'];
 
-                return summary.top_session_types
-                  .slice(0, 4)
-                  .map((item, index) => {
-                    const percentage =
-                      total > 0
-                        ? Math.round((item.count / total) * 100)
-                        : 0;
+                return summary.top_session_types.slice(0, 4).map((item, index) => {
+                  const percentage = total > 0 ? Math.round((item.count / total) * 100) : 0;
 
-                    const label =
-                      item.type.charAt(0).toUpperCase() +
-                      item.type.slice(1);
+                  const label = item.type.charAt(0).toUpperCase() + item.type.slice(1);
 
-                    return (
-                      <div
-                        key={index}
-                        style={{
-                          marginBottom:
-                            index === 3 ? 0 : '16px',
-                        }}
-                      >
-                        <div className="ad-loc-row">
-                          <span
-                            style={{
-                              fontWeight: 600,
-                              color: '#111827',
-                            }}
-                          >
-                            {label}
-                          </span>
-
-                          <span style={{ color: '#6b7280' }}>
-                            {percentage}%
-                          </span>
-                        </div>
-
-                        <div
-                          className="ad-loc-bar"
+                  return (
+                    <div
+                      key={index}
+                      style={{
+                        marginBottom: index === 3 ? 0 : '16px',
+                      }}
+                    >
+                      <div className="ad-loc-row">
+                        <span
                           style={{
-                            background: '#f3f4f6',
-                            height: '8px',
-                            borderRadius: '4px',
-                            marginTop: '6px',
+                            fontWeight: 600,
+                            color: '#111827',
                           }}
                         >
-                          <span
-                            style={{
-                              width: `${percentage}%`,
-                              background: colors[index % colors.length],
-                              display: 'block',
-                              height: '100%',
-                              borderRadius: '4px',
-                              transition: 'width 0.5s ease-in-out',
-                            }}
-                          />
-                        </div>
+                          {label}
+                        </span>
+
+                        <span style={{ color: '#6b7280' }}>{percentage}%</span>
                       </div>
-                    );
-                  });
+
+                      <div
+                        className="ad-loc-bar"
+                        style={{
+                          background: '#f3f4f6',
+                          height: '8px',
+                          borderRadius: '4px',
+                          marginTop: '6px',
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: `${percentage}%`,
+                            background: colors[index % colors.length],
+                            display: 'block',
+                            height: '100%',
+                            borderRadius: '4px',
+                            transition: 'width 0.5s ease-in-out',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                });
               })()}
             </div>
           ) : (
@@ -968,10 +848,7 @@ export function AdminDashboardPage() {
 
         {/* User growth */}
         <div className="ad-panel">
-          <div
-            className="ad-panel-head"
-            style={{ alignItems: 'flex-start' }}
-          >
+          <div className="ad-panel-head" style={{ alignItems: 'flex-start' }}>
             <div
               style={{
                 display: 'flex',
@@ -1039,10 +916,7 @@ export function AdminDashboardPage() {
                 }}
               >
                 {(() => {
-                  const max = Math.max(
-                    1,
-                    ...growth.map((item) => item.value),
-                  );
+                  const max = Math.max(1, ...growth.map((item) => item.value));
 
                   const formatY = (value: number) => {
                     if (value >= 1000000) {
@@ -1076,70 +950,24 @@ export function AdminDashboardPage() {
                 }}
               >
                 <defs>
-                  <linearGradient
-                    id="ug"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop
-                      offset="0%"
-                      stopColor="#4b34a0"
-                      stopOpacity="0.2"
-                    />
-                    <stop
-                      offset="100%"
-                      stopColor="#4b34a0"
-                      stopOpacity="0"
-                    />
+                  <linearGradient id="ug" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#4b34a0" stopOpacity="0.2" />
+                    <stop offset="100%" stopColor="#4b34a0" stopOpacity="0" />
                   </linearGradient>
                 </defs>
 
-                <line
-                  x1="0"
-                  y1="10"
-                  x2="320"
-                  y2="10"
-                  stroke="#f3f4f6"
-                  strokeWidth="1"
-                />
+                <line x1="0" y1="10" x2="320" y2="10" stroke="#f3f4f6" strokeWidth="1" />
 
-                <line
-                  x1="0"
-                  y1="50"
-                  x2="320"
-                  y2="50"
-                  stroke="#f3f4f6"
-                  strokeWidth="1"
-                />
+                <line x1="0" y1="50" x2="320" y2="50" stroke="#f3f4f6" strokeWidth="1" />
 
-                <line
-                  x1="0"
-                  y1="90"
-                  x2="320"
-                  y2="90"
-                  stroke="#f3f4f6"
-                  strokeWidth="1"
-                />
+                <line x1="0" y1="90" x2="320" y2="90" stroke="#f3f4f6" strokeWidth="1" />
 
-                <line
-                  x1="0"
-                  y1="130"
-                  x2="320"
-                  y2="130"
-                  stroke="#f3f4f6"
-                  strokeWidth="1"
-                />
+                <line x1="0" y1="130" x2="320" y2="130" stroke="#f3f4f6" strokeWidth="1" />
 
                 {(() => {
-                  const max = Math.max(
-                    1,
-                    ...growth.map((item) => item.value),
-                  );
+                  const max = Math.max(1, ...growth.map((item) => item.value));
 
-                  const stepX =
-                    300 / Math.max(1, growth.length - 1);
+                  const stepX = 300 / Math.max(1, growth.length - 1);
 
                   const points = growth.map((item, index) => {
                     const x = 10 + index * stepX;
@@ -1150,9 +978,7 @@ export function AdminDashboardPage() {
 
                   const line = points
                     .map((point, index) =>
-                      index === 0
-                        ? `M${point.x},${point.y}`
-                        : `L${point.x},${point.y}`,
+                      index === 0 ? `M${point.x},${point.y}` : `L${point.x},${point.y}`,
                     )
                     .join(' ');
 
@@ -1215,40 +1041,29 @@ export function AdminDashboardPage() {
           <div className="ad-insights">
             <div className="ad-insight">
               <Lightbulb size={14} />
-              <span>
-                VRI sessions completed up 22% this week.
-              </span>
+              <span>VRI sessions completed up 22% this week.</span>
             </div>
 
             <div className="ad-insight">
               <Lightbulb size={14} />
-              <span>
-                Kampala accounts for 62% of active users.
-              </span>
+              <span>Kampala accounts for 62% of active users.</span>
             </div>
 
             <div className="ad-insight">
               <Lightbulb size={14} />
-              <span>
-                Interpreter sign-ups increased by 13%.
-              </span>
+              <span>Interpreter sign-ups increased by 13%.</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Row 3: Interpreter performance and verification status */}
-      <div
-        className="ad-row ad-row--bottom"
-        style={{ alignItems: 'stretch' }}
-      >
+      <div className="ad-row ad-row--bottom" style={{ alignItems: 'stretch' }}>
         {/* Interpreter performance */}
         <div className="ad-panel">
           <div className="ad-panel-head">
             <div>
-              <h3 style={{ margin: 0 }}>
-                Interpreter performance
-              </h3>
+              <h3 style={{ margin: 0 }}>Interpreter performance</h3>
 
               <small
                 style={{
@@ -1335,7 +1150,6 @@ export function AdminDashboardPage() {
                   }}
                 >
                   ↑ {performance.responseTrend}{' '}
-
                   <span
                     style={{
                       color: '#9ca3af',
@@ -1413,7 +1227,6 @@ export function AdminDashboardPage() {
                   }}
                 >
                   ↑ {performance.completionTrend}{' '}
-
                   <span
                     style={{
                       color: '#9ca3af',
@@ -1431,10 +1244,7 @@ export function AdminDashboardPage() {
         </div>
 
         {/* Verification status */}
-        <div
-          className="ad-panel"
-          style={{ display: 'flex', flexDirection: 'column' }}
-        >
+        <div className="ad-panel" style={{ display: 'flex', flexDirection: 'column' }}>
           <div className="ad-panel-head">
             <h3>Verification status</h3>
           </div>
@@ -1451,45 +1261,34 @@ export function AdminDashboardPage() {
               <div className="ad-vbar">
                 <span
                   style={{
-                    width: getVerificationPercentage(
-                      verification.approved,
-                    ),
+                    width: getVerificationPercentage(verification.approved),
                     background: '#16a34a',
                   }}
                 />
 
                 <span
                   style={{
-                    width: getVerificationPercentage(
-                      verification.pending,
-                    ),
+                    width: getVerificationPercentage(verification.pending),
                     background: '#f59e0b',
                   }}
                 />
 
                 <span
                   style={{
-                    width: getVerificationPercentage(
-                      verification.rejected,
-                    ),
+                    width: getVerificationPercentage(verification.rejected),
                     background: '#ef4444',
                   }}
                 />
 
                 <span
                   style={{
-                    width: getVerificationPercentage(
-                      verification.flagged,
-                    ),
+                    width: getVerificationPercentage(verification.flagged),
                     background: '#4b34a0',
                   }}
                 />
               </div>
 
-              <div
-                className="ad-vlegend"
-                style={{ marginTop: '24px' }}
-              >
+              <div className="ad-vlegend" style={{ marginTop: '24px' }}>
                 <span>
                   <i style={{ background: '#16a34a' }} />
                   Approved · {verification.approved}
@@ -1519,10 +1318,7 @@ export function AdminDashboardPage() {
 
       {/* Upcoming sessions */}
       <div className="ad-panel">
-        <div
-          className="ad-panel-head"
-          style={{ alignItems: 'center' }}
-        >
+        <div className="ad-panel-head" style={{ alignItems: 'center' }}>
           <div
             style={{
               display: 'flex',
@@ -1554,13 +1350,7 @@ export function AdminDashboardPage() {
           <table className="ad-table">
             <thead>
               <tr>
-                {[
-                  'Time',
-                  'User',
-                  'Interpreter',
-                  'Session type',
-                  'Status',
-                ].map((heading) => (
+                {['Time', 'User', 'Interpreter', 'Session type', 'Status'].map((heading) => (
                   <th
                     key={heading}
                     style={{
@@ -1579,8 +1369,7 @@ export function AdminDashboardPage() {
             <tbody>
               {filteredSessions.map((item) => {
                 const typeLabel = item.type
-                  ? item.type.charAt(0).toUpperCase() +
-                    item.type.slice(1)
+                  ? item.type.charAt(0).toUpperCase() + item.type.slice(1)
                   : '—';
 
                 const status = statusStyle(item.status);
@@ -1664,4 +1453,3 @@ export function AdminDashboardPage() {
     </div>
   );
 }
-
