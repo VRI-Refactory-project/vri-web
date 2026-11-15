@@ -1,59 +1,152 @@
-import { MessageSquare, Search, Send } from 'lucide-react';
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { Check, CheckCheck, Search, Send } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { Avatar } from '../../features/community/Avatar';
+import { formatWhen, mergeMessages } from '../../features/community/chatHelpers';
+import { COMMUNITY_PATH, CommunityTabs } from '../../features/community/CommunityTabs';
+import { useInterval } from '../../features/community/useInterval';
+import { describeError } from '../../services/api';
 import {
   getConversations,
-  matchesSearch,
-  withSentMessage,
+  getMessages,
+  markRead,
+  sendMessage,
+  type ChatMessage,
   type Conversation,
-} from '../../services/messages';
+} from '../../services/community';
 import './DeafExtras.css';
+import '../../features/community/Community.css';
 
-const clock = () => new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+const LIST_REFRESH_MS = 6000;
+const THREAD_REFRESH_MS = 4000;
 
+/** Your conversations with the Deaf people you are connected with. */
 export function MessagesPage() {
+  const [params, setParams] = useSearchParams();
   const [conversations, setConversations] = useState<Conversation[] | null>(null);
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState('');
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [hasMore, setHasMore] = useState(false);
   const [search, setSearch] = useState('');
   const [draft, setDraft] = useState('');
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState('');
+  const endRef = useRef<HTMLLIElement>(null);
+
+  const requested = Number(params.get('c'));
+  const activeId =
+    conversations?.find((c) => c.id === requested)?.id ?? conversations?.[0]?.id ?? null;
+  const active = conversations?.find((c) => c.id === activeId) ?? null;
+
+  const refreshList = useCallback(async () => {
+    try {
+      setConversations(await getConversations());
+      setLoadError('');
+    } catch (err) {
+      // Keep what is shown; only say something when there is nothing to show yet.
+      setLoadError((now) => now || describeError(err));
+    }
+  }, []);
 
   useEffect(() => {
+    void refreshList();
+  }, [refreshList]);
+  useInterval(refreshList, LIST_REFRESH_MS);
+
+  // Opening a conversation shows its newest messages.
+  useEffect(() => {
+    setMessages([]);
+    setHasMore(false);
+    setSendError('');
+    if (activeId === null) return;
     let cancelled = false;
-    getConversations().then((list) => {
-      if (cancelled) return;
-      setConversations(list);
-      setActiveId(list[0]?.id ?? null);
-    });
+    getMessages(activeId).then(
+      (page) => {
+        if (cancelled) return;
+        setMessages(page.messages);
+        setHasMore(page.hasMore);
+      },
+      () => undefined,
+    );
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [activeId]);
 
-  const shown = useMemo(
-    () => (conversations ?? []).filter((c) => matchesSearch(c, search)),
-    [conversations, search],
-  );
-  const active = conversations?.find((c) => c.id === activeId) ?? null;
+  const refreshThread = useCallback(async () => {
+    if (activeId === null) return;
+    try {
+      const page = await getMessages(activeId);
+      setMessages((shown) => mergeMessages(shown, page.messages));
+    } catch {
+      // The next tick tries again.
+    }
+  }, [activeId]);
+  useInterval(refreshThread, activeId === null ? null : THREAD_REFRESH_MS);
 
-  const send = (e: FormEvent) => {
-    e.preventDefault();
-    const text = draft.trim();
-    if (!text || !active) return;
-    setConversations((list) =>
-      (list ?? []).map((c) => (c.id === active.id ? withSentMessage(c, text, clock()) : c)),
+  // Opening a conversation with unread messages reads them, and it keeps doing so while it stays open.
+  const unread = active?.unread ?? 0;
+  useEffect(() => {
+    if (activeId === null || unread === 0) return;
+    markRead(activeId).then(
+      () =>
+        setConversations((list) =>
+          (list ?? []).map((c) => (c.id === activeId ? { ...c, unread: 0 } : c)),
+        ),
+      () => undefined,
     );
-    setDraft('');
+  }, [activeId, unread]);
+
+  const newest = messages[messages.length - 1]?.id;
+  useEffect(() => {
+    endRef.current?.scrollIntoView?.({ block: 'end' });
+  }, [newest]);
+
+  const shown = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return (conversations ?? []).filter((c) => c.person.name.toLowerCase().includes(term));
+  }, [conversations, search]);
+
+  const loadOlder = async () => {
+    if (activeId === null || messages.length === 0) return;
+    try {
+      const page = await getMessages(activeId, messages[0].id);
+      setMessages((now) => mergeMessages(page.messages, now));
+      setHasMore(page.hasMore);
+    } catch (err) {
+      setSendError(describeError(err));
+    }
+  };
+
+  const send = async (e: FormEvent) => {
+    e.preventDefault();
+    const body = draft.trim();
+    if (!body || activeId === null || sending) return;
+    setSending(true);
+    setSendError('');
+    try {
+      const sent = await sendMessage(activeId, body);
+      setMessages((now) => mergeMessages(now, [sent]));
+      setDraft('');
+      void refreshList();
+    } catch (err) {
+      setSendError(describeError(err));
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
     <div className="dx-page">
       <header className="dx-header">
-        <h1>Chat</h1>
-        <p>Message your interpreters and the SignConnect support team.</p>
+        <h1>Messages</h1>
+        <p>Chat with the Deaf people you are connected with.</p>
+        <CommunityTabs />
       </header>
 
-      {conversations !== null && conversations.length === 0 && (
-        <p className="dx-notice" role="status">
-          Messaging is not live yet. Your conversations will appear here once it is.
+      {loadError && (
+        <p className="dx-notice" role="alert">
+          {loadError}
         </p>
       )}
 
@@ -69,48 +162,86 @@ export function MessagesPage() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </label>
-          <ul className="dx-list">
-            {shown.map((c) => (
-              <li key={c.id}>
-                <button
-                  type="button"
-                  className={`dx-convo${c.id === activeId ? ' dx-convo--on' : ''}`}
-                  onClick={() => setActiveId(c.id)}
-                >
-                  <span className="dx-icon">
-                    <MessageSquare size={18} aria-hidden />
-                  </span>
-                  <span className="dx-tx-text">
-                    <strong>{c.name}</strong>
-                    <small>{c.preview}</small>
-                  </span>
-                  <small>{c.when}</small>
-                  {c.unread && <span className="dx-dot" aria-label="Unread" />}
-                </button>
-              </li>
-            ))}
-          </ul>
+          {conversations !== null && conversations.length === 0 ? (
+            <p className="cm-note">
+              No conversations yet. <Link to={COMMUNITY_PATH}>Find people in Community</Link> and
+              connect to start chatting.
+            </p>
+          ) : (
+            <ul className="dx-list">
+              {shown.map((c) => (
+                <li key={c.id}>
+                  <button
+                    type="button"
+                    className={`dx-convo${c.id === activeId ? ' dx-convo--on' : ''}`}
+                    aria-current={c.id === activeId ? 'true' : undefined}
+                    onClick={() => setParams({ c: String(c.id) })}
+                  >
+                    <Avatar name={c.person.name} photoUrl={c.person.photoUrl} />
+                    <span className="dx-tx-text">
+                      <strong>{c.person.name}</strong>
+                      <small>{c.lastMessage?.body ?? 'Say hello'}</small>
+                    </span>
+                    {c.lastMessage && <small>{formatWhen(c.lastMessage.createdAt)}</small>}
+                    {c.unread > 0 && (
+                      <span className="cm-badge" aria-label={`${c.unread} unread`}>
+                        {c.unread}
+                      </span>
+                    )}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </aside>
 
         <section className="dx-thread" aria-label="Conversation">
           {active ? (
             <>
-              <header className="dx-thread-head">
-                <strong>{active.name}</strong>
-                <small>{active.subtitle}</small>
+              <header className="cm-thread-head">
+                <Avatar name={active.person.name} photoUrl={active.person.photoUrl} />
+                <div>
+                  <strong>{active.person.name}</strong>
+                  {active.person.location && <small>{active.person.location}</small>}
+                </div>
               </header>
-              <ul className="dx-messages">
-                {active.messages.map((m) => (
+              <ul className="dx-messages cm-messages">
+                {hasMore && (
+                  <li style={{ alignSelf: 'center' }}>
+                    <button type="button" className="cm-more" onClick={loadOlder}>
+                      Load earlier messages
+                    </button>
+                  </li>
+                )}
+                {messages.map((m) => (
                   <li key={m.id} className={`dx-msg${m.mine ? ' dx-msg--mine' : ''}`}>
-                    <p>{m.text}</p>
-                    <small>{m.time}</small>
+                    <p>{m.body}</p>
+                    <small>
+                      {formatWhen(m.createdAt)}
+                      {m.mine && (
+                        <span
+                          className={`cm-ticks${m.read ? ' cm-ticks--read' : ''}`}
+                          role="img"
+                          aria-label={m.read ? 'Read' : 'Sent'}
+                        >
+                          {m.read ? <CheckCheck size={14} /> : <Check size={14} />}
+                        </span>
+                      )}
+                    </small>
                   </li>
                 ))}
+                <li ref={endRef} aria-hidden="true" />
               </ul>
+              {sendError && (
+                <p className="cm-error" role="alert">
+                  {sendError}
+                </p>
+              )}
               <form className="dx-compose" onSubmit={send}>
                 <input
                   aria-label="Write a message"
                   placeholder="Write a message…"
+                  maxLength={2000}
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
                 />
@@ -118,14 +249,18 @@ export function MessagesPage() {
                   type="submit"
                   className="dx-send"
                   aria-label="Send"
-                  disabled={!draft.trim()}
+                  disabled={!draft.trim() || sending}
                 >
                   <Send size={18} aria-hidden />
                 </button>
               </form>
             </>
           ) : (
-            <p className="dx-empty">Select a conversation to read it.</p>
+            <p className="dx-empty">
+              {conversations === null
+                ? 'Loading your conversations…'
+                : 'Select a conversation to read it.'}
+            </p>
           )}
         </section>
       </div>

@@ -1,0 +1,151 @@
+.cm-tabs {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+.cm-tabs a {
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: #f1edfb;
+  color: #3b2579;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+}
+.cm-tabs a.active {
+  background: #3b2579;
+  color: #fff;
+}
+.cm-avatar {
+  flex: none;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.cm-avatar--initials {
+  display: grid;
+  place-items: center;
+  background: #e9e5f8;
+  color: #4b3a9e;
+  font-weight: 700;
+  font-size: 14px;
+}
+.cm-badge {
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #3b2579;
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-align: center;
+}
+.cm-thread-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f1f0f7;
+}
+.cm-thread-head strong {
+  display: block;
+}
+.cm-thread-head small {
+  color: #64748b;
+}
+.cm-messages {
+  overflow-y: auto;
+  max-height: 26rem;
+}
+.cm-ticks {
+  display: inline-flex;
+  vertical-align: middle;
+  margin-left: 4px;
+  color: #94a3b8;
+}
+.cm-ticks--read {
+  color: #2563eb;
+}
+.cm-more {
+  align-self: center;
+  padding: 6px 14px;
+  border: 1px solid #ddd6f3;
+  border-radius: 999px;
+  background: #fff;
+  color: #3b2579;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.cm-error {
+  margin: 0;
+  color: #b42318;
+  font-size: 13px;
+}
+.cm-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cm-section h2 {
+  margin: 0;
+  font-size: 16px;
+}
+.cm-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+.cm-person {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  background: #fff;
+  border: 1px solid #ece9f7;
+  border-radius: 16px;
+}
+.cm-person-text {
+  flex: 1;
+  min-width: 0;
+}
+.cm-person-text strong,
+.cm-person-text small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cm-person-text small {
+  color: #64748b;
+}
+.cm-actions {
+  display: flex;
+  gap: 6px;
+}
+.cm-btn {
+  padding: 8px 14px;
+  border: 1.5px solid #3b2579;
+  border-radius: 10px;
+  background: #3b2579;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+.cm-btn--ghost {
+  background: #fff;
+  color: #3b2579;
+}
+.cm-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.cm-note {
+  color: #64748b;
+  font-size: 13px;
+}

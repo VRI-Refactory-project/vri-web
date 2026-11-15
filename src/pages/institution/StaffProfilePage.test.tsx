@@ -6,6 +6,7 @@ import { ApiError } from '../../services/api';
 import * as staffService from '../../services/staff';
 import type { StaffMember } from '../../services/staff';
 import { StaffProfilePage } from './StaffProfilePage';
+import * as authService from '../../services/auth';
 
 const sarah: StaffMember = {
   id: '12',
@@ -124,8 +125,21 @@ describe('StaffProfilePage', () => {
   });
 
   it('does not offer to revoke your own account', async () => {
-    vi.spyOn(staffService, 'getStaff').mockResolvedValue({ ...sarah, userId: '7', name: 'Grace' });
+    vi.spyOn(authService, 'getCurrentUser').mockResolvedValue({
+      id: '7',
+      name: 'Grace',
+      role: 'institution',
+      mustChangePassword: false,
+    });
+
+    vi.spyOn(staffService, 'getStaff').mockResolvedValue({
+      ...sarah,
+      userId: '7',
+      name: 'Grace',
+    });
+
     renderPage();
+
     expect(await screen.findByText(/This is your own account/)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Revoke access' })).not.toBeInTheDocument();
   });

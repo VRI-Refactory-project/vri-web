@@ -148,6 +148,23 @@
   border: 1.5px solid #b42318;
   color: #b42318;
 }
+.sp-btn--ghost {
+  background: #fff;
+  border: 1.5px solid #d9d4f0;
+  color: #3b2579;
+}
+.sp-hero .sp-btn {
+  margin-left: auto;
+}
+.sp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+/* .sp-card > p greys out its paragraphs; the success message keeps its own colour. */
+.sp-card > .sp-ok {
+  color: #1f6b3b;
+}
 .sp-faq details {
   padding: 14px 0;
   border-top: 1px solid #f1f0f7;

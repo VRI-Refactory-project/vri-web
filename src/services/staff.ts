@@ -3,9 +3,11 @@ import { normalizePhone } from '../lib/validation';
 
 // V2-006 staff accounts. The institution administrator manages their own institution's staff
 // (vri-api apps/institutions: /api/v1/institutions/me/staff/). Only ADMINs of an approved institution
-// may call these; anyone else gets a 403.
+// may call these; anyone else gets a 403. The exception is updateMyProfile, which every staff member
+// uses on their own account.
 
 const BASE = '/api/v1/institutions/me/staff/';
+const MY_PROFILE = '/api/v1/institutions/me/profile/';
 
 /** The departments the forms offer. Saved by the API as the staff member's job title. */
 export const DEPARTMENTS = [
@@ -133,6 +135,23 @@ export async function updateStaff(id: string, changes: StaffChanges): Promise<St
   if (changes.department !== undefined) body.job_title = changes.department;
   if (changes.role !== undefined) body.role = changes.role === 'Admin' ? 'ADMIN' : 'STAFF';
   const raw = await api<ApiStaff>(`${BASE}${id}/`, { method: 'PATCH', body: JSON.stringify(body) });
+  return toStaffMember(raw);
+}
+
+/** What staff may change about themselves. Email, department and role stay with the administrator. */
+export interface MyProfileChanges {
+  fullName: string;
+  phone: string;
+}
+
+export async function updateMyProfile(changes: MyProfileChanges): Promise<StaffMember> {
+  const raw = await api<ApiStaff>(MY_PROFILE, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      full_name: changes.fullName.trim(),
+      phone_number: normalizePhone(changes.phone),
+    }),
+  });
   return toStaffMember(raw);
 }
 
