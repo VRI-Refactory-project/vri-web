@@ -321,10 +321,18 @@
   padding: 6px;
   width: 32px;
   height: 32px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 .users-action-btn--delete:hover {
   background: #fee2e2;
   color: #b91c1c;
+  transform: scale(1.05);
 }
 
 /* Force the Actions column to never shrink below 240px */

@@ -22,7 +22,9 @@
 //   const [status, setStatus] = useState('all-statuses');
 //   const [range, setRange] = useState('all-time');
 
-//   // Load users when filters change
+//   // Selection state
+//   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
 //   useEffect(() => {
 //     let cancelled = false;
 //     const filters: AdminUserFilters = { search, type, status, range };
@@ -32,7 +34,10 @@
 
 //       fetchAdminUsers(filters)
 //         .then((data) => {
-//           if (!cancelled) setUsers(data);
+//           if (!cancelled) {
+//             setUsers(data);
+//             setSelectedIds(new Set()); // Clear selection on reload
+//           }
 //         })
 //         .catch((err) => {
 //           if (!cancelled) {
@@ -48,17 +53,16 @@
 //     };
 //   }, [search, type, status, range]);
 
-//   // 👇 Helper to refresh the current view after an action
 //   const refreshUsers = async () => {
 //     try {
 //       const data = await fetchAdminUsers({ search, type, status, range });
 //       setUsers(data);
+//       setSelectedIds(new Set());
 //     } catch (err) {
 //       alert(`Failed to refresh: ${describeError(err)}`);
 //     }
 //   };
 
-//   // Reusable helper to format a date string nicely
 //   const formatDate = (value: string | null | undefined) => {
 //     if (!value) return '—';
 //     const d = new Date(value);
@@ -68,6 +72,15 @@
 //       month: 'short',
 //       year: 'numeric',
 //     });
+//   };
+
+//   // NEW: Status pill style helper
+//   const statusBadgeStyle = (status: string) => {
+//     const s = status.toLowerCase();
+//     if (s === 'verified') return { background: '#dcfce7', color: '#15803d' };
+//     if (s === 'pending') return { background: '#fef3c7', color: '#b45309' };
+//     if (s === 'rejected' || s === 'suspended') return { background: '#fee2e2', color: '#b91c1c' };
+//     return { background: '#f1f5f9', color: '#475569' };
 //   };
 
 //   const handleExport = () => {
@@ -100,9 +113,29 @@
 //     document.body.removeChild(link);
 //   };
 
-//   // 👇 Real handlers that call the backend
+//   // Selection handlers
+//   const toggleSelect = (id: string) => {
+//     setSelectedIds((prev) => {
+//       const next = new Set(prev);
+//       if (next.has(id)) next.delete(id);
+//       else next.add(id);
+//       return next;
+//     });
+//   };
+
+//   const toggleSelectAll = () => {
+//     if (!users) return;
+//     if (selectedIds.size === users.length) {
+//       setSelectedIds(new Set());
+//     } else {
+//       setSelectedIds(new Set(users.map((u) => u.id)));
+//     }
+//   };
+
+//   const allSelected = users && users.length > 0 && selectedIds.size === users.length;
+
+//   // Action handlers
 //   const handleEdit = (user: AdminUser) => {
-//     // TODO: Replace with a real edit modal/page later
 //     alert(`Edit user: ${user.name} (ID: ${user.id})`);
 //   };
 
@@ -129,8 +162,12 @@
 //     if (!window.confirm(`Delete ${user.name} permanently? This cannot be undone.`)) return;
 //     try {
 //       await deleteUser(user.id);
-//       // Optimistically remove from list
 //       setUsers((prev) => (prev ? prev.filter((u) => u.id !== user.id) : prev));
+//       setSelectedIds((prev) => {
+//         const next = new Set(prev);
+//         next.delete(user.id);
+//         return next;
+//       });
 //     } catch (err) {
 //       alert(`Failed to delete: ${describeError(err)}`);
 //     }
@@ -200,7 +237,12 @@
 //           <thead>
 //             <tr>
 //               <th className="users-col-check">
-//                 <input type="checkbox" aria-label="Select all" />
+//                 <input
+//                   type="checkbox"
+//                   aria-label="Select all"
+//                   checked={!!allSelected}
+//                   onChange={toggleSelectAll}
+//                 />
 //               </th>
 //               <th>User</th>
 //               <th>Type</th>
@@ -228,14 +270,33 @@
 //               users.map((u) => (
 //                 <tr key={u.id}>
 //                   <td>
-//                     <input type="checkbox" aria-label={`Select ${u.name}`} />
+//                     <input
+//                       type="checkbox"
+//                       aria-label={`Select ${u.name}`}
+//                       checked={selectedIds.has(u.id)}
+//                       onChange={() => toggleSelect(u.id)}
+//                     />
 //                   </td>
 //                   <td>
-//                       <strong>{u.name}</strong>
-//                       {/* <small>{u.email}</small> */}
+//                     <strong>{u.name}</strong>
 //                   </td>
 //                   <td>{u.role}</td>
-//                   <td>{u.verificationStatus}</td>
+//                   <td>
+//                     {/* NEW: Status pill */}
+//                     <span
+//                       style={{
+//                         display: 'inline-block',
+//                         padding: '4px 10px',
+//                         borderRadius: '999px',
+//                         fontSize: '11px',
+//                         fontWeight: 700,
+//                         textTransform: 'capitalize',
+//                         ...statusBadgeStyle(u.verificationStatus),
+//                       }}
+//                     >
+//                       {u.verificationStatus}
+//                     </span>
+//                   </td>
 //                   <td>
 //                     {u.email}
 //                     {u.phone ? ` · ${u.phone}` : ''}
@@ -279,7 +340,7 @@
 //                         className="users-action-btn users-action-btn--delete"
 //                         title="Delete user"
 //                       >
-//                         <Trash2 size={14} />
+//                         <Trash2 size={16} />
 //                       </button>
 //                     </div>
 //                   </td>
@@ -293,6 +354,7 @@
 //       <footer className="users-footer">
 //         <span>
 //           Showing {users?.length ?? 0} user{users?.length === 1 ? '' : 's'}
+//           {selectedIds.size > 0 && ` · ${selectedIds.size} selected`}
 //         </span>
 //       </footer>
 //     </div>
@@ -326,6 +388,16 @@ export function UsersPage() {
   // Selection state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
+  // 👇 Modal states
+  const [confirmAction, setConfirmAction] = useState<{
+    type: 'deactivate' | 'delete';
+    user: AdminUser;
+  } | null>(null);
+
+  const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
+  const [editForm, setEditForm] = useState({ name: '', email: '', phone: '' });
+  const [isSaving, setIsSaving] = useState(false);
+
   useEffect(() => {
     let cancelled = false;
     const filters: AdminUserFilters = { search, type, status, range };
@@ -337,7 +409,7 @@ export function UsersPage() {
         .then((data) => {
           if (!cancelled) {
             setUsers(data);
-            setSelectedIds(new Set()); // Clear selection on reload
+            setSelectedIds(new Set());
           }
         })
         .catch((err) => {
@@ -360,7 +432,7 @@ export function UsersPage() {
       setUsers(data);
       setSelectedIds(new Set());
     } catch (err) {
-      alert(`Failed to refresh: ${describeError(err)}`);
+      setError(`Failed to refresh: ${describeError(err)}`);
     }
   };
 
@@ -375,7 +447,6 @@ export function UsersPage() {
     });
   };
 
-  // NEW: Status pill style helper
   const statusBadgeStyle = (status: string) => {
     const s = status.toLowerCase();
     if (s === 'verified') return { background: '#dcfce7', color: '#15803d' };
@@ -414,7 +485,6 @@ export function UsersPage() {
     document.body.removeChild(link);
   };
 
-  // Selection handlers
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -435,9 +505,32 @@ export function UsersPage() {
 
   const allSelected = users && users.length > 0 && selectedIds.size === users.length;
 
-  // Action handlers
+  // 👇 Action handlers
   const handleEdit = (user: AdminUser) => {
-    alert(`Edit user: ${user.name} (ID: ${user.id})`);
+    setEditingUser(user);
+    setEditForm({ name: user.name, email: user.email, phone: user.phone });
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingUser) return;
+    setIsSaving(true);
+    try {
+      // TODO: Call your backend PATCH endpoint here
+      // await api(`/api/v1/administration/users/${editingUser.id}/`, {
+      //   method: 'PATCH',
+      //   body: JSON.stringify(editForm),
+      // });
+
+      // For now, optimistically update the local state
+      setUsers((prev) =>
+        prev ? prev.map((u) => (u.id === editingUser.id ? { ...u, ...editForm } : u)) : prev,
+      );
+      setEditingUser(null);
+    } catch (err) {
+      setError(`Failed to save: ${describeError(err)}`);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleApprove = async (user: AdminUser) => {
@@ -445,32 +538,40 @@ export function UsersPage() {
       await approveUser(user.id);
       await refreshUsers();
     } catch (err) {
-      alert(`Failed to approve: ${describeError(err)}`);
+      setError(`Failed to approve: ${describeError(err)}`);
     }
   };
 
-  const handleDeactivate = async (user: AdminUser) => {
-    if (!window.confirm(`Deactivate ${user.name}? They won't be able to log in.`)) return;
-    try {
-      await deactivateUser(user.id);
-      await refreshUsers();
-    } catch (err) {
-      alert(`Failed to deactivate: ${describeError(err)}`);
-    }
+  const handleDeactivate = (user: AdminUser) => {
+    setConfirmAction({ type: 'deactivate', user });
   };
 
-  const handleDelete = async (user: AdminUser) => {
-    if (!window.confirm(`Delete ${user.name} permanently? This cannot be undone.`)) return;
+  const handleDelete = (user: AdminUser) => {
+    setConfirmAction({ type: 'delete', user });
+  };
+
+  // 👇 The actual execution when the modal is confirmed
+  const executeAction = async () => {
+    if (!confirmAction) return;
+    const { type, user } = confirmAction;
+
     try {
-      await deleteUser(user.id);
-      setUsers((prev) => (prev ? prev.filter((u) => u.id !== user.id) : prev));
-      setSelectedIds((prev) => {
-        const next = new Set(prev);
-        next.delete(user.id);
-        return next;
-      });
+      if (type === 'deactivate') {
+        await deactivateUser(user.id);
+        await refreshUsers();
+      } else {
+        await deleteUser(user.id);
+        setUsers((prev) => (prev ? prev.filter((u) => u.id !== user.id) : prev));
+        setSelectedIds((prev) => {
+          const next = new Set(prev);
+          next.delete(user.id);
+          return next;
+        });
+      }
+      setConfirmAction(null);
     } catch (err) {
-      alert(`Failed to delete: ${describeError(err)}`);
+      setError(`Failed to ${type} ${user.name}: ${describeError(err)}`);
+      setConfirmAction(null);
     }
   };
 
@@ -498,6 +599,36 @@ export function UsersPage() {
           Export users
         </button>
       </div>
+
+      {/* 👇 Error banner (replaces the ugly alerts) */}
+      {error && (
+        <div
+          style={{
+            background: '#fee2e2',
+            color: '#b91c1c',
+            padding: '12px 16px',
+            borderRadius: '8px',
+            marginBottom: '16px',
+            fontSize: '14px',
+            fontWeight: 500,
+          }}
+        >
+          {error}
+          <button
+            onClick={() => setError('')}
+            style={{
+              float: 'right',
+              background: 'none',
+              border: 'none',
+              color: '#b91c1c',
+              fontWeight: 700,
+              cursor: 'pointer',
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       <section className="ad-toolbar">
         <label className="users-search">
@@ -583,7 +714,6 @@ export function UsersPage() {
                   </td>
                   <td>{u.role}</td>
                   <td>
-                    {/* NEW: Status pill */}
                     <span
                       style={{
                         display: 'inline-block',
@@ -610,9 +740,9 @@ export function UsersPage() {
                         type="button"
                         onClick={() => handleEdit(u)}
                         className="users-action-btn users-action-btn--edit"
+                        title="Edit user"
                       >
                         <Pencil size={14} />
-                        {/* Edit */}
                       </button>
 
                       {u.verificationStatus === 'pending' ? (
@@ -641,7 +771,7 @@ export function UsersPage() {
                         className="users-action-btn users-action-btn--delete"
                         title="Delete user"
                       >
-                        <Trash2 size={14} />
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </td>
@@ -658,6 +788,224 @@ export function UsersPage() {
           {selectedIds.size > 0 && ` · ${selectedIds.size} selected`}
         </span>
       </footer>
+
+      {/* ========================================== */}
+      {/* 👇 CUSTOM CONFIRMATION MODAL (Deactivate/Delete) */}
+      {/* ========================================== */}
+      {confirmAction && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}
+        >
+          <div
+            style={{
+              background: '#fff',
+              padding: '24px',
+              borderRadius: '16px',
+              width: '90%',
+              maxWidth: '400px',
+              boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+            }}
+          >
+            <h3 style={{ margin: '0 0 12px', color: '#111827', fontSize: '18px' }}>
+              {confirmAction.type === 'deactivate' ? 'Deactivate User' : 'Delete User'}
+            </h3>
+            <p style={{ margin: '0 0 24px', color: '#6b7280', fontSize: '14px', lineHeight: 1.5 }}>
+              Are you sure you want to {confirmAction.type}{' '}
+              <strong>{confirmAction.user.name}</strong>?{' '}
+              {confirmAction.type === 'deactivate'
+                ? 'They will not be able to log in.'
+                : 'This cannot be undone.'}
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+              <button
+                onClick={() => setConfirmAction(null)}
+                style={{
+                  padding: '8px 16px',
+                  background: '#f1f5f9',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  color: '#475569',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={executeAction}
+                style={{
+                  padding: '8px 16px',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  color: '#fff',
+                  background: confirmAction.type === 'deactivate' ? '#b45309' : '#ef4444',
+                }}
+              >
+                Yes, {confirmAction.type === 'deactivate' ? 'Deactivate' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================== */}
+      {/* 👇 CUSTOM EDIT MODAL */}
+      {/* ========================================== */}
+      {editingUser && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}
+        >
+          <div
+            style={{
+              background: '#fff',
+              padding: '24px',
+              borderRadius: '16px',
+              width: '90%',
+              maxWidth: '450px',
+              boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+            }}
+          >
+            <h3 style={{ margin: '0 0 16px', color: '#111827', fontSize: '18px' }}>Edit User</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    color: '#475569',
+                    marginBottom: '6px',
+                  }}
+                >
+                  Name
+                </label>
+                <input
+                  type="text"
+                  value={editForm.name}
+                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                    outline: 'none',
+                    fontSize: '14px',
+                  }}
+                />
+              </div>
+              <div>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    color: '#475569',
+                    marginBottom: '6px',
+                  }}
+                >
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={editForm.email}
+                  onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                    outline: 'none',
+                    fontSize: '14px',
+                  }}
+                />
+              </div>
+              <div>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    color: '#475569',
+                    marginBottom: '6px',
+                  }}
+                >
+                  Phone
+                </label>
+                <input
+                  type="tel"
+                  value={editForm.phone}
+                  onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                    outline: 'none',
+                    fontSize: '14px',
+                  }}
+                />
+              </div>
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: '12px',
+                marginTop: '24px',
+              }}
+            >
+              <button
+                onClick={() => setEditingUser(null)}
+                disabled={isSaving}
+                style={{
+                  padding: '8px 16px',
+                  background: '#f1f5f9',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  color: '#475569',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveEdit}
+                disabled={isSaving}
+                style={{
+                  padding: '8px 16px',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  color: '#fff',
+                  background: '#382c77',
+                }}
+              >
+                {isSaving ? 'Saving…' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
