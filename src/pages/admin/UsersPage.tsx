@@ -1,5 +1,3 @@
-
-
 // import { useEffect, useState } from 'react';
 // import { Download, Search, Pencil, Check, Trash2, XCircle } from 'lucide-react';
 // import {
@@ -301,7 +299,6 @@
 //   );
 // }
 
-
 import { useEffect, useState } from 'react';
 import { Download, Search, Pencil, Check, Trash2, XCircle } from 'lucide-react';
 import {
@@ -383,8 +380,7 @@ export function UsersPage() {
     const s = status.toLowerCase();
     if (s === 'verified') return { background: '#dcfce7', color: '#15803d' };
     if (s === 'pending') return { background: '#fef3c7', color: '#b45309' };
-    if (s === 'rejected' || s === 'suspended')
-      return { background: '#fee2e2', color: '#b91c1c' };
+    if (s === 'rejected' || s === 'suspended') return { background: '#fee2e2', color: '#b91c1c' };
     return { background: '#f1f5f9', color: '#475569' };
   };
 

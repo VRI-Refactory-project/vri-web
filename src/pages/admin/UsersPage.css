@@ -327,6 +327,28 @@
   color: #b91c1c;
 }
 
+/* Force the Actions column to never shrink below 240px */
+.users-table th:last-child,
+.users-table td:last-child {
+  min-width: 240px;
+  white-space: nowrap;
+}
+
+/* Prevent the buttons from shrinking */
+.users-action-btn {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  font-size: 12px;
+  gap: 4px;
+}
+
+.users-table td:nth-child(5) {
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 @media (max-width: 700px) {
   .users-header {
     flex-direction: column;
