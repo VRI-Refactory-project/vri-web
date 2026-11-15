@@ -314,7 +314,7 @@
 }
 
 /* Delete button (icon-only, transparent) */
-.users-action-btn--delete {
+/* .users-action-btn--delete {
   background: transparent;
   border-color: transparent;
   color: #ef4444;
@@ -333,12 +333,41 @@
   background: #fee2e2;
   color: #b91c1c;
   transform: scale(1.05);
+} */
+
+/* Delete button (icon-only, transparent) */
+.users-action-btn--delete {
+  background: transparent;
+  border-color: transparent;
+  color: #ef4444;
+  padding: 0;
+
+  /* Hard-lock the size so it cannot be squished */
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.users-action-btn--delete:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+  transform: scale(1.05);
 }
 
 /* Force the Actions column to never shrink below 240px */
 .users-table th:last-child,
 .users-table td:last-child {
-  min-width: 240px;
+  min-width: 250px;
   white-space: nowrap;
 }
 
