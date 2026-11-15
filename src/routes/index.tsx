@@ -254,7 +254,7 @@ const appRoutes: RouteObject[] = [
   },
 
   {
-    // element: <ProtectedRoute allow={['admin']} />,
+    element: <ProtectedRoute allow={['admin']} />,
     children: [
       {
         path: '/dashboard/admin',
