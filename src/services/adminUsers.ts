@@ -188,3 +188,13 @@ export async function deactivateUser(userId: string): Promise<void> {
 export async function deleteUser(userId: string): Promise<void> {
   await api(`${PATH}${userId}/delete/`, { method: 'DELETE' });
 }
+
+export async function updateUser(
+  userId: string,
+  updates: { name: string; email: string; phone: string },
+): Promise<void> {
+  await api(`${PATH}${userId}/`, {
+    method: 'PATCH',
+    body: JSON.stringify(updates),
+  });
+}
