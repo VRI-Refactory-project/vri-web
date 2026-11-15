@@ -1,5 +1,5 @@
 // import { useEffect, useState } from 'react';
-// import { Download, Search, SlidersHorizontal } from 'lucide-react';
+// import { Download, Search } from 'lucide-react';
 // import { fetchAdminUsers, type AdminUser, type AdminUserFilters } from '../../services/adminUsers';
 // import { describeError } from '../../services/api';
 // import './AdminDashboardPage.css';
@@ -9,6 +9,7 @@
 //   const [users, setUsers] = useState<AdminUser[] | null>(null);
 //   const [error, setError] = useState('');
 
+//   // Filter states
 //   const [search, setSearch] = useState('');
 //   const [type, setType] = useState('all-types');
 //   const [status, setStatus] = useState('all-statuses');
@@ -16,45 +17,39 @@
 
 //   useEffect(() => {
 //     let cancelled = false;
-//     fetchAdminUsers()
-//       .then((data) => {
-//         if (!cancelled) setUsers(data);
-//       })
-//       .catch((err) => {
-//         if (!cancelled) {
-//           setError(describeError(err));
-//           setUsers([]);
-//         }
-//       });
+//     const filters: AdminUserFilters = { search, type, status, range };
+
+//     // Move the setState calls inside a setTimeout callback to avoid the lint error
+//     const timeoutId = setTimeout(() => {
+//       setUsers(null); // Show loading state
+//       setError('');
+
+//       fetchAdminUsers(filters)
+//         .then((data) => {
+//           if (!cancelled) setUsers(data);
+//         })
+//         .catch((err) => {
+//           if (!cancelled) {
+//             setError(describeError(err));
+//             setUsers([]);
+//           }
+//         });
+//     }, 300);
+
 //     return () => {
 //       cancelled = true;
+//       clearTimeout(timeoutId);
 //     };
-//   }, []);
+//   }, [search, type, status, range]);
 
-//   const handleFilter = async () => {
-//     const filters: AdminUserFilters = { search, type, status, range };
-//     setUsers(null);
-//     setError('');
-//     try {
-//       const data = await fetchAdminUsers(filters);
-//       setUsers(data);
-//     } catch (err) {
-//       setError(describeError(err));
-//       setUsers([]);
-//     }
-//   };
-
-//   // 👇 NEW: Export to CSV handler
+//   // Keep the export handler
 //   const handleExport = () => {
 //     if (!users || users.length === 0) {
 //       alert('No users to export');
 //       return;
 //     }
 
-//     // 1. Define headers
 //     const headers = ['Name', 'Role', 'Verification Status', 'Email', 'Phone', 'Registered At'];
-
-//     // 2. Map user data to rows (wrap in quotes to handle commas in names)
 //     const rows = users.map((u) => [
 //       `"${u.name}"`,
 //       `"${u.role}"`,
@@ -64,15 +59,15 @@
 //       `"${u.registeredAt}"`,
 //     ]);
 
-//     // 3. Combine headers and rows
 //     const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-
-//     // 4. Trigger download
 //     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
 //     const url = URL.createObjectURL(blob);
 //     const link = document.createElement('a');
 //     link.href = url;
-//     link.setAttribute('download', `signconnect_users_${new Date().toISOString().split('T')[0]}.csv`);
+//     link.setAttribute(
+//       'download',
+//       `signconnect_users_${new Date().toISOString().split('T')[0]}.csv`,
+//     );
 //     document.body.appendChild(link);
 //     link.click();
 //     document.body.removeChild(link);
@@ -88,7 +83,6 @@
 //         <p>Manage and review users in SignConnect</p>
 //       </header>
 
-//       {/* Floating header actions (Export) — pulled up to align with title */}
 //       <div
 //         style={{
 //           display: 'flex',
@@ -136,18 +130,8 @@
 //           <option value="7-days">Last 7 days</option>
 //           <option value="30-days">Last 30 days</option>
 //         </select>
-
-//         <button
-//           type="button"
-//           className="users-btn users-btn--primary"
-//           onClick={() => void handleFilter()}
-//         >
-//           <SlidersHorizontal size={15} />
-//           Filter
-//         </button>
 //       </section>
 
-//       {/* Table as its own white card */}
 //       <section className="ad-table-card">
 //         <table className="users-table">
 //           <thead>
@@ -215,8 +199,15 @@
 // }
 
 import { useEffect, useState } from 'react';
-import { Download, Search } from 'lucide-react';
-import { fetchAdminUsers, type AdminUser, type AdminUserFilters } from '../../services/adminUsers';
+import { Download, Search, Pencil, Check, Trash2, XCircle } from 'lucide-react';
+import {
+  fetchAdminUsers,
+  approveUser,
+  deactivateUser,
+  deleteUser,
+  type AdminUser,
+  type AdminUserFilters,
+} from '../../services/adminUsers';
 import { describeError } from '../../services/api';
 import './AdminDashboardPage.css';
 import './UsersPage.css';
@@ -231,13 +222,12 @@ export function UsersPage() {
   const [status, setStatus] = useState('all-statuses');
   const [range, setRange] = useState('all-time');
 
+  // Load users when filters change
   useEffect(() => {
     let cancelled = false;
     const filters: AdminUserFilters = { search, type, status, range };
 
-    // 👇 Move the setState calls inside a setTimeout callback to avoid the lint error
     const timeoutId = setTimeout(() => {
-      setUsers(null); // Show loading state
       setError('');
 
       fetchAdminUsers(filters)
@@ -258,7 +248,28 @@ export function UsersPage() {
     };
   }, [search, type, status, range]);
 
-  // 👇 Keep the export handler
+  // 👇 Helper to refresh the current view after an action
+  const refreshUsers = async () => {
+    try {
+      const data = await fetchAdminUsers({ search, type, status, range });
+      setUsers(data);
+    } catch (err) {
+      alert(`Failed to refresh: ${describeError(err)}`);
+    }
+  };
+
+  // Reusable helper to format a date string nicely
+  const formatDate = (value: string | null | undefined) => {
+    if (!value) return '—';
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return '—';
+    return d.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  };
+
   const handleExport = () => {
     if (!users || users.length === 0) {
       alert('No users to export');
@@ -272,7 +283,7 @@ export function UsersPage() {
       `"${u.verificationStatus}"`,
       `"${u.email}"`,
       `"${u.phone || ''}"`,
-      `"${u.registeredAt}"`,
+      `"${formatDate(u.registeredAt)}"`,
     ]);
 
     const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
@@ -287,6 +298,42 @@ export function UsersPage() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  // 👇 Real handlers that call the backend
+  const handleEdit = (user: AdminUser) => {
+    // TODO: Replace with a real edit modal/page later
+    alert(`Edit user: ${user.name} (ID: ${user.id})`);
+  };
+
+  const handleApprove = async (user: AdminUser) => {
+    try {
+      await approveUser(user.id);
+      await refreshUsers();
+    } catch (err) {
+      alert(`Failed to approve: ${describeError(err)}`);
+    }
+  };
+
+  const handleDeactivate = async (user: AdminUser) => {
+    if (!window.confirm(`Deactivate ${user.name}? They won't be able to log in.`)) return;
+    try {
+      await deactivateUser(user.id);
+      await refreshUsers();
+    } catch (err) {
+      alert(`Failed to deactivate: ${describeError(err)}`);
+    }
+  };
+
+  const handleDelete = async (user: AdminUser) => {
+    if (!window.confirm(`Delete ${user.name} permanently? This cannot be undone.`)) return;
+    try {
+      await deleteUser(user.id);
+      // Optimistically remove from list
+      setUsers((prev) => (prev ? prev.filter((u) => u.id !== user.id) : prev));
+    } catch (err) {
+      alert(`Failed to delete: ${describeError(err)}`);
+    }
   };
 
   const loading = users === null;
@@ -395,9 +442,49 @@ export function UsersPage() {
                     {u.email}
                     {u.phone ? ` · ${u.phone}` : ''}
                   </td>
-                  <td>{u.registeredAt}</td>
-                  <td>{u.lastActive}</td>
-                  <td>…</td>
+                  <td>{formatDate(u.registeredAt)}</td>
+                  <td>{formatDate(u.lastActive)}</td>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <button
+                        type="button"
+                        onClick={() => handleEdit(u)}
+                        className="users-action-btn users-action-btn--edit"
+                      >
+                        <Pencil size={12} />
+                        Edit
+                      </button>
+
+                      {u.verificationStatus === 'pending' ? (
+                        <button
+                          type="button"
+                          onClick={() => handleApprove(u)}
+                          className="users-action-btn users-action-btn--approve"
+                        >
+                          <Check size={14} />
+                          Approve
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleDeactivate(u)}
+                          className="users-action-btn users-action-btn--deactivate"
+                        >
+                          <XCircle size={14} />
+                          Deactivate
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(u)}
+                        className="users-action-btn users-action-btn--delete"
+                        title="Delete user"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))
             )}
