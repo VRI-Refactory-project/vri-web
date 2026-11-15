@@ -269,13 +269,12 @@ export function AdminDashboardPage() {
 
   const yMax = Math.ceil(activityMax / 50) * 50 || 250;
 
-  // Interpreter availability
   const totalInterps = summary?.interpreters ?? 0;
   const availableInterps = summary?.available_interpreters ?? 0;
-  const offlineInterps = summary?.offline_interpreters ?? 0;
-
-  // Busy status is not currently supplied by the backend
   const busyInterps = 0;
+
+  // Derive offline from total - available so it always adds up
+  const offlineInterps = totalInterps - availableInterps;
 
   const availPct = totalInterps ? Math.round((availableInterps / totalInterps) * 100) : 0;
 
