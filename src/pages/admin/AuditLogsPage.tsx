@@ -3,6 +3,7 @@
 // import { Download, Search, SlidersHorizontal } from 'lucide-react';
 // import { fetchAdminAuditLogs, type AdminAuditLog } from '../../services/adminAuditLogs';
 // import { describeError } from '../../services/api';
+// import './AdminDashboardPage.css';
 // import './AuditLogsPage.css';
 
 // export function AuditLogsPage() {
@@ -30,12 +31,21 @@
 //   const isEmpty = !loading && logs.length === 0;
 
 //   return (
-//     <div className="audit-page">
-//       <header className="audit-header">
+//     <main className="ad-page" style={{ width: '100%', maxWidth: '100%' }}>
+//       <header
+//         className="ad-title"
+//         style={{
+//           display: 'flex',
+//           alignItems: 'flex-start',
+//           justifyContent: 'space-between',
+//           gap: '16px',
+//         }}
+//       >
 //         <div>
 //           <h1>Audit logs</h1>
 //           <p>Review secure records of administrative and system activity</p>
 //         </div>
+//         {/* 👇 Using your existing class here */}
 //         <button type="button" className="audit-btn audit-btn--ghost">
 //           <Download size={15} />
 //           Export logs
@@ -55,6 +65,7 @@
 //             <Search size={16} />
 //             <input type="search" placeholder="Search activity" />
 //           </label>
+//           {/* 👇 Using your existing class here */}
 //           <button type="button" className="audit-btn audit-btn--ghost">
 //             <SlidersHorizontal size={15} />
 //             Filter
@@ -91,7 +102,7 @@
 //           )}
 //         </div>
 //       </section>
-//     </div>
+//     </main>
 //   );
 // }
 
@@ -127,6 +138,30 @@ export function AuditLogsPage() {
   const loading = logs === null;
   const isEmpty = !loading && logs.length === 0;
 
+  // 👇 ADD THIS FUNCTION TO HANDLE THE EXPORT
+  const handleExport = () => {
+    if (!logs || logs.length === 0) {
+      alert('No activity logs to export.');
+      return;
+    }
+
+    const headers = ['Action', 'Details', 'Source'];
+    const rows = logs.map((log) => [`"${log.action}"`, `"${log.meta}"`, `"${log.source}"`]);
+
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute(
+      'download',
+      `signconnect_audit_logs_${new Date().toISOString().split('T')[0]}.csv`,
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <main className="ad-page" style={{ width: '100%', maxWidth: '100%' }}>
       <header
@@ -142,8 +177,8 @@ export function AuditLogsPage() {
           <h1>Audit logs</h1>
           <p>Review secure records of administrative and system activity</p>
         </div>
-        {/* 👇 Using your existing class here */}
-        <button type="button" className="audit-btn audit-btn--ghost">
+        {/* 👇 ADDED onClick={handleExport} HERE */}
+        <button type="button" className="audit-btn audit-btn--ghost" onClick={handleExport}>
           <Download size={15} />
           Export logs
         </button>
@@ -162,7 +197,6 @@ export function AuditLogsPage() {
             <Search size={16} />
             <input type="search" placeholder="Search activity" />
           </label>
-          {/* 👇 Using your existing class here */}
           <button type="button" className="audit-btn audit-btn--ghost">
             <SlidersHorizontal size={15} />
             Filter
