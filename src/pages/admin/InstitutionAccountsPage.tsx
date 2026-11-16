@@ -37,11 +37,11 @@ import {
   type InstitutionSector,
 } from '../../services/institutions';
 import { describeError } from '../../services/api';
-import { useMobileViewMore } from '../../components/responsive/useMobileViewMore';
 import './AdminDashboardPage.css';
 import './InstitutionAccountsPage.css';
 
-const PAGE_SIZE = 8;
+const DESKTOP_PAGE_SIZE = 8;
+const MOBILE_PAGE_SIZE = 5;
 
 const SECTORS: InstitutionSector[] = [
   'Healthcare',
@@ -560,6 +560,9 @@ export function InstitutionAccountsPage() {
   const [statusFilter, setStatusFilter] = useState<'all' | InstitutionStatus>('all');
   const [sectorFilter, setSectorFilter] = useState<'all' | InstitutionSector>('all');
   const [page, setPage] = useState(1);
+  const [isMobile, setIsMobile] = useState(
+    () => window.matchMedia?.('(max-width: 700px)').matches ?? false,
+  );
   const [showFilters, setShowFilters] = useState(false);
   const [modal, setModal] = useState<'create' | 'edit' | null>(null);
   const [selected, setSelected] = useState<Institution | null>(null);
@@ -569,6 +572,14 @@ export function InstitutionAccountsPage() {
   const [saving, setSaving] = useState(false);
   const [actionError, setActionError] = useState('');
   const [notice, setNotice] = useState('');
+
+  useEffect(() => {
+    if (!window.matchMedia) return;
+    const mediaQuery = window.matchMedia('(max-width: 700px)');
+    const updateViewport = () => setIsMobile(mediaQuery.matches);
+    mediaQuery.addEventListener('change', updateViewport);
+    return () => mediaQuery.removeEventListener('change', updateViewport);
+  }, []);
 
   const loadInstitutions = useCallback(async () => {
     setLoading(true);
@@ -631,12 +642,10 @@ export function InstitutionAccountsPage() {
     });
   }, [institutions, search, statusFilter, sectorFilter]);
 
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const visibleInstitutions = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-  const mobileRows = useMobileViewMore(
-    visibleInstitutions.length,
-    [search, statusFilter, sectorFilter, page, visibleInstitutions.length].join('|'),
-  );
+  const pageSize = isMobile ? MOBILE_PAGE_SIZE : DESKTOP_PAGE_SIZE;
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const currentPage = Math.min(page, pageCount);
+  const visibleInstitutions = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   function openEdit(institution: Institution) {
     setSelected(institution);
@@ -966,8 +975,8 @@ export function InstitutionAccountsPage() {
                   </td>
                 </tr>
               ) : (
-                visibleInstitutions.map((institution, index) => (
-                  <tr key={institution.id} {...mobileRows.itemProps(index)}>
+                visibleInstitutions.map((institution) => (
+                  <tr key={institution.id}>
                     <td data-card-primary>
                       <div className="ia-institution-cell">
                         <div className="ia-institution-cell__icon">
@@ -1074,14 +1083,12 @@ export function InstitutionAccountsPage() {
             </tbody>
           </table>
         </div>
-        {mobileRows.button}
-
         <footer className="ia-table-footer">
           <span>
             {filtered.length === 0
               ? 'Showing 0 institutions'
-              : `Showing ${(page - 1) * PAGE_SIZE + 1}–${Math.min(
-                  page * PAGE_SIZE,
+              : `Showing ${(currentPage - 1) * pageSize + 1}–${Math.min(
+                  currentPage * pageSize,
                   filtered.length,
                 )} of ${filtered.length} institutions`}
           </span>
@@ -1090,7 +1097,7 @@ export function InstitutionAccountsPage() {
             <button
               type="button"
               aria-label="Previous page"
-              disabled={page <= 1}
+              disabled={currentPage <= 1}
               onClick={() => setPage((current) => Math.max(1, current - 1))}
             >
               <ChevronLeft size={17} />
@@ -1102,15 +1109,15 @@ export function InstitutionAccountsPage() {
                   pageCount <= 5 ||
                   number === 1 ||
                   number === pageCount ||
-                  Math.abs(number - page) <= 1,
+                  Math.abs(number - currentPage) <= 1,
               )
               .map((number, index, numbers) => (
                 <span className="ia-pagination__item" key={number}>
                   {index > 0 && number - numbers[index - 1] > 1 && <span>…</span>}
                   <button
                     type="button"
-                    className={page === number ? 'is-current' : ''}
-                    aria-current={page === number ? 'page' : undefined}
+                    className={currentPage === number ? 'is-current' : ''}
+                    aria-current={currentPage === number ? 'page' : undefined}
                     onClick={() => setPage(number)}
                   >
                     {number}
@@ -1121,7 +1128,7 @@ export function InstitutionAccountsPage() {
             <button
               type="button"
               aria-label="Next page"
-              disabled={page >= pageCount}
+              disabled={currentPage >= pageCount}
               onClick={() => setPage((current) => Math.min(pageCount, current + 1))}
             >
               <ChevronRight size={17} />

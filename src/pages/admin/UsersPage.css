@@ -494,6 +494,11 @@
     flex-wrap: nowrap !important;
     gap: 6px !important;
   }
+
+  .users-management-page .ad-table-card > .mobile-view-more-button {
+    width: calc(100% - 24px);
+    margin: 0 12px 12px;
+  }
 }
 
 @media (max-width: 360px) {

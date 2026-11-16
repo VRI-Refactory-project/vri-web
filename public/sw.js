@@ -1,6 +1,77 @@
 // Shows SignConnect notifications when the site is closed (Web Push).
 // The browser wakes this file up when the server sends a push. It is registered by src/services/webPush.ts.
 
+const APP_CACHE = 'signconnect-app-shell-v1';
+const OFFLINE_PAGE = '/offline.html';
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    (async () => {
+      const cache = await caches.open(APP_CACHE);
+      await Promise.allSettled([
+        cache.add(OFFLINE_PAGE),
+        cache.add('/offline-illustration.png'),
+        (async () => {
+          const response = await fetch('/', { cache: 'reload' });
+          if (!response.ok) throw new Error('App shell request failed');
+          await cache.put('/', response.clone());
+          const html = await response.text();
+          const assets = [...html.matchAll(/(?:src|href)="([^\"]+)"/g)]
+            .map((match) => match[1])
+            .filter((asset) => asset.startsWith('/') && !asset.startsWith('//'));
+          await Promise.allSettled(assets.map((asset) => cache.add(asset)));
+        })(),
+      ]);
+      await self.skipWaiting();
+    })(),
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(self.clients.claim());
+});
+
+self.addEventListener('fetch', (event) => {
+  const request = event.request;
+  const url = new URL(request.url);
+  if (request.method !== 'GET' || url.origin !== self.location.origin) return;
+
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const copy = response.clone();
+            void caches.open(APP_CACHE).then((cache) => cache.put('/', copy));
+          }
+          return response;
+        })
+        .catch(
+          async () =>
+            (await caches.match(request)) ||
+            (await caches.match('/')) ||
+            (await caches.match(OFFLINE_PAGE)),
+        ),
+    );
+    return;
+  }
+
+  if (url.pathname.startsWith('/assets/') || url.pathname === '/offline-illustration.png') {
+    event.respondWith(
+      caches.match(request).then((cached) => {
+        if (cached) return cached;
+        return fetch(request).then((response) => {
+          if (response.ok) {
+            const copy = response.clone();
+            void caches.open(APP_CACHE).then((cache) => cache.put(request, copy));
+          }
+          return response;
+        });
+      }),
+    );
+  }
+});
+
 self.addEventListener('push', (event) => {
   let message = {};
   try {

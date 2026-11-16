@@ -425,8 +425,8 @@ export function UsersPage() {
             )}
           </tbody>
         </table>
+        {mobileRows.button}
       </section>
-      {mobileRows.button}
 
       <footer className="users-footer">
         <span>

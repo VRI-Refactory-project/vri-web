@@ -499,6 +499,11 @@ body {
     display: none !important;
   }
 
+  .mobile-data-cards > table > tbody > tr[data-mobile-view-hidden='true'],
+  .sm-table .sm-row[data-mobile-view-hidden='true'] {
+    display: none !important;
+  }
+
   .mobile-view-more-button {
     display: flex;
     width: 100%;
