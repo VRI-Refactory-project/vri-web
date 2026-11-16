@@ -167,10 +167,14 @@
   min-width: 0;
   height: 38px;
   border: 0;
-  outline: 0;
+  outline: none;
   background: transparent;
   font-size: 12.5px;
   color: #1e293b;
+}
+
+.audit-search input:focus-visible {
+  outline: none;
 }
 
 .audit-search input::placeholder {
@@ -259,6 +263,41 @@
   text-align: center;
   color: #8a86a5;
   font-size: 13px;
+}
+
+/* Fix for the Export and Filter buttons */
+.audit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.audit-btn--ghost {
+  background: #382c77;
+  border: 1px solid #382c77;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(56, 44, 119, 0.18);
+}
+
+.audit-btn--ghost:hover {
+  background: #2f236b;
+  border-color: #2f236b;
+  box-shadow: 0 4px 14px rgba(56, 44, 119, 0.32);
+  transform: translateY(-1px);
+}
+
+.audit-btn--ghost:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(56, 44, 119, 0.18);
 }
 
 /* ---------- Responsive ---------- */

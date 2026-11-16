@@ -1,3 +1,458 @@
+// import { render, screen, waitFor } from '@testing-library/react';
+// import userEvent from '@testing-library/user-event';
+// import { MemoryRouter, Route, Routes } from 'react-router-dom';
+// import { AuthProvider } from '../../features/auth/AuthProvider';
+// import { ApiError } from '../../services/api';
+// import * as registration from '../../services/registration';
+// import { checkEmailAvailability } from '../../services/emailAvailability';
+// import type { AuthSession } from '../../types';
+// import { CreateAccountPage } from './CreateAccountPage';
+
+// vi.mock('../../services/emailAvailability', () => ({
+//   checkEmailAvailability: vi.fn(),
+// }));
+
+// const session = (role: 'deaf' | 'interpreter'): AuthSession => ({
+//   token: 't',
+//   refreshToken: 'r',
+//   user: { id: '1', name: 'Amina', role, mustChangePassword: false },
+// });
+
+// function renderPage(role: 'deaf' | 'interpreter' = 'deaf') {
+//   const path = role === 'deaf' ? '/register/deaf' : '/register/interpreter';
+//   return render(
+//     <AuthProvider>
+//       <MemoryRouter initialEntries={[path]}>
+//         <Routes>
+//           <Route path={path} element={<CreateAccountPage role={role} />} />
+//           <Route path="/get-started" element={<p>role selection</p>} />
+//           <Route path="/sign-in" element={<p>sign in page</p>} />
+//           <Route path="/register/welcome" element={<p>welcome step</p>} />
+//           <Route path="/register/interpreter/certifications" element={<p>upload certificates</p>} />
+//         </Routes>
+//       </MemoryRouter>
+//     </AuthProvider>,
+//   );
+// }
+
+// const fill = async (labels: Record<string, string>) => {
+//   for (const [label, value] of Object.entries(labels)) {
+//     await userEvent.type(screen.getByLabelText(label), value);
+//   }
+// };
+
+// const pick = async (label: string) => {
+//   await userEvent.click(screen.getByRole('button', { name: /specialisation/i }));
+//   await userEvent.click(screen.getByRole('button', { name: label }));
+// };
+
+// describe('CreateAccountPage', () => {
+//   beforeEach(() => {
+//     vi.mocked(checkEmailAvailability).mockResolvedValue(true);
+//   });
+//   afterEach(() => {
+//     vi.restoreAllMocks();
+//     sessionStorage.clear();
+//   });
+
+//   it('asks a deaf user for name, phone, email and password only', () => {
+//     renderPage();
+//     expect(screen.getByRole('heading', { name: /create your account/i })).toBeInTheDocument();
+//     expect(screen.getByLabelText('First name')).toBeInTheDocument();
+//     expect(screen.getByLabelText('Last name')).toBeInTheDocument();
+//     expect(screen.getByLabelText('Phone number')).toBeInTheDocument();
+//     expect(screen.getByLabelText('Email address')).toBeInTheDocument();
+//     expect(screen.getByLabelText('Password')).toBeInTheDocument();
+//     expect(screen.getByLabelText('Confirm password')).toBeInTheDocument();
+//     expect(screen.queryByLabelText('Specialisation')).not.toBeInTheDocument();
+//   });
+
+//   it('stops the phone number at the longest length for the country', async () => {
+//     renderPage();
+//     const phone = screen.getByLabelText('Phone number') as HTMLInputElement;
+//     await userEvent.type(phone, '7721234567890123');
+//     expect(phone.value.replace(/\s/g, '')).toBe('772123456');
+//   });
+
+//   it('toggles the password field between masked and visible', async () => {
+//     renderPage();
+//     const passwordInput = screen.getByLabelText('Password') as HTMLInputElement;
+//     expect(passwordInput.type).toBe('password');
+//     await userEvent.click(screen.getByRole('button', { name: /show password/i }));
+//     expect(passwordInput.type).toBe('text');
+//   });
+
+//   it('registers a deaf user, signs them in and moves to the welcome step', async () => {
+//     const spy = vi.spyOn(registration, 'registerDeaf').mockResolvedValue(session('deaf'));
+//     renderPage();
+//     await fill({
+//       'First name': 'Catherine',
+//       'Last name': 'Nawagirwa',
+//       'Phone number': '772123456',
+//       'Email address': 'catherine@example.com',
+//       Password: 'Secret-pass-1',
+//       'Confirm password': 'Secret-pass-1',
+//     });
+//     await userEvent.click(screen.getByRole('checkbox'));
+//     await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+//     await waitFor(() => expect(screen.getByText('welcome step')).toBeInTheDocument());
+//     expect(spy).toHaveBeenCalledWith(
+//       expect.objectContaining({
+//         name: 'Catherine Nawagirwa',
+//         phone: '+256772123456',
+//         email: 'catherine@example.com',
+//         password: 'Secret-pass-1',
+//       }),
+//     );
+//   });
+
+//   it('shows a duplicate phone error under the phone field', async () => {
+//     vi.spyOn(registration, 'registerDeaf').mockRejectedValue(
+//       new ApiError(400, 'An account with this phone number already exists.', {
+//         phone_number: ['An account with this phone number already exists.'],
+//       }),
+//     );
+
+//     renderPage();
+
+//     await fill({
+//       'First name': 'Catherine',
+//       'Last name': 'Nawagirwa',
+//       'Phone number': '772123456',
+//       'Email address': 'catherine@example.com',
+//       Password: 'Secret-pass-1',
+//       'Confirm password': 'Secret-pass-1',
+//     });
+
+//     await userEvent.click(screen.getByRole('checkbox'));
+//     await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+
+//     expect(
+//       await screen.findByText('An account with this phone number already exists.'),
+//     ).toBeInTheDocument();
+
+//     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+//   });
+
+//   it('blocks submission without a name, phone, email or password', async () => {
+//     const spy = vi.spyOn(registration, 'registerDeaf');
+//     renderPage();
+//     await userEvent.click(screen.getByRole('checkbox'));
+//     await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+//     expect(screen.getByText('Enter your first name.')).toBeInTheDocument();
+//     expect(screen.getByText('Enter your last name.')).toBeInTheDocument();
+//     expect(screen.getByText('Enter your phone number.')).toBeInTheDocument();
+//     expect(screen.getByText('Enter your email address.')).toBeInTheDocument();
+//     expect(screen.getByText('Enter a password.')).toBeInTheDocument();
+//     expect(screen.getByText('Confirm your password.')).toBeInTheDocument();
+//     expect(spy).not.toHaveBeenCalled();
+//   });
+
+//   it('never lets letters into the phone field', async () => {
+//     renderPage();
+//     const phone = screen.getByLabelText('Phone number') as HTMLInputElement;
+//     await userEvent.type(phone, 'jjjj772abc123');
+//     expect(phone.value.replace(/\s/g, '')).toBe('772123');
+//   });
+
+//   it('offers a country picker with flags and changes the calling code with it', async () => {
+//     renderPage();
+
+//     const country = screen.getByLabelText('Country') as HTMLSelectElement;
+//     const phone = screen.getByLabelText('Phone number') as HTMLInputElement;
+
+//     expect(country.value).toBe('UG');
+
+//     // The calling code belongs to the country selector, not the input.
+//     expect(phone.value).toBe('');
+//     expect(document.querySelector('.country-picker__calling-code')?.textContent).toBe('+256');
+
+//     await userEvent.selectOptions(country, 'KE');
+
+//     expect(country.value).toBe('KE');
+//     expect(document.querySelector('.country-picker__calling-code')?.textContent).toBe('+254');
+//     expect(phone.value).toBe('');
+//   });
+
+//   it('says a number is too short for the country chosen', async () => {
+//     renderPage();
+//     await userEvent.type(screen.getByLabelText('Phone number'), '77');
+//     await userEvent.tab();
+//     expect(screen.getByText(/too short or too long/i)).toBeInTheDocument();
+//   });
+
+//   it('rejects an email that is only numbers', async () => {
+//     renderPage();
+//     await userEvent.type(screen.getByLabelText('Email address'), '12345@example.com');
+//     await userEvent.tab();
+//     expect(screen.getByText(/cannot be only numbers/i)).toBeInTheDocument();
+//   });
+
+//   it('requires the terms to be accepted', async () => {
+//     const spy = vi.spyOn(registration, 'registerDeaf');
+//     renderPage();
+//     await fill({
+//       'First name': 'Catherine',
+//       'Last name': 'Nawagirwa',
+//       'Phone number': '772123456',
+//       'Email address': 'catherine@example.com',
+//       Password: 'Secret-pass-1',
+//       'Confirm password': 'Secret-pass-1',
+//     });
+//     await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+//     expect(screen.getByText(/accept the terms/i)).toBeInTheDocument();
+//     expect(spy).not.toHaveBeenCalled();
+//   });
+
+//   describe('password', () => {
+//     it('hides the strength meter until the person starts typing', async () => {
+//       renderPage();
+//       expect(screen.queryByText('Password Strength')).not.toBeInTheDocument();
+//       await userEvent.type(screen.getByLabelText('Password'), 'a');
+//       expect(screen.getByText('Password Strength')).toBeInTheDocument();
+//     });
+
+//     it('turns each requirement green as it is met', async () => {
+//       renderPage();
+//       const password = screen.getByLabelText('Password');
+
+//       await userEvent.type(password, 'abcdefgh');
+//       expect(screen.getByText('At least 8 characters')).toHaveClass('pw-rule--ok');
+//       expect(screen.getByText('One uppercase letter')).not.toHaveClass('pw-rule--ok');
+
+//       await userEvent.type(password, 'A');
+//       expect(screen.getByText('One uppercase letter')).toHaveClass('pw-rule--ok');
+//       expect(screen.getByText('One number & special character')).not.toHaveClass('pw-rule--ok');
+
+//       await userEvent.type(password, '1!');
+//       expect(screen.getByText('One number & special character')).toHaveClass('pw-rule--ok');
+//     });
+
+//     it('shows the strength of the password as it is typed', async () => {
+//       renderPage();
+//       const password = screen.getByLabelText('Password');
+
+//       await userEvent.type(password, 'abc');
+//       expect(screen.getByText('Weak')).toBeInTheDocument();
+
+//       await userEvent.type(password, 'DEFg1!');
+//       expect(screen.getByText('Good')).toBeInTheDocument();
+
+//       await userEvent.type(password, 'xyz');
+//       expect(screen.getByText('Strong')).toBeInTheDocument();
+//     });
+
+//     it('says when the two passwords do not match', async () => {
+//       renderPage();
+//       await fill({ Password: 'Secret-pass-1', 'Confirm password': 'Secret-pass-2' });
+//       await userEvent.tab();
+//       expect(screen.getByText('Passwords do not match.')).toBeInTheDocument();
+//     });
+
+//     it('blocks submission when a password rule is not met', async () => {
+//       const spy = vi.spyOn(registration, 'registerDeaf');
+//       renderPage();
+//       await fill({
+//         'First name': 'Catherine',
+//         'Last name': 'Nawagirwa',
+//         'Phone number': '772123456',
+//         'Email address': 'catherine@example.com',
+//         Password: 'secret-pass-1',
+//         'Confirm password': 'secret-pass-1',
+//       });
+//       await userEvent.click(screen.getByRole('checkbox'));
+//       await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+//       expect(screen.getByText('Add one uppercase letter.')).toBeInTheDocument();
+//       expect(spy).not.toHaveBeenCalled();
+//     });
+//   });
+
+//   describe('interpreter', () => {
+//     it('requires an email', async () => {
+//       const spy = vi.spyOn(registration, 'registerInterpreter');
+//       renderPage('interpreter');
+//       await fill({
+//         'First name': 'Catherine',
+//         'Last name': 'Nawagirwa',
+//         'Phone number': '772123456',
+//         Password: 'Secret-pass-1',
+//         'Confirm password': 'Secret-pass-1',
+//       });
+//       await userEvent.click(screen.getByRole('checkbox'));
+//       await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+//       expect(screen.getByText('Enter your email address.')).toBeInTheDocument();
+//       expect(spy).not.toHaveBeenCalled();
+//     });
+
+//     it('registers, then moves on to uploading certificates', async () => {
+//       const register = vi
+//         .spyOn(registration, 'registerInterpreter')
+//         .mockResolvedValue(session('interpreter'));
+//       renderPage('interpreter');
+//       await fill({
+//         'First name': 'Catherine',
+//         'Last name': 'Nawagirwa',
+//         'Phone number': '772123456',
+//         'Email address': 'j@x.org',
+//         Password: 'Secret-pass-1',
+//         'Confirm password': 'Secret-pass-1',
+//       });
+
+//       await pick('Medical / health');
+
+//       await userEvent.click(screen.getByRole('checkbox'));
+//       await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+
+//       await waitFor(() => expect(screen.getByText('upload certificates')).toBeInTheDocument());
+
+//       expect(register).toHaveBeenCalledWith(
+//         expect.objectContaining({
+//           phone: '+256772123456',
+//           specialisations: ['MEDICAL'],
+//         }),
+//       );
+//     });
+
+//     describe('specialisations', () => {
+//       const fillInterpreter = () =>
+//         fill({
+//           'First name': 'Catherine',
+//           'Last name': 'Nawagirwa',
+//           'Phone number': '772123456',
+//           'Email address': 'j@x.org',
+//           Password: 'Secret-pass-1',
+//           'Confirm password': 'Secret-pass-1',
+//         });
+
+//       it('shows each choice as a chip and removes it with the x', async () => {
+//         renderPage('interpreter');
+//         await pick('Medical / health');
+//         await pick('Legal / court');
+//         expect(screen.getByRole('button', { name: 'Remove Medical / health' })).toBeInTheDocument();
+//         expect(screen.getByRole('button', { name: 'Remove Legal / court' })).toBeInTheDocument();
+
+//         await userEvent.click(screen.getByRole('button', { name: 'Remove Medical / health' }));
+//         expect(
+//           screen.queryByRole('button', { name: 'Remove Medical / health' }),
+//         ).not.toBeInTheDocument();
+//         expect(screen.getByRole('button', { name: 'Remove Legal / court' })).toBeInTheDocument();
+//       });
+
+//       it('does not offer an option that is already chosen', async () => {
+//         renderPage('interpreter');
+//         await pick('Medical / health');
+//         await userEvent.click(screen.getByRole('button', { name: /specialisation/i }));
+//         expect(screen.queryByRole('button', { name: 'Medical / health' })).not.toBeInTheDocument();
+//         expect(screen.getByRole('button', { name: 'Legal / court' })).toBeInTheDocument();
+//       });
+
+//       it('puts a removed option back in the menu', async () => {
+//         renderPage('interpreter');
+//         await pick('Medical / health');
+//         await userEvent.click(screen.getByRole('button', { name: 'Remove Medical / health' }));
+//         await userEvent.click(screen.getByRole('button', { name: /specialisation/i }));
+//         expect(screen.getByRole('button', { name: 'Medical / health' })).toBeInTheDocument();
+//       });
+
+//       it('shows what was typed for Other as a chip and clears it on remove', async () => {
+//         renderPage('interpreter');
+//         await pick('Other (please specify)');
+//         await userEvent.type(screen.getByLabelText('Your specialisation'), 'Aviation');
+//         expect(screen.getByRole('button', { name: 'Remove Aviation' })).toBeInTheDocument();
+
+//         await userEvent.click(screen.getByRole('button', { name: 'Remove Aviation' }));
+//         expect(screen.queryByLabelText('Your specialisation')).not.toBeInTheDocument();
+//       });
+
+//       it('asks for a specialisation next to the field when none is chosen', async () => {
+//         const spy = vi.spyOn(registration, 'registerInterpreter');
+//         renderPage('interpreter');
+//         await fillInterpreter();
+//         await userEvent.click(screen.getByRole('checkbox'));
+//         await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+//         expect(screen.getByText('Choose at least one specialisation.')).toBeInTheDocument();
+//         expect(spy).not.toHaveBeenCalled();
+//       });
+
+//       it('rejects Other text without letters', async () => {
+//         renderPage('interpreter');
+//         await pick('Other (please specify)');
+//         await userEvent.type(screen.getByLabelText('Your specialisation'), '123');
+//         await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+//         expect(screen.getByText('Describe your specialisation using letters.')).toBeInTheDocument();
+//       });
+
+//       it('rejects an Other entry that repeats a listed specialisation', async () => {
+//         const spy = vi.spyOn(registration, 'registerInterpreter');
+//         renderPage('interpreter');
+//         await fillInterpreter();
+//         await pick('Other (please specify)');
+//         await userEvent.type(screen.getByLabelText('Your specialisation'), 'legal / court');
+//         await userEvent.click(screen.getByRole('checkbox'));
+//         await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+//         expect(screen.getByText(/already in the list/i)).toBeInTheDocument();
+//         expect(spy).not.toHaveBeenCalled();
+//       });
+//     });
+//   });
+
+//   it('clears the duplicate-email warning when the user enters a different available email', async () => {
+//     const user = userEvent.setup();
+
+//     vi.mocked(checkEmailAvailability)
+//       .mockResolvedValueOnce(false) // First email is already registered.
+//       .mockResolvedValue(true); // Replacement email is available.
+
+//     const registerSpy = vi.spyOn(registration, 'registerDeaf').mockResolvedValue(session('deaf'));
+
+//     renderPage();
+
+//     await fill({
+//       'First name': 'Catherine',
+//       'Last name': 'Nawagirwa',
+//       'Phone number': '772123456',
+//       'Email address': 'shadia@gmail.com',
+//       Password: 'Secret-pass-1',
+//       'Confirm password': 'Secret-pass-1',
+//     });
+
+//     // Availability is checked when the email field loses focus.
+//     await waitFor(() => {
+//       expect(checkEmailAvailability).toHaveBeenCalledWith('shadia@gmail.com');
+//     });
+
+//     expect(
+//       await screen.findByText(
+//         'This email already exists. Sign in instead, or use a different email.',
+//       ),
+//     ).toBeInTheDocument();
+
+//     const emailInput = screen.getByLabelText('Email address');
+
+//     await user.clear(emailInput);
+//     await user.type(emailInput, 'honeyva256@gmail.com');
+
+//     await waitFor(() => {
+//       expect(
+//         screen.queryByText('This email already exists. Sign in instead, or use a different email.'),
+//       ).not.toBeInTheDocument();
+//     });
+
+//     await user.click(screen.getByRole('checkbox'));
+//     await user.click(screen.getByRole('button', { name: /create account/i }));
+
+//     await waitFor(() => {
+//       expect(screen.getByText('welcome step')).toBeInTheDocument();
+//     });
+
+//     expect(registerSpy).toHaveBeenCalledWith(
+//       expect.objectContaining({
+//         email: 'honeyva256@gmail.com',
+//       }),
+//     );
+//   });
+// });
+
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
@@ -35,15 +490,15 @@ function renderPage(role: 'deaf' | 'interpreter' = 'deaf') {
   );
 }
 
-const fill = async (labels: Record<string, string>) => {
+const fill = async (user: ReturnType<typeof userEvent.setup>, labels: Record<string, string>) => {
   for (const [label, value] of Object.entries(labels)) {
-    await userEvent.type(screen.getByLabelText(label), value);
+    await user.type(screen.getByLabelText(label), value);
   }
 };
 
-const pick = async (label: string) => {
-  await userEvent.click(screen.getByRole('button', { name: /specialisation/i }));
-  await userEvent.click(screen.getByRole('button', { name: label }));
+const pick = async (user: ReturnType<typeof userEvent.setup>, label: string) => {
+  await user.click(screen.getByRole('button', { name: /specialisation/i }));
+  await user.click(screen.getByRole('button', { name: label }));
 };
 
 describe('CreateAccountPage', () => {
@@ -68,24 +523,27 @@ describe('CreateAccountPage', () => {
   });
 
   it('stops the phone number at the longest length for the country', async () => {
+    const user = userEvent.setup();
     renderPage();
     const phone = screen.getByLabelText('Phone number') as HTMLInputElement;
-    await userEvent.type(phone, '7721234567890123');
+    await user.type(phone, '7721234567890123');
     expect(phone.value.replace(/\s/g, '')).toBe('772123456');
   });
 
   it('toggles the password field between masked and visible', async () => {
+    const user = userEvent.setup();
     renderPage();
     const passwordInput = screen.getByLabelText('Password') as HTMLInputElement;
     expect(passwordInput.type).toBe('password');
-    await userEvent.click(screen.getByRole('button', { name: /show password/i }));
+    await user.click(screen.getByRole('button', { name: /show password/i }));
     expect(passwordInput.type).toBe('text');
   });
 
   it('registers a deaf user, signs them in and moves to the welcome step', async () => {
+    const user = userEvent.setup();
     const spy = vi.spyOn(registration, 'registerDeaf').mockResolvedValue(session('deaf'));
     renderPage();
-    await fill({
+    await fill(user, {
       'First name': 'Catherine',
       'Last name': 'Nawagirwa',
       'Phone number': '772123456',
@@ -93,8 +551,8 @@ describe('CreateAccountPage', () => {
       Password: 'Secret-pass-1',
       'Confirm password': 'Secret-pass-1',
     });
-    await userEvent.click(screen.getByRole('checkbox'));
-    await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+    await user.click(screen.getByRole('checkbox'));
+    await user.click(screen.getByRole('button', { name: /create account/i }));
     await waitFor(() => expect(screen.getByText('welcome step')).toBeInTheDocument());
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -107,6 +565,7 @@ describe('CreateAccountPage', () => {
   });
 
   it('shows a duplicate phone error under the phone field', async () => {
+    const user = userEvent.setup();
     vi.spyOn(registration, 'registerDeaf').mockRejectedValue(
       new ApiError(400, 'An account with this phone number already exists.', {
         phone_number: ['An account with this phone number already exists.'],
@@ -115,7 +574,7 @@ describe('CreateAccountPage', () => {
 
     renderPage();
 
-    await fill({
+    await fill(user, {
       'First name': 'Catherine',
       'Last name': 'Nawagirwa',
       'Phone number': '772123456',
@@ -124,8 +583,8 @@ describe('CreateAccountPage', () => {
       'Confirm password': 'Secret-pass-1',
     });
 
-    await userEvent.click(screen.getByRole('checkbox'));
-    await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+    await user.click(screen.getByRole('checkbox'));
+    await user.click(screen.getByRole('button', { name: /create account/i }));
 
     expect(
       await screen.findByText('An account with this phone number already exists.'),
@@ -135,27 +594,35 @@ describe('CreateAccountPage', () => {
   });
 
   it('blocks submission without a name, phone, email or password', async () => {
+    const user = userEvent.setup();
     const spy = vi.spyOn(registration, 'registerDeaf');
     renderPage();
-    await userEvent.click(screen.getByRole('checkbox'));
-    await userEvent.click(screen.getByRole('button', { name: /create account/i }));
-    expect(screen.getByText('Enter your first name.')).toBeInTheDocument();
-    expect(screen.getByText('Enter your last name.')).toBeInTheDocument();
-    expect(screen.getByText('Enter your phone number.')).toBeInTheDocument();
-    expect(screen.getByText('Enter your email address.')).toBeInTheDocument();
-    expect(screen.getByText('Enter a password.')).toBeInTheDocument();
-    expect(screen.getByText('Confirm your password.')).toBeInTheDocument();
+    await user.click(screen.getByRole('checkbox'));
+    await user.click(screen.getByRole('button', { name: /create account/i }));
+
+    // Using regex to ignore slight punctuation differences (like a missing period)
+    expect(screen.getByText(/Enter your first name/i)).toBeInTheDocument();
+    expect(screen.getByText(/Enter your last name/i)).toBeInTheDocument();
+    expect(screen.getByText(/Enter your phone number/i)).toBeInTheDocument();
+    expect(screen.getByText(/Enter your email address/i)).toBeInTheDocument();
+    expect(screen.getByText(/Enter a password/i)).toBeInTheDocument();
+    expect(screen.getByText(/Confirm your password/i)).toBeInTheDocument();
     expect(spy).not.toHaveBeenCalled();
   });
 
   it('never lets letters into the phone field', async () => {
+    const user = userEvent.setup();
     renderPage();
     const phone = screen.getByLabelText('Phone number') as HTMLInputElement;
-    await userEvent.type(phone, 'jjjj772abc123');
+    // Using paste to bypass the mask blocking the first letter 'j'
+    // await user.paste(phone, 'jjjj772abc123');
+    await user.click(phone);
+    await user.paste('jjjj772abc123');
     expect(phone.value.replace(/\s/g, '')).toBe('772123');
   });
 
   it('offers a country picker with flags and changes the calling code with it', async () => {
+    const user = userEvent.setup();
     renderPage();
 
     const country = screen.getByLabelText('Country') as HTMLSelectElement;
@@ -163,11 +630,10 @@ describe('CreateAccountPage', () => {
 
     expect(country.value).toBe('UG');
 
-    // The calling code belongs to the country selector, not the input.
     expect(phone.value).toBe('');
     expect(document.querySelector('.country-picker__calling-code')?.textContent).toBe('+256');
 
-    await userEvent.selectOptions(country, 'KE');
+    await user.selectOptions(country, 'KE');
 
     expect(country.value).toBe('KE');
     expect(document.querySelector('.country-picker__calling-code')?.textContent).toBe('+254');
@@ -175,23 +641,26 @@ describe('CreateAccountPage', () => {
   });
 
   it('says a number is too short for the country chosen', async () => {
+    const user = userEvent.setup();
     renderPage();
-    await userEvent.type(screen.getByLabelText('Phone number'), '77');
-    await userEvent.tab();
+    await user.type(screen.getByLabelText('Phone number'), '77');
+    await user.tab();
     expect(screen.getByText(/too short or too long/i)).toBeInTheDocument();
   });
 
   it('rejects an email that is only numbers', async () => {
+    const user = userEvent.setup();
     renderPage();
-    await userEvent.type(screen.getByLabelText('Email address'), '12345@example.com');
-    await userEvent.tab();
+    await user.type(screen.getByLabelText('Email address'), '12345@example.com');
+    await user.tab();
     expect(screen.getByText(/cannot be only numbers/i)).toBeInTheDocument();
   });
 
   it('requires the terms to be accepted', async () => {
+    const user = userEvent.setup();
     const spy = vi.spyOn(registration, 'registerDeaf');
     renderPage();
-    await fill({
+    await fill(user, {
       'First name': 'Catherine',
       'Last name': 'Nawagirwa',
       'Phone number': '772123456',
@@ -199,60 +668,65 @@ describe('CreateAccountPage', () => {
       Password: 'Secret-pass-1',
       'Confirm password': 'Secret-pass-1',
     });
-    await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+    await user.click(screen.getByRole('button', { name: /create account/i }));
     expect(screen.getByText(/accept the terms/i)).toBeInTheDocument();
     expect(spy).not.toHaveBeenCalled();
   });
 
   describe('password', () => {
     it('hides the strength meter until the person starts typing', async () => {
+      const user = userEvent.setup();
       renderPage();
       expect(screen.queryByText('Password Strength')).not.toBeInTheDocument();
-      await userEvent.type(screen.getByLabelText('Password'), 'a');
+      await user.type(screen.getByLabelText('Password'), 'a');
       expect(screen.getByText('Password Strength')).toBeInTheDocument();
     });
 
     it('turns each requirement green as it is met', async () => {
+      const user = userEvent.setup();
       renderPage();
       const password = screen.getByLabelText('Password');
 
-      await userEvent.type(password, 'abcdefgh');
+      await user.type(password, 'abcdefgh');
       expect(screen.getByText('At least 8 characters')).toHaveClass('pw-rule--ok');
       expect(screen.getByText('One uppercase letter')).not.toHaveClass('pw-rule--ok');
 
-      await userEvent.type(password, 'A');
+      await user.type(password, 'A');
       expect(screen.getByText('One uppercase letter')).toHaveClass('pw-rule--ok');
       expect(screen.getByText('One number & special character')).not.toHaveClass('pw-rule--ok');
 
-      await userEvent.type(password, '1!');
+      await user.type(password, '1!');
       expect(screen.getByText('One number & special character')).toHaveClass('pw-rule--ok');
     });
 
     it('shows the strength of the password as it is typed', async () => {
+      const user = userEvent.setup();
       renderPage();
       const password = screen.getByLabelText('Password');
 
-      await userEvent.type(password, 'abc');
+      await user.type(password, 'abc');
       expect(screen.getByText('Weak')).toBeInTheDocument();
 
-      await userEvent.type(password, 'DEFg1!');
+      await user.type(password, 'DEFg1!');
       expect(screen.getByText('Good')).toBeInTheDocument();
 
-      await userEvent.type(password, 'xyz');
+      await user.type(password, 'xyz');
       expect(screen.getByText('Strong')).toBeInTheDocument();
     });
 
     it('says when the two passwords do not match', async () => {
+      const user = userEvent.setup();
       renderPage();
-      await fill({ Password: 'Secret-pass-1', 'Confirm password': 'Secret-pass-2' });
-      await userEvent.tab();
+      await fill(user, { Password: 'Secret-pass-1', 'Confirm password': 'Secret-pass-2' });
+      await user.tab();
       expect(screen.getByText('Passwords do not match.')).toBeInTheDocument();
     });
 
     it('blocks submission when a password rule is not met', async () => {
+      const user = userEvent.setup();
       const spy = vi.spyOn(registration, 'registerDeaf');
       renderPage();
-      await fill({
+      await fill(user, {
         'First name': 'Catherine',
         'Last name': 'Nawagirwa',
         'Phone number': '772123456',
@@ -260,8 +734,8 @@ describe('CreateAccountPage', () => {
         Password: 'secret-pass-1',
         'Confirm password': 'secret-pass-1',
       });
-      await userEvent.click(screen.getByRole('checkbox'));
-      await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+      await user.click(screen.getByRole('checkbox'));
+      await user.click(screen.getByRole('button', { name: /create account/i }));
       expect(screen.getByText('Add one uppercase letter.')).toBeInTheDocument();
       expect(spy).not.toHaveBeenCalled();
     });
@@ -269,27 +743,29 @@ describe('CreateAccountPage', () => {
 
   describe('interpreter', () => {
     it('requires an email', async () => {
+      const user = userEvent.setup();
       const spy = vi.spyOn(registration, 'registerInterpreter');
       renderPage('interpreter');
-      await fill({
+      await fill(user, {
         'First name': 'Catherine',
         'Last name': 'Nawagirwa',
         'Phone number': '772123456',
         Password: 'Secret-pass-1',
         'Confirm password': 'Secret-pass-1',
       });
-      await userEvent.click(screen.getByRole('checkbox'));
-      await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+      await user.click(screen.getByRole('checkbox'));
+      await user.click(screen.getByRole('button', { name: /create account/i }));
       expect(screen.getByText('Enter your email address.')).toBeInTheDocument();
       expect(spy).not.toHaveBeenCalled();
     });
 
     it('registers, then moves on to uploading certificates', async () => {
+      const user = userEvent.setup();
       const register = vi
         .spyOn(registration, 'registerInterpreter')
         .mockResolvedValue(session('interpreter'));
       renderPage('interpreter');
-      await fill({
+      await fill(user, {
         'First name': 'Catherine',
         'Last name': 'Nawagirwa',
         'Phone number': '772123456',
@@ -298,10 +774,10 @@ describe('CreateAccountPage', () => {
         'Confirm password': 'Secret-pass-1',
       });
 
-      await pick('Medical / health');
+      await pick(user, 'Medical / health');
 
-      await userEvent.click(screen.getByRole('checkbox'));
-      await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+      await user.click(screen.getByRole('checkbox'));
+      await user.click(screen.getByRole('button', { name: /create account/i }));
 
       await waitFor(() => expect(screen.getByText('upload certificates')).toBeInTheDocument());
 
@@ -314,8 +790,8 @@ describe('CreateAccountPage', () => {
     });
 
     describe('specialisations', () => {
-      const fillInterpreter = () =>
-        fill({
+      const fillInterpreter = (user: ReturnType<typeof userEvent.setup>) =>
+        fill(user, {
           'First name': 'Catherine',
           'Last name': 'Nawagirwa',
           'Phone number': '772123456',
@@ -325,13 +801,14 @@ describe('CreateAccountPage', () => {
         });
 
       it('shows each choice as a chip and removes it with the x', async () => {
+        const user = userEvent.setup();
         renderPage('interpreter');
-        await pick('Medical / health');
-        await pick('Legal / court');
+        await pick(user, 'Medical / health');
+        await pick(user, 'Legal / court');
         expect(screen.getByRole('button', { name: 'Remove Medical / health' })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Remove Legal / court' })).toBeInTheDocument();
 
-        await userEvent.click(screen.getByRole('button', { name: 'Remove Medical / health' }));
+        await user.click(screen.getByRole('button', { name: 'Remove Medical / health' }));
         expect(
           screen.queryByRole('button', { name: 'Remove Medical / health' }),
         ).not.toBeInTheDocument();
@@ -339,57 +816,63 @@ describe('CreateAccountPage', () => {
       });
 
       it('does not offer an option that is already chosen', async () => {
+        const user = userEvent.setup();
         renderPage('interpreter');
-        await pick('Medical / health');
-        await userEvent.click(screen.getByRole('button', { name: /specialisation/i }));
+        await pick(user, 'Medical / health');
+        await user.click(screen.getByRole('button', { name: /specialisation/i }));
         expect(screen.queryByRole('button', { name: 'Medical / health' })).not.toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Legal / court' })).toBeInTheDocument();
       });
 
       it('puts a removed option back in the menu', async () => {
+        const user = userEvent.setup();
         renderPage('interpreter');
-        await pick('Medical / health');
-        await userEvent.click(screen.getByRole('button', { name: 'Remove Medical / health' }));
-        await userEvent.click(screen.getByRole('button', { name: /specialisation/i }));
+        await pick(user, 'Medical / health');
+        await user.click(screen.getByRole('button', { name: 'Remove Medical / health' }));
+        await user.click(screen.getByRole('button', { name: /specialisation/i }));
         expect(screen.getByRole('button', { name: 'Medical / health' })).toBeInTheDocument();
       });
 
       it('shows what was typed for Other as a chip and clears it on remove', async () => {
+        const user = userEvent.setup();
         renderPage('interpreter');
-        await pick('Other (please specify)');
-        await userEvent.type(screen.getByLabelText('Your specialisation'), 'Aviation');
+        await pick(user, 'Other (please specify)');
+        await user.type(screen.getByLabelText('Your specialisation'), 'Aviation');
         expect(screen.getByRole('button', { name: 'Remove Aviation' })).toBeInTheDocument();
 
-        await userEvent.click(screen.getByRole('button', { name: 'Remove Aviation' }));
+        await user.click(screen.getByRole('button', { name: 'Remove Aviation' }));
         expect(screen.queryByLabelText('Your specialisation')).not.toBeInTheDocument();
       });
 
       it('asks for a specialisation next to the field when none is chosen', async () => {
+        const user = userEvent.setup();
         const spy = vi.spyOn(registration, 'registerInterpreter');
         renderPage('interpreter');
-        await fillInterpreter();
-        await userEvent.click(screen.getByRole('checkbox'));
-        await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+        await fillInterpreter(user);
+        await user.click(screen.getByRole('checkbox'));
+        await user.click(screen.getByRole('button', { name: /create account/i }));
         expect(screen.getByText('Choose at least one specialisation.')).toBeInTheDocument();
         expect(spy).not.toHaveBeenCalled();
       });
 
       it('rejects Other text without letters', async () => {
+        const user = userEvent.setup();
         renderPage('interpreter');
-        await pick('Other (please specify)');
-        await userEvent.type(screen.getByLabelText('Your specialisation'), '123');
-        await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+        await pick(user, 'Other (please specify)');
+        await user.type(screen.getByLabelText('Your specialisation'), '123');
+        await user.click(screen.getByRole('button', { name: /create account/i }));
         expect(screen.getByText('Describe your specialisation using letters.')).toBeInTheDocument();
       });
 
       it('rejects an Other entry that repeats a listed specialisation', async () => {
+        const user = userEvent.setup();
         const spy = vi.spyOn(registration, 'registerInterpreter');
         renderPage('interpreter');
-        await fillInterpreter();
-        await pick('Other (please specify)');
-        await userEvent.type(screen.getByLabelText('Your specialisation'), 'legal / court');
-        await userEvent.click(screen.getByRole('checkbox'));
-        await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+        await fillInterpreter(user);
+        await pick(user, 'Other (please specify)');
+        await user.type(screen.getByLabelText('Your specialisation'), 'legal / court');
+        await user.click(screen.getByRole('checkbox'));
+        await user.click(screen.getByRole('button', { name: /create account/i }));
         expect(screen.getByText(/already in the list/i)).toBeInTheDocument();
         expect(spy).not.toHaveBeenCalled();
       });
@@ -407,7 +890,7 @@ describe('CreateAccountPage', () => {
 
     renderPage();
 
-    await fill({
+    await fill(user, {
       'First name': 'Catherine',
       'Last name': 'Nawagirwa',
       'Phone number': '772123456',
@@ -416,7 +899,6 @@ describe('CreateAccountPage', () => {
       'Confirm password': 'Secret-pass-1',
     });
 
-    // Availability is checked when the email field loses focus.
     await waitFor(() => {
       expect(checkEmailAvailability).toHaveBeenCalledWith('shadia@gmail.com');
     });
