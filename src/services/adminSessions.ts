@@ -19,22 +19,22 @@ export interface AdminSession {
 }
 
 interface ApiStats {
-  live_now?: number;
-  live_stable?: number;
+  liveNow?: number;
+  liveStable?: number;
   connecting?: number;
-  connecting_avg_seconds?: number;
-  needs_attention?: number;
+  connectingAverageSeconds?: number;
+  needsAttention?: number;
 }
 
-/** GET /api/v1/admin/sessions/stats/ */
+/** GET /api/v1/dashboard/admin/sessions-stats/ */
 export async function fetchAdminSessionStats(): Promise<AdminSessionStats> {
-  const raw = await api<ApiStats>('/api/v1/admin/sessions/stats/');
+  const raw = await api<ApiStats>('/api/v1/dashboard/admin/sessions-stats/');
   return {
-    liveNow: raw.live_now ?? 0,
-    liveStable: raw.live_stable ?? 0,
+    liveNow: raw.liveNow ?? 0,
+    liveStable: raw.liveStable ?? 0,
     connecting: raw.connecting ?? 0,
-    connectingAverageSeconds: raw.connecting_avg_seconds ?? 0,
-    needsAttention: raw.needs_attention ?? 0,
+    connectingAverageSeconds: raw.connectingAverageSeconds ?? 0,
+    needsAttention: raw.needsAttention ?? 0,
   };
 }
 
@@ -72,9 +72,9 @@ function unwrap(value: unknown): ApiSession[] {
   return [];
 }
 
-/** GET /api/v1/admin/sessions/ */
+/** GET /api/v1/dashboard/admin/sessions/ */
 export async function fetchAdminSessions(): Promise<AdminSession[]> {
-  const raw = await api<unknown>('/api/v1/admin/sessions/');
+  const raw = await api<unknown>('/api/v1/dashboard/admin/sessions/');
   return unwrap(raw)
     .map(normalizeSession)
     .filter((s) => s.id);
