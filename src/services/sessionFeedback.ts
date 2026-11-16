@@ -15,8 +15,8 @@ export interface FeedbackInput {
  * per session, and only once the session is completed: 409 `already_submitted` / `not_completed`.
  */
 export async function submitSessionFeedback(id: string, input: FeedbackInput): Promise<void> {
-  await api(`/api/v1/requests/${id}/feedback/`, {
-    method: 'POST',
-    body: JSON.stringify(input),
-  });
+    await api(`/api/v1/realtime/requests/${id}/feedback/`, {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
 }
