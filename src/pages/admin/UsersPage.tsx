@@ -303,7 +303,7 @@ export function UsersPage() {
         </select>
       </section>
 
-      <section className="ad-table-card">
+      <section className="ad-table-card mobile-data-cards">
         <table className="users-table">
           <thead>
             <tr>
@@ -340,7 +340,7 @@ export function UsersPage() {
             ) : (
               users.map((u) => (
                 <tr key={u.id}>
-                  <td>
+                  <td data-card-select>
                     <input
                       type="checkbox"
                       aria-label={`Select ${u.name}`}
@@ -348,11 +348,11 @@ export function UsersPage() {
                       onChange={() => toggleSelect(u.id)}
                     />
                   </td>
-                  <td>
+                  <td data-card-primary>
                     <strong>{u.name}</strong>
                   </td>
-                  <td>{u.role}</td>
-                  <td>
+                  <td data-label="Type">{u.role}</td>
+                  <td data-label="Verification status">
                     <span
                       style={{
                         display: 'inline-block',
@@ -367,13 +367,13 @@ export function UsersPage() {
                       {u.verificationStatus}
                     </span>
                   </td>
-                  <td>
+                  <td data-label="Email / Phone">
                     {u.email}
                     {u.phone ? ` · ${u.phone}` : ''}
                   </td>
-                  <td>{formatDate(u.registeredAt)}</td>
-                  <td>{formatDate(u.lastActive)}</td>
-                  <td>
+                  <td data-label="Registered">{formatDate(u.registeredAt)}</td>
+                  <td data-label="Last active">{formatDate(u.lastActive)}</td>
+                  <td data-card-actions>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <button
                         type="button"
