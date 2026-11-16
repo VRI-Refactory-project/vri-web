@@ -89,3 +89,14 @@
   background: #f3efff;
   border-color: #3b2579;
 }
+
+@media (max-width: 600px) {
+  .sac-card {
+    width: calc(100% - 24px);
+    margin-top: 28px;
+    padding: 28px 18px;
+  }
+  .sac-subtitle {
+    padding: 0;
+  }
+}

@@ -228,3 +228,66 @@ select.sm-select {
 a.sm-view {
   text-decoration: none;
 }
+
+@media (max-width: 900px) {
+  .sm-header {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .sm-filters {
+    grid-template-columns: minmax(0, 1fr) minmax(0, auto);
+    gap: 8px;
+  }
+  .sm-search {
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
+  .sm-select {
+    min-width: 0;
+    padding: 9px 10px;
+  }
+  .sm-table {
+    min-width: 0;
+  }
+  .sm-thead,
+  .sm-row {
+    min-width: 0;
+    grid-template-columns: minmax(0, 1.4fr) repeat(4, minmax(0, 0.7fr)) auto;
+    gap: 4px;
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+  .sm-thead {
+    font-size: 9px;
+  }
+  .sm-row {
+    font-size: 10px;
+  }
+  .sm-member {
+    min-width: 0;
+    gap: 5px;
+  }
+  .sm-member > span:last-child,
+  .sm-cell {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .sm-avatar {
+    width: 28px;
+    height: 28px;
+  }
+  .sm-view {
+    padding: 4px;
+    font-size: 10px;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 420px) {
+  .sm-filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sm-search {
+    grid-column: auto;
+  }
+}

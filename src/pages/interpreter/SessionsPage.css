@@ -62,3 +62,17 @@
   color: #7a5200;
   font-size: 14px;
 }
+
+@media (max-width: 900px) {
+  .isn-page {
+    min-width: 0;
+    gap: 16px;
+  }
+  .isn-header {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .isn-header h1 {
+    font-size: 22px;
+  }
+}

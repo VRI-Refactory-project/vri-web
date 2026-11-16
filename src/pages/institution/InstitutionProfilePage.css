@@ -189,3 +189,39 @@
   font-weight: 500;
   color: #111827;
 }
+
+@media (max-width: 900px) {
+  .profile-page {
+    min-width: 0;
+    padding: 0 16px 28px;
+  }
+  .profile-header {
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .profile-header-text {
+    min-width: 0;
+    padding-right: 0;
+  }
+  .profile-hero-card {
+    gap: 14px;
+    padding: 16px;
+  }
+  .profile-avatar-large {
+    width: 64px;
+    height: 64px;
+  }
+  .profile-detail-row {
+    gap: 10px;
+  }
+}
+
+@media (max-width: 420px) {
+  .profile-page {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+  .profile-hero-card {
+    flex-wrap: wrap;
+  }
+}

@@ -179,3 +179,46 @@
   background: #ffffff;
   border-radius: 15px;
 }
+
+@media (max-width: 900px) {
+  .requests-page {
+    min-width: 0;
+    padding: 16px;
+  }
+  .requests-top-bar {
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+  }
+  .requests-sort {
+    max-width: 45%;
+  }
+  .offer-card {
+    min-width: 0;
+    padding: 14px;
+  }
+  .offer-card__header {
+    gap: 8px;
+  }
+  .offer-card__actions {
+    flex-wrap: wrap;
+  }
+  .offer-card__actions button {
+    min-width: 0;
+    padding: 8px 10px;
+    font-size: clamp(11px, 3vw, 13px);
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 360px) {
+  .requests-page {
+    padding: 10px;
+  }
+  .offer-card__actions {
+    gap: 6px;
+  }
+  .offer-card__actions button {
+    padding: 7px 8px;
+  }
+}

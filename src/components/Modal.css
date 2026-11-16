@@ -120,3 +120,22 @@
 .modal .form-error {
   text-align: center;
 }
+
+@media (max-width: 600px) {
+  .modal-backdrop {
+    padding: 12px;
+  }
+  .modal {
+    width: min(100%, 440px);
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+    padding: 24px 18px 20px;
+  }
+  .modal__title {
+    font-size: 19px;
+  }
+  .modal__code {
+    font-size: clamp(18px, 6vw, 24px);
+    letter-spacing: 0.28em;
+  }
+}

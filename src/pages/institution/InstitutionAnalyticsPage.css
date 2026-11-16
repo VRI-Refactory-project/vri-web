@@ -318,3 +318,50 @@
 .purpose-list .progress-label {
   width: 180px;
 }
+
+@media (max-width: 900px) {
+  .analytics-page {
+    min-width: 0;
+    padding: 0 16px 28px;
+  }
+  .analytics-header {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .analytics-filters {
+    flex-wrap: wrap;
+  }
+  .analytics-filters > * {
+    min-width: 0;
+    flex: 1 1 130px;
+  }
+  .analytics-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .analytics-chart-card {
+    min-width: 0;
+    padding: 16px;
+  }
+  .analytics-split-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 420px) {
+  .analytics-page {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+  .analytics-metrics {
+    gap: 8px;
+  }
+  .analytics-metrics .metric-card {
+    min-width: 0;
+    padding: 12px;
+  }
+  .analytics-metrics .metric-value {
+    font-size: 19px;
+  }
+}
