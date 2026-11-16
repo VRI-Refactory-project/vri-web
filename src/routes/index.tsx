@@ -240,7 +240,8 @@ const appRoutes: RouteObject[] = [
               },
               {
                 path: 'sessions/:id',
-                element: <SessionDetailsPage backTo="/dashboard/staff/sessions" />,
+                // Staff can cancel a request that is still waiting from here (V2-013).
+                element: <SessionDetailsPage backTo="/dashboard/staff/sessions" allowCancel />,
               },
               { path: 'chat', element: <StaffChatPage /> },
               { path: 'profile', element: <MyProfilePage /> },

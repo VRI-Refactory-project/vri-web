@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { describeError } from '../services/api';
+import { ApiError, describeError } from '../services/api';
 import {
   FINAL_STATES,
   cancelSessionRequest,
   createSessionRequest,
+  getOpenSessionRequest,
   getSessionRequest,
+  type SessionContext,
   type SessionRequest,
 } from '../services/sessionRequests';
 
@@ -18,11 +20,23 @@ export const DEFAULT_POLL_MS = 3000;
 const messageFor = (err: unknown) =>
   describeError(err).trim() || 'Something went wrong. Please try again.';
 
+interface Options {
+  /**
+   * Pick up a request that is already open instead of failing: when the screen opens, and when the
+   * server answers that one exists (409). Used by institution staff (V2-013), who may leave the
+   * screen while a client waits with them.
+   */
+  resumeOpen?: boolean;
+}
+
 /**
  * Holds one live-session request: creates it, follows it until it reaches an end state, and lets
  * the person cancel it. The screens read `request.state` and decide what to show.
  */
-export function useSessionRequest(pollMs: number = DEFAULT_POLL_MS) {
+export function useSessionRequest(
+  pollMs: number = DEFAULT_POLL_MS,
+  { resumeOpen = false }: Options = {},
+) {
   const [request, setRequest] = useState<SessionRequest | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -55,19 +69,45 @@ export function useSessionRequest(pollMs: number = DEFAULT_POLL_MS) {
     };
   }, [id, state, tick, pollMs]);
 
-  const start = useCallback(async (priority?: 'NORMAL' | 'EMERGENCY') => {
-    setBusy(true);
-    setError(null);
-    try {
-      const created = await createSessionRequest(priority);
-      currentId.current = created.id;
-      setRequest(created);
-    } catch (err) {
-      setError(messageFor(err));
-    } finally {
-      setBusy(false);
-    }
+  const follow = useCallback((next: SessionRequest) => {
+    currentId.current = next.id;
+    setRequest(next);
   }, []);
+
+  // Coming back to the screen shows the request that is still open.
+  useEffect(() => {
+    if (!resumeOpen) return;
+    let cancelled = false;
+    getOpenSessionRequest().then(
+      (open) => {
+        if (!cancelled && open && currentId.current === null) follow(open);
+      },
+      () => undefined, // nothing to pick up; the person can still start a new request
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [resumeOpen, follow]);
+
+  const start = useCallback(
+    async (priority?: 'NORMAL' | 'EMERGENCY', context?: SessionContext) => {
+      setBusy(true);
+      setError(null);
+      try {
+        follow(await createSessionRequest(priority, context));
+      } catch (err) {
+        const open =
+          resumeOpen && err instanceof ApiError && err.status === 409
+            ? await getOpenSessionRequest().catch(() => null)
+            : null;
+        if (open) follow(open);
+        else setError(messageFor(err));
+      } finally {
+        setBusy(false);
+      }
+    },
+    [resumeOpen, follow],
+  );
 
   const cancel = useCallback(async () => {
     if (!id) return;

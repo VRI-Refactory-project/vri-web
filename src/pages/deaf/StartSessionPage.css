@@ -584,6 +584,60 @@
   }
 }
 
+/* --- What the session is about (staff, V2-013) --- */
+.ss-context {
+  margin: 0 0 20px;
+  padding: 0;
+  border: 0;
+}
+
+.ss-context legend {
+  margin-bottom: 10px;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.ss-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ss-chip {
+  position: relative;
+  cursor: pointer;
+}
+
+/* The radio stays in the page for keyboards and screen readers; the label is what you see. */
+.ss-chip input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.ss-chip span {
+  display: inline-block;
+  padding: 8px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.ss-chip input:checked + span {
+  background: #fff;
+  border-color: #fff;
+  color: #4b3a9e;
+}
+
+.ss-chip input:focus-visible + span {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
 @media (max-width: 860px) {
   .ss-grid {
     grid-template-columns: 1fr;
@@ -591,5 +645,37 @@
 
   .ss-schedule {
     flex-wrap: wrap;
+  }
+}
+
+/* Phones: 16px page edges, lighter card padding, full-width buttons. */
+@media (max-width: 560px) {
+  .ss-page {
+    padding: 12px 16px 32px;
+  }
+
+  .ss-connect {
+    min-height: 0;
+    padding: 24px 20px;
+  }
+
+  .ss-btn--light,
+  .ss-btn--outline {
+    width: 100%;
+  }
+
+  .ss-schedule,
+  .ss-found,
+  .ss-waiting {
+    padding: 24px 20px;
+  }
+
+  .ss-found-head {
+    flex-wrap: wrap;
+  }
+
+  .ss-facts {
+    flex-direction: column;
+    gap: 16px;
   }
 }

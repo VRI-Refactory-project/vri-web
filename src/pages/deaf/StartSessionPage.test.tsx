@@ -57,7 +57,8 @@ describe('StartSessionPage', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Connect now' }));
 
-    expect(createSessionRequest).toHaveBeenCalledWith('EMERGENCY');
+    // Deaf users do not choose a context, so it stays General (V2-013 added the choice for staff).
+    expect(createSessionRequest).toHaveBeenCalledWith('EMERGENCY', 'GENERAL');
   });
 
   it('asks for an interpreter and moves to the waiting screen', async () => {

@@ -9,6 +9,8 @@ export function useRequesterPaths() {
   const { pathname } = useLocation();
   const staff = pathname.startsWith('/dashboard/staff');
   return {
+    /** Institution staff asking for a client with them (V2-013), rather than a Deaf user for themselves. */
+    staff,
     /** The dashboard home. */
     home: staff ? '/dashboard/staff' : '/dashboard/deaf',
     /** Where Back goes from the schedule screen. */

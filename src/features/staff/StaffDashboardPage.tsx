@@ -1,7 +1,9 @@
-import { CircleHelp, MessageSquare, Video, ChevronRight, Hand } from 'lucide-react';
+import { CircleHelp, MessageSquare, Video, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { formatWhen, STATUS_LABEL, titleFor } from '../../features/sessions/sessionHistory';
+// interpreter2.png made smaller for the web (66 KB instead of 1.8 MB); the banner shows it at ~220px.
+import heroImage from '../../assets/staff-hero.jpg';
+import { formatWhen, titleFor } from '../../features/sessions/sessionHistory';
 import { useAuth } from '../../hooks/useAuth';
 import { getInstitutionOverview } from '../../services/institutionDashboard';
 import { getMySessions, type HistoryItem } from '../../services/mySessions';
@@ -56,7 +58,6 @@ export function StaffDashboardPage() {
     };
   }, []);
 
-  const recent = (items ?? []).slice(0, 3);
   const inProgress = (items ?? []).find((i) => i.status === 'waiting' || i.status === 'matched');
 
   return (
@@ -71,127 +72,99 @@ export function StaffDashboardPage() {
         </span>
       </div>
 
-      <header className="sd-welcome">
-        <h1>{[greeting(), firstName].filter(Boolean).join(', ')}</h1>
-        <p>Connect with an interpreter whenever you need communication support.</p>
-      </header>
-
-      <section className="sd-hero" aria-labelledby="sd-hero-title">
-        <div>
-          <h2 id="sd-hero-title">Start a VRI session</h2>
+      {/* Laid out like the interpreter dashboard's banner: words on the left, photo on the right. */}
+      <section className="sd-hero" aria-label="Start a VRI session">
+        <div className="sd-hero-text">
+          <h1>{[greeting(), firstName].filter(Boolean).join(', ')}</h1>
+          <p className="sd-hero-sub">Start a VRI session</p>
+          <p className="sd-hero-desc">
+            For a Deaf client who is with you: connect a certified interpreter in about two minutes.
+          </p>
           <Link to={`${BASE}/start-session`} className="sd-hero-btn">
-            Start Session
+            Start Interpreter Session
           </Link>
         </div>
-        <p>Get connected to a certified interpreter in under two minutes.</p>
-        <Hand className="sd-hero-icon" size={44} aria-hidden="true" />
-      </section>
-
-      <section className="sd-calendar" aria-label="Your calendar">
-        <MiniCalendar items={items ?? []} detailsBase={`${BASE}/sessions`} />
-      </section>
-
-      <section aria-labelledby="sd-active">
-        <h2 id="sd-active" className="sd-heading">
-          Active session
-        </h2>
-        <div className="sd-card sd-card--accent">
-          {inProgress ? (
-            <Link to={`${BASE}/sessions/${inProgress.id}`} className="sd-empty sd-empty--link">
-              <span className="sd-tile">
-                <Video size={20} aria-hidden="true" />
-              </span>
-              <strong>
-                {inProgress.status === 'waiting'
-                  ? 'Looking for an interpreter'
-                  : `Matched with ${titleFor(inProgress)}`}
-              </strong>
-              <span>Started {formatWhen(inProgress.createdAt)}</span>
-            </Link>
-          ) : (
-            <div className="sd-empty">
-              <span className="sd-tile">
-                <Video size={20} aria-hidden="true" />
-              </span>
-              <strong>No active session</strong>
-              <span>You&apos;re not connected to an interpreter right now.</span>
-            </div>
-          )}
+        <div className="sd-hero-image">
+          <img src={heroImage} alt="" />
         </div>
       </section>
 
-      <section aria-labelledby="sd-recent">
-        <div className="sd-heading-row">
-          <h2 id="sd-recent" className="sd-heading">
-            Recent sessions
-          </h2>
-          <Link to={`${BASE}/sessions`} className="sd-link">
+      {/* The calendar lists the chosen day's sessions (today to start with), so there is no separate
+          "Recent sessions" card. Beside it: the active session, chat and help. */}
+      <div className="sd-overview">
+        <section className="sd-calendar" aria-label="Your calendar">
+          <MiniCalendar items={items ?? []} detailsBase={`${BASE}/sessions`} />
+          <Link to={`${BASE}/sessions`} className="sd-link sd-calendar-all">
             View all sessions <ChevronRight size={16} aria-hidden="true" />
           </Link>
-        </div>
-        <div className="sd-card">
-          {items === null && <p className="sd-note">Loading your sessions…</p>}
-          {items !== null && recent.length === 0 && (
-            <p className="sd-note">You have no sessions yet.</p>
-          )}
-          {recent.length > 0 && (
-            <ul className="sd-list">
-              {recent.map((item) => (
-                <li key={item.id}>
-                  <Link to={`${BASE}/sessions/${item.id}`} className="sd-row sd-row--link">
-                    <span className="sd-tile">
-                      <Video size={18} aria-hidden="true" />
-                    </span>
-                    <span className="sd-row-text">
-                      <strong>{formatWhen(item.createdAt)}</strong>
-                      <span>{titleFor(item)}</span>
-                    </span>
-                    <span className={`sd-pill sd-pill--${item.status}`}>
-                      {STATUS_LABEL[item.status]}
-                    </span>
-                    <ChevronRight size={16} aria-hidden="true" />
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </section>
+        </section>
 
-      <section aria-labelledby="sd-chat">
-        <div className="sd-heading-row">
-          <h2 id="sd-chat" className="sd-heading">
-            Chat
-          </h2>
-          <Link to={`${BASE}/chat`} className="sd-link">
-            View chat <ChevronRight size={16} aria-hidden="true" />
-          </Link>
-        </div>
-        <div className="sd-card">
-          <div className="sd-row">
+        <div className="sd-side">
+          <section aria-labelledby="sd-active">
+            <h2 id="sd-active" className="sd-heading">
+              Active session
+            </h2>
+            <div className="sd-card sd-card--accent">
+              {inProgress ? (
+                <Link to={`${BASE}/sessions/${inProgress.id}`} className="sd-empty sd-empty--link">
+                  <span className="sd-tile">
+                    <Video size={20} aria-hidden="true" />
+                  </span>
+                  <strong>
+                    {inProgress.status === 'waiting'
+                      ? 'Looking for an interpreter'
+                      : `Matched with ${titleFor(inProgress)}`}
+                  </strong>
+                  <span>Started {formatWhen(inProgress.createdAt)}</span>
+                </Link>
+              ) : (
+                <div className="sd-empty">
+                  <span className="sd-tile">
+                    <Video size={20} aria-hidden="true" />
+                  </span>
+                  <strong>No active session</strong>
+                  <span>You&apos;re not connected to an interpreter right now.</span>
+                </div>
+              )}
+            </div>
+          </section>
+
+          <section aria-labelledby="sd-chat">
+            <div className="sd-heading-row">
+              <h2 id="sd-chat" className="sd-heading">
+                Chat
+              </h2>
+              <Link to={`${BASE}/chat`} className="sd-link">
+                View chat <ChevronRight size={16} aria-hidden="true" />
+              </Link>
+            </div>
+            <div className="sd-card">
+              <div className="sd-row">
+                <span className="sd-tile">
+                  <MessageSquare size={18} aria-hidden="true" />
+                </span>
+                <span className="sd-row-text">
+                  <strong>No conversations yet</strong>
+                  <span>Messages with interpreters and support will show here.</span>
+                </span>
+              </div>
+            </div>
+          </section>
+
+          <section className="sd-card sd-help" aria-labelledby="sd-help-title">
             <span className="sd-tile">
-              <MessageSquare size={18} aria-hidden="true" />
+              <CircleHelp size={20} aria-hidden="true" />
             </span>
             <span className="sd-row-text">
-              <strong>No conversations yet</strong>
-              <span>Messages with interpreters and support will show here.</span>
+              <strong id="sd-help-title">Need help?</strong>
+              <span>Find answers or contact support.</span>
             </span>
-          </div>
+            <Link to={`${BASE}/help`} className="sd-outline-btn">
+              Get Help
+            </Link>
+          </section>
         </div>
-      </section>
-
-      <section className="sd-card sd-help" aria-labelledby="sd-help-title">
-        <span className="sd-tile">
-          <CircleHelp size={20} aria-hidden="true" />
-        </span>
-        <span className="sd-row-text">
-          <strong id="sd-help-title">Need help?</strong>
-          <span>Find answers or contact support.</span>
-        </span>
-        <Link to={`${BASE}/help`} className="sd-outline-btn">
-          Get Help
-        </Link>
-      </section>
+      </div>
     </div>
   );
 }
