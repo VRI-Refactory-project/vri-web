@@ -25,6 +25,7 @@ import {
   fetchInterpreterPerformance,
   fetchVerificationStatus,
   fetchUpcomingSessions,
+  fetchInterpreterAvailability,
   type AdminDashboardSummary,
   type SessionActivityPoint,
   type ActivityItem,

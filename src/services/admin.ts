@@ -34,8 +34,8 @@ export async function fetchAdminSummary(): Promise<AdminDashboardSummary> {
     pendingVerifications: raw.interpreters_pending_verification,
     top_session_types: raw.top_session_types ?? [],
     unread_notifications: raw.unread_notifications ?? 0,
-    available_interpreters: raw.available_interpreters ?? 0, // 👈 NEW
-    offline_interpreters: raw.offline_interpreters ?? 0, // 👈 NEW
+    available_interpreters: raw.available_interpreters ?? 0,
+    offline_interpreters: raw.offline_interpreters ?? 0,
   };
 }
 
@@ -254,4 +254,28 @@ export async function fetchUpcomingSessions(): Promise<SessionRow[]> {
     type: s.session_type ?? s.type ?? '',
     status: s.status ?? 'Scheduled',
   }));
+}
+
+/* ---------- Live interpreter availability ---------- */
+
+export interface InterpreterAvailabilityRow {
+  id: number;
+  name: string;
+  photo_url: string | null;
+  is_available: boolean;
+  available_now: boolean;
+  reason: 'switched_off' | 'day_off' | 'outside_hours' | null;
+}
+
+export interface InterpreterAvailabilityData {
+  total: number;
+  available: number;
+  unavailable: number;
+  interpreters: InterpreterAvailabilityRow[];
+}
+
+export async function fetchInterpreterAvailability(): Promise<InterpreterAvailabilityData> {
+  return api<InterpreterAvailabilityData>(
+    '/api/v1/dashboard/admin/interpreter-availability/',
+  );
 }
