@@ -46,8 +46,39 @@
 
 .analytics-filters {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 12px;
   margin-bottom: 24px;
+}
+
+.analytics-status {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.analytics-alert {
+  margin: 0 0 24px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background-color: #fef2f2;
+  color: #b42318;
+  font-size: 13px;
+}
+
+.analytics-note {
+  margin: 0 0 24px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background-color: #f3f0fc;
+  color: #3b2579;
+  font-size: 13px;
+}
+
+.analytics-empty {
+  margin: 0;
+  padding: 16px 0;
+  font-size: 13px;
 }
 
 .filter-select {
@@ -166,32 +197,49 @@
   padding-top: 20px;
 }
 
+/* Every column is the same: a number, the bar's track, a label. Number and label keep their height even
+   when empty, so all bars stand on the same line. */
 .bar-column {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   flex: 1;
   height: 100%;
-  justify-content: flex-end;
-  gap: 8px;
+  gap: 6px;
+}
+
+.bar-track {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .bar {
-  width: 40px;
+  /* Up to 40px wide, narrower when a long period has many bars. */
+  width: 70%;
+  max-width: 40px;
   background-color: #4f46e5;
   border-radius: 4px 4px 0 0;
   transition: height 0.3s;
 }
 
-.bar-value {
+.bar-value,
+.bar-label {
+  height: 16px;
+  line-height: 16px;
   font-size: 12px;
+  white-space: nowrap;
+}
+.bar-value {
   font-weight: 600;
   color: #111827;
 }
 .bar-label {
-  font-size: 12px;
   color: #6b7280;
-  margin-top: 8px;
 }
 
 /* Split Layout */
