@@ -293,3 +293,39 @@
   background-position: right 10px center;
   padding-right: 30px;
 }
+
+@media (max-width: 900px) {
+  .users-table-wrap {
+    min-width: 0;
+    overflow-x: auto;
+  }
+  .users-table {
+    min-width: 0;
+    table-layout: fixed;
+  }
+  .users-table thead th {
+    padding: 8px 4px;
+    font-size: 9px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .users-table tbody td {
+    padding: 8px 4px;
+    font-size: 10px;
+    overflow-wrap: anywhere;
+  }
+  .users-table tbody td:first-child {
+    width: 28px;
+  }
+}
+
+@media (max-width: 360px) {
+  .users-page {
+    padding: 14px 10px;
+  }
+  .users-table thead th,
+  .users-table tbody td {
+    padding: 6px 2px;
+    font-size: 9px;
+  }
+}

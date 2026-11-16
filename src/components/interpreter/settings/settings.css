@@ -300,3 +300,49 @@
   background: #fdecec;
   color: #a12626;
 }
+
+@media (max-width: 560px) {
+  .is-row {
+    flex-wrap: nowrap;
+    gap: 8px;
+    padding: 10px 0;
+  }
+
+  .is-row-controls {
+    width: auto;
+    max-width: 52%;
+    justify-content: flex-end;
+  }
+
+  .is-card {
+    padding: 16px 14px;
+  }
+
+  .is-row-text {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .is-row-text strong,
+  .is-select-label {
+    font-size: 13px;
+  }
+
+  .is-row-text span {
+    font-size: 11px;
+  }
+
+  .is-select {
+    flex: 0 1 190px;
+    width: 48%;
+  }
+
+  .is-select select {
+    padding: 9px 28px 9px 9px;
+    font-size: 11px;
+  }
+
+  .is-select svg {
+    right: 8px;
+  }
+}

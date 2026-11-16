@@ -281,3 +281,52 @@
 .btn-save:hover {
   background-color: #4338ca;
 }
+
+@media (max-width: 900px) {
+  .institution-sessions-page {
+    min-width: 0;
+    padding: 0 16px 28px;
+  }
+  .institution-sessions-page .sessions-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .institution-sessions-page .sessions-controls {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .institution-sessions-page .search-bar {
+    min-width: 0;
+    flex-basis: 100%;
+  }
+  .institution-sessions-page .filter-btn {
+    min-height: 40px;
+    padding: 0 12px;
+    font-size: 12px;
+  }
+  .institution-sessions-page .session-row {
+    min-width: 0;
+    gap: 10px;
+    padding: 12px;
+  }
+  .institution-sessions-page .session-details {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 420px) {
+  .institution-sessions-page {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+  .institution-sessions-page .sessions-metrics {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .institution-sessions-page .metric-card {
+    padding: 12px;
+  }
+  .institution-sessions-page .session-row {
+    flex-wrap: wrap;
+  }
+}

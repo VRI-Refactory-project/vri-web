@@ -172,3 +172,33 @@ input:checked + .slider {
 input:checked + .slider:before {
   transform: translateX(20px);
 }
+
+@media (max-width: 900px) {
+  .settings-page {
+    min-width: 0;
+    padding: 0 16px 28px;
+  }
+  .settings-item {
+    gap: 12px;
+    padding: 14px 16px;
+  }
+  .settings-item-info {
+    min-width: 0;
+  }
+  .settings-item-info h3 {
+    font-size: 13px;
+  }
+  .settings-item-info p {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 420px) {
+  .settings-page {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+  .settings-item {
+    padding: 12px;
+  }
+}
