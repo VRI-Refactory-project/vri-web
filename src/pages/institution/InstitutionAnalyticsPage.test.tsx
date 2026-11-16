@@ -9,6 +9,11 @@ import { InstitutionAnalyticsPage } from './InstitutionAnalyticsPage';
 const mocks = vi.hoisted(() => ({
   usage: (() => Promise.resolve({})) as (filters: UsageFilters) => Promise<unknown>,
   calls: [] as UsageFilters[],
+  apiBlob: vi.fn(),
+}));
+vi.mock('../../services/api', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  apiBlob: mocks.apiBlob,
 }));
 vi.mock('../../services/institutionUsage', async (importOriginal) => ({
   ...(await importOriginal<object>()),
@@ -129,6 +134,26 @@ describe('InstitutionAnalyticsPage', () => {
     expect(await screen.findByRole('status')).toHaveTextContent(
       'No sessions match these filters in this period. Try a longer period.',
     );
+  });
+
+  // Catherine Nawagirwa's export test (from dev), kept when V2-029 replaced the page's data loading.
+  it('calls the PDF export endpoint when Export report is clicked', async () => {
+    const user = userEvent.setup();
+    const pdfBlob = new Blob(['PDF content'], { type: 'application/pdf' });
+    mocks.apiBlob.mockResolvedValue(pdfBlob);
+    const createObjectURL = vi.fn(() => 'blob:test-pdf');
+    vi.stubGlobal('URL', { ...URL, createObjectURL, revokeObjectURL: vi.fn() });
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+
+    render(<InstitutionAnalyticsPage />);
+    await user.click(screen.getByRole('button', { name: /export report/i }));
+
+    expect(mocks.apiBlob).toHaveBeenCalledWith('/api/v1/dashboard/institution/export/');
+    expect(createObjectURL).toHaveBeenCalledWith(pdfBlob);
+    expect(clickSpy).toHaveBeenCalled();
+
+    clickSpy.mockRestore();
+    vi.unstubAllGlobals();
   });
 
   it('shows an error when the usage cannot be loaded', async () => {
