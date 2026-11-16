@@ -37,6 +37,7 @@ import {
   type InstitutionSector,
 } from '../../services/institutions';
 import { describeError } from '../../services/api';
+import './AdminDashboardPage.css';
 import './InstitutionAccountsPage.css';
 
 const PAGE_SIZE = 8;
@@ -709,10 +710,19 @@ export function InstitutionAccountsPage() {
   }, [notice]);
 
   return (
-    <main className="ia-page">
-      <header className="ia-page__header">
+    //  Changed from `ia-page` to `ad-page` so the purple background shows through
+    <main className="ad-page" style={{ width: '100%', maxWidth: '100%' }}>
+      {/*  Changed header to `ad-title` and added the flex layout for the Add button */}
+      <header
+        className="ad-title"
+        style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          gap: '16px',
+        }}
+      >
         <div>
-          <div className="ia-eyebrow">ADMINISTRATION / ORGANISATIONS</div>
           <h1>Institutional Accounts</h1>
           <p>
             Approve, edit, and deactivate institutional accounts to oversee which organisations have
