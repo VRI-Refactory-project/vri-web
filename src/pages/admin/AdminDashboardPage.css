@@ -21,6 +21,7 @@
   gap: 10px;
   flex: 1;
   max-width: 420px;
+  width: 100%;
   padding: 10px 16px;
   border: 1px solid #e2e0ee;
   border-radius: 12px;

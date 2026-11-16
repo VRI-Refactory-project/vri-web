@@ -1,49 +1,68 @@
-.ia-page {
+/* ========================================== */
+/* --- GLOBAL VARIABLES & BASE RESET --- */
+/* ========================================== */
+:root {
   --ia-purple: #382c77;
   --ia-purple-dark: #2f236b;
   --ia-purple-soft: #eeecff;
   --ia-text: #242044;
   --ia-muted: #747b9a;
   --ia-border: #e4e7f2;
-  --ia-background: #f5f5fc;
+  --ia-background: transparent; /* 👈 Transparent so purple page shows through */
   --ia-green: #218c5b;
   --ia-red: #d93448;
   --ia-amber: #bd7600;
-  width: 100%;
-  min-width: 0;
-  padding: 28px 30px 32px;
-  color: var(--ia-text);
-  background: var(--ia-background);
-  box-sizing: border-box;
-  font-family: inherit;
 }
 
+/* Base styles that apply inside the page content */
 .ia-page *,
 .ia-page *::before,
-.ia-page *::after {
+.ia-page *::after,
+.ad-page *,
+.ad-page *::before,
+.ad-page *::after {
   box-sizing: border-box;
 }
 
 .ia-page button,
 .ia-page input,
-.ia-page select {
+.ia-page select,
+.ad-page button,
+.ad-page input,
+.ad-page select {
   font: inherit;
 }
 
-.ia-page button {
+.ia-page button,
+.ad-page button {
   cursor: pointer;
 }
 
-.ia-page button:disabled {
+.ia-page button:disabled,
+.ad-page button:disabled {
   cursor: not-allowed;
   opacity: 0.62;
 }
 
 .ia-page button:focus-visible,
 .ia-page input:focus-visible,
-.ia-page select:focus-visible {
+.ia-page select:focus-visible,
+.ad-page button:focus-visible,
+.ad-page input:focus-visible,
+.ad-page select:focus-visible {
   outline: 3px solid rgb(91 75 190 / 24%);
   outline-offset: 2px;
+}
+
+/* ========================================== */
+/* --- HEADER --- */
+/* ========================================== */
+.ia-eyebrow {
+  margin-bottom: 7px;
+  color: #8588a6;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 1.15px;
 }
 
 .ia-page__header {
@@ -52,14 +71,6 @@
   justify-content: space-between;
   gap: 24px;
   margin: 0 0 26px;
-}
-
-.ia-eyebrow {
-  margin-bottom: 7px;
-  color: #8588a6;
-  font-size: 10px;
-  font-weight: 750;
-  letter-spacing: 1.15px;
 }
 
 .ia-page__header h1 {
@@ -79,6 +90,9 @@
   line-height: 1.7;
 }
 
+/* ========================================== */
+/* --- BUTTONS --- */
+/* ========================================== */
 .ia-button {
   display: inline-flex;
   min-height: 38px;
@@ -95,25 +109,35 @@
   transition:
     background 150ms ease,
     border-color 150ms ease,
-    transform 150ms ease;
+    transform 150ms ease,
+    box-shadow 150ms ease;
 }
 
 .ia-button:active:not(:disabled) {
   transform: translateY(1px);
 }
 
+/* Primary Purple Button (Add Institution, Save Changes) */
 .ia-button--primary {
   color: #fff;
   background: var(--ia-purple);
   border-color: var(--ia-purple);
-  box-shadow: 0 3px 8px rgb(56 44 119 / 12%);
+  box-shadow: 0 2px 6px rgba(56, 44, 119, 0.18);
 }
 
 .ia-button--primary:hover:not(:disabled) {
-  background: #483995;
-  border-color: #483995;
+  background: var(--ia-purple-dark);
+  border-color: var(--ia-purple-dark);
+  box-shadow: 0 4px 14px rgba(56, 44, 119, 0.32);
+  transform: translateY(-1px);
 }
 
+.ia-button--primary:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(56, 44, 119, 0.18);
+}
+
+/* Secondary Button (Cancel) */
 .ia-button--secondary {
   color: #41366f;
   background: #fff;
@@ -125,6 +149,7 @@
   border-color: #bcb6e7;
 }
 
+/* Danger Button (Delete) */
 .ia-button--danger {
   color: #fff;
   background: #c83245;
@@ -141,6 +166,9 @@
   border-radius: 12px;
 }
 
+/* ========================================== */
+/* --- STAT CARDS --- */
+/* ========================================== */
 .ia-stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -159,6 +187,16 @@
   border-radius: 12px;
   background: #fff;
   box-shadow: 0 1px 2px rgb(35 31 76 / 2%);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  cursor: default;
+}
+
+.ia-stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(56, 44, 119, 0.08);
+  border-color: #d8d2f0;
 }
 
 .ia-stat-card__icon {
@@ -220,6 +258,9 @@
   line-height: 1.5;
 }
 
+/* ========================================== */
+/* --- PANEL & TABLE --- */
+/* ========================================== */
 .ia-panel {
   overflow: hidden;
   min-width: 0;
@@ -342,10 +383,6 @@
   color: #fff;
   background: var(--ia-purple);
   box-shadow: 0 2px 6px rgba(56, 44, 119, 0.18);
-  transition:
-    background 150ms ease,
-    box-shadow 150ms ease,
-    transform 150ms ease;
 }
 
 .ia-button--filter:hover,
@@ -354,11 +391,6 @@
   background: var(--ia-purple-dark);
   box-shadow: 0 4px 14px rgba(56, 44, 119, 0.32);
   transform: translateY(-1px);
-}
-
-.ia-button--filter:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(56, 44, 119, 0.18);
 }
 
 .ia-filter-drawer {
@@ -676,6 +708,15 @@
   height: 30px;
 }
 
+.ia-row-delete {
+  color: #d93448;
+}
+
+.ia-row-delete:hover:not(:disabled) {
+  border-color: #f3abb5;
+  background: #fff0f2;
+}
+
 .ia-table-message {
   height: 150px;
   color: #8187a3 !important;
@@ -753,8 +794,9 @@
   background: var(--ia-purple);
 }
 
-/* Create/edit dialog */
-
+/* ========================================== */
+/* --- MODALS & DIALOGS --- */
+/* ========================================== */
 .ia-modal-backdrop {
   position: fixed;
   z-index: 1200;
@@ -952,8 +994,6 @@
   background: #fcfcff;
 }
 
-/* Status confirmation dialog */
-
 .ia-confirm-dialog {
   width: min(100%, 440px);
   padding: 27px;
@@ -1095,11 +1135,87 @@
   }
 }
 
-@media (min-width: 1600px) {
-  .ia-page {
-    padding: 32px 36px;
-  }
+/* ========================================== */
+/* --- FORM VALIDATION & INPUT TWEAKS --- */
+/* ========================================== */
+.ia-form-field--invalid > input,
+.ia-form-field--invalid > select,
+.ia-form-field--invalid > .ia-input-with-icon,
+.ia-form-field--invalid > .ia-sector-input-wrap > input {
+  border-color: #d93448;
+  background: #fef5f6;
+}
 
+.ia-form-field--invalid > input:focus,
+.ia-form-field--invalid > select:focus,
+.ia-form-field--invalid > .ia-input-with-icon:focus-within,
+.ia-form-field--invalid > .ia-sector-input-wrap > input:focus {
+  border-color: #d93448;
+  box-shadow: 0 0 0 3px rgb(217 52 72 / 10%);
+}
+
+.ia-field-error {
+  margin: 4px 0 0;
+  color: #d93448;
+  font-size: 10.5px;
+  font-weight: 550;
+  line-height: 1.4;
+}
+
+.ia-sector-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.ia-sector-input-wrap > input {
+  width: 100%;
+  padding: 10px 36px 10px 12px;
+  min-height: 42px;
+  border: 1px solid #dfe2ef;
+  border-radius: 9px;
+  background: #fff;
+  color: #302b51;
+  font-size: 12px;
+}
+
+.ia-sector-input-wrap > input::placeholder {
+  color: #a1a6bd;
+}
+
+.ia-sector-input-wrap > input:focus {
+  border-color: #9587d4;
+  outline: 0;
+  box-shadow: 0 0 0 3px rgb(94 75 176 / 9%);
+}
+
+.ia-sector-drop-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #737b9b;
+  cursor: pointer;
+}
+
+.ia-sector-drop-btn:hover {
+  background: #f0edff;
+  color: #382c77;
+}
+
+/* ========================================== */
+/* --- RESPONSIVE MEDIA QUERIES --- */
+/* ========================================== */
+@media (min-width: 1600px) {
   .ia-stats {
     gap: 17px;
   }
@@ -1115,10 +1231,6 @@
 }
 
 @media (max-width: 1250px) {
-  .ia-page {
-    padding: 23px 20px;
-  }
-
   .ia-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1164,10 +1276,6 @@
 }
 
 @media (max-width: 560px) {
-  .ia-page {
-    padding: 18px 12px 24px;
-  }
-
   .ia-page__header {
     gap: 16px;
     margin-bottom: 19px;
@@ -1291,212 +1399,13 @@
 @media (prefers-reduced-motion: reduce) {
   .ia-page *,
   .ia-page *::before,
-  .ia-page *::after {
+  .ia-page *::after,
+  .ad-page *,
+  .ad-page *::before,
+  .ad-page *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-}
-
-/* Per-field validation */
-.ia-form-field--invalid > input,
-.ia-form-field--invalid > select,
-.ia-form-field--invalid > .ia-input-with-icon {
-  border-color: #d93448;
-  background: #fef5f6;
-}
-
-.ia-form-field--invalid > input:focus,
-.ia-form-field--invalid > select:focus,
-.ia-form-field--invalid > .ia-input-with-icon:focus-within {
-  border-color: #d93448;
-  box-shadow: 0 0 0 3px rgb(217 52 72 / 10%);
-}
-
-.ia-field-error {
-  margin: 4px 0 0;
-  color: #d93448;
-  font-size: 10.5px;
-  font-weight: 550;
-  line-height: 1.4;
-}
-
-/* Per-field validation */
-.ia-form-field--invalid > input,
-.ia-form-field--invalid > select,
-.ia-form-field--invalid > .ia-input-with-icon {
-  border-color: #d93448;
-  background: #fef5f6;
-}
-
-.ia-form-field--invalid > input:focus,
-.ia-form-field--invalid > select:focus,
-.ia-form-field--invalid > .ia-input-with-icon:focus-within {
-  border-color: #d93448;
-  box-shadow: 0 0 0 3px rgb(217 52 72 / 10%);
-}
-
-.ia-field-error {
-  margin: 4px 0 0;
-  color: #d93448;
-  font-size: 10.5px;
-  font-weight: 550;
-  line-height: 1.4;
-}
-
-.ia-sector-input-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 100%;
-}
-
-.ia-sector-input-wrap > input {
-  width: 100%;
-  padding-right: 36px;
-  min-height: 42px;
-  border: 1px solid #dfe2ef;
-  border-radius: 9px;
-  background: #fff;
-  color: #302b51;
-  font-size: 12px;
-  padding-left: 12px;
-  padding-block: 10px;
-}
-
-.ia-sector-input-wrap > input::placeholder {
-  color: #a1a6bd;
-}
-
-.ia-sector-input-wrap > input:focus {
-  border-color: #9587d4;
-  outline: 0;
-  box-shadow: 0 0 0 3px rgb(94 75 176 / 9%);
-}
-
-.ia-sector-drop-btn {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
-  color: #737b9b;
-  cursor: pointer;
-}
-
-.ia-sector-drop-btn:hover {
-  background: #f0edff;
-  color: #382c77;
-}
-
-/* Per-field validation */
-.ia-form-field--invalid > input,
-.ia-form-field--invalid > select,
-.ia-form-field--invalid > .ia-input-with-icon,
-.ia-form-field--invalid > .ia-sector-input-wrap > input {
-  border-color: #d93448;
-  background: #fef5f6;
-}
-
-.ia-form-field--invalid > input:focus,
-.ia-form-field--invalid > select:focus,
-.ia-form-field--invalid > .ia-input-with-icon:focus-within,
-.ia-form-field--invalid > .ia-sector-input-wrap > input:focus {
-  border-color: #d93448;
-  box-shadow: 0 0 0 3px rgb(217 52 72 / 10%);
-}
-
-.ia-field-error {
-  margin: 4px 0 0;
-  color: #d93448;
-  font-size: 10.5px;
-  font-weight: 550;
-  line-height: 1.4;
-}
-
-/* Sector-other inline input with dropdown arrow */
-.ia-sector-input-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 100%;
-}
-
-.ia-sector-input-wrap > input {
-  width: 100%;
-  padding: 10px 36px 10px 12px;
-  min-height: 42px;
-  border: 1px solid #dfe2ef;
-  border-radius: 9px;
-  background: #fff;
-  color: #302b51;
-  font-size: 12px;
-}
-
-.ia-sector-input-wrap > input::placeholder {
-  color: #a1a6bd;
-}
-
-.ia-sector-input-wrap > input:focus {
-  border-color: #9587d4;
-  outline: 0;
-  box-shadow: 0 0 0 3px rgb(94 75 176 / 9%);
-}
-
-.ia-sector-drop-btn {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
-  color: #737b9b;
-  cursor: pointer;
-}
-
-.ia-sector-drop-btn:hover {
-  background: #f0edff;
-  color: #382c77;
-}
-
-/* Delete icon button in row actions */
-.ia-row-delete {
-  color: #d93448;
-}
-
-.ia-row-delete:hover:not(:disabled) {
-  border-color: #f3abb5;
-  background: #fff0f2;
-}
-
-.ia-button--primary {
-  box-shadow: 0 2px 6px rgba(56, 44, 119, 0.18);
-  transition:
-    background 150ms ease,
-    box-shadow 150ms ease,
-    transform 150ms ease;
-}
-
-.ia-button--primary:hover:not(:disabled) {
-  box-shadow: 0 4px 14px rgba(56, 44, 119, 0.32);
-  transform: translateY(-1px);
-}
-
-.ia-button--primary:active:not(:disabled) {
-  transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(56, 44, 119, 0.18);
 }

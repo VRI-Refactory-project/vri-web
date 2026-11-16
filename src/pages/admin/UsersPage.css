@@ -123,7 +123,7 @@
   border-radius: 10px;
   background: #f8fafc;
   color: #8a86a5;
-  flex: 1 1 300px; /* Stretches to fill available space */
+  flex: 1 1 300px;
   min-width: 0;
   height: 40px;
   transition: all 0.2s;
@@ -163,7 +163,6 @@
   flex: 0 1 160px;
   transition: all 0.2s;
 
-  /* Custom dropdown arrow */
   appearance: none;
   -webkit-appearance: none;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6890' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
@@ -263,23 +262,35 @@
   }
 }
 
-/* ---------- Action Buttons in the Table ---------- */
+/* ========================================== */
+/* --- ACTION BUTTONS (Aligned perfectly) --- */
+/* ========================================== */
+
+/* 1. Base style for ALL action buttons (Edit, Approve, Deactivate, Delete) */
 .users-action-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 6px 12px;
+
+  /* 👇 Force ALL buttons to be the exact same height */
+  height: 32px;
+  min-height: 32px;
+  box-sizing: border-box;
+
+  padding: 0 12px;
   border-radius: 8px;
   font-family: inherit;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
   border: 1px solid transparent;
+  flex-shrink: 0;
+  vertical-align: middle;
 }
 
-/* Edit button (white with purple text + border) */
+/* 2. Edit button */
 .users-action-btn--edit {
   background: #fff;
   border-color: #e2e0ee;
@@ -291,7 +302,7 @@
   color: #382c77;
 }
 
-/* Approve button (soft green) */
+/* 3. Approve button */
 .users-action-btn--approve {
   background: #dcfce7;
   border-color: #dcfce7;
@@ -302,7 +313,7 @@
   border-color: #bbf7d0;
 }
 
-/* Deactivate button (soft red) */
+/* 4. Deactivate button */
 .users-action-btn--deactivate {
   background: #fee2e2;
   border-color: #fee2e2;
@@ -313,72 +324,49 @@
   border-color: #fecaca;
 }
 
-/* Delete button (icon-only, transparent) */
-/* .users-action-btn--delete {
-  background: transparent;
-  border-color: transparent;
-  color: #ef4444;
-  padding: 6px;
-  width: 32px;
-  height: 32px;
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-.users-action-btn--delete:hover {
-  background: #fee2e2;
-  color: #b91c1c;
-  transform: scale(1.05);
-} */
-
-/* Delete button (icon-only, transparent) */
+/* 5. Delete button (Icon only) */
 .users-action-btn--delete {
   background: transparent;
   border-color: transparent;
   color: #ef4444;
   padding: 0;
 
-  /* Hard-lock the size so it cannot be squished */
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
-  min-height: 36px;
-  flex-shrink: 0;
-  box-sizing: border-box;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.15s ease;
+  /* 👇 Match the exact 32px height and make it a square */
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
 }
-
+.users-action-btn--delete svg {
+  display: block;
+  margin: 0;
+}
 .users-action-btn--delete:hover {
   background: #fee2e2;
   color: #b91c1c;
   transform: scale(1.05);
 }
 
-/* Force the Actions column to never shrink below 240px */
+/* ========================================== */
+/* --- TABLE COLUMN FIXES --- */
+/* ========================================== */
+
+/* Force the Actions column to have enough space */
 .users-table th:last-child,
 .users-table td:last-child {
-  min-width: 250px;
+  min-width: 240px;
   white-space: nowrap;
 }
 
-/* Prevent the buttons from shrinking */
-.users-action-btn {
-  flex-shrink: 0;
-  padding: 6px 10px;
-  font-size: 12px;
-  gap: 4px;
+/* Prevent buttons from wrapping to a new line */
+.users-table td:last-child > div {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: nowrap !important;
 }
 
+/* Truncate long emails so they don't push the actions */
 .users-table td:nth-child(5) {
   max-width: 240px;
   overflow: hidden;
