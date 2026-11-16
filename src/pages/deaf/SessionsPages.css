@@ -246,6 +246,51 @@ a.sh-card:focus-visible {
   font-weight: 600;
   text-align: right;
 }
+/* Cancelling a request that is still waiting (staff, V2-013) */
+.sdp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid #f1f0f7;
+}
+.sdp-actions p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+.sdp-cancel {
+  padding: 10px 20px;
+  border: 1.5px solid #b42318;
+  border-radius: 10px;
+  background: #fff;
+  color: #b42318;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.sdp-cancel:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.sdp-cancel:focus-visible {
+  outline: 3px solid #b42318;
+  outline-offset: 2px;
+}
+.sdp-ok {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #eefaf2;
+  color: #1f6b3b;
+}
+@media (max-width: 560px) {
+  .sdp-cancel {
+    width: 100%;
+  }
+}
 
 /* History rows are links to the session's details */
 .sh-row--link {

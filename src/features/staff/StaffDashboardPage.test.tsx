@@ -30,6 +30,9 @@ vi.mock('../../services/institutionDashboard', () => ({
   getInstitutionOverview: () => institution.load(),
 }));
 
+// Sessions made today show in the calendar's list, which starts on today.
+const TODAY = new Date().toISOString();
+
 const item = (over: Partial<HistoryItem>): HistoryItem => ({
   id: '1',
   status: 'completed',
@@ -56,12 +59,24 @@ describe('StaffDashboardPage', () => {
   it('greets the staff member by first name and offers to start a session', async () => {
     renderPage();
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/, Sarah$/);
-    expect(screen.getByRole('link', { name: 'Start Session' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Start Interpreter Session' })).toHaveAttribute(
       'href',
       '/dashboard/staff/start-session',
     );
     expect(await screen.findByText('No active session')).toBeInTheDocument();
-    expect(screen.getByText('You have no sessions yet.')).toBeInTheDocument();
+    expect(screen.getByText('No sessions this day.')).toBeInTheDocument();
+  });
+
+  it('puts the greeting, the button and the photo in one hero card', async () => {
+    renderPage();
+    const hero = screen.getByRole('region', { name: 'Start a VRI session' });
+    expect(within(hero).getByRole('heading', { level: 1 })).toHaveTextContent(/, Sarah$/);
+    expect(
+      within(hero).getByRole('link', { name: 'Start Interpreter Session' }),
+    ).toBeInTheDocument();
+    // The photo is decoration, so screen readers skip it (empty alt).
+    expect(hero.querySelector('img')).toHaveAttribute('alt', '');
+    expect(await screen.findByText('No active session')).toBeInTheDocument();
   });
 
   it('shows which institution the staff member belongs to', async () => {
@@ -76,24 +91,28 @@ describe('StaffDashboardPage', () => {
     expect(screen.queryByText('Northside Medical Center')).not.toBeInTheDocument();
   });
 
-  it('lists the three latest sessions with who answered and how they ended', async () => {
+  it("lists today's sessions under the calendar, with who answered and how they ended", async () => {
+    // The calendar replaces the old "Recent sessions" card: it starts on today.
     source.load = () =>
       Promise.resolve([
-        item({ id: '1', status: 'completed', interpreterName: 'Amina Okafor' }),
-        item({ id: '2', status: 'missed', interpreterName: null }),
-        item({ id: '3', status: 'completed', interpreterName: 'Grace Lee' }),
-        item({
-          id: '4',
-          status: 'completed',
-          interpreterName: 'Fourth Person',
-        }),
+        item({ id: '1', status: 'completed', interpreterName: 'Amina Okafor', createdAt: TODAY }),
+        item({ id: '2', status: 'missed', interpreterName: null, createdAt: TODAY }),
+        item({ id: '3', status: 'completed', interpreterName: 'Older Session' }),
       ]);
     renderPage();
-    expect(await screen.findByText('Amina Okafor')).toBeInTheDocument();
-    expect(screen.getByText('Grace Lee')).toBeInTheDocument();
-    expect(screen.queryByText('Fourth Person')).not.toBeInTheDocument();
-    expect(screen.getAllByText('Completed')).toHaveLength(2);
-    expect(screen.getByText('Missed')).toBeInTheDocument();
+    const calendar = screen.getByRole('region', { name: 'Calendar' });
+    expect(await within(calendar).findByText('Amina Okafor')).toBeInTheDocument();
+    expect(within(calendar).getByText('Missed')).toBeInTheDocument();
+    expect(screen.queryByText('Older Session')).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Recent sessions' })).not.toBeInTheDocument();
+  });
+
+  it('links to every session from under the calendar', () => {
+    renderPage();
+    expect(screen.getByRole('link', { name: /View all sessions/ })).toHaveAttribute(
+      'href',
+      '/dashboard/staff/sessions',
+    );
   });
 
   it('shows a request that is still looking as the active session', async () => {
@@ -109,12 +128,14 @@ describe('StaffDashboardPage', () => {
   it('still opens when the sessions cannot be loaded', async () => {
     source.load = () => Promise.reject(new Error('offline'));
     renderPage();
-    expect(await screen.findByText('You have no sessions yet.')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Start Session' })).toBeInTheDocument();
+    expect(await screen.findByText('No active session')).toBeInTheDocument();
+    expect(screen.getByText('No sessions this day.')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Start Interpreter Session' })).toBeInTheDocument();
   });
 
-  it('opens a session’s details from the recent list', async () => {
-    source.load = () => Promise.resolve([item({ id: '7', interpreterName: 'Amina Okafor' })]);
+  it('opens a session’s details from the calendar’s list', async () => {
+    source.load = () =>
+      Promise.resolve([item({ id: '7', interpreterName: 'Amina Okafor', createdAt: TODAY })]);
     renderPage();
     const row = await screen.findByRole('link', { name: /Amina Okafor/ });
     expect(row).toHaveAttribute('href', '/dashboard/staff/sessions/7');

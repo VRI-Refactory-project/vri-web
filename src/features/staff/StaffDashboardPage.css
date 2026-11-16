@@ -1,15 +1,65 @@
 .sd-page {
-  max-width: 980px;
   padding: 24px 32px 48px;
   box-sizing: border-box;
   color: #1d1a30;
   font-family: 'Manrope', system-ui, sans-serif;
+}
+/* The content uses the width of most screens, up to 1240px so it does not over-stretch on very wide
+   ones; the account details sit in the page's top-right corner. */
+.sd-page > :not(.sd-account) {
+  max-width: 1240px;
+}
+/* The calendar with the active session and chat beside it. */
+.sd-overview {
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+  gap: 24px;
+  /* Both columns end on the same line: the active session card takes up any spare height. */
+  align-items: stretch;
+  margin-bottom: 28px;
+}
+.sd-overview .sd-calendar,
+.sd-overview .sd-help {
+  margin-bottom: 0;
+}
+.sd-overview .sd-calendar {
+  max-width: none;
+}
+/* "View all sessions", under the calendar's list of the chosen day's sessions. */
+.sd-calendar-all {
+  margin-top: 12px;
+}
+.sd-side {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.sd-side > section:first-child {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+.sd-side > section:first-child > .sd-card {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+}
+@media (max-width: 860px) {
+  .sd-overview {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+  .sd-overview .sd-calendar {
+    max-width: 340px;
+  }
 }
 .sd-account {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 10px;
+  margin-bottom: 16px;
   font-size: 14px;
 }
 .sd-account-text {
@@ -31,44 +81,59 @@
   font-size: 12px;
   font-weight: 700;
 }
-.sd-welcome h1 {
-  margin: 8px 0 4px;
-  font-size: 34px;
-  font-weight: 700;
-}
-.sd-welcome p {
-  margin: 0 0 24px;
-  color: #5a5775;
-  font-size: 16px;
-}
+/* Hero: the interpreter dashboard's banner layout (InterpreterHomePage .ih-banner). */
 .sd-hero {
-  position: relative;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: center;
-  gap: 24px;
-  padding: 24px 28px;
+  display: flex;
+  align-items: stretch;
+  /* A set height (like the interpreter banner's 220px), so the photo is cropped to fit the card
+     instead of stretching it to the photo's own proportions. */
+  height: 240px;
   margin-bottom: 28px;
   border-radius: 16px;
-  background: linear-gradient(120deg, #4b3a9e, #2f2370);
+  background: #382c77;
   color: #fff;
   overflow: hidden;
 }
-.sd-hero h2 {
-  margin: 0 0 12px;
-  font-size: 20px;
+.sd-hero-text {
+  flex: 1 1 55%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 32px 40px;
 }
-.sd-hero p {
+.sd-hero h1 {
   margin: 0;
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.9);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
 }
-.sd-hero-icon {
-  position: absolute;
-  right: 40px;
-  top: 50%;
-  transform: translateY(-50%);
-  opacity: 0.9;
+.sd-hero-sub {
+  margin: 8px 0 8px;
+  color: #d8b4fe;
+  font-size: 15px;
+  font-weight: 600;
+}
+.sd-hero-desc {
+  max-width: 420px;
+  margin: 0 0 20px;
+  color: #e2e8f0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.sd-hero-image {
+  flex: 1 1 45%;
+  min-width: 0;
+}
+.sd-hero-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 20%;
+  /* The photo fades into the purple, as on the interpreter dashboard. */
+  mask-image: linear-gradient(to right, transparent, black 30%);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 30%);
 }
 .sd-hero-btn {
   display: inline-block;
@@ -135,19 +200,11 @@
   background: #f1eefb;
   color: #4b3a9e;
 }
-.sd-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
 .sd-row {
   display: flex;
   align-items: center;
   gap: 14px;
   padding: 12px 4px;
-}
-.sd-list .sd-row + .sd-row {
-  border-top: 1px solid #ece9f6;
 }
 .sd-row-text {
   display: grid;
@@ -210,20 +267,21 @@
   .sd-page {
     padding: 16px;
   }
+  /* Phones: words first, then the photo underneath. */
   .sd-hero {
-    grid-template-columns: 1fr;
+    flex-direction: column;
+    height: auto;
   }
-  .sd-hero-icon {
-    display: none;
+  .sd-hero-text {
+    padding: 24px;
   }
-}
-
-.sd-row--link {
-  color: inherit;
-  text-decoration: none;
-}
-.sd-row--link:hover {
-  background: #f7f6ff;
+  .sd-hero-image {
+    height: 200px;
+  }
+  .sd-hero-image img {
+    mask-image: linear-gradient(to bottom, transparent, black 30%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black 30%);
+  }
 }
 .sd-empty--link {
   color: inherit;
@@ -232,7 +290,4 @@
 .sd-calendar {
   margin-bottom: 28px;
   max-width: 340px;
-}
-.sd-list li + li {
-  border-top: 1px solid #ece9f6;
 }

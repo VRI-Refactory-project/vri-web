@@ -16,6 +16,15 @@ export type SessionRequestState =
   | 'CANCELLED'
   | 'COMPLETED';
 
+/** What the session is for. The API accepts these three (its REQUEST_CONTEXTS). */
+export type SessionContext = 'GENERAL' | 'MEDICAL' | 'LEGAL';
+
+export const SESSION_CONTEXTS: { value: SessionContext; label: string }[] = [
+  { value: 'GENERAL', label: 'General' },
+  { value: 'MEDICAL', label: 'Medical' },
+  { value: 'LEGAL', label: 'Legal' },
+];
+
 /** The interpreter who accepted the request. Only present from ACCEPTED onwards. */
 export interface MatchedInterpreter {
   name: string;
@@ -79,17 +88,26 @@ const mockEnabled = () => import.meta.env.VITE_MOCK_SESSION_REQUESTS === 'true';
 /** Asks for a live video session. The server answers 409 if one is already open. */
 export async function createSessionRequest(
   priority: 'NORMAL' | 'EMERGENCY' = 'NORMAL',
+  context: SessionContext = 'GENERAL',
 ): Promise<SessionRequest> {
   if (mockEnabled()) return mockCreate();
   const raw = await api<ApiSessionRequest>(BASE, {
     method: 'POST',
     body: JSON.stringify({
-      specialisation_required: 'GENERAL',
+      // Matching (V2-022) prefers interpreters with this specialisation.
+      specialisation_required: context,
       priority,
       request_key: crypto.randomUUID(),
     }),
   });
   return fromApi(raw);
+}
+
+/** The person's request that is still looking for an interpreter, or null when there is none. */
+export async function getOpenSessionRequest(): Promise<SessionRequest | null> {
+  if (mockEnabled()) return null;
+  const raw = await api<ApiSessionRequest | undefined>(`${BASE}mine/`);
+  return raw ? fromApi(raw) : null;
 }
 
 export async function getSessionRequest(id: string): Promise<SessionRequest> {

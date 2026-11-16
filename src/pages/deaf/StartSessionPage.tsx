@@ -3,16 +3,33 @@ import { Calendar, Check, ChevronLeft, User, Video, ArrowRight, Lightbulb } from
 import { Link, useSearchParams } from 'react-router-dom';
 import { useRequesterPaths } from '../../features/dashboard/requesterPaths';
 import { useSessionRequest } from '../../hooks/useSessionRequest';
+import { SESSION_CONTEXTS, type SessionContext } from '../../services/sessionRequests';
 import './StartSessionPage.css';
 
 const WAITING = ['CREATED', 'QUEUED', 'OFFERED'];
 const MATCHED = ['ACCEPTED', 'CONNECTING', 'ACTIVE'];
 
-const STEPS = [
-  'We’ll match you with an available interpreter who signs Ugandan Sign Language.',
-  'You’ll see who you’ve been matched with before the session starts.',
-  'Confirm and you’re connected — usually in under 2 minutes.',
-];
+/** The words that differ between a Deaf user asking for themselves and staff asking for a client. */
+const COPY = {
+  deaf: {
+    title: 'Start a VRI session',
+    subtitle: 'How would you like to connect?',
+    steps: [
+      'We’ll match you with an available interpreter who signs Ugandan Sign Language.',
+      'You’ll see who you’ve been matched with before the session starts.',
+      'Confirm and you’re connected — usually in under 2 minutes.',
+    ],
+  },
+  staff: {
+    title: 'Start an interpreter session',
+    subtitle: 'Connect an interpreter for the Deaf client who is with you now.',
+    steps: [
+      'Choose what the session is about, so we can match a suitable interpreter.',
+      'We’ll find an available Ugandan Sign Language interpreter for your client.',
+      'Connect when they accept. You and your client join the call together.',
+    ],
+  },
+};
 
 /** Seconds as m:ss, for "Waiting 1:05". */
 function clock(totalSeconds: number) {
@@ -30,7 +47,7 @@ function useWaited(createdAt: string) {
   return clock((now - Date.parse(createdAt)) / 1000);
 }
 
-function WhatHappensNext() {
+function WhatHappensNext({ steps }: { steps: string[] }) {
   return (
     <aside className="ss-next" aria-labelledby="ss-next-title">
       <div className="ss-next-header">
@@ -38,7 +55,7 @@ function WhatHappensNext() {
         <h2 id="ss-next-title">What happens next?</h2>
       </div>
       <ol>
-        {STEPS.map((text, index) => (
+        {steps.map((text, index) => (
           <li key={text}>
             <span className="ss-step" aria-hidden="true">
               {index + 1}
@@ -118,13 +135,21 @@ interface Props {
 }
 
 /**
- * Deaf user: ask for an interpreter now (V2-009). Shows the start screen, then the waiting screen
- * while the request is open, then the matched interpreter once one accepts. Joining the call
- * itself belongs to the live-session story.
+ * Ask for an interpreter now: a Deaf user for themselves (V2-009), or institution staff for a Deaf
+ * client who is with them (V2-013, under /dashboard/staff). Shows the start screen, then the waiting
+ * screen while the request is open, then the matched interpreter once one accepts. Staff also choose
+ * what the session is about and come back to a request that is still open. Joining the call itself
+ * belongs to the live-session story.
  */
 export function StartSessionPage({ pollMs }: Props) {
   const paths = useRequesterPaths();
-  const { request, error, busy, start, cancel } = useSessionRequest(pollMs);
+  const copy = paths.staff ? COPY.staff : COPY.deaf;
+  // Staff may leave this screen while their client waits, so they come back to the open request.
+  const { request, error, busy, start, cancel } = useSessionRequest(pollMs, {
+    resumeOpen: paths.staff,
+  });
+  // Staff say what the session is about (a doctor: Medical; a police officer: Legal).
+  const [context, setContext] = useState<SessionContext>('GENERAL');
   const [params] = useSearchParams();
   // The dashboard's Emergency Request button opens this page with ?priority=emergency.
   const emergency = params.get('priority') === 'emergency';
@@ -190,7 +215,7 @@ export function StartSessionPage({ pollMs }: Props) {
         )}
         <div className="ss-grid">
           <Waiting createdAt={request.createdAt} busy={busy} onCancel={cancel} />
-          <WhatHappensNext />
+          <WhatHappensNext steps={copy.steps} />
         </div>
       </div>
     );
@@ -207,11 +232,9 @@ export function StartSessionPage({ pollMs }: Props) {
       </Link>
 
       <div className="ss-header-content">
-        <h1 className="ss-title">Start a VRI session</h1>
+        <h1 className="ss-title">{copy.title}</h1>
         <p className="ss-subtitle">
-          {emergency
-            ? 'Emergency request: you will go to the front of the queue.'
-            : 'How would you like to connect?'}
+          {emergency ? 'Emergency request: you will go to the front of the queue.' : copy.subtitle}
         </p>
       </div>
 
@@ -234,10 +257,29 @@ export function StartSessionPage({ pollMs }: Props) {
             </span>
             <h2 id="ss-connect-title">Connect</h2>
             <p>Find an available Ugandan Sign Language interpreter.</p>
+            {paths.staff && (
+              <fieldset className="ss-context">
+                <legend>What is the session about?</legend>
+                <div className="ss-chips">
+                  {SESSION_CONTEXTS.map((option) => (
+                    <label key={option.value} className="ss-chip">
+                      <input
+                        type="radio"
+                        name="session-context"
+                        value={option.value}
+                        checked={context === option.value}
+                        onChange={() => setContext(option.value)}
+                      />
+                      <span>{option.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            )}
             <button
               type="button"
               className="ss-btn ss-btn--light"
-              onClick={() => start(emergency ? 'EMERGENCY' : undefined)}
+              onClick={() => start(emergency ? 'EMERGENCY' : undefined, context)}
               disabled={busy}
             >
               Connect now <ArrowRight size={18} />
@@ -258,7 +300,7 @@ export function StartSessionPage({ pollMs }: Props) {
           </section>
         </div>
 
-        <WhatHappensNext />
+        <WhatHappensNext steps={copy.steps} />
       </div>
     </div>
   );

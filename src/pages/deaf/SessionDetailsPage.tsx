@@ -5,17 +5,40 @@ import { sessionType, specialisationLabel } from '../../features/sessions/sessio
 import { formatWhen, STATUS_LABEL } from '../../features/sessions/sessionHistory';
 import { describeError } from '../../services/api';
 import { getMySession, type SessionDetail } from '../../services/mySessions';
+import { cancelSessionRequest } from '../../services/sessionRequests';
 import './SessionsPages.css';
 
 /** One of the person's sessions: who, what kind, when and how it ended up. */
 export function SessionDetailsPage({
   backTo = '/dashboard/deaf/sessions/history',
+  allowCancel = false,
 }: {
   backTo?: string;
+  /** Offer to cancel a request still waiting for an interpreter (institution staff, V2-013). */
+  allowCancel?: boolean;
 }) {
   const { id } = useParams();
   const [detail, setDetail] = useState<SessionDetail | null>(null);
   const [error, setError] = useState('');
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState('');
+  const [cancelled, setCancelled] = useState(false);
+
+  const cancelRequest = async () => {
+    if (!id) return;
+    setCancelling(true);
+    setCancelError('');
+    try {
+      await cancelSessionRequest(id);
+      setDetail((current) => current && { ...current, status: 'cancelled' });
+      setCancelled(true);
+    } catch (err) {
+      // For example an interpreter accepted a moment ago: the server says why.
+      setCancelError(describeError(err));
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -77,6 +100,29 @@ export function SessionDetailsPage({
               </div>
             ))}
           </dl>
+          {cancelled && (
+            <p className="sdp-ok" role="status">
+              Request cancelled. You can start a new one whenever you are ready.
+            </p>
+          )}
+          {cancelError && (
+            <p className="sh-alert" role="alert">
+              {cancelError}
+            </p>
+          )}
+          {allowCancel && detail.status === 'waiting' && (
+            <div className="sdp-actions">
+              <p>Still waiting for an interpreter? You can cancel this request.</p>
+              <button
+                type="button"
+                className="sdp-cancel"
+                onClick={cancelRequest}
+                disabled={cancelling}
+              >
+                {cancelling ? 'Cancelling…' : 'Cancel request'}
+              </button>
+            </div>
+          )}
         </section>
       )}
     </div>
