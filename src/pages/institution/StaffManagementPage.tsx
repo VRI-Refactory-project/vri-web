@@ -160,15 +160,25 @@ export function StaffManagementPage() {
         )}
         {shown.map((person) => (
           <div key={person.id} className="sm-row">
-            <div className="sm-member">
+            <div className="sm-member" data-card-primary>
               <span className="sm-avatar">{person.initials}</span>
               <strong>{person.name}</strong>
             </div>
-            <span className="sm-cell">{person.department || '—'}</span>
-            <span className="sm-cell">{person.role}</span>
-            <span>{statusBadge(person.status)}</span>
-            <span className="sm-cell sm-muted">{lastActiveLabel(person.lastLogin)}</span>
-            <Link to={`/dashboard/institution/staff/${person.id}`} className="sm-view">
+            <span className="sm-cell" data-label="Department">
+              {person.department || '—'}
+            </span>
+            <span className="sm-cell" data-label="Role">
+              {person.role}
+            </span>
+            <span data-label="Status">{statusBadge(person.status)}</span>
+            <span className="sm-cell sm-muted" data-label="Last active">
+              {lastActiveLabel(person.lastLogin)}
+            </span>
+            <Link
+              to={`/dashboard/institution/staff/${person.id}`}
+              className="sm-view"
+              data-card-actions
+            >
               View profile <ChevronRight size={16} />
             </Link>
           </div>

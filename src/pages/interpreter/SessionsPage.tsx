@@ -81,7 +81,7 @@ export function InterpreterSessionsPage() {
         {shown.length === 0 ? (
           <p className="isn-empty">{emptyMessage}</p>
         ) : (
-          <div className="isn-table-wrap">
+          <div className="isn-table-wrap mobile-data-cards">
             <table className="isn-table">
               <thead>
                 <tr>

@@ -931,7 +931,7 @@ export function InstitutionAccountsPage() {
           </div>
         )}
 
-        <div className="ia-table-wrap">
+        <div className="ia-table-wrap mobile-data-cards">
           <table className="ia-table">
             <thead>
               <tr>
@@ -963,7 +963,7 @@ export function InstitutionAccountsPage() {
               ) : (
                 visibleInstitutions.map((institution) => (
                   <tr key={institution.id}>
-                    <td>
+                    <td data-card-primary>
                       <div className="ia-institution-cell">
                         <div className="ia-institution-cell__icon">
                           <SectorIcon sector={institution.sector} />
@@ -980,11 +980,11 @@ export function InstitutionAccountsPage() {
                       </div>
                     </td>
 
-                    <td>
+                    <td data-label="Sector">
                       <span className="ia-sector-label">{institution.sector}</span>
                     </td>
 
-                    <td>
+                    <td data-label="Contact info">
                       <div className="ia-contact-cell">
                         {institution.email && (
                           <span>
@@ -1000,18 +1000,18 @@ export function InstitutionAccountsPage() {
                       </div>
                     </td>
 
-                    <td>
+                    <td data-label="Status">
                       <StatusBadge status={institution.status} />
                     </td>
 
-                    <td>
+                    <td data-label="Created">
                       <div className="ia-created-cell">
                         <span>{formatDate(institution.createdAt)}</span>
                         <small>{institution.createdBy || 'System'}</small>
                       </div>
                     </td>
 
-                    <td>
+                    <td data-card-actions>
                       <div className="ia-row-actions">
                         <button
                           type="button"

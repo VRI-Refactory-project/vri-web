@@ -20,20 +20,20 @@ export function SessionRow({ session, now }: { session: InterpreterSession; now:
 
   return (
     <tr className="isn-row">
-      <td>
+      <td data-card-primary>
         <span className="isn-date">
           <span className="isn-date-top">{tile.top}</span>
           <span className="isn-date-day">{tile.day}</span>
         </span>
       </td>
-      <td>
+      <td data-label="With">
         <strong className="isn-with">{session.withName}</strong>
         <span className="isn-detail">{sessionDetail(session)}</span>
       </td>
-      <td>
+      <td data-label="Type">
         <span className="isn-type">{session.type}</span>
       </td>
-      <td>
+      <td data-label="Status">
         <span className="isn-status-cell">
           <span className={`isn-badge isn-badge--${session.status}`}>
             <StatusIcon size={13} aria-hidden="true" />

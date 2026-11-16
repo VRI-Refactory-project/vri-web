@@ -303,7 +303,11 @@
 
 @media (max-width: 560px) {
   .is-page .is-row {
-    flex-wrap: nowrap;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: nowrap !important;
     gap: 12px;
     padding: 11px 0;
   }
@@ -338,9 +342,11 @@
   .is-page .is-select-label {
     flex: 0 0 82px;
     font-size: 13px;
+    text-align: left;
   }
 
   .is-page .is-select {
+    display: block;
     flex: 1 1 auto;
     width: auto;
     min-width: 0;

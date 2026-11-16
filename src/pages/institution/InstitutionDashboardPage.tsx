@@ -236,7 +236,7 @@ export function InstitutionDashboardPage({
             </label>
           </div>
 
-          <div className="id-table-scroll">
+          <div className="id-table-scroll mobile-data-cards">
             <table className="id-table">
               <thead>
                 <tr>
@@ -253,18 +253,20 @@ export function InstitutionDashboardPage({
               <tbody>
                 {filteredSessions.map((session) => (
                   <tr key={session.id}>
-                    <td className="id-member">{session.member}</td>
-                    <td>{session.department}</td>
-                    <td>{session.interpreter}</td>
-                    <td>{session.startTime}</td>
-                    <td>{session.duration}</td>
-                    <td>
+                    <td className="id-member" data-card-primary>
+                      {session.member}
+                    </td>
+                    <td data-label="Department">{session.department}</td>
+                    <td data-label="Interpreter">{session.interpreter}</td>
+                    <td data-label="Start time">{session.startTime}</td>
+                    <td data-label="Duration">{session.duration}</td>
+                    <td data-label="Status">
                       <span className={`id-status id-status--${session.status.toLowerCase()}`}>
                         <span />
                         {session.status}
                       </span>
                     </td>
-                    <td>
+                    <td data-card-actions>
                       <button
                         type="button"
                         className="id-view-link"

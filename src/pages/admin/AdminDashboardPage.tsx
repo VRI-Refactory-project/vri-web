@@ -1352,101 +1352,106 @@ export function AdminDashboardPage() {
         </div>
 
         {filteredSessions && filteredSessions.length > 0 ? (
-          <table className="ad-table">
-            <thead>
-              <tr>
-                {['Time', 'User', 'Interpreter', 'Session type', 'Status'].map((heading) => (
-                  <th
-                    key={heading}
-                    style={{
-                      fontSize: '11px',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                      color: '#9ca3af',
-                    }}
-                  >
-                    {heading}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-
-            <tbody>
-              {filteredSessions.map((item) => {
-                const typeLabel = item.type
-                  ? item.type.charAt(0).toUpperCase() + item.type.slice(1)
-                  : '—';
-
-                const status = statusStyle(item.status);
-
-                return (
-                  <tr key={item.id}>
-                    <td
+          <div className="mobile-data-cards ad-upcoming-mobile-cards">
+            <table className="ad-table">
+              <thead>
+                <tr>
+                  {['Time', 'User', 'Interpreter', 'Session type', 'Status'].map((heading) => (
+                    <th
+                      key={heading}
                       style={{
-                        color: '#6b7280',
-                        fontSize: '13px',
+                        fontSize: '11px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                        color: '#9ca3af',
                       }}
                     >
-                      {item.date}
-                    </td>
+                      {heading}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
 
-                    <td
-                      style={{
-                        fontWeight: 600,
-                        color: '#111827',
-                        fontSize: '13px',
-                      }}
-                    >
-                      {item.client}
-                    </td>
+              <tbody>
+                {filteredSessions.map((item) => {
+                  const typeLabel = item.type
+                    ? item.type.charAt(0).toUpperCase() + item.type.slice(1)
+                    : '—';
 
-                    <td
-                      style={{
-                        color: '#6b7280',
-                        fontSize: '13px',
-                      }}
-                    >
-                      {item.interpreter || '—'}
-                    </td>
+                  const status = statusStyle(item.status);
 
-                    <td>
-                      <span
+                  return (
+                    <tr key={item.id}>
+                      <td
+                        data-label="Time"
                         style={{
-                          display: 'inline-block',
-                          padding: '2px 8px',
-                          borderRadius: '6px',
-                          background: '#f4f1fa',
-                          color: '#4b34a0',
-                          fontSize: '12px',
-                          fontWeight: 600,
-                          textTransform: 'capitalize',
+                          color: '#6b7280',
+                          fontSize: '13px',
                         }}
                       >
-                        {typeLabel}
-                      </span>
-                    </td>
+                        {item.date}
+                      </td>
 
-                    <td>
-                      <span
+                      <td
+                        data-card-primary
                         style={{
-                          display: 'inline-block',
-                          padding: '2px 8px',
-                          borderRadius: '6px',
-                          background: status.bg,
-                          color: status.text,
-                          fontSize: '12px',
                           fontWeight: 600,
-                          textTransform: 'capitalize',
+                          color: '#111827',
+                          fontSize: '13px',
                         }}
                       >
-                        {item.status}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                        {item.client}
+                      </td>
+
+                      <td
+                        data-label="Interpreter"
+                        style={{
+                          color: '#6b7280',
+                          fontSize: '13px',
+                        }}
+                      >
+                        {item.interpreter || '—'}
+                      </td>
+
+                      <td data-label="Session type">
+                        <span
+                          style={{
+                            display: 'inline-block',
+                            padding: '2px 8px',
+                            borderRadius: '6px',
+                            background: '#f4f1fa',
+                            color: '#4b34a0',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            textTransform: 'capitalize',
+                          }}
+                        >
+                          {typeLabel}
+                        </span>
+                      </td>
+
+                      <td data-label="Status">
+                        <span
+                          style={{
+                            display: 'inline-block',
+                            padding: '2px 8px',
+                            borderRadius: '6px',
+                            background: status.bg,
+                            color: status.text,
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            textTransform: 'capitalize',
+                          }}
+                        >
+                          {item.status}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         ) : (
           <p className="ad-empty">
             {sessions && sessions.length > 0 && searchTerm
