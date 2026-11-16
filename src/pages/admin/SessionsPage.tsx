@@ -8,6 +8,7 @@ import {
   type AdminSessionStats,
 } from '../../services/adminSessions';
 import { describeError } from '../../services/api';
+import { useMobileViewMore } from '../../components/responsive/useMobileViewMore';
 import './AdminDashboardPage.css'; // Import the shared admin CSS for the purple background
 import './SessionsPage.css';
 
@@ -15,6 +16,7 @@ export function SessionsPage() {
   const [stats, setStats] = useState<AdminSessionStats | null>(null);
   const [sessions, setSessions] = useState<AdminSession[] | null>(null);
   const [error, setError] = useState('');
+  const mobileRows = useMobileViewMore(sessions?.length ?? 0);
 
   useEffect(() => {
     let cancelled = false;
@@ -101,8 +103,8 @@ export function SessionsPage() {
               {error ? `Could not load sessions: ${error}` : 'No active sessions right now.'}
             </p>
           ) : (
-            sessions.map((s) => (
-              <div className="sessions-row" key={s.id}>
+            sessions.map((s, index) => (
+              <div className="sessions-row" key={s.id} {...mobileRows.itemProps(index)}>
                 <div className="sessions-row__info">
                   <strong>{s.id}</strong>
                   <small>
@@ -122,6 +124,7 @@ export function SessionsPage() {
               </div>
             ))
           )}
+          {mobileRows.button}
         </div>
       </section>
     </main>

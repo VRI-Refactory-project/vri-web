@@ -37,6 +37,7 @@ import {
   type InstitutionSector,
 } from '../../services/institutions';
 import { describeError } from '../../services/api';
+import { useMobileViewMore } from '../../components/responsive/useMobileViewMore';
 import './AdminDashboardPage.css';
 import './InstitutionAccountsPage.css';
 
@@ -632,6 +633,10 @@ export function InstitutionAccountsPage() {
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const visibleInstitutions = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const mobileRows = useMobileViewMore(
+    visibleInstitutions.length,
+    [search, statusFilter, sectorFilter, page, visibleInstitutions.length].join('|'),
+  );
 
   function openEdit(institution: Institution) {
     setSelected(institution);
@@ -961,8 +966,8 @@ export function InstitutionAccountsPage() {
                   </td>
                 </tr>
               ) : (
-                visibleInstitutions.map((institution) => (
-                  <tr key={institution.id}>
+                visibleInstitutions.map((institution, index) => (
+                  <tr key={institution.id} {...mobileRows.itemProps(index)}>
                     <td data-card-primary>
                       <div className="ia-institution-cell">
                         <div className="ia-institution-cell__icon">
@@ -1069,6 +1074,7 @@ export function InstitutionAccountsPage() {
             </tbody>
           </table>
         </div>
+        {mobileRows.button}
 
         <footer className="ia-table-footer">
           <span>

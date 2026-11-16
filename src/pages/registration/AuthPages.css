@@ -52,4 +52,33 @@
     grid-template-columns: 1fr;
     gap: 0;
   }
+
+  .ca-terms {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 8px;
+    font-size: clamp(10px, 3vw, 12px);
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  .ca-terms input[type='checkbox'] {
+    flex: 0 0 18px;
+    margin-top: 2px;
+  }
+
+  .ca-terms > span {
+    flex: 1 1 auto;
+    min-width: 0;
+    line-height: 1.5;
+    white-space: nowrap;
+  }
+
+  .ca-terms button {
+    padding: 0 !important;
+    font: inherit;
+    white-space: nowrap !important;
+  }
 }

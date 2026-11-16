@@ -10,6 +10,7 @@ import {
   type AdminUserFilters,
 } from '../../services/adminUsers';
 import { describeError } from '../../services/api';
+import { useMobileViewMore } from '../../components/responsive/useMobileViewMore';
 import './AdminDashboardPage.css';
 import './UsersPage.css';
 
@@ -29,6 +30,10 @@ export function UsersPage() {
 
   // Selection state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const mobileRows = useMobileViewMore(
+    users?.length ?? 0,
+    [search, type, status, range, users?.length ?? 0].join('|'),
+  );
 
   // Modal states
   const [confirmAction, setConfirmAction] = useState<{
@@ -218,13 +223,14 @@ export function UsersPage() {
   const isEmpty = !loading && users.length === 0;
 
   return (
-    <div className="ad-page" style={{ width: '100%', maxWidth: '100%' }}>
+    <div className="ad-page users-management-page" style={{ width: '100%', maxWidth: '100%' }}>
       <header className="ad-title">
         <h1>User management</h1>
         <p>Manage and review users in SignConnect</p>
       </header>
 
       <div
+        className="users-header-actions"
         style={{
           display: 'flex',
           gap: '8px',
@@ -338,8 +344,8 @@ export function UsersPage() {
                 </td>
               </tr>
             ) : (
-              users.map((u) => (
-                <tr key={u.id}>
+              users.map((u, index) => (
+                <tr key={u.id} {...mobileRows.itemProps(index)}>
                   <td data-card-select>
                     <input
                       type="checkbox"
@@ -420,6 +426,7 @@ export function UsersPage() {
           </tbody>
         </table>
       </section>
+      {mobileRows.button}
 
       <footer className="users-footer">
         <span>

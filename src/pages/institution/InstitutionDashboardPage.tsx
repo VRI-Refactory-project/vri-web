@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useMobileViewMore } from '../../components/responsive/useMobileViewMore';
 import { CircleUserRound, Plus } from 'lucide-react';
 import { getInstitutionOverview } from '../../services/institutionDashboard';
 import './InstitutionDashboardPage.css';
@@ -101,6 +102,10 @@ export function InstitutionDashboardPage({
       ),
     );
   }, [data.sessions, search]);
+  const mobileRows = useMobileViewMore(
+    filteredSessions.length,
+    [search, filteredSessions.length].join('|'),
+  );
 
   const goTo = (section: string) => {
     navigate(`/dashboard/institution/${section}`);
@@ -251,8 +256,8 @@ export function InstitutionDashboardPage({
               </thead>
 
               <tbody>
-                {filteredSessions.map((session) => (
-                  <tr key={session.id}>
+                {filteredSessions.map((session, index) => (
+                  <tr key={session.id} {...mobileRows.itemProps(index)}>
                     <td className="id-member" data-card-primary>
                       {session.member}
                     </td>
@@ -288,6 +293,7 @@ export function InstitutionDashboardPage({
               </tbody>
             </table>
           </div>
+          {mobileRows.button}
 
           <p className="id-table-footer">
             Showing {filteredSessions.length} of {data.activeSessions} active sessions
