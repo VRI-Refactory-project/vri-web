@@ -315,6 +315,10 @@ a.sm-view {
     box-shadow: 0 2px 8px rgb(48 39 93 / 5%);
   }
 
+  .sm-table .sm-row[data-mobile-view-hidden='true'] {
+    display: none !important;
+  }
+
   .sm-table .sm-row:last-child {
     margin-bottom: 0;
   }

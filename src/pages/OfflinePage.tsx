@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RotateCw, ArrowLeft } from 'lucide-react';
-import offlineIllustration from '../assets/offline-illustration.png';
 import './OfflinePage.css';
 
 type OfflinePageProps = {
@@ -43,7 +42,7 @@ export function OfflinePage({ overlay = false, onRetry, onBack }: OfflinePagePro
     <main className={overlay ? 'op-page op-page--overlay' : 'op-page'}>
       <div className="op-content">
         <div className="op-illustration">
-          <img src={offlineIllustration} alt="You're offline" />
+          <img src="/offline-illustration.png" alt="You're offline" />
         </div>
 
         <div className="op-text">
