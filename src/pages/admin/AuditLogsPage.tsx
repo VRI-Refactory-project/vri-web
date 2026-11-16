@@ -1,4 +1,3 @@
-// // src/pages/admin/AuditLogsPage.tsx
 // import { useEffect, useState } from 'react';
 // import { Download, Search, SlidersHorizontal } from 'lucide-react';
 // import { fetchAdminAuditLogs, type AdminAuditLog } from '../../services/adminAuditLogs';
@@ -30,6 +29,30 @@
 //   const loading = logs === null;
 //   const isEmpty = !loading && logs.length === 0;
 
+//   // ADD THIS FUNCTION TO HANDLE THE EXPORT
+//   const handleExport = () => {
+//     if (!logs || logs.length === 0) {
+//       alert('No activity logs to export.');
+//       return;
+//     }
+
+//     const headers = ['Action', 'Details', 'Source'];
+//     const rows = logs.map((log) => [`"${log.action}"`, `"${log.meta}"`, `"${log.source}"`]);
+
+//     const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+//     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+//     const url = URL.createObjectURL(blob);
+//     const link = document.createElement('a');
+//     link.href = url;
+//     link.setAttribute(
+//       'download',
+//       `signconnect_audit_logs_${new Date().toISOString().split('T')[0]}.csv`,
+//     );
+//     document.body.appendChild(link);
+//     link.click();
+//     document.body.removeChild(link);
+//   };
+
 //   return (
 //     <main className="ad-page" style={{ width: '100%', maxWidth: '100%' }}>
 //       <header
@@ -45,8 +68,8 @@
 //           <h1>Audit logs</h1>
 //           <p>Review secure records of administrative and system activity</p>
 //         </div>
-//         {/* 👇 Using your existing class here */}
-//         <button type="button" className="audit-btn audit-btn--ghost">
+//         {/* ADDED onClick={handleExport} HERE */}
+//         <button type="button" className="audit-btn audit-btn--ghost" onClick={handleExport}>
 //           <Download size={15} />
 //           Export logs
 //         </button>
@@ -65,7 +88,6 @@
 //             <Search size={16} />
 //             <input type="search" placeholder="Search activity" />
 //           </label>
-//           {/* 👇 Using your existing class here */}
 //           <button type="button" className="audit-btn audit-btn--ghost">
 //             <SlidersHorizontal size={15} />
 //             Filter
@@ -114,9 +136,17 @@ import { describeError } from '../../services/api';
 import './AdminDashboardPage.css';
 import './AuditLogsPage.css';
 
+// 👇 Added this type-safe array outside the component
+const SOURCES = ['all', 'admin', 'system', 'institution'] as const;
+type SourceFilter = (typeof SOURCES)[number];
+
 export function AuditLogsPage() {
   const [logs, setLogs] = useState<AdminAuditLog[] | null>(null);
   const [error, setError] = useState('');
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -136,17 +166,30 @@ export function AuditLogsPage() {
   }, []);
 
   const loading = logs === null;
-  const isEmpty = !loading && logs.length === 0;
 
-  // 👇 ADD THIS FUNCTION TO HANDLE THE EXPORT
+  const filteredLogs =
+    logs?.filter((log) => {
+      const query = searchQuery.toLowerCase();
+      const matchesSearch =
+        log.action.toLowerCase().includes(query) ||
+        log.meta.toLowerCase().includes(query) ||
+        log.source.toLowerCase().includes(query);
+
+      const matchesSource = sourceFilter === 'all' || log.source === sourceFilter;
+
+      return matchesSearch && matchesSource;
+    }) || [];
+
+  const isEmpty = !loading && filteredLogs.length === 0;
+
   const handleExport = () => {
-    if (!logs || logs.length === 0) {
+    if (!filteredLogs || filteredLogs.length === 0) {
       alert('No activity logs to export.');
       return;
     }
 
     const headers = ['Action', 'Details', 'Source'];
-    const rows = logs.map((log) => [`"${log.action}"`, `"${log.meta}"`, `"${log.source}"`]);
+    const rows = filteredLogs.map((log) => [`"${log.action}"`, `"${log.meta}"`, `"${log.source}"`]);
 
     const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -177,7 +220,6 @@ export function AuditLogsPage() {
           <h1>Audit logs</h1>
           <p>Review secure records of administrative and system activity</p>
         </div>
-        {/* 👇 ADDED onClick={handleExport} HERE */}
         <button type="button" className="audit-btn audit-btn--ghost" onClick={handleExport}>
           <Download size={15} />
           Export logs
@@ -192,15 +234,70 @@ export function AuditLogsPage() {
           </div>
         </header>
 
-        <div className="audit-toolbar">
+        <div className="audit-toolbar" style={{ position: 'relative' }}>
           <label className="audit-search">
             <Search size={16} />
-            <input type="search" placeholder="Search activity" />
+            <input
+              type="search"
+              placeholder="Search activity"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </label>
-          <button type="button" className="audit-btn audit-btn--ghost">
-            <SlidersHorizontal size={15} />
-            Filter
-          </button>
+
+          <div style={{ position: 'relative' }}>
+            <button
+              type="button"
+              className="audit-btn audit-btn--ghost"
+              onClick={() => setShowFilterMenu(!showFilterMenu)}
+            >
+              <SlidersHorizontal size={15} />
+              Filter {sourceFilter !== 'all' && `(${sourceFilter})`}
+            </button>
+
+            {showFilterMenu && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '100%',
+                  right: 0,
+                  marginTop: '8px',
+                  background: '#fff',
+                  border: '1px solid #e4e7f2',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  padding: '8px',
+                  zIndex: 10,
+                  minWidth: '150px',
+                }}
+              >
+                {SOURCES.map((src) => (
+                  <button
+                    key={src}
+                    onClick={() => {
+                      // 👇 Now TypeScript knows exactly what type 'src' is
+                      setSourceFilter(src);
+                      setShowFilterMenu(false);
+                    }}
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      textAlign: 'left',
+                      padding: '8px 12px',
+                      background: sourceFilter === src ? '#f1f5f9' : 'transparent',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '13px',
+                      textTransform: 'capitalize',
+                    }}
+                  >
+                    {src === 'all' ? 'All Sources' : src}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="audit-list">
@@ -213,10 +310,10 @@ export function AuditLogsPage() {
             <p className="audit-empty">Loading activity…</p>
           ) : isEmpty ? (
             <p className="audit-empty">
-              {error ? `Could not load activity: ${error}` : 'No activity to show yet.'}
+              {error ? `Could not load activity: ${error}` : 'No activity matches your filters.'}
             </p>
           ) : (
-            logs.map((row) => (
+            filteredLogs.map((row) => (
               <div className="audit-row" key={row.id}>
                 <div className="audit-row__info">
                   <strong>{row.action}</strong>
