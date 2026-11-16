@@ -214,6 +214,40 @@
   .profile-detail-row {
     gap: 10px;
   }
+
+  .profile-page .profile-detail-row {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    text-align: left;
+    padding: 12px 0;
+  }
+
+  .profile-detail-text {
+    min-width: 0;
+    flex: 1 1 auto;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .detail-value {
+    overflow-wrap: anywhere;
+    font-size: 13px;
+  }
+
+  .profile-details-card {
+    padding: 16px;
+  }
+
+  .profile-details-title {
+    margin-bottom: 8px;
+  }
+
+  .profile-page .profile-icon-wrap {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+  }
 }
 
 @media (max-width: 420px) {

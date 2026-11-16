@@ -17,6 +17,7 @@ import {
   Headphones,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useMobileViewMore } from '../../components/responsive/useMobileViewMore';
 import {
   fetchAdminSummary,
   fetchSessionActivity,
@@ -263,6 +264,10 @@ export function AdminDashboardPage() {
       ),
     );
   }, [sessions, searchTerm]);
+  const mobileRows = useMobileViewMore(
+    filteredSessions?.length ?? 0,
+    [searchTerm, filteredSessions?.length ?? 0].join('|'),
+  );
 
   // Session activity chart scale
   const activityMax = Math.max(1, ...(activity ?? []).map((item) => item.value));
@@ -1373,7 +1378,7 @@ export function AdminDashboardPage() {
               </thead>
 
               <tbody>
-                {filteredSessions.map((item) => {
+                {filteredSessions.map((item, index) => {
                   const typeLabel = item.type
                     ? item.type.charAt(0).toUpperCase() + item.type.slice(1)
                     : '—';
@@ -1381,7 +1386,7 @@ export function AdminDashboardPage() {
                   const status = statusStyle(item.status);
 
                   return (
-                    <tr key={item.id}>
+                    <tr key={item.id} {...mobileRows.itemProps(index)}>
                       <td
                         data-label="Time"
                         style={{
@@ -1451,6 +1456,7 @@ export function AdminDashboardPage() {
                 })}
               </tbody>
             </table>
+            {mobileRows.button}
           </div>
         ) : (
           <p className="ad-empty">

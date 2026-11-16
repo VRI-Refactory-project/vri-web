@@ -78,6 +78,27 @@ body {
 /* ========================================= */
 
 @media (max-width: 900px) {
+  body.dashboard-page-active {
+    position: relative;
+    isolation: isolate;
+    background: transparent !important;
+  }
+
+  body.dashboard-page-active::before {
+    position: fixed;
+    z-index: -1;
+    inset: 0;
+    background: linear-gradient(135deg, #fdfbf7 0%, #ebe5f7 35%, #c8b8f0 65%, #b8d4f0 100%);
+    content: '';
+    pointer-events: none;
+  }
+
+  body.dashboard-page-active .dl-shell,
+  body.dashboard-page-active .dl-main {
+    background: transparent !important;
+    background-image: none !important;
+  }
+
   /* 1. Allow vertical scrolling everywhere, but NO horizontal */
   html,
   body,
@@ -229,7 +250,7 @@ body {
          ":where(:not(...))" skips the landing buttons (Sign Up, Get Started)
          AND the role selection cards (.rs-card), because those cards are
          buttons too and must keep their own text wrapping and layout. */
-  button:where(:not(.landing-cta, .landing-signup, .rs-card)),
+  button:where(:not(.landing-cta, .landing-signup, .rs-card, .ca-terms button)),
   .btn,
   .ls-btn,
   .ia-button,
@@ -474,6 +495,25 @@ body {
 
 /* Shared mobile card treatment for detailed data tables. Desktop keeps native tables. */
 @media (max-width: 700px) {
+  [data-mobile-view-hidden='true'] {
+    display: none !important;
+  }
+
+  .mobile-view-more-button {
+    display: flex;
+    width: 100%;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+    border: 1px solid #d9d2ef;
+    border-radius: 11px;
+    background: #fff;
+    color: #3b2579;
+    font-size: 12px !important;
+    font-weight: 700;
+  }
+
   .mobile-data-cards {
     width: 100% !important;
     max-width: 100% !important;
@@ -571,6 +611,13 @@ body {
     min-height: 40px;
   }
 
+  .mobile-data-cards .ia-row-actions {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 6px;
+  }
+
   .mobile-data-cards > table > tbody > tr > td[data-card-select] input[type='checkbox'] {
     width: 18px;
     height: 18px;
@@ -603,5 +650,11 @@ body {
     align-items: center;
     text-align: center;
     padding: 18px 8px !important;
+  }
+}
+
+@media (min-width: 701px) {
+  .mobile-view-more-button {
+    display: none;
   }
 }

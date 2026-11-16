@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { Menu, X, type LucideIcon } from 'lucide-react';
 import logo from '../../assets/no_bg.png';
@@ -31,6 +31,11 @@ export function DashboardLayout({
   organisation,
 }: Props) {
   const { session } = useAuth();
+  useEffect(() => {
+    document.body.classList.add('dashboard-page-active');
+    return () => document.body.classList.remove('dashboard-page-active');
+  }, []);
+
   const name = session?.user.name ?? '';
   const initial = name.trim().charAt(0).toUpperCase() || 'NM';
 

@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, Download, FileText, MoreVertical } from 'lucide-react';
 import { fetchAdminReports, type AdminReport } from '../../services/adminReports';
 import { describeError } from '../../services/api';
+import { useMobileViewMore } from '../../components/responsive/useMobileViewMore';
 import './ReportCategoryPage.css';
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -26,6 +27,10 @@ export function ReportCategoryPage() {
   const { category } = useParams<{ category: string }>();
   const [reports, setReports] = useState<AdminReport[] | null>(null);
   const [error, setError] = useState('');
+  const mobileRows = useMobileViewMore(
+    reports?.length ?? 0,
+    `${category ?? ''}|${reports?.length ?? 0}`,
+  );
 
   const label = category ? (CATEGORY_LABELS[category] ?? 'Reports') : 'Reports';
   const hint = category ? (CATEGORY_HINTS[category] ?? '') : '';
@@ -85,8 +90,8 @@ export function ReportCategoryPage() {
               {error ? `Could not load reports: ${error}` : `No ${label.toLowerCase()} yet.`}
             </p>
           ) : (
-            reports.map((r) => (
-              <div className="rc-table__row" key={r.id}>
+            reports.map((r, index) => (
+              <div className="rc-table__row" key={r.id} {...mobileRows.itemProps(index)}>
                 <span className="rc-table__name" data-card-primary>
                   <FileText size={14} />
                   <span>{r.name}</span>
@@ -112,6 +117,7 @@ export function ReportCategoryPage() {
             ))
           )}
         </div>
+        {mobileRows.button}
       </section>
     </div>
   );

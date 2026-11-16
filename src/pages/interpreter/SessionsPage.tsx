@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { SessionFilters } from '../../components/interpreter/sessions/SessionFilters';
+import { useMobileViewMore } from '../../components/responsive/useMobileViewMore';
 import { SessionRow } from '../../components/interpreter/sessions/SessionRow';
 import { UpNextCard } from '../../components/interpreter/sessions/UpNextCard';
 import { INTERPRETER_BASE } from '../../features/interpreter/navigation';
@@ -41,6 +42,7 @@ export function InterpreterSessionsPage() {
   const all = useMemo(() => orderSessions(sessions ?? []), [sessions]);
   const upNext = useMemo(() => nextSession(all), [all]);
   const shown = useMemo(() => filterSessions(all, filter, search), [all, filter, search]);
+  const mobileRows = useMobileViewMore(shown.length, [filter, search, shown.length].join('|'));
   // Filtering found nothing, but there are sessions: say so, rather than "no sessions yet".
   const emptyMessage =
     all.length === 0 ? 'No sessions yet.' : 'No sessions match your search or filter.';
@@ -81,23 +83,31 @@ export function InterpreterSessionsPage() {
         {shown.length === 0 ? (
           <p className="isn-empty">{emptyMessage}</p>
         ) : (
-          <div className="isn-table-wrap mobile-data-cards">
-            <table className="isn-table">
-              <thead>
-                <tr>
-                  <th scope="col">Date</th>
-                  <th scope="col">With</th>
-                  <th scope="col">Type</th>
-                  <th scope="col">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {shown.map((session) => (
-                  <SessionRow key={session.id} session={session} now={now} />
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <>
+            <div className="isn-table-wrap mobile-data-cards">
+              <table className="isn-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col">With</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {shown.map((session, index) => (
+                    <SessionRow
+                      key={session.id}
+                      session={session}
+                      now={now}
+                      mobileItemProps={mobileRows.itemProps(index)}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {mobileRows.button}
+          </>
         )}
       </section>
     </div>

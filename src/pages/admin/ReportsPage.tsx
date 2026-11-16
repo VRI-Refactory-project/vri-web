@@ -26,6 +26,7 @@ import {
   type ReportOption,
 } from '../../services/adminReports';
 import { describeError } from '../../services/api';
+import { useMobileViewMore } from '../../components/responsive/useMobileViewMore';
 import './ReportsPage.css';
 
 const CATEGORIES = [
@@ -68,6 +69,7 @@ export function ReportsPage() {
   const [reports, setReports] = useState<AdminReport[] | null>(null);
   const [activity, setActivity] = useState<AdminReportActivity | null>(null);
   const [error, setError] = useState('');
+  const mobileRows = useMobileViewMore(reports?.length ?? 0);
 
   const [reportTypes, setReportTypes] = useState<ReportOption[]>([]);
   const [dateRanges, setDateRanges] = useState<ReportOption[]>([]);
@@ -342,8 +344,8 @@ export function ReportsPage() {
             ) : isEmpty ? (
               <p className="reports-empty">No reports yet.</p>
             ) : (
-              reports.map((r) => (
-                <div className="reports-table__row" key={r.id}>
+              reports.map((r, index) => (
+                <div className="reports-table__row" key={r.id} {...mobileRows.itemProps(index)}>
                   <span className="reports-table__name" data-card-primary>
                     <FileText size={14} />
                     <span>{r.name}</span>
@@ -369,6 +371,7 @@ export function ReportsPage() {
               ))
             )}
           </div>
+          {mobileRows.button}
         </article>
       </section>
 

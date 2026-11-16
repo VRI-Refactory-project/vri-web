@@ -14,12 +14,20 @@ const STATUS_ICON: Record<SessionStatus, typeof Clock> = {
 };
 
 /** One row of the sessions table: date box, who it is with, type and status. */
-export function SessionRow({ session, now }: { session: InterpreterSession; now: Date }) {
+export function SessionRow({
+  session,
+  now,
+  mobileItemProps,
+}: {
+  session: InterpreterSession;
+  now: Date;
+  mobileItemProps?: { 'data-mobile-view-hidden'?: 'true' };
+}) {
   const tile = dateTile(session.start, now);
   const StatusIcon = STATUS_ICON[session.status];
 
   return (
-    <tr className="isn-row">
+    <tr className="isn-row" {...mobileItemProps}>
       <td data-card-primary>
         <span className="isn-date">
           <span className="isn-date-top">{tile.top}</span>

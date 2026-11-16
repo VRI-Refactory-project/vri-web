@@ -3,6 +3,7 @@ import { Search, Plus, ChevronRight, Check, Clock, Minus } from 'lucide-react';
 import './StaffManagementPage.css';
 import { Link } from 'react-router-dom';
 import { describeError } from '../../services/api';
+import { useMobileViewMore } from '../../components/responsive/useMobileViewMore';
 import {
   lastActiveLabel,
   listStaff,
@@ -65,6 +66,10 @@ export function StaffManagementPage() {
         (!status || s.status === status),
     );
   }, [staff, search, department, status]);
+  const mobileRows = useMobileViewMore(
+    shown.length,
+    [search, department, status, shown.length].join('|'),
+  );
 
   const count = (value: StaffStatus) => staff.filter((s) => s.status === value).length;
 
@@ -158,8 +163,8 @@ export function StaffManagementPage() {
         {!loading && !error && staff.length > 0 && shown.length === 0 && (
           <p className="sm-message">No staff match your search or filters.</p>
         )}
-        {shown.map((person) => (
-          <div key={person.id} className="sm-row">
+        {shown.map((person, index) => (
+          <div key={person.id} className="sm-row" {...mobileRows.itemProps(index)}>
             <div className="sm-member" data-card-primary>
               <span className="sm-avatar">{person.initials}</span>
               <strong>{person.name}</strong>
@@ -184,6 +189,7 @@ export function StaffManagementPage() {
           </div>
         ))}
       </div>
+      {mobileRows.button}
     </>
   );
 }
