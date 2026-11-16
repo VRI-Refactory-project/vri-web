@@ -44,7 +44,8 @@ function unwrap(value: unknown): ApiLog[] {
 
 /** GET /api/v1/admin/audit-logs/ */
 export async function fetchAdminAuditLogs(): Promise<AdminAuditLog[]> {
-  const raw = await api<unknown>('/api/v1/admin/audit-logs/');
+  // const raw = await api<unknown>('/api/v1/admin/audit-logs/');
+  const raw = await api<unknown>('/api/v1/dashboard/admin/audit-logs/');
   return unwrap(raw)
     .map(normalizeLog)
     .filter((l) => l.id);
