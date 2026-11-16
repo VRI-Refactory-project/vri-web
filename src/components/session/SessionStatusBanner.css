@@ -55,8 +55,29 @@
     transform: rotate(360deg);
   }
 }
+
 @media (prefers-reduced-motion: reduce) {
   .session-status__icon--spin {
     animation: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .session-status {
+    gap: 8px;
+    padding: 8px 10px;
+  }
+
+  .session-status__icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .session-status__title {
+    font-size: 13px;
+  }
+
+  .session-status__detail {
+    font-size: 11px;
   }
 }
