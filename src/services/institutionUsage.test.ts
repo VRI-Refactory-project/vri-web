@@ -1,16 +1,37 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   changeVsLastPeriod,
+  downloadUsageReport,
   formatMinutes,
   getInstitutionUsage,
   groupDays,
   lastDays,
 } from './institutionUsage';
 
-const api = vi.hoisted(() => vi.fn());
-vi.mock('./api', () => ({ api }));
+const { api, apiBlob } = vi.hoisted(() => ({ api: vi.fn(), apiBlob: vi.fn() }));
+vi.mock('./api', () => ({ api, apiBlob }));
 
-beforeEach(() => api.mockReset());
+beforeEach(() => {
+  api.mockReset();
+  apiBlob.mockReset();
+});
+
+describe('downloadUsageReport', () => {
+  it('asks for the PDF with the same filters and saves it', async () => {
+    apiBlob.mockResolvedValue(new Blob(['%PDF-']));
+    vi.stubGlobal('URL', { ...URL, createObjectURL: () => 'blob:pdf', revokeObjectURL: vi.fn() });
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+
+    await downloadUsageReport({ from: '2026-11-01', to: '2026-11-07', department: 'Reception' });
+
+    expect(apiBlob).toHaveBeenCalledWith(
+      '/api/v1/dashboard/institution/export/?from=2026-11-01&to=2026-11-07&department=Reception',
+    );
+    expect(click).toHaveBeenCalled();
+    click.mockRestore();
+    vi.unstubAllGlobals();
+  });
+});
 
 describe('getInstitutionUsage', () => {
   it('sends the filters and maps the response', async () => {
