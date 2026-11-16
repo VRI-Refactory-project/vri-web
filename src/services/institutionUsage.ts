@@ -1,9 +1,10 @@
-import { api } from './api';
+import { api, apiBlob } from './api';
 
-// V2-029: how much the institution uses VRI (vri-api GET /api/v1/institutions/me/usage/). Only the
-// institution's administrators may call it.
+// V2-029: how much the institution uses VRI (vri-api GET /api/v1/institutions/me/usage/), and the same
+// figures as a PDF. Only the institution's administrators may call them.
 
 const USAGE = '/api/v1/institutions/me/usage/';
+const USAGE_REPORT = '/api/v1/dashboard/institution/export/';
 
 export interface UsageFilters {
   /** First and last day, YYYY-MM-DD, both included. */
@@ -56,11 +57,30 @@ interface ApiUsage {
   staff: { total: number; used_vri: number; not_used: number };
 }
 
-export async function getInstitutionUsage(filters: UsageFilters): Promise<InstitutionUsage> {
+/** The filters as a query string; the screen and the PDF use the same one. */
+function usageQuery(filters: UsageFilters): string {
   const params = new URLSearchParams({ from: filters.from, to: filters.to });
   if (filters.staff) params.set('staff', filters.staff);
   if (filters.department) params.set('department', filters.department);
-  const raw = await api<ApiUsage>(`${USAGE}?${params}`);
+  return params.toString();
+}
+
+/** Downloads the Analytics page as a PDF for the same filters (admins only). */
+export async function downloadUsageReport(filters: UsageFilters): Promise<void> {
+  const pdf = await apiBlob(`${USAGE_REPORT}?${usageQuery(filters)}`);
+  const url = window.URL.createObjectURL(pdf);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `usage-report-${filters.from}-to-${filters.to}.pdf`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  // Released a moment later so the download has started.
+  window.setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+}
+
+export async function getInstitutionUsage(filters: UsageFilters): Promise<InstitutionUsage> {
+  const raw = await api<ApiUsage>(`${USAGE}?${usageQuery(filters)}`);
   return {
     sessions: raw.totals.sessions,
     previousPeriodSessions: raw.totals.previous_period_sessions,

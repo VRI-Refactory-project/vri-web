@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Download, Loader2 } from 'lucide-react';
-import { apiBlob, describeError } from '../../services/api';
+import { describeError } from '../../services/api';
 import {
   changeVsLastPeriod,
+  downloadUsageReport,
   formatDay,
   formatMinutes,
   getInstitutionUsage,
@@ -11,6 +12,7 @@ import {
   type Grouping,
   type InstitutionUsage,
   type UsageCount,
+  type UsageFilters,
 } from '../../services/institutionUsage';
 import { listStaff, type StaffMember } from '../../services/staff';
 import './InstitutionAnalyticsPage.css';
@@ -47,6 +49,7 @@ export function InstitutionAnalyticsPage() {
     period === 'custom' && (!custom.from || !custom.to || custom.from > custom.to)
       ? 'Choose a start date on or before the end date.'
       : '';
+  const filters: UsageFilters = { from: range.from, to: range.to, staff: staffId, department };
   const filtersKey = [range.from, range.to, staffId, department].join('|');
   const loading = !rangeProblem && answered.key !== filtersKey;
   const error = answered.key === filtersKey ? answered.error : '';
@@ -87,7 +90,7 @@ export function InstitutionAnalyticsPage() {
           <h1>Analytics</h1>
           <p>Understand SignConnect usage across your institution.</p>
         </div>
-        <ExportButton />
+        <ExportButton filters={rangeProblem ? null : filters} />
       </header>
 
       <div className="analytics-filters" role="group" aria-label="Filters">
@@ -349,34 +352,17 @@ function NoData() {
   return <p className="text-muted analytics-empty">No sessions in this period.</p>;
 }
 
-/** Downloads the institution's PDF report (/api/v1/dashboard/institution/export/). */
-function ExportButton() {
+/** Downloads the page as a PDF, for the filters on screen. `filters` is null while they are invalid. */
+function ExportButton({ filters }: { filters: UsageFilters | null }) {
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
 
   const handleExportReport = async () => {
+    if (!filters) return;
     try {
       setIsExporting(true);
       setExportError(null);
-
-      const pdfBlob = await apiBlob('/api/v1/dashboard/institution/export/');
-
-      // Create a temporary URL for the PDF.
-      const pdfUrl = window.URL.createObjectURL(pdfBlob);
-
-      // Create a temporary download link.
-      const link = document.createElement('a');
-      link.href = pdfUrl;
-      link.download = 'institution-analytics-report.pdf';
-
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      // Release the temporary URL after the download starts.
-      window.setTimeout(() => {
-        window.URL.revokeObjectURL(pdfUrl);
-      }, 1000);
+      await downloadUsageReport(filters);
     } catch (error) {
       setExportError(describeError(error));
     } finally {
@@ -386,7 +372,11 @@ function ExportButton() {
 
   return (
     <>
-      <button className="btn-export" onClick={handleExportReport} disabled={isExporting}>
+      <button
+        className="btn-export"
+        onClick={handleExportReport}
+        disabled={isExporting || !filters}
+      >
         {isExporting ? (
           <>
             <Loader2 size={16} className="animate-spin" />

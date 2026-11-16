@@ -136,8 +136,8 @@ describe('InstitutionAnalyticsPage', () => {
     );
   });
 
-  // Catherine Nawagirwa's export test (from dev), kept when V2-029 replaced the page's data loading.
-  it('calls the PDF export endpoint when Export report is clicked', async () => {
+  // Based on Catherine Nawagirwa's export test; the PDF now follows the filters on screen.
+  it('exports the PDF for the filters on screen', async () => {
     const user = userEvent.setup();
     const pdfBlob = new Blob(['PDF content'], { type: 'application/pdf' });
     mocks.apiBlob.mockResolvedValue(pdfBlob);
@@ -146,14 +146,31 @@ describe('InstitutionAnalyticsPage', () => {
     const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
 
     render(<InstitutionAnalyticsPage />);
+    await screen.findByRole('option', { name: 'Grace Achieng' });
+    await user.selectOptions(screen.getByLabelText('Staff member'), '7');
     await user.click(screen.getByRole('button', { name: /export report/i }));
 
-    expect(mocks.apiBlob).toHaveBeenCalledWith('/api/v1/dashboard/institution/export/');
+    const { from, to } = lastCall();
+    expect(mocks.apiBlob).toHaveBeenCalledWith(
+      `/api/v1/dashboard/institution/export/?from=${from}&to=${to}&staff=7`,
+    );
     expect(createObjectURL).toHaveBeenCalledWith(pdfBlob);
     expect(clickSpy).toHaveBeenCalled();
 
     clickSpy.mockRestore();
     vi.unstubAllGlobals();
+  });
+
+  it('does not export while the custom dates are invalid', async () => {
+    const user = userEvent.setup();
+    render(<InstitutionAnalyticsPage />);
+    await screen.findByRole('region', { name: 'Summary' });
+
+    await user.selectOptions(screen.getByLabelText('Period'), 'custom');
+    await user.clear(screen.getByLabelText('From'));
+    await user.type(screen.getByLabelText('From'), '2099-01-01');
+
+    expect(screen.getByRole('button', { name: /export report/i })).toBeDisabled();
   });
 
   it('shows an error when the usage cannot be loaded', async () => {
