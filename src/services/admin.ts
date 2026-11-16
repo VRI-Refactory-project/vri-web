@@ -275,7 +275,5 @@ export interface InterpreterAvailabilityData {
 }
 
 export async function fetchInterpreterAvailability(): Promise<InterpreterAvailabilityData> {
-  return api<InterpreterAvailabilityData>(
-    '/api/v1/dashboard/admin/interpreter-availability/',
-  );
+  return api<InterpreterAvailabilityData>('/api/v1/dashboard/admin/interpreter-availability/');
 }
