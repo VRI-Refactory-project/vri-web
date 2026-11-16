@@ -237,8 +237,9 @@ body {
   .cc__btn {
     white-space: nowrap !important;
     min-width: 0 !important;
-    font-size: 13px !important;
-    padding: 10px 14px !important;
+    max-width: 100%;
+    font-size: clamp(10px, 3.2vw, 13px) !important;
+    padding: clamp(6px, 2.2vw, 10px) clamp(8px, 3vw, 14px) !important;
   }
 
   .cc__btn {

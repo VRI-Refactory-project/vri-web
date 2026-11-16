@@ -425,59 +425,56 @@
 }
 
 @media (max-width: 900px) {
-  .users-table-wrap {
+  /* Keep column labels readable; scroll this dense admin table within its card. */
+  .ad-page .ad-table-card {
     min-width: 0;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
-  .users-table {
-    min-width: 0;
-    table-layout: fixed;
+
+  .ad-page .users-table {
+    width: 100%;
+    min-width: 760px;
+    table-layout: auto;
   }
-  .users-table thead th {
-    padding: 8px 4px;
-    font-size: 9px;
-    white-space: normal;
-    overflow-wrap: anywhere;
-  }
-  .users-table tbody td {
-    padding: 8px 4px;
+
+  .ad-page .users-table thead th {
+    padding: 9px 7px;
     font-size: 10px;
-    overflow-wrap: anywhere;
+    white-space: nowrap !important;
+    overflow-wrap: normal !important;
   }
-  .users-table tbody td:first-child {
-    width: 28px;
+
+  .ad-page .users-table tbody td {
+    padding: 9px 7px;
+    font-size: 11px;
+    overflow-wrap: normal;
+  }
+
+  .ad-page .users-table th:last-child,
+  .ad-page .users-table td:last-child {
+    min-width: 150px;
+  }
+
+  .ad-page .users-table td:last-child > div {
+    gap: 3px !important;
+  }
+
+  .ad-page .users-table .users-action-btn {
+    padding-right: 5px;
+    padding-left: 5px;
+    font-size: 10px;
   }
 }
 
 @media (max-width: 360px) {
-  .users-page {
-    padding: 14px 10px;
-  }
-  .users-table thead th,
-  .users-table tbody td {
-    padding: 6px 2px;
-    font-size: 9px;
-  }
-}
-
-@media (max-width: 900px) {
-  .users-page .ad-table-card {
-    min-width: 0;
-    overflow-x: auto;
+  .ad-page .users-table {
+    min-width: 720px;
   }
 
-  .users-table th:last-child,
-  .users-table td:last-child {
-    min-width: 160px;
-  }
-
-  .users-table td:last-child > div {
-    gap: 3px !important;
-  }
-
-  .users-table .users-action-btn {
-    padding-right: 5px;
-    padding-left: 5px;
+  .ad-page .users-table thead th,
+  .ad-page .users-table tbody td {
+    padding: 8px 6px;
     font-size: 10px;
   }
 }

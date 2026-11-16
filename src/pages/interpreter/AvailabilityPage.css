@@ -930,76 +930,42 @@
     justify-content: flex-start;
   }
 
-  .availability-day-row {
-    grid-template-columns: 84px 44px minmax(0, 1fr) 28px;
-    gap: 10px;
-    padding: 12px 0;
-    min-height: unset;
+  /* Keep the desktop order and one-row layout, with tighter columns for phone widths. */
+  .availability-page .availability-day-row {
+    display: grid !important;
+    grid-template-columns: minmax(52px, 0.8fr) 34px minmax(58px, 0.85fr) minmax(105px, 1.6fr) 22px !important;
+    align-items: center;
+    gap: 3px;
+    min-height: 54px;
+    padding: 7px 0;
   }
 
-  .availability-day-status {
-    display: none;
-  }
-
-  .availability-time-range {
-    grid-column: 1 / 4;
-    grid-row: 2;
-    padding: 8px 0 0 0;
-    justify-content: flex-start;
-  }
-
-  .availability-edit-icon {
-    grid-column: 4;
-    grid-row: 1;
-  }
-}
-
-/* Keep each availability day on one compact line on phones. */
-@media (max-width: 600px) {
-  /* The global mobile button rule uses !important; these overrides keep the day controls compact. */
-  .availability-day-row .availability-switch {
-    height: 21px !important;
-    padding: 2px !important;
-    font-size: 10px !important;
-  }
-
-  .availability-day-row .availability-edit-icon {
-    padding: 0 !important;
-    font-size: 10px !important;
-  }
-
-  .availability-day-row {
-    grid-template-columns: minmax(48px, 0.8fr) 36px auto minmax(0, 1fr) 24px;
-    gap: 4px;
-    padding: 8px 0;
-    min-height: 44px;
-  }
-
-  .availability-day-name {
+  .availability-page .availability-day-name {
     font-size: 11px;
   }
 
-  .availability-switch {
+  .availability-page .availability-switch {
     width: 34px;
-    height: 21px;
-    padding: 2px;
+    height: 21px !important;
+    padding: 2px !important;
   }
 
-  .availability-switch > span {
+  .availability-page .availability-switch > span {
     width: 17px;
     height: 17px;
   }
 
-  .availability-switch.is-on > span {
+  .availability-page .availability-switch.is-on > span {
     transform: translateX(13px);
   }
 
-  .availability-day-status {
-    display: block;
+  .availability-page .availability-day-status {
+    display: block !important;
     font-size: 9px;
+    white-space: nowrap;
   }
 
-  .availability-time-range {
+  .availability-page .availability-time-range {
     grid-column: auto;
     grid-row: auto;
     justify-content: flex-end;
@@ -1008,19 +974,45 @@
     font-size: 9px;
   }
 
-  .availability-time-range > span:not(.availability-time-separator) {
+  .availability-page .availability-time-range > span:not(.availability-time-separator) {
     padding: 5px 3px;
     font-size: 9px;
   }
 
-  .availability-edit-icon {
+  .availability-page .availability-edit-icon {
     grid-column: auto;
     grid-row: auto;
-    width: 24px;
+    width: 22px;
     height: 28px;
+    padding: 0 !important;
   }
 
   .weekly-panel {
-    padding: 14px 10px;
+    padding: 14px 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .availability-page .availability-day-row {
+    grid-template-columns: 48px 32px 54px minmax(96px, 1fr) 20px !important;
+    gap: 2px;
+  }
+
+  .availability-page .availability-day-name,
+  .availability-page .availability-day-status {
+    font-size: 8px;
+  }
+
+  .availability-page .availability-time-range,
+  .availability-page .availability-time-range > span:not(.availability-time-separator) {
+    font-size: 8px;
+  }
+
+  .availability-page .availability-switch {
+    width: 32px;
+  }
+
+  .availability-page .availability-edit-icon {
+    width: 20px;
   }
 }
