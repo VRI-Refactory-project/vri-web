@@ -1,14 +1,24 @@
-// // src/pages/admin/AuditLogsPage.tsx
 // import { useEffect, useState } from 'react';
-// import { Download, Search, SlidersHorizontal, ShieldCheck, Monitor, Landmark } from 'lucide-react';
+// import {
+//   Download,
+//   Search,
+//   SlidersHorizontal,
+//   ShieldCheck,
+//   Monitor,
+//   Landmark,
+//   ChevronLeft,
+//   ChevronRight,
+//   User,
+// } from 'lucide-react';
 // import { fetchAdminAuditLogs, type AdminAuditLog } from '../../services/adminAuditLogs';
 // import { describeError } from '../../services/api';
 // import './AdminDashboardPage.css';
 // import './AuditLogsPage.css';
 
-// // 👇 Added this type-safe array outside the component
 // const SOURCES = ['all', 'admin', 'system', 'institution'] as const;
 // type SourceFilter = (typeof SOURCES)[number];
+
+// const ITEMS_PER_PAGE = 10; // 👈 Change this if you want more/less per page
 
 // export function AuditLogsPage() {
 //   const [logs, setLogs] = useState<AdminAuditLog[] | null>(null);
@@ -17,6 +27,9 @@
 //   const [searchQuery, setSearchQuery] = useState('');
 //   const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
 //   const [showFilterMenu, setShowFilterMenu] = useState(false);
+
+//   // 👇 Pagination State
+//   const [currentPage, setCurrentPage] = useState(1);
 
 //   useEffect(() => {
 //     let cancelled = false;
@@ -49,6 +62,12 @@
 
 //       return matchesSearch && matchesSource;
 //     }) || [];
+
+//   // 👇 Pagination Logic
+//   const totalPages = Math.ceil(filteredLogs.length / ITEMS_PER_PAGE);
+//   const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
+//   const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
+//   const currentLogs = filteredLogs.slice(indexOfFirstItem, indexOfLastItem);
 
 //   const isEmpty = !loading && filteredLogs.length === 0;
 
@@ -111,7 +130,10 @@
 //               type="search"
 //               placeholder="Search activity"
 //               value={searchQuery}
-//               onChange={(e) => setSearchQuery(e.target.value)}
+//               onChange={(e) => {
+//                 setSearchQuery(e.target.value);
+//                 setCurrentPage(1); // 👈 Reset to page 1 here
+//               }}
 //             />
 //           </label>
 
@@ -146,6 +168,7 @@
 //                     key={src}
 //                     onClick={() => {
 //                       setSourceFilter(src);
+//                       setCurrentPage(1); // 👈 Reset to page 1 here
 //                       setShowFilterMenu(false);
 //                     }}
 //                     style={{
@@ -182,17 +205,17 @@
 //               {error ? `Could not load activity: ${error}` : 'No activity matches your filters.'}
 //             </p>
 //           ) : (
-//             filteredLogs.map((row) => (
+//             // 👇 Render only the current page's logs
+//             currentLogs.map((row) => (
 //               <div className="audit-row" key={row.id}>
 //                 <div className="audit-row__info">
-//                   {/* 👇 Added the dynamic icon based on source */}
 //                   <div className={`audit-icon audit-icon--${row.source}`}>
 //                     {row.source === 'admin' && <ShieldCheck size={18} />}
 //                     {row.source === 'system' && <Monitor size={18} />}
 //                     {row.source === 'institution' && <Landmark size={18} />}
+//                     {row.source === 'user' && <User size={18} />}
 //                   </div>
 
-//                   {/* 👇 Wrapped the text in its own container */}
 //                   <div className="audit-row__text">
 //                     <strong>{row.action}</strong>
 //                     <small>{row.meta}</small>
@@ -209,6 +232,42 @@
 //             ))
 //           )}
 //         </div>
+
+//         {/* 👇 Pagination Footer */}
+//         {!loading && !isEmpty && (
+//           <div className="audit-pagination">
+//             <span className="audit-pagination__info">
+//               Showing {indexOfFirstItem + 1}–{Math.min(indexOfLastItem, filteredLogs.length)} of{' '}
+//               {filteredLogs.length}
+//             </span>
+
+//             <div className="audit-pagination__controls">
+//               <button
+//                 type="button"
+//                 disabled={currentPage === 1}
+//                 onClick={() => setCurrentPage((p) => p - 1)}
+//                 className="audit-page-btn"
+//                 aria-label="Previous page"
+//               >
+//                 <ChevronLeft size={16} />
+//               </button>
+
+//               <span className="audit-page-current">
+//                 Page {currentPage} of {totalPages}
+//               </span>
+
+//               <button
+//                 type="button"
+//                 disabled={currentPage === totalPages}
+//                 onClick={() => setCurrentPage((p) => p + 1)}
+//                 className="audit-page-btn"
+//                 aria-label="Next page"
+//               >
+//                 <ChevronRight size={16} />
+//               </button>
+//             </div>
+//           </div>
+//         )}
 //       </section>
 //     </main>
 //   );
@@ -224,7 +283,7 @@ import {
   Landmark,
   ChevronLeft,
   ChevronRight,
-  User,
+  X,
 } from 'lucide-react';
 import { fetchAdminAuditLogs, type AdminAuditLog } from '../../services/adminAuditLogs';
 import { describeError } from '../../services/api';
@@ -234,7 +293,7 @@ import './AuditLogsPage.css';
 const SOURCES = ['all', 'admin', 'system', 'institution'] as const;
 type SourceFilter = (typeof SOURCES)[number];
 
-const ITEMS_PER_PAGE = 10; // 👈 Change this if you want more/less per page
+const ITEMS_PER_PAGE = 10;
 
 export function AuditLogsPage() {
   const [logs, setLogs] = useState<AdminAuditLog[] | null>(null);
@@ -244,8 +303,10 @@ export function AuditLogsPage() {
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
   const [showFilterMenu, setShowFilterMenu] = useState(false);
 
-  // 👇 Pagination State
   const [currentPage, setCurrentPage] = useState(1);
+
+  // 👇 State to hold the clicked log for the modal
+  const [selectedLog, setSelectedLog] = useState<AdminAuditLog | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -279,7 +340,6 @@ export function AuditLogsPage() {
       return matchesSearch && matchesSource;
     }) || [];
 
-  // 👇 Pagination Logic
   const totalPages = Math.ceil(filteredLogs.length / ITEMS_PER_PAGE);
   const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
   const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
@@ -348,7 +408,7 @@ export function AuditLogsPage() {
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
-                setCurrentPage(1); // 👈 Reset to page 1 here
+                setCurrentPage(1);
               }}
             />
           </label>
@@ -384,7 +444,7 @@ export function AuditLogsPage() {
                     key={src}
                     onClick={() => {
                       setSourceFilter(src);
-                      setCurrentPage(1); // 👈 Reset to page 1 here
+                      setCurrentPage(1);
                       setShowFilterMenu(false);
                     }}
                     style={{
@@ -421,15 +481,19 @@ export function AuditLogsPage() {
               {error ? `Could not load activity: ${error}` : 'No activity matches your filters.'}
             </p>
           ) : (
-            // 👇 Render only the current page's logs
             currentLogs.map((row) => (
-              <div className="audit-row" key={row.id}>
+              // 👇 Make the row clickable
+              <div
+                className="audit-row"
+                key={row.id}
+                onClick={() => setSelectedLog(row)}
+                style={{ cursor: 'pointer' }}
+              >
                 <div className="audit-row__info">
                   <div className={`audit-icon audit-icon--${row.source}`}>
                     {row.source === 'admin' && <ShieldCheck size={18} />}
                     {row.source === 'system' && <Monitor size={18} />}
                     {row.source === 'institution' && <Landmark size={18} />}
-                    {row.source === 'user' && <User size={18} />}
                   </div>
 
                   <div className="audit-row__text">
@@ -449,7 +513,6 @@ export function AuditLogsPage() {
           )}
         </div>
 
-        {/* 👇 Pagination Footer */}
         {!loading && !isEmpty && (
           <div className="audit-pagination">
             <span className="audit-pagination__info">
@@ -485,6 +548,98 @@ export function AuditLogsPage() {
           </div>
         )}
       </section>
+
+      {/* 👇 THE MODAL */}
+      {selectedLog && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(26, 22, 58, 0.5)', // Purple-ish overlay
+            backdropFilter: 'blur(3px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}
+          onClick={() => setSelectedLog(null)} // Click outside to close
+        >
+          <div
+            style={{
+              background: '#fff',
+              width: '100%',
+              maxWidth: '500px',
+              borderRadius: '16px',
+              boxShadow: '0 24px 80px rgba(25, 20, 60, 0.25)',
+              padding: '24px',
+              margin: '20px',
+            }}
+            onClick={(e) => e.stopPropagation()} // Prevent click inside from closing
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                marginBottom: '20px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div className={`audit-icon audit-icon--${selectedLog.source}`}>
+                  {selectedLog.source === 'admin' && <ShieldCheck size={20} />}
+                  {selectedLog.source === 'system' && <Monitor size={20} />}
+                  {selectedLog.source === 'institution' && <Landmark size={20} />}
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, color: '#211d42', fontSize: '18px' }}>
+                    {selectedLog.action}
+                  </h3>
+                  <span style={{ fontSize: '12px', color: '#6f7696' }}>ID: {selectedLog.id}</span>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedLog(null)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div
+              style={{
+                background: '#f8fafc',
+                padding: '16px',
+                borderRadius: '8px',
+                marginBottom: '24px',
+              }}
+            >
+              <p style={{ margin: '0 0 8px', fontSize: '13px', color: '#64748b', fontWeight: 600 }}>
+                Details
+              </p>
+              <p style={{ margin: 0, fontSize: '14px', color: '#1e293b', lineHeight: 1.6 }}>
+                {selectedLog.meta}
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setSelectedLog(null)}
+                style={{
+                  padding: '10px 20px',
+                  background: '#382c77',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
