@@ -1,5 +1,6 @@
 // src/pages/admin/SessionsPage.tsx
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react'; // replaces the existing react import line
+import { useInterval } from '../../features/community/useInterval';
 import { Search, SlidersHorizontal } from 'lucide-react';
 import {
   fetchAdminSessionStats,
@@ -18,23 +19,24 @@ export function SessionsPage() {
   const [error, setError] = useState('');
   const mobileRows = useMobileViewMore(sessions?.length ?? 0);
 
-  useEffect(() => {
-    let cancelled = false;
+  const load = useCallback(() => {
     Promise.all([fetchAdminSessionStats(), fetchAdminSessions()])
       .then(([s, list]) => {
-        if (cancelled) return;
         setStats(s);
         setSessions(list);
+        setError('');
       })
       .catch((err) => {
-        if (cancelled) return;
         setError(describeError(err));
-        setSessions([]);
+        setSessions((current) => current ?? []); // keep the last list if a refresh fails
       });
-    return () => {
-      cancelled = true;
-    };
   }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  useInterval(load, 10000);
 
   const loading = sessions === null;
   const isEmpty = !loading && sessions.length === 0;
