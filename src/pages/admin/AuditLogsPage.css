@@ -332,6 +332,16 @@
   color: #475569;
 }
 
+.audit-icon--user {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.audit-badge--user {
+  background: #ecfdf5;
+  color: #059669;
+}
+
 /* ---------- Responsive ---------- */
 @media (max-width: 900px) {
   .audit-toolbar {
