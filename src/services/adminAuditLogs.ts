@@ -5,7 +5,7 @@ export interface AdminAuditLog {
   id: string;
   action: string;
   meta: string;
-  source: 'admin' | 'system' | 'institution';
+  source: 'admin' | 'system' | 'institution' | 'user';
   createdAt: string;
 }
 
