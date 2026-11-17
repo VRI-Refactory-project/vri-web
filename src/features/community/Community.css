@@ -149,3 +149,127 @@
   color: #64748b;
   font-size: 13px;
 }
+
+/* Stickers */
+.cm-stickers {
+  position: relative;
+  display: flex;
+}
+.cm-sticker-toggle {
+  width: 48px;
+  border: 1px solid #e2e0ee;
+  border-radius: 12px;
+  background: #fff;
+  color: #3b2579;
+  cursor: pointer;
+}
+.cm-sticker-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.cm-sticker-panel {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid #e2e0ee;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(59, 37, 121, 0.15);
+}
+.cm-sticker-panel button {
+  width: 52px;
+  height: 52px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  font-size: 30px;
+  cursor: pointer;
+}
+.cm-sticker-panel button:hover,
+.cm-sticker-panel button:focus-visible {
+  background: #f1edfb;
+}
+.dx-msg.cm-msg--sticker p.cm-sticker {
+  padding: 0;
+  background: transparent;
+  border: 0;
+  font-size: 56px;
+  line-height: 1.1;
+}
+
+/* Photos */
+.cm-attach {
+  width: 44px;
+  border: 1px solid #e2e0ee;
+  border-radius: 12px;
+  background: #fff;
+  color: #3b2579;
+  cursor: pointer;
+}
+.cm-attach:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.cm-photo {
+  display: block;
+  line-height: 0;
+}
+.cm-photo img {
+  max-width: min(260px, 100%);
+  max-height: 320px;
+  border-radius: 14px;
+  border: 1px solid #ddd6f3;
+  object-fit: cover;
+}
+.dx-msg .cm-photo + p {
+  margin-top: 4px;
+}
+.cm-photo--loading {
+  width: 200px;
+  height: 140px;
+  border-radius: 14px;
+  background: #ede9f8;
+}
+.dx-msg p.cm-photo--missing {
+  line-height: 1.4;
+  font-size: 13px;
+}
+.cm-pending {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  border: 1px solid #ddd6f3;
+  border-radius: 12px;
+  background: #f8f6fd;
+  font-size: 13px;
+  color: #475569;
+}
+.cm-pending img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.cm-pending span {
+  flex: 1;
+}
+.cm-pending button {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #475569;
+  cursor: pointer;
+}
+.cm-pending button:hover,
+.cm-pending button:focus-visible {
+  background: #ede9f8;
+}

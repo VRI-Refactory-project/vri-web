@@ -20,6 +20,19 @@ export function mergeMessages(shown: ChatMessage[], fresh: ChatMessage[]): ChatM
   return [...byId.values()].sort((a, b) => a.id - b.id);
 }
 
+/** What a conversation list shows for a message: its text, or a word for a sticker or photo. */
+export const previewOf = (message: ChatMessage): string =>
+  message.sticker ? 'Sticker' : message.body || (message.imageUrl ? 'Photo' : '');
+
+export const MAX_PHOTO_BYTES = 8 * 1024 * 1024;
+
+/** Why this file cannot be sent as a photo, or '' when it can. */
+export function photoProblem(file: { type: string; size: number }): string {
+  if (!file.type.startsWith('image/')) return 'Choose a picture (JPG, PNG, WebP or GIF).';
+  if (file.size > MAX_PHOTO_BYTES) return 'That photo is too large. Choose one under 8 MB.';
+  return '';
+}
+
 export const initials = (name: string) =>
   name
     .split(/\s+/)
