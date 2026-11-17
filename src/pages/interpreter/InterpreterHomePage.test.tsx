@@ -183,7 +183,6 @@ describe('InterpreterHomePage', () => {
     const viewAllLinks = screen.getAllByRole('link', { name: /view all/i });
     expect(viewAllLinks.length).toBeGreaterThan(0);
   });
-
   it('shows how many sessions are booked on the Booked sessions card', async () => {
     booked = reply(true, 200, [
       booking(1, 'Sierah Tabbuti', '09:00:00'),

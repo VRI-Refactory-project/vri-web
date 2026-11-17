@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { useCallback, useEffect, useState } from 'react';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { getConversations } from '../../services/community';
+import { useInterval } from '../../features/community/useInterval';
 import { Menu, X, type LucideIcon } from 'lucide-react';
 import logo from '../../assets/no_bg.png';
 import { useAuth } from '../../hooks/useAuth';
@@ -36,6 +38,28 @@ export function DashboardLayout({
     return () => document.body.classList.remove('dashboard-page-active');
   }, []);
 
+  const isDeaf = session?.user.role === 'deaf';
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  const { pathname } = useLocation();
+
+  const loadUnread = useCallback(() => {
+    if (!isDeaf) return; // only Deaf users have chat
+    getConversations()
+      .then((list) => setUnreadMessages(list.reduce((total, c) => total + c.unread, 0)))
+      .catch(() => {}); // if one refresh fails, keep the last number
+  }, [isDeaf]);
+
+  // Load when the dashboard opens and whenever the person goes to another page...
+  useEffect(() => {
+    loadUnread();
+  }, [loadUnread, pathname]);
+
+  // ...and keep it fresh every 15 seconds (never, for people without chat).
+  useInterval(loadUnread, isDeaf ? 15000 : null);
+
+  // The badges the page passed in, plus the unread messages for Deaf users.
+  const shownBadges = isDeaf ? { ...badges, messages: unreadMessages } : badges;
+
   const name = session?.user.name ?? '';
   const initial = name.trim().charAt(0).toUpperCase() || 'NM';
 
@@ -68,7 +92,7 @@ export function DashboardLayout({
         )}
         <nav className="dl-nav" aria-label={navLabel}>
           {links.map(({ id, label, to, icon: Icon, end }) => {
-            const count = badges[id] ?? 0;
+            const count = shownBadges[id] ?? 0;
             return (
               <NavLink
                 key={id}

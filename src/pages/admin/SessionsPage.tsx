@@ -42,9 +42,9 @@ export function SessionsPage() {
   const isEmpty = !loading && sessions.length === 0;
 
   return (
-    // 👇 Changed to `ad-page` so it sits on the purple background
+    //  Changed to `ad-page` so it sits on the purple background
     <main className="ad-page" style={{ width: '100%', maxWidth: '100%' }}>
-      {/* 👇 Changed to `ad-title` */}
+      {/*  Changed to `ad-title` */}
       <header className="ad-title">
         <h1>Live sessions</h1>
         <p>Monitor live sessions, connection health and sessions needing attention</p>
