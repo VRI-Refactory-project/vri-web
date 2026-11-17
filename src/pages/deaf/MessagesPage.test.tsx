@@ -9,6 +9,9 @@ const svc = vi.hoisted(() => ({
   getConversations: vi.fn(),
   getMessages: vi.fn(),
   sendMessage: vi.fn(),
+  sendSticker: vi.fn(),
+  sendPhoto: vi.fn(),
+  getMessageImage: vi.fn(),
   markRead: vi.fn(),
 }));
 vi.mock('../../services/community', () => svc);
@@ -17,6 +20,8 @@ const person = (id: number, name: string) => ({ id, name, location: 'Kampala', p
 const message = (id: number, body: string, mine: boolean, read = false): ChatMessage => ({
   id,
   body,
+  sticker: '',
+  imageUrl: null,
   createdAt: new Date().toISOString(),
   mine,
   read,
@@ -42,8 +47,13 @@ const renderPage = (url = '/dashboard/deaf/messages') =>
     </MemoryRouter>,
   );
 
+const picture = (name = 'sunset.jpg', type = 'image/jpeg') => new File(['pixels'], name, { type });
+
 beforeEach(() => {
   vi.clearAllMocks();
+  URL.createObjectURL = vi.fn(() => 'blob:preview');
+  URL.revokeObjectURL = vi.fn();
+  svc.getMessageImage.mockResolvedValue('blob:photo');
   svc.getConversations.mockResolvedValue([sarah, daniel]);
   svc.getMessages.mockResolvedValue({
     messages: [message(1, 'Hi Irene', false), message(3, 'Hi Sarah', true, true)],
@@ -103,6 +113,159 @@ describe('MessagesPage', () => {
     expect(svc.sendMessage).toHaveBeenCalledWith(1, 'See you at 4');
     expect(await screen.findByText('See you at 4')).toBeInTheDocument();
     expect(screen.getByLabelText('Write a message')).toHaveValue('');
+  });
+
+  it('sends a sticker from the picker and shows it large', async () => {
+    svc.sendSticker.mockResolvedValue({ ...message(5, '', true), sticker: 'thumbs_up' });
+    renderPage();
+    await screen.findByText('Hi Irene');
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'Stickers' }));
+    await user.click(screen.getByRole('button', { name: 'Thumbs up' }));
+
+    expect(svc.sendSticker).toHaveBeenCalledWith(1, 'thumbs_up');
+    expect(await screen.findByRole('img', { name: 'Thumbs up' })).toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: 'Choose a sticker' })).not.toBeInTheDocument();
+  });
+
+  it('closes the sticker panel with Escape', async () => {
+    renderPage();
+    await screen.findByText('Hi Irene');
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'Stickers' }));
+    expect(screen.getByRole('group', { name: 'Choose a sticker' })).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+
+    expect(screen.queryByRole('group', { name: 'Choose a sticker' })).not.toBeInTheDocument();
+  });
+
+  it('shows a received sticker, and the word Sticker in the conversation list', async () => {
+    svc.getConversations.mockResolvedValue([
+      { ...sarah, lastMessage: { ...message(9, '', false), sticker: 'heart' } },
+    ]);
+    svc.getMessages.mockResolvedValue({
+      messages: [{ ...message(9, '', false), sticker: 'heart' }],
+      hasMore: false,
+    });
+    renderPage();
+
+    expect(await screen.findByRole('img', { name: 'Heart' })).toBeInTheDocument();
+    expect(screen.getByText('Sticker')).toBeInTheDocument();
+  });
+
+  it('shows a plain face for a sticker this version does not know', async () => {
+    svc.getMessages.mockResolvedValue({
+      messages: [{ ...message(9, '', false), sticker: 'brand_new' }],
+      hasMore: false,
+    });
+    renderPage();
+
+    expect(await screen.findByRole('img', { name: 'Sticker' })).toBeInTheDocument();
+  });
+
+  it('shows a chosen photo before sending, then sends it with the caption', async () => {
+    const sent = { ...message(6, 'Sunset', true), imageUrl: '/api/p/6/' };
+    svc.sendPhoto.mockResolvedValue(sent);
+    renderPage();
+    await screen.findByText('Hi Irene');
+    const user = userEvent.setup();
+
+    const file = picture();
+    await user.upload(screen.getByTestId('gallery-input'), file);
+    expect(screen.getByAltText('Photo ready to send')).toBeInTheDocument();
+
+    await user.type(screen.getByLabelText('Add a caption'), 'Sunset');
+    await user.click(screen.getByRole('button', { name: 'Send' }));
+
+    expect(svc.sendPhoto).toHaveBeenCalledWith(1, file, 'Sunset');
+    expect(await screen.findByRole('img', { name: 'Sunset' })).toHaveAttribute('src', 'blob:photo');
+    expect(screen.queryByAltText('Photo ready to send')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Write a message')).toHaveValue('');
+  });
+
+  it('can send a photo with no caption, and the camera button works the same way', async () => {
+    svc.sendPhoto.mockResolvedValue({ ...message(7, '', true), imageUrl: '/api/p/7/' });
+    renderPage();
+    await screen.findByText('Hi Irene');
+    const user = userEvent.setup();
+
+    expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
+    const file = picture('camera.jpg');
+    await user.upload(screen.getByTestId('camera-input'), file);
+    expect(screen.getByRole('button', { name: 'Send' })).toBeEnabled();
+    await user.click(screen.getByRole('button', { name: 'Send' }));
+
+    expect(svc.sendPhoto).toHaveBeenCalledWith(1, file, '');
+    expect(await screen.findByRole('img', { name: 'Photo' })).toBeInTheDocument();
+  });
+
+  it('lets you take a photo back before sending', async () => {
+    renderPage();
+    await screen.findByText('Hi Irene');
+    const user = userEvent.setup();
+
+    await user.upload(screen.getByTestId('gallery-input'), picture());
+    await user.click(screen.getByRole('button', { name: 'Remove photo' }));
+
+    expect(screen.queryByAltText('Photo ready to send')).not.toBeInTheDocument();
+    expect(svc.sendPhoto).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
+  });
+
+  it('refuses a file that is not a picture, and one that is too big', async () => {
+    renderPage();
+    await screen.findByText('Hi Irene');
+    const user = userEvent.setup({ applyAccept: false });
+
+    await user.upload(screen.getByTestId('gallery-input'), picture('notes.pdf', 'application/pdf'));
+    expect(await screen.findByRole('alert')).toHaveTextContent(/Choose a picture/);
+
+    const big = picture('big.jpg');
+    Object.defineProperty(big, 'size', { value: 9 * 1024 * 1024 });
+    await user.upload(screen.getByTestId('gallery-input'), big);
+    expect(await screen.findByRole('alert')).toHaveTextContent(/under 8 MB/);
+    expect(screen.queryByAltText('Photo ready to send')).not.toBeInTheDocument();
+  });
+
+  it('shows the reason when a photo is refused by the server', async () => {
+    svc.sendPhoto.mockRejectedValue(new Error('x'));
+    renderPage();
+    await screen.findByText('Hi Irene');
+    const user = userEvent.setup();
+
+    await user.upload(screen.getByTestId('gallery-input'), picture());
+    await user.click(screen.getByRole('button', { name: 'Send' }));
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    expect(screen.getByAltText('Photo ready to send')).toBeInTheDocument();
+  });
+
+  it('shows a received photo with its caption, and Photo in the conversation list', async () => {
+    const photo = { ...message(9, '', false), imageUrl: '/api/p/9/' };
+    svc.getConversations.mockResolvedValue([{ ...sarah, lastMessage: photo }]);
+    svc.getMessages.mockResolvedValue({
+      messages: [photo, { ...message(10, 'from the lake', false), imageUrl: '/api/p/10/' }],
+      hasMore: false,
+    });
+    renderPage();
+
+    expect(await screen.findByRole('img', { name: 'from the lake' })).toBeInTheDocument();
+    expect(screen.getAllByText('from the lake').length).toBeGreaterThan(0);
+    expect(svc.getMessageImage).toHaveBeenCalledWith('/api/p/9/');
+    expect(screen.getByText('Photo')).toBeInTheDocument();
+  });
+
+  it('says so when a photo cannot be loaded', async () => {
+    svc.getMessageImage.mockRejectedValue(new Error('gone'));
+    svc.getMessages.mockResolvedValue({
+      messages: [{ ...message(9, '', false), imageUrl: '/api/p/9/' }],
+      hasMore: false,
+    });
+    renderPage();
+
+    expect(await screen.findByText('This photo could not be loaded.')).toBeInTheDocument();
   });
 
   it('cannot send an empty message', async () => {

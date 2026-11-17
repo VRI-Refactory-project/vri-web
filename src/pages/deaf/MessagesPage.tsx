@@ -1,9 +1,18 @@
-import { Check, CheckCheck, Search, Send } from 'lucide-react';
+import { Check, CheckCheck, Search, Send, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Avatar } from '../../features/community/Avatar';
-import { formatWhen, mergeMessages } from '../../features/community/chatHelpers';
+import { AttachPhoto } from '../../features/community/AttachPhoto';
+import { ChatImage } from '../../features/community/ChatImage';
+import {
+  formatWhen,
+  mergeMessages,
+  photoProblem,
+  previewOf,
+} from '../../features/community/chatHelpers';
 import { COMMUNITY_PATH, CommunityTabs } from '../../features/community/CommunityTabs';
+import { StickerPicker } from '../../features/community/StickerPicker';
+import { stickerFor } from '../../features/community/stickers';
 import { useInterval } from '../../features/community/useInterval';
 import { describeError } from '../../services/api';
 import {
@@ -11,6 +20,8 @@ import {
   getMessages,
   markRead,
   sendMessage,
+  sendPhoto,
+  sendSticker,
   type ChatMessage,
   type Conversation,
 } from '../../services/community';
@@ -31,6 +42,7 @@ export function MessagesPage() {
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState('');
+  const [photo, setPhoto] = useState<{ file: File; preview: string } | null>(null);
   const endRef = useRef<HTMLLIElement>(null);
 
   const requested = Number(params.get('c'));
@@ -52,6 +64,13 @@ export function MessagesPage() {
     void refreshList();
   }, [refreshList]);
   useInterval(refreshList, LIST_REFRESH_MS);
+
+  // A photo waiting to be sent belongs to the conversation it was chosen in.
+  useEffect(() => {
+    setPhoto(null);
+  }, [activeId]);
+  const previewUrl = photo?.preview;
+  useEffect(() => () => (previewUrl ? URL.revokeObjectURL?.(previewUrl) : undefined), [previewUrl]);
 
   // Opening a conversation shows its newest messages.
   useEffect(() => {
@@ -118,16 +137,14 @@ export function MessagesPage() {
     }
   };
 
-  const send = async (e: FormEvent) => {
-    e.preventDefault();
-    const body = draft.trim();
-    if (!body || activeId === null || sending) return;
+  const deliver = async (post: (id: number) => Promise<ChatMessage>, then?: () => void) => {
+    if (activeId === null || sending) return;
     setSending(true);
     setSendError('');
     try {
-      const sent = await sendMessage(activeId, body);
+      const sent = await post(activeId);
       setMessages((now) => mergeMessages(now, [sent]));
-      setDraft('');
+      then?.();
       void refreshList();
     } catch (err) {
       setSendError(describeError(err));
@@ -135,6 +152,34 @@ export function MessagesPage() {
       setSending(false);
     }
   };
+
+  const send = (e: FormEvent) => {
+    e.preventDefault();
+    const body = draft.trim();
+    if (photo) {
+      const { file } = photo;
+      void deliver(
+        (id) => sendPhoto(id, file, body),
+        () => {
+          setDraft('');
+          setPhoto(null);
+        },
+      );
+    } else if (body) {
+      void deliver(
+        (id) => sendMessage(id, body),
+        () => setDraft(''),
+      );
+    }
+  };
+
+  const choosePhoto = (file: File) => {
+    const problem = photoProblem(file);
+    setSendError(problem);
+    if (!problem) setPhoto({ file, preview: URL.createObjectURL?.(file) ?? '' });
+  };
+
+  const sendStickerNow = (stickerId: string) => void deliver((id) => sendSticker(id, stickerId));
 
   return (
     <div className="dx-page">
@@ -180,7 +225,7 @@ export function MessagesPage() {
                     <Avatar name={c.person.name} photoUrl={c.person.photoUrl} />
                     <span className="dx-tx-text">
                       <strong>{c.person.name}</strong>
-                      <small>{c.lastMessage?.body ?? 'Say hello'}</small>
+                      <small>{c.lastMessage ? previewOf(c.lastMessage) : 'Say hello'}</small>
                     </span>
                     {c.lastMessage && <small>{formatWhen(c.lastMessage.createdAt)}</small>}
                     {c.unread > 0 && (
@@ -214,8 +259,26 @@ export function MessagesPage() {
                   </li>
                 )}
                 {messages.map((m) => (
-                  <li key={m.id} className={`dx-msg${m.mine ? ' dx-msg--mine' : ''}`}>
-                    <p>{m.body}</p>
+                  <li
+                    key={m.id}
+                    className={`dx-msg${m.mine ? ' dx-msg--mine' : ''}${m.sticker ? ' cm-msg--sticker' : ''}`}
+                  >
+                    {m.sticker ? (
+                      <p
+                        className="cm-sticker"
+                        role="img"
+                        aria-label={stickerFor(m.sticker)?.label ?? 'Sticker'}
+                      >
+                        {stickerFor(m.sticker)?.emoji ?? '🙂'}
+                      </p>
+                    ) : (
+                      <>
+                        {m.imageUrl && (
+                          <ChatImage key={m.imageUrl} path={m.imageUrl} alt={m.body || 'Photo'} />
+                        )}
+                        {m.body && <p>{m.body}</p>}
+                      </>
+                    )}
                     <small>
                       {formatWhen(m.createdAt)}
                       {m.mine && (
@@ -237,10 +300,26 @@ export function MessagesPage() {
                   {sendError}
                 </p>
               )}
+              {photo && (
+                <div className="cm-pending">
+                  {photo.preview && <img src={photo.preview} alt="Photo ready to send" />}
+                  <span>Add a caption if you like, then send.</span>
+                  <button
+                    type="button"
+                    aria-label="Remove photo"
+                    disabled={sending}
+                    onClick={() => setPhoto(null)}
+                  >
+                    <X size={16} aria-hidden />
+                  </button>
+                </div>
+              )}
               <form className="dx-compose" onSubmit={send}>
+                <StickerPicker onPick={sendStickerNow} disabled={sending} />
+                <AttachPhoto onPick={choosePhoto} disabled={sending} />
                 <input
-                  aria-label="Write a message"
-                  placeholder="Write a message…"
+                  aria-label={photo ? 'Add a caption' : 'Write a message'}
+                  placeholder={photo ? 'Add a caption…' : 'Write a message…'}
                   maxLength={2000}
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
@@ -249,7 +328,7 @@ export function MessagesPage() {
                   type="submit"
                   className="dx-send"
                   aria-label="Send"
-                  disabled={!draft.trim() || sending}
+                  disabled={(!draft.trim() && !photo) || sending}
                 >
                   <Send size={18} aria-hidden />
                 </button>
