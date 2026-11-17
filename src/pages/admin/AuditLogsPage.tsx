@@ -1,6 +1,6 @@
 // // src/pages/admin/AuditLogsPage.tsx
 // import { useEffect, useState } from 'react';
-// import { Download, Search, SlidersHorizontal } from 'lucide-react';
+// import { Download, Search, SlidersHorizontal, ShieldCheck, Monitor, Landmark } from 'lucide-react';
 // import { fetchAdminAuditLogs, type AdminAuditLog } from '../../services/adminAuditLogs';
 // import { describeError } from '../../services/api';
 // import './AdminDashboardPage.css';
@@ -145,7 +145,6 @@
 //                   <button
 //                     key={src}
 //                     onClick={() => {
-//                       // 👇 Now TypeScript knows exactly what type 'src' is
 //                       setSourceFilter(src);
 //                       setShowFilterMenu(false);
 //                     }}
@@ -186,9 +185,20 @@
 //             filteredLogs.map((row) => (
 //               <div className="audit-row" key={row.id}>
 //                 <div className="audit-row__info">
-//                   <strong>{row.action}</strong>
-//                   <small>{row.meta}</small>
+//                   {/* 👇 Added the dynamic icon based on source */}
+//                   <div className={`audit-icon audit-icon--${row.source}`}>
+//                     {row.source === 'admin' && <ShieldCheck size={18} />}
+//                     {row.source === 'system' && <Monitor size={18} />}
+//                     {row.source === 'institution' && <Landmark size={18} />}
+//                   </div>
+
+//                   {/* 👇 Wrapped the text in its own container */}
+//                   <div className="audit-row__text">
+//                     <strong>{row.action}</strong>
+//                     <small>{row.meta}</small>
+//                   </div>
 //                 </div>
+
 //                 <span className={`audit-badge audit-badge--${row.source}`}>
 //                   {row.source.charAt(0).toUpperCase() + row.source.slice(1)}
 //                 </span>
@@ -204,17 +214,26 @@
 //   );
 // }
 
-// src/pages/admin/AuditLogsPage.tsx
 import { useEffect, useState } from 'react';
-import { Download, Search, SlidersHorizontal, ShieldCheck, Monitor, Landmark } from 'lucide-react';
+import {
+  Download,
+  Search,
+  SlidersHorizontal,
+  ShieldCheck,
+  Monitor,
+  Landmark,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 import { fetchAdminAuditLogs, type AdminAuditLog } from '../../services/adminAuditLogs';
 import { describeError } from '../../services/api';
 import './AdminDashboardPage.css';
 import './AuditLogsPage.css';
 
-// 👇 Added this type-safe array outside the component
 const SOURCES = ['all', 'admin', 'system', 'institution'] as const;
 type SourceFilter = (typeof SOURCES)[number];
+
+const ITEMS_PER_PAGE = 10; // 👈 Change this if you want more/less per page
 
 export function AuditLogsPage() {
   const [logs, setLogs] = useState<AdminAuditLog[] | null>(null);
@@ -223,6 +242,9 @@ export function AuditLogsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
   const [showFilterMenu, setShowFilterMenu] = useState(false);
+
+  // 👇 Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     let cancelled = false;
@@ -255,6 +277,12 @@ export function AuditLogsPage() {
 
       return matchesSearch && matchesSource;
     }) || [];
+
+  // 👇 Pagination Logic
+  const totalPages = Math.ceil(filteredLogs.length / ITEMS_PER_PAGE);
+  const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
+  const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
+  const currentLogs = filteredLogs.slice(indexOfFirstItem, indexOfLastItem);
 
   const isEmpty = !loading && filteredLogs.length === 0;
 
@@ -317,7 +345,10 @@ export function AuditLogsPage() {
               type="search"
               placeholder="Search activity"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1); // 👈 Reset to page 1 here
+              }}
             />
           </label>
 
@@ -352,6 +383,7 @@ export function AuditLogsPage() {
                     key={src}
                     onClick={() => {
                       setSourceFilter(src);
+                      setCurrentPage(1); // 👈 Reset to page 1 here
                       setShowFilterMenu(false);
                     }}
                     style={{
@@ -388,17 +420,16 @@ export function AuditLogsPage() {
               {error ? `Could not load activity: ${error}` : 'No activity matches your filters.'}
             </p>
           ) : (
-            filteredLogs.map((row) => (
+            // 👇 Render only the current page's logs
+            currentLogs.map((row) => (
               <div className="audit-row" key={row.id}>
                 <div className="audit-row__info">
-                  {/* 👇 Added the dynamic icon based on source */}
                   <div className={`audit-icon audit-icon--${row.source}`}>
                     {row.source === 'admin' && <ShieldCheck size={18} />}
                     {row.source === 'system' && <Monitor size={18} />}
                     {row.source === 'institution' && <Landmark size={18} />}
                   </div>
 
-                  {/* 👇 Wrapped the text in its own container */}
                   <div className="audit-row__text">
                     <strong>{row.action}</strong>
                     <small>{row.meta}</small>
@@ -415,6 +446,42 @@ export function AuditLogsPage() {
             ))
           )}
         </div>
+
+        {/* 👇 Pagination Footer */}
+        {!loading && !isEmpty && (
+          <div className="audit-pagination">
+            <span className="audit-pagination__info">
+              Showing {indexOfFirstItem + 1}–{Math.min(indexOfLastItem, filteredLogs.length)} of{' '}
+              {filteredLogs.length}
+            </span>
+
+            <div className="audit-pagination__controls">
+              <button
+                type="button"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => p - 1)}
+                className="audit-page-btn"
+                aria-label="Previous page"
+              >
+                <ChevronLeft size={16} />
+              </button>
+
+              <span className="audit-page-current">
+                Page {currentPage} of {totalPages}
+              </span>
+
+              <button
+                type="button"
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage((p) => p + 1)}
+                className="audit-page-btn"
+                aria-label="Next page"
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          </div>
+        )}
       </section>
     </main>
   );
