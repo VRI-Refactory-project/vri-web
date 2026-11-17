@@ -429,7 +429,7 @@ export function AuditLogsPage() {
                     {row.source === 'admin' && <ShieldCheck size={18} />}
                     {row.source === 'system' && <Monitor size={18} />}
                     {row.source === 'institution' && <Landmark size={18} />}
-                     {row.source === 'user' && <User size={18} />}
+                    {row.source === 'user' && <User size={18} />}
                   </div>
 
                   <div className="audit-row__text">
