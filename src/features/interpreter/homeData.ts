@@ -99,6 +99,7 @@ export function reasonText(reason: UnavailableReason | null): string {
  */
 export function useAvailability() {
   const [available, setAvailableState] = useState(false);
+  const [availableNow, setAvailableNow] = useState(false);
   const [reason, setReason] = useState<UnavailableReason | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -106,21 +107,29 @@ export function useAvailability() {
 
   useEffect(() => {
     let cancelled = false;
-    api<AvailabilityStatus>(STATUS_PATH).then(
-      (status) => {
-        if (cancelled) return;
-        setAvailableState(status.is_available);
-        setReason(status.reason);
-        setLoading(false);
-      },
-      (err: unknown) => {
-        if (cancelled) return;
-        setError(describeError(err));
-        setLoading(false);
-      },
-    );
+    const load = (first: boolean) =>
+      api<AvailabilityStatus>(STATUS_PATH).then(
+        (status) => {
+          if (cancelled) return;
+          setAvailableState(status.is_available);
+          setAvailableNow(status.available_now);
+          setReason(status.reason);
+          if (first) setLoading(false);
+        },
+        (err: unknown) => {
+          if (cancelled) return;
+          if (first) {
+            setError(describeError(err));
+            setLoading(false);
+          }
+        },
+      );
+    void load(true);
+    // Re-check every minute so the status flips when working hours end or start.
+    const timer = setInterval(() => void load(false), 60000);
     return () => {
       cancelled = true;
+      clearInterval(timer);
     };
   }, []);
 
@@ -135,6 +144,7 @@ export function useAvailability() {
         body: JSON.stringify({ is_available: next }),
       });
       setAvailableState(status.is_available);
+      setAvailableNow(status.available_now);
       setReason(status.reason);
     } catch (err) {
       setAvailableState(previous);
@@ -144,5 +154,5 @@ export function useAvailability() {
     }
   };
 
-  return { available, reason, setAvailable, loading, saving, error };
+  return { available, availableNow, reason, setAvailable, loading, saving, error };
 }

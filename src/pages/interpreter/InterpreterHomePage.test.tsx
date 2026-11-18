@@ -159,6 +159,15 @@ describe('InterpreterHomePage', () => {
     await waitFor(() => expect(toggle).toHaveClass('active'));
     expect(screen.getByText('Available for requests')).toBeInTheDocument();
   });
+  it('shows Not available when the switch is on but working hours are over', async () => {
+    mockProfile(true, undefined, 'outside_hours');
+    renderHome();
+
+    const toggle = screen.getByRole('button', { name: /toggle availability/i });
+    await waitFor(() => expect(toggle).toHaveClass('active'));
+    expect(screen.getByText('Not available')).toBeInTheDocument();
+    expect(screen.getByText(/outside your working hours/i)).toBeInTheDocument();
+  });
   it('switches availability off through the API when the toggle is clicked', async () => {
     mockProfile(true);
     renderHome();

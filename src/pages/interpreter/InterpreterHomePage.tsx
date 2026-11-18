@@ -50,7 +50,8 @@ function Avatar({ name, photo }: { name: string; photo: string | null }) {
 export function InterpreterHomePage() {
   const { session } = useAuth();
   const firstName = session?.user.name?.split(' ')[0] || 'there';
-  const { available, reason, setAvailable, loading, saving, error } = useAvailability();
+  const { available, availableNow, reason, setAvailable, loading, saving, error } =
+    useAvailability();
   const { sessions } = useMySessions();
   const { bookings } = useBookedSessions();
   const today = new Date();
@@ -256,10 +257,10 @@ export function InterpreterHomePage() {
             <div className="ih-availability-row">
               <div className="ih-availability-status">
                 <span
-                  className={`ih-availability-dot${available ? '' : ' ih-availability-dot-off'}`}
+                  className={`ih-availability-dot${availableNow ? '' : ' ih-availability-dot-off'}`}
                   aria-hidden="true"
                 />
-                <span>{available ? 'Available for requests' : 'Not available'}</span>
+                <span>{availableNow ? 'Available for requests' : 'Not available'}</span>
               </div>
 
               <button
@@ -276,10 +277,9 @@ export function InterpreterHomePage() {
 
             <p className="ih-availability-copy">
               {error ||
-                (available
-                  ? reasonText(reason) ||
-                    "You'll receive connection requests and messages when you're online."
-                  : "You won't receive requests while you're switched off.")}
+                (availableNow
+                  ? "You'll receive connection requests and messages when you're online."
+                  : reasonText(reason) || "You won't receive requests while you're switched off.")}
             </p>
 
             <Link to={`${INTERPRETER_BASE}/availability`} className="ih-availability-button">
