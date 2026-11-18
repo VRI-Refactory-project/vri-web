@@ -13,7 +13,9 @@
 // import { useEffect, useState } from 'react';
 // import { useNavigate } from 'react-router-dom';
 // import { useAuth } from '../../hooks/useAuth';
-// import { api } from '../../services/api';
+// import { api, describeError } from '../../services/api';
+import { bookingLabel } from '../../features/sessions/myBookings';
+import { startBookedCall } from '../../features/interpreter/bookedSessions';
 // import './DHH_dashboard.css';
 // import { InterpreterProfileModal } from './InterpreterProfileModal';
 // import bannerImage from '../../assets/suit.png';
@@ -482,7 +484,7 @@ import {
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { api } from '../../services/api';
+import { api, describeError } from '../../services/api';
 import './DHH_dashboard.css';
 import { InterpreterProfileModal } from './InterpreterProfileModal';
 import bannerImage from '../../assets/suit.png';
@@ -510,6 +512,9 @@ interface BookedSession {
   duration: number;
   session_type: string;
   status: string;
+  interpreter_name?: string | null;
+  can_join?: boolean;
+  no_show?: '' | 'interpreter' | 'booker' | 'both';
 }
 
 function greeting(date = new Date()) {
@@ -534,6 +539,8 @@ export function DashboardPage() {
 
   // --- STATE ---
   const [bookedSessions, setBookedSessions] = useState<BookedSession[]>([]);
+  const [cancelling, setCancelling] = useState<number | null>(null);
+  const [bookingError, setBookingError] = useState<string | null>(null);
   const [interpreters, setInterpreters] = useState<AvailableInterpreter[] | null>(null);
   const [openProfileId, setOpenProfileId] = useState<number | null>(null);
 
@@ -592,6 +599,30 @@ export function DashboardPage() {
       cancelled = true;
     };
   }, []);
+
+  const joinBooking = async (id: number) => {
+    setBookingError(null);
+    try {
+      navigate(`/live/deaf/${await startBookedCall(id)}`);
+    } catch (err) {
+      setBookingError(describeError(err));
+    }
+  };
+
+  const cancelBooking = async (id: number) => {
+    setCancelling(id);
+    setBookingError(null);
+    try {
+      await api(`/api/v1/interpreters/sessions/booked/${id}/cancel/`, { method: 'POST' });
+      setBookedSessions((list) =>
+        list.map((b) => (b.id === id ? { ...b, status: 'CANCELLED' } : b)),
+      );
+    } catch (err) {
+      setBookingError(describeError(err));
+    } finally {
+      setCancelling(null);
+    }
+  };
 
   // Use the new bookedSessions state instead of the old dashboard data
   const sessionCount = bookedSessions.length;
@@ -845,6 +876,11 @@ export function DashboardPage() {
           </button>
         </div>
 
+        {bookingError && (
+          <p className="text-muted" role="alert">
+            {bookingError}
+          </p>
+        )}
         <div className="session-grid">
           {bookedSessions.length === 0 ? (
             <p className="text-muted">No upcoming sessions yet.</p>
@@ -860,7 +896,7 @@ export function DashboardPage() {
                     <span className="session-date-day">{new Date(session.date).getDate()}</span>
                   </div>
                   <span className={`badge badge-${session.status.toLowerCase()}`}>
-                    {session.status}
+                    {bookingLabel(session)}
                   </span>
                 </div>
 
@@ -872,7 +908,28 @@ export function DashboardPage() {
                 </div>
 
                 <div className="session-card-footer">
-                  <span>View details</span>
+                  {session.status === 'CANCELLED' ? (
+                    <span>Cancelled</span>
+                  ) : session.no_show ? (
+                    <span>Missed</span>
+                  ) : session.can_join ? (
+                    <button
+                      type="button"
+                      className="session-join"
+                      onClick={() => joinBooking(session.id)}
+                    >
+                      Join call
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="session-cancel"
+                      disabled={cancelling === session.id}
+                      onClick={() => cancelBooking(session.id)}
+                    >
+                      Cancel booking
+                    </button>
+                  )}
                   <ChevronRight size={16} className="session-arrow" />
                 </div>
               </div>

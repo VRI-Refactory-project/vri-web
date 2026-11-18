@@ -1,10 +1,15 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { describeError } from '../../services/api';
+import { Link, useNavigate } from 'react-router-dom';
 import { Bell, Calendar, CalendarCheck, ChevronLeft, ChevronRight, Clock, Sun } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { INTERPRETER_BASE } from '../../features/interpreter/navigation';
 import { reasonText, useAvailability } from '../../features/interpreter/homeData';
-import { upcomingBooking, useBookedSessions } from '../../features/interpreter/bookedSessions';
+import {
+  startBookedCall,
+  upcomingBooking,
+  useBookedSessions,
+} from '../../features/interpreter/bookedSessions';
 import { dayLabel, formatDuration } from '../../services/interpreterSessions';
 import {
   recentSessions,
@@ -53,7 +58,18 @@ export function InterpreterHomePage() {
   const { available, availableNow, reason, setAvailable, loading, saving, error } =
     useAvailability();
   const { sessions } = useMySessions();
-  const { bookings } = useBookedSessions();
+  const { bookings, answer, busyId, error: bookingError } = useBookedSessions();
+  const navigate = useNavigate();
+  const [joinError, setJoinError] = useState<string | null>(null);
+  const join = async (id: number) => {
+    setJoinError(null);
+    try {
+      navigate(`/live/interpreter/${await startBookedCall(id)}`);
+    } catch (err) {
+      setJoinError(describeError(err));
+    }
+  };
+  const toAnswer = bookings.filter((b) => b.offered).length;
   const today = new Date();
   const next = upcomingBooking(bookings);
   const recent = recentSessions(sessions);
@@ -107,7 +123,11 @@ export function InterpreterHomePage() {
               <div className="ih-stat-header">
                 <CalendarCheck size={20} className="ih-icon-blue" />
                 <span className="ih-trend trend-green">
-                  {bookings.length > 0 ? 'Upcoming' : 'None yet'}
+                  {toAnswer > 0
+                    ? `${toAnswer} to answer`
+                    : bookings.length > 0
+                      ? 'Upcoming'
+                      : 'None yet'}
                 </span>
               </div>
               <h2>{bookings.length}</h2>
@@ -177,6 +197,11 @@ export function InterpreterHomePage() {
                     </Link>
                   </div>
 
+                  {(bookingError || joinError) && (
+                    <p className="ih-time-label ih-empty-note" role="alert">
+                      {bookingError || joinError}
+                    </p>
+                  )}
                   {bookings.length === 0 ? (
                     <p className="ih-time-label ih-empty-note">No sessions have been booked yet.</p>
                   ) : (
@@ -199,6 +224,50 @@ export function InterpreterHomePage() {
                               <Clock size={12} className="ih-meta-icon" />{' '}
                               {formatDuration(booking.durationMinutes)}
                             </p>
+                          </div>
+                          <div className="ih-booking-actions">
+                            {booking.offered ? (
+                              <>
+                                <button
+                                  type="button"
+                                  className="ih-btn-primary ih-btn-small"
+                                  disabled={busyId === booking.id}
+                                  onClick={() => answer(booking.id, 'accept')}
+                                >
+                                  Accept
+                                </button>
+                                <button
+                                  type="button"
+                                  className="ih-btn-secondary ih-btn-small"
+                                  disabled={busyId === booking.id}
+                                  onClick={() => answer(booking.id, 'decline')}
+                                >
+                                  Decline
+                                </button>
+                              </>
+                            ) : booking.confirmed ? (
+                              <>
+                                <span className="ih-booking-state">Confirmed</span>
+                                {booking.canJoin ? (
+                                  <button
+                                    type="button"
+                                    className="ih-btn-primary ih-btn-small"
+                                    onClick={() => join(booking.id)}
+                                  >
+                                    Join call
+                                  </button>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    className="ih-btn-secondary ih-btn-small"
+                                    disabled={busyId === booking.id}
+                                    onClick={() => answer(booking.id, 'release')}
+                                  >
+                                    Give back
+                                  </button>
+                                )}
+                              </>
+                            ) : null}
                           </div>
                         </div>
                       ))}

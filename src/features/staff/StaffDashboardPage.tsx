@@ -8,6 +8,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { getInstitutionOverview } from '../../services/institutionDashboard';
 import { getMySessions, type HistoryItem } from '../../services/mySessions';
 import { MiniCalendar } from './MiniCalendar';
+import { StaffBookedSessions } from './StaffBookedSessions';
 import './StaffDashboardPage.css';
 
 const BASE = '/dashboard/staff';
@@ -128,6 +129,8 @@ export function StaffDashboardPage() {
               )}
             </div>
           </section>
+
+          <StaffBookedSessions />
 
           <section aria-labelledby="sd-chat">
             <div className="sd-heading-row">
