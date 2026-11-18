@@ -29,6 +29,14 @@ export interface Connection {
   connectedAt: string;
 }
 
+export interface ChatFile {
+  name: string;
+  /** Size in bytes. */
+  size: number;
+  /** Where to download it from (fetch it signed in). */
+  url: string;
+}
+
 export interface ChatMessage {
   id: number;
   body: string;
@@ -36,6 +44,8 @@ export interface ChatMessage {
   sticker: string;
   /** Where the attached photo is (fetch it with getMessageImage), or null. */
   imageUrl: string | null;
+  /** The attached document, or null. Download it with downloadMessageFile. */
+  file: ChatFile | null;
   createdAt: string;
   mine: boolean;
   /** The other person has opened it. Only meaningful for your own messages. */
@@ -67,6 +77,7 @@ interface ApiMessage {
   body: string;
   sticker?: string;
   image_url?: string | null;
+  file?: ChatFile | null;
   created_at: string;
   sent_by_me: boolean;
   read: boolean;
@@ -86,6 +97,7 @@ const toMessage = (m: ApiMessage): ChatMessage => ({
   body: m.body,
   sticker: m.sticker ?? '',
   imageUrl: m.image_url ?? null,
+  file: m.file ?? null,
   createdAt: m.created_at,
   mine: m.sent_by_me,
   read: m.read,
@@ -180,6 +192,32 @@ export async function sendPhoto(id: number, photo: File, caption = ''): Promise<
     body: form,
   });
   return toMessage(raw);
+}
+
+/** Sends a document (up to 10 MB), with an optional caption. Throws an ApiError with a readable message. */
+export async function sendFile(id: number, file: File, caption = ''): Promise<ChatMessage> {
+  const form = new FormData();
+  form.append('file', file);
+  if (caption.trim()) form.append('body', caption.trim());
+  const raw = await api<ApiMessage>(`${BASE}/conversations/${id}/messages/`, {
+    method: 'POST',
+    body: form,
+  });
+  return toMessage(raw);
+}
+
+/** Downloads a message's document: fetched with the sign-in token, then saved under its own name. */
+export async function downloadMessageFile(file: ChatFile): Promise<void> {
+  const blob = await apiBlob(file.url);
+  const address = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = address;
+  link.download = file.name;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  // Give the browser a moment to start the save before the address goes away.
+  setTimeout(() => URL.revokeObjectURL(address), 10_000);
 }
 
 // A photo is only seen by the two people in the chat, so it is fetched with the sign-in token and

@@ -22,7 +22,9 @@ export function mergeMessages(shown: ChatMessage[], fresh: ChatMessage[]): ChatM
 
 /** What a conversation list shows for a message: its text, or a word for a sticker or photo. */
 export const previewOf = (message: ChatMessage): string =>
-  message.sticker ? 'Sticker' : message.body || (message.imageUrl ? 'Photo' : '');
+  message.sticker
+    ? 'Sticker'
+    : message.body || (message.imageUrl ? 'Photo' : message.file ? message.file.name : '');
 
 export const MAX_PHOTO_BYTES = 8 * 1024 * 1024;
 
@@ -31,6 +33,28 @@ export function photoProblem(file: { type: string; size: number }): string {
   if (!file.type.startsWith('image/')) return 'Choose a picture (JPG, PNG, WebP or GIF).';
   if (file.size > MAX_PHOTO_BYTES) return 'That photo is too large. Choose one under 8 MB.';
   return '';
+}
+
+export const MAX_FILE_BYTES = 10 * 1024 * 1024;
+/** What the file picker offers; the server checks the real contents again. */
+export const FILE_EXTENSIONS = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'csv'];
+export const FILE_ACCEPT = FILE_EXTENSIONS.map((e) => `.${e}`).join(',');
+
+/** Why this file cannot be sent as a document, or '' when it can. */
+export function fileProblem(file: { name: string; size: number }): string {
+  const extension = file.name.includes('.') ? file.name.split('.').pop()!.toLowerCase() : '';
+  if (!FILE_EXTENSIONS.includes(extension))
+    return 'That kind of file is not allowed. Use PDF, Word, Excel, PowerPoint, TXT or CSV.';
+  if (file.size === 0) return 'That file is empty.';
+  if (file.size > MAX_FILE_BYTES) return 'That file is too large. Choose one under 10 MB.';
+  return '';
+}
+
+/** A size people can read: "850 B", "12 KB", "3.4 MB". */
+export function formatSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 export const initials = (name: string) =>
