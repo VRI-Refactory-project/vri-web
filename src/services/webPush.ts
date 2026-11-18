@@ -70,6 +70,11 @@ async function getOrCreateSubscription(
   let subscription = await registration.pushManager.getSubscription();
 
   if (subscription && !subscriptionMatchesKey(subscription, publicKey)) {
+    await api<void>(SUBSCRIPTION_PATH, {
+      method: 'DELETE',
+      body: JSON.stringify({ endpoint: subscription.endpoint }),
+    });
+
     await subscription.unsubscribe();
     subscription = null;
   }
