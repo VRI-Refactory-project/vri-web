@@ -1,4 +1,3 @@
-
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -112,20 +111,14 @@ describe('InstitutionDashboardPage', () => {
   it('shows the institution and its real staff numbers', async () => {
     renderPage();
 
-    expect(
-      await screen.findByText(/Northside Medical Center/),
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/Northside Medical Center/)).toBeInTheDocument();
 
-    const staff = screen
-      .getByText('Staff', { selector: '.id-kpi-label' })
-      .closest('article');
+    const staff = screen.getByText('Staff', { selector: '.id-kpi-label' }).closest('article');
 
     expect(staff).toHaveTextContent('12');
     expect(staff).toHaveTextContent('10 active');
 
-    expect(
-      screen.getByText('2 staff accounts with access revoked'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('2 staff accounts with access revoked')).toBeInTheDocument();
   });
 
   it('shows usage figures from the institution usage API', async () => {
@@ -165,9 +158,6 @@ describe('InstitutionDashboardPage', () => {
       }),
     ).toBeInTheDocument();
 
-    expect(
-      await screen.findByText('0 staff accounts with access revoked'),
-    ).toBeInTheDocument();
+    expect(await screen.findByText('0 staff accounts with access revoked')).toBeInTheDocument();
   });
 });
-

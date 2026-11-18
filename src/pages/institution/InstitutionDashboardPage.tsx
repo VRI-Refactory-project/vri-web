@@ -5,10 +5,7 @@ import { CircleUserRound, Plus } from 'lucide-react';
 
 import { getInstitutionDashboardData } from '../../services/institutionDashboard';
 
-import {
-  getInstitutionUsage,
-  toIsoDay,
-} from '../../services/institutionUsage';
+import { getInstitutionUsage, toIsoDay } from '../../services/institutionUsage';
 
 import { api } from '../../services/api';
 
@@ -99,145 +96,130 @@ export function InstitutionDashboardPage({
   });
 
   useEffect(() => {
-  let cancelled = false;
+    let cancelled = false;
 
-  async function loadDashboard() {
-    const today = new Date();
+    async function loadDashboard() {
+      const today = new Date();
 
-    const from = toIsoDay(
-      new Date(today.getFullYear(), today.getMonth(), 1),
-    );
+      const from = toIsoDay(new Date(today.getFullYear(), today.getMonth(), 1));
 
-    const to = toIsoDay(today);
+      const to = toIsoDay(today);
 
-    const [dashboardResult, usageResult, sessionsResult] =
-      await Promise.allSettled([
+      const [dashboardResult, usageResult, sessionsResult] = await Promise.allSettled([
         getInstitutionDashboardData(),
         getInstitutionUsage({ from, to }),
-        api<InstitutionSessionApi[]>(
-          '/api/v1/institutions/me/sessions/?state=active',
-        ),
+        api<InstitutionSessionApi[]>('/api/v1/institutions/me/sessions/?state=active'),
       ]);
 
-    if (cancelled) return;
+      if (cancelled) return;
 
-    // Dashboard analytics and staff figures
-    if (dashboardResult.status === 'fulfilled') {
-      const dashboard = dashboardResult.value;
+      // Dashboard analytics and staff figures
+      if (dashboardResult.status === 'fulfilled') {
+        const dashboard = dashboardResult.value;
 
-      setOrgName(dashboard.institutionName);
+        setOrgName(dashboard.institutionName);
 
-      const analytics = dashboard.sessions;
+        const analytics = dashboard.sessions;
 
-      setData((current) => ({
-        ...current,
-        staff: dashboard.staff.total,
-        activeStaff: dashboard.staff.active,
-        revokedStaff: dashboard.staff.revoked,
+        setData((current) => ({
+          ...current,
+          staff: dashboard.staff.total,
+          activeStaff: dashboard.staff.active,
+          revokedStaff: dashboard.staff.revoked,
 
-        // Currently connected video calls
-        activeSessions: analytics.connectedVideoSessions,
-      }));
-    } else {
-      console.error('Could not load institution dashboard:', dashboardResult.reason);
+          // Currently connected video calls
+          activeSessions: analytics.connectedVideoSessions,
+        }));
+      } else {
+        console.error('Could not load institution dashboard:', dashboardResult.reason);
+      }
+
+      // Monthly usage and weekly activity
+      if (usageResult.status === 'fulfilled') {
+        const usage = usageResult.value;
+
+        const weeklyData = usage.overTime.slice(-7);
+
+        setData((current) => ({
+          ...current,
+          sessionsThisMonth: usage.sessions,
+          usageHours: usage.totalMinutes / 60,
+          weeklyActivity: weeklyData.map((day) => day.count),
+        }));
+      } else {
+        console.error('Could not load institution usage:', usageResult.reason);
+      }
+
+      // Active interpreter requests
+      if (sessionsResult.status === 'fulfilled') {
+        const requests = sessionsResult.value;
+
+        const mappedSessions: StaffSession[] = requests.map((session) => {
+          const status = session.display_status.toUpperCase();
+
+          let displayStatus: SessionStatus = 'Pending';
+
+          if (status === 'ACTIVE') {
+            displayStatus = 'Live';
+          } else if (status === 'COMPLETED') {
+            displayStatus = 'Ended';
+          }
+
+          const startDate = new Date(session.created_at);
+
+          return {
+            id: String(session.id),
+            member: session.staff.name,
+            department: session.staff.department || 'No department',
+            interpreter: session.interpreter_name || 'Not assigned',
+            startTime: Number.isNaN(startDate.getTime()) ? '—' : startDate.toLocaleString(),
+            duration: session.duration_minutes !== null ? `${session.duration_minutes} min` : '—',
+            status: displayStatus,
+          };
+        });
+
+        // Count active requests by staff category/department
+        const activeByDepartment = new Map<string, number>();
+
+        mappedSessions.forEach((session) => {
+          const department = session.department;
+
+          activeByDepartment.set(department, (activeByDepartment.get(department) || 0) + 1);
+        });
+
+        setData((current) => ({
+          ...current,
+          sessions: mappedSessions,
+          departments: current.departments.map((department) => ({
+            ...department,
+            active: activeByDepartment.get(department.name) || 0,
+          })),
+        }));
+      } else {
+        console.error('Could not load active institution sessions:', sessionsResult.reason);
+      }
+
+      // Populate department usage from monthly analytics
+      if (usageResult.status === 'fulfilled') {
+        const usage = usageResult.value;
+
+        setData((current) => ({
+          ...current,
+          departments: usage.byDepartment.map((department) => ({
+            name: department.label || 'No department',
+            sessionsToday: department.count,
+            active: current.departments.find((item) => item.name === department.label)?.active || 0,
+          })),
+        }));
+      }
     }
 
-    // Monthly usage and weekly activity
-    if (usageResult.status === 'fulfilled') {
-      const usage = usageResult.value;
+    loadDashboard();
 
-      const weeklyData = usage.overTime.slice(-7);
-
-      setData((current) => ({
-        ...current,
-        sessionsThisMonth: usage.sessions,
-        usageHours: usage.totalMinutes / 60,
-        weeklyActivity: weeklyData.map((day) => day.count),
-      }));
-    } else {
-      console.error('Could not load institution usage:', usageResult.reason);
-    }
-
-    // Active interpreter requests
-    if (sessionsResult.status === 'fulfilled') {
-      const requests = sessionsResult.value;
-
-      const mappedSessions: StaffSession[] = requests.map((session) => {
-        const status = session.display_status.toUpperCase();
-
-        let displayStatus: SessionStatus = 'Pending';
-
-        if (status === 'ACTIVE') {
-          displayStatus = 'Live';
-        } else if (status === 'COMPLETED') {
-          displayStatus = 'Ended';
-        }
-
-        const startDate = new Date(session.created_at);
-
-        return {
-          id: String(session.id),
-          member: session.staff.name,
-          department: session.staff.department || 'No department',
-          interpreter: session.interpreter_name || 'Not assigned',
-          startTime: Number.isNaN(startDate.getTime())
-            ? '—'
-            : startDate.toLocaleString(),
-          duration:
-            session.duration_minutes !== null
-              ? `${session.duration_minutes} min`
-              : '—',
-          status: displayStatus,
-        };
-      });
-
-      // Count active requests by staff category/department
-      const activeByDepartment = new Map<string, number>();
-
-      mappedSessions.forEach((session) => {
-        const department = session.department;
-
-        activeByDepartment.set(
-          department,
-          (activeByDepartment.get(department) || 0) + 1,
-        );
-      });
-
-      setData((current) => ({
-        ...current,
-        sessions: mappedSessions,
-        departments: current.departments.map((department) => ({
-          ...department,
-          active: activeByDepartment.get(department.name) || 0,
-        })),
-      }));
-    } else {
-      console.error('Could not load active institution sessions:', sessionsResult.reason);
-    }
-
-    // Populate department usage from monthly analytics
-    if (usageResult.status === 'fulfilled') {
-      const usage = usageResult.value;
-
-      setData((current) => ({
-        ...current,
-        departments: usage.byDepartment.map((department) => ({
-          name: department.label || 'No department',
-          sessionsToday: department.count,
-          active: current.departments.find(
-            (item) => item.name === department.label,
-          )?.active || 0,
-        })),
-      }));
-    }
-  }
-
-  loadDashboard();
-
-  return () => {
-    cancelled = true;
-  };
-}, []);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const filteredSessions = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -311,9 +293,7 @@ export function InstitutionDashboardPage({
         <article className="id-kpi">
           <span className="id-kpi-label">Usage</span>
           <strong>{data.usageHours.toFixed(1)}h</strong>
-          <span className="id-kpi-note">
-  Total usage this month
-</span>
+          <span className="id-kpi-note">Total usage this month</span>
         </article>
       </section>
 
@@ -376,9 +356,7 @@ export function InstitutionDashboardPage({
       <section className="id-section id-sessions-section">
         <div className="id-section-heading">
           <h2>Staff active sessions</h2>
-          <p className="id-teal">
-  {data.sessions.length} active interpreter requests
-</p>
+          <p className="id-teal">{data.sessions.length} active interpreter requests</p>
         </div>
 
         <div className="id-panel id-table-panel">
@@ -477,7 +455,8 @@ export function InstitutionDashboardPage({
             >
               <strong>{department.name}</strong>
               <span>
-                {department.sessionsToday} {department.sessionsToday === 1 ? 'session' : 'sessions'} this month
+                {department.sessionsToday} {department.sessionsToday === 1 ? 'session' : 'sessions'}{' '}
+                this month
               </span>
               <span className="id-teal">{department.active} active</span>
             </button>
