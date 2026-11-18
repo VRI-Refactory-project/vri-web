@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Search,
   Calendar,
@@ -26,6 +26,7 @@ import {
   fetchInterpreterPerformance,
   fetchVerificationStatus,
   fetchUpcomingSessions,
+  fetchInterpreterAvailability,
   type AdminDashboardSummary,
   type SessionActivityPoint,
   type ActivityItem,
@@ -33,6 +34,7 @@ import {
   type InterpreterPerformance,
   type VerificationStatusBreakdown,
   type SessionRow,
+  type InterpreterAvailabilityData,
 } from '../../services/admin';
 import {
   fetchNotifications,
@@ -40,6 +42,7 @@ import {
   type AppNotification,
 } from '../../services/notifications';
 import { useNavigate } from 'react-router-dom';
+import { useInterval } from '../../features/community/useInterval';
 import './AdminDashboardPage.css';
 
 const KPI_META = [
@@ -126,6 +129,12 @@ function getActivityIcon(text: string) {
   return { Icon: Lightbulb, bg: '#f3f4f6', color: '#6b7280' };
 }
 
+const REASON_LABEL = {
+  switched_off: 'Switched off availability',
+  day_off: 'Not working today',
+  outside_hours: 'Outside working hours',
+} as const;
+
 export function AdminDashboardPage() {
   const { session } = useAuth();
   const navigate = useNavigate();
@@ -142,6 +151,7 @@ export function AdminDashboardPage() {
   const [performance, setPerformance] = useState<InterpreterPerformance | null>(null);
   const [verification, setVerification] = useState<VerificationStatusBreakdown | null>(null);
   const [sessions, setSessions] = useState<SessionRow[] | null>(null);
+  const [availability, setAvailability] = useState<InterpreterAvailabilityData | null>(null);
 
   // Notification data
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
@@ -189,6 +199,19 @@ export function AdminDashboardPage() {
       .then(setNotifications)
       .catch(() => setNotifications([]));
   }, []);
+
+  // Live interpreter availability: load once, then refresh every 20 seconds
+  const loadAvailability = useCallback(() => {
+    fetchInterpreterAvailability()
+      .then(setAvailability)
+      .catch(() => {}); // if one refresh fails, keep showing the last data
+  }, []);
+
+  useEffect(() => {
+    loadAvailability();
+  }, [loadAvailability]);
+
+  useInterval(loadAvailability, 20000);
 
   // Close notification panel when clicking outside it
   useEffect(() => {
@@ -274,12 +297,11 @@ export function AdminDashboardPage() {
 
   const yMax = Math.ceil(activityMax / 50) * 50 || 250;
 
-  const totalInterps = summary?.interpreters ?? 0;
-  const availableInterps = summary?.available_interpreters ?? 0;
+  // Same rules as request routing, from the live availability endpoint
+  const totalInterps = availability?.total ?? 0;
+  const availableInterps = availability?.available ?? 0;
   const busyInterps = 0;
-
-  // Derive offline from total - available so it always adds up
-  const offlineInterps = totalInterps - availableInterps;
+  const offlineInterps = availability?.unavailable ?? 0;
 
   const availPct = totalInterps ? Math.round((availableInterps / totalInterps) * 100) : 0;
 
@@ -611,8 +633,7 @@ export function AdminDashboardPage() {
           <div
             className="ad-donut-wrap"
             style={{
-              marginTop: '24px',
-              height: '100%',
+              marginTop: '8px',
               alignItems: 'center',
             }}
           >
@@ -684,6 +705,77 @@ export function AdminDashboardPage() {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Who is available, and why not */}
+          <div style={{ position: 'relative', flex: 1, minHeight: '110px' }}>
+            <ul
+              style={{
+                position: 'absolute',
+                inset: 0,
+                overflowY: 'auto',
+                listStyle: 'none',
+                margin: 0,
+                padding: 0,
+              }}
+            >
+              {(availability?.interpreters ?? []).map((person) => (
+                <li
+                  key={person.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '8px 0',
+                    borderTop: '1px solid #f1f5f9',
+                  }}
+                >
+                  {person.photo_url ? (
+                    <img
+                      src={person.photo_url}
+                      alt=""
+                      style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <span
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: '50%',
+                        background: '#e5e7eb',
+                        display: 'grid',
+                        placeItems: 'center',
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        color: '#4b5563',
+                        flex: 'none',
+                      }}
+                    >
+                      {person.name.charAt(0)}
+                    </span>
+                  )}
+
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <strong style={{ display: 'block', fontSize: '13px', color: '#111827' }}>
+                      {person.name}
+                    </strong>
+                    {!person.available_now && person.reason && (
+                      <small style={{ color: '#9ca3af' }}>{REASON_LABEL[person.reason]}</small>
+                    )}
+                  </div>
+
+                  <span
+                    style={{
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      color: person.available_now ? '#4b34a0' : '#6b7280',
+                    }}
+                  >
+                    {person.available_now ? 'Available' : 'Unavailable'}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
 
