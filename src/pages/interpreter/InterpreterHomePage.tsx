@@ -1,13 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Bell, Calendar, ChevronLeft, ChevronRight, Clock, Sun } from 'lucide-react';
+import { Bell, Calendar, CalendarCheck, ChevronLeft, ChevronRight, Clock, Sun } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { INTERPRETER_BASE } from '../../features/interpreter/navigation';
-import {
-  reasonText,
-  useAvailability,
-  useInterpreterHome,
-} from '../../features/interpreter/homeData';
+import { reasonText, useAvailability } from '../../features/interpreter/homeData';
 import { upcomingBooking, useBookedSessions } from '../../features/interpreter/bookedSessions';
 import { dayLabel, formatDuration } from '../../services/interpreterSessions';
 import {
@@ -54,7 +50,6 @@ function Avatar({ name, photo }: { name: string; photo: string | null }) {
 export function InterpreterHomePage() {
   const { session } = useAuth();
   const firstName = session?.user.name?.split(' ')[0] || 'there';
-  const { data: home } = useInterpreterHome();
   const { available, reason, setAvailable, loading, saving, error } = useAvailability();
   const { sessions } = useMySessions();
   const { bookings } = useBookedSessions();
@@ -106,16 +101,16 @@ export function InterpreterHomePage() {
           </section>
 
           <div className="ih-stats-row">
-            {/* Pending Requests Card */}
+            {/* Booked Sessions Card */}
             <div className="ih-stat-box">
               <div className="ih-stat-header">
-                <Clock size={20} className="ih-icon-blue" />
+                <CalendarCheck size={20} className="ih-icon-blue" />
                 <span className="ih-trend trend-green">
-                  {home.availableRequests > 0 ? 'Needs reply' : 'All clear'}
+                  {bookings.length > 0 ? 'Upcoming' : 'None yet'}
                 </span>
               </div>
-              <h2>{home.availableRequests}</h2>
-              <p>Pending requests</p>
+              <h2>{bookings.length}</h2>
+              <p>Booked sessions</p>
             </div>
 
             <div className="ih-stat-box">

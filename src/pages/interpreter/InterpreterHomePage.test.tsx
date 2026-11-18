@@ -135,15 +135,7 @@ describe('InterpreterHomePage', () => {
   it('shows every sidebar destination and marks Home as current', () => {
     renderHome();
     const nav = screen.getByRole('navigation', { name: 'Interpreter' });
-    for (const label of [
-      'Home',
-      'Requests',
-      'Sessions',
-      'Availability',
-      'Wallet',
-      'Profile',
-      'Settings',
-    ]) {
+    for (const label of ['Home', 'Sessions', 'Availability', 'Wallet', 'Profile', 'Settings']) {
       expect(nav).toHaveTextContent(label);
     }
     expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute('aria-current', 'page');
@@ -185,12 +177,25 @@ describe('InterpreterHomePage', () => {
   it('shows the request and session counts with links to their pages', () => {
     renderHome();
 
-    expect(screen.getByText('Pending requests')).toBeInTheDocument();
+    expect(screen.getByText('Booked sessions', { selector: 'p' })).toBeInTheDocument();
     expect(screen.getByText("This week's sessions")).toBeInTheDocument();
 
     const viewAllLinks = screen.getAllByRole('link', { name: /view all/i });
     expect(viewAllLinks.length).toBeGreaterThan(0);
   });
+  it('shows how many sessions are booked on the Booked sessions card', async () => {
+    booked = reply(true, 200, [
+      booking(1, 'Sierah Tabbuti', '09:00:00'),
+      booking(2, 'Brian Okello', '11:30:00'),
+    ]);
+    renderHome();
+
+    const box = screen.getByText('Booked sessions', { selector: 'p' }).parentElement as HTMLElement;
+    await waitFor(() =>
+      expect(within(box).getByRole('heading', { level: 2 })).toHaveTextContent('2'),
+    );
+  });
+
   it('shows the first booked session as the upcoming session', async () => {
     booked = reply(true, 200, [
       booking(1, 'Sierah Tabbuti', '09:00:00', { status: 'CONFIRMED' }),

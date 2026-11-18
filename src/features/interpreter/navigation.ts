@@ -1,4 +1,4 @@
-import { Clock, Home, MessageSquare, Settings, User, Video, Wallet } from 'lucide-react';
+import { Clock, Home, Settings, User, Video, Wallet } from 'lucide-react';
 import type { NavItem } from '../../components/dashboard/DashboardLayout';
 
 export const INTERPRETER_BASE = '/dashboard/interpreter';
@@ -9,7 +9,6 @@ export const INTERPRETER_BASE = '/dashboard/interpreter';
  */
 export const INTERPRETER_NAV: NavItem[] = [
   { id: 'home', label: 'Home', to: INTERPRETER_BASE, icon: Home, end: true },
-  { id: 'requests', label: 'Requests', to: `${INTERPRETER_BASE}/requests`, icon: MessageSquare },
   { id: 'sessions', label: 'Sessions', to: `${INTERPRETER_BASE}/sessions`, icon: Video },
   {
     id: 'availability',
