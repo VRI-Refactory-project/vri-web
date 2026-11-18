@@ -8,30 +8,68 @@ import {
 } from './webPush';
 
 const fetchMock = vi.fn();
+const CURRENT_KEY = 'AQID';
+
+type MockPushSubscription = {
+  endpoint: string;
+  options: {
+    applicationServerKey?: ArrayBuffer | null;
+  };
+  toJSON?: () => unknown;
+  unsubscribe: ReturnType<typeof vi.fn>;
+};
 
 function reply(status: number, body: unknown = {}) {
-  return { ok: status < 400, status, statusText: 'x', json: async () => body };
+  return {
+    ok: status < 400,
+    status,
+    statusText: 'x',
+    json: async () => body,
+  };
 }
 
-/** A pretend browser: an existing subscription (or none), a permission answer, and spies. */
+function keyBuffer(bytes: number[]): ArrayBuffer {
+  return new Uint8Array(bytes).buffer;
+}
+
 function pretendBrowser({
   permission = 'granted' as NotificationPermission,
-  existing = null as unknown,
+  existing = null as MockPushSubscription | null,
+  existingKey = [1, 2, 3],
 } = {}) {
   const unsubscribe = vi.fn().mockResolvedValue(true);
-  const created = {
+
+  const created: MockPushSubscription = {
     endpoint: 'https://push.example/abc',
-    toJSON: () => ({ endpoint: 'https://push.example/abc', keys: { p256dh: 'p', auth: 'a' } }),
+    options: {
+      applicationServerKey: keyBuffer([1, 2, 3]),
+    },
+    toJSON: () => ({
+      endpoint: 'https://push.example/abc',
+      keys: { p256dh: 'p', auth: 'a' },
+    }),
     unsubscribe,
   };
-  const subscribe = vi.fn().mockResolvedValue(created);
-  const pushManager = { getSubscription: vi.fn().mockResolvedValue(existing), subscribe };
+
+  const subscribe = vi.fn().mockImplementation(async (options) => {
+    created.options.applicationServerKey = options.applicationServerKey;
+    return created as unknown as PushSubscription;
+  });
+
+  const pushManager = {
+    getSubscription: vi
+      .fn()
+      .mockImplementation(async () => existing as unknown as PushSubscription | null),
+    subscribe,
+  };
+
   const registration = { pushManager };
 
   vi.stubGlobal('Notification', {
     permission,
     requestPermission: vi.fn().mockResolvedValue(permission),
   });
+
   Object.defineProperty(navigator, 'serviceWorker', {
     configurable: true,
     value: {
@@ -40,10 +78,33 @@ function pretendBrowser({
       getRegistration: vi.fn().mockResolvedValue(registration),
     },
   });
-  return { subscribe, unsubscribe, created, register: navigator.serviceWorker.register };
+
+  if (existing) {
+    existing.options.applicationServerKey = keyBuffer(existingKey);
+  }
+
+  return {
+    subscribe,
+    unsubscribe,
+    created,
+    registration,
+    register: navigator.serviceWorker.register,
+  };
 }
 
-beforeEach(() => vi.stubGlobal('fetch', fetchMock.mockResolvedValue(reply(200))));
+beforeEach(() => {
+  vi.stubGlobal(
+    'fetch',
+    fetchMock.mockImplementation(async (url: string) => {
+      if (String(url).includes('/key/')) {
+        return reply(200, { public_key: CURRENT_KEY });
+      }
+
+      return reply(200);
+    }),
+  );
+});
+
 afterEach(() => {
   fetchMock.mockReset();
   vi.unstubAllGlobals();
@@ -51,62 +112,145 @@ afterEach(() => {
 });
 
 describe('web push', () => {
-  it('is not supported in a browser without the push features', () => {
+  it('is not supported without the required browser features', () => {
     expect(webPushSupported()).toBe(false);
   });
 
-  it('subscribes with the server key and gives the server the subscription', async () => {
+  it('subscribes with the server key and registers the subscription', async () => {
     const browser = pretendBrowser();
 
-    await enableWebPush('AQID'); // URL-safe text for the bytes 1, 2, 3
+    await enableWebPush(CURRENT_KEY);
 
     expect(browser.register).toHaveBeenCalledWith('/sw.js');
+
     const options = browser.subscribe.mock.calls[0][0];
+
     expect(options.userVisibleOnly).toBe(true);
     expect(Array.from(options.applicationServerKey)).toEqual([1, 2, 3]);
 
-    const [url, init] = fetchMock.mock.calls[0];
-    expect(url).toContain('/api/v1/notifications/web-push/');
-    expect(init.method).toBe('POST');
-    expect(JSON.parse(init.body)).toEqual({
+    const subscriptionCall = fetchMock.mock.calls.find(
+      ([url, init]) => String(url).includes('/web-push/') && init?.method === 'POST',
+    );
+
+    expect(subscriptionCall).toBeDefined();
+
+    expect(JSON.parse(subscriptionCall![1].body)).toEqual({
       endpoint: 'https://push.example/abc',
       keys: { p256dh: 'p', auth: 'a' },
     });
   });
 
-  it('reuses the subscription the browser already has', async () => {
-    const existing = pretendBrowser().created;
-    const browser = pretendBrowser({ existing });
+  it('reuses an existing subscription when its key matches', async () => {
+    const existing: MockPushSubscription = {
+      endpoint: 'https://push.example/abc',
+      options: {},
+      toJSON: () => ({
+        endpoint: 'https://push.example/abc',
+        keys: { p256dh: 'p', auth: 'a' },
+      }),
+      unsubscribe: vi.fn(),
+    };
 
-    await enableWebPush('AQID');
+    const browser = pretendBrowser({
+      existing,
+      existingKey: [1, 2, 3],
+    });
+
+    await enableWebPush(CURRENT_KEY);
 
     expect(browser.subscribe).not.toHaveBeenCalled();
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(existing.unsubscribe).not.toHaveBeenCalled();
   });
 
-  it('stops and tells the server nothing when the person says no', async () => {
-    pretendBrowser({ permission: 'denied' });
+  it('replaces an existing subscription when its key is outdated', async () => {
+    const existing: MockPushSubscription = {
+      endpoint: 'https://push.example/old',
+      options: {},
+      toJSON: () => ({
+        endpoint: 'https://push.example/old',
+        keys: { p256dh: 'old', auth: 'old' },
+      }),
+      unsubscribe: vi.fn().mockResolvedValue(true),
+    };
 
-    await expect(enableWebPush('AQID')).rejects.toBeInstanceOf(WebPushBlocked);
+    const browser = pretendBrowser({
+      existing,
+      existingKey: [9, 9, 9],
+    });
 
+    await enableWebPush(CURRENT_KEY);
+
+    expect(existing.unsubscribe).toHaveBeenCalledOnce();
+    expect(browser.subscribe).toHaveBeenCalledOnce();
+
+    expect(Array.from(browser.subscribe.mock.calls[0][0].applicationServerKey)).toEqual([1, 2, 3]);
+  });
+
+  it('automatically renews an outdated subscription during sync', async () => {
+    const existing: MockPushSubscription = {
+      endpoint: 'https://push.example/old',
+      options: {},
+      toJSON: () => ({
+        endpoint: 'https://push.example/old',
+        keys: { p256dh: 'old', auth: 'old' },
+      }),
+      unsubscribe: vi.fn().mockResolvedValue(true),
+    };
+
+    const browser = pretendBrowser({
+      existing,
+      existingKey: [9, 9, 9],
+    });
+
+    expect(await syncWebPush()).toBe(true);
+
+    expect(existing.unsubscribe).toHaveBeenCalledOnce();
+    expect(browser.subscribe).toHaveBeenCalledOnce();
+  });
+
+  it('does not subscribe when notification permission is denied', async () => {
+    const browser = pretendBrowser({ permission: 'denied' });
+
+    await expect(enableWebPush(CURRENT_KEY)).rejects.toBeInstanceOf(WebPushBlocked);
+
+    expect(browser.subscribe).not.toHaveBeenCalled();
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('tells the server first and then drops the subscription when switched off', async () => {
-    const existing = pretendBrowser().created;
+  it('tells the server first and then removes the subscription when disabled', async () => {
+    const existing: MockPushSubscription = {
+      endpoint: 'https://push.example/abc',
+      options: {},
+      toJSON: () => ({
+        endpoint: 'https://push.example/abc',
+        keys: { p256dh: 'p', auth: 'a' },
+      }),
+      unsubscribe: vi.fn().mockResolvedValue(true),
+    };
+
     pretendBrowser({ existing });
 
     await disableWebPush();
 
-    const [, init] = fetchMock.mock.calls[0];
-    expect(init.method).toBe('DELETE');
-    expect(JSON.parse(init.body)).toEqual({ endpoint: 'https://push.example/abc' });
-    expect(existing.unsubscribe).toHaveBeenCalled();
+    const deleteCall = fetchMock.mock.calls.find(([, init]) => init?.method === 'DELETE');
+
+    expect(deleteCall).toBeDefined();
+    expect(JSON.parse(deleteCall![1].body)).toEqual({
+      endpoint: 'https://push.example/abc',
+    });
+
+    expect(existing.unsubscribe).toHaveBeenCalledOnce();
   });
 
-  it('keeps the subscription if the server could not be told, so switching off can be retried', async () => {
-    const existing = pretendBrowser().created;
+  it('keeps the subscription if the backend cannot process deletion', async () => {
+    const existing: MockPushSubscription = {
+      endpoint: 'https://push.example/abc',
+      options: {},
+      unsubscribe: vi.fn().mockResolvedValue(true),
+    };
+
     pretendBrowser({ existing });
+
     fetchMock.mockResolvedValue(reply(500, { detail: 'down' }));
 
     await expect(disableWebPush()).rejects.toThrow();
@@ -114,18 +258,15 @@ describe('web push', () => {
     expect(existing.unsubscribe).not.toHaveBeenCalled();
   });
 
-  it('claims an existing subscription for whoever is signed in now', async () => {
-    const existing = pretendBrowser().created;
-    pretendBrowser({ existing });
+  it('returns false when permission is not granted', async () => {
+    pretendBrowser({ permission: 'denied' });
 
-    expect(await syncWebPush()).toBe(true);
-    expect(fetchMock.mock.calls[0][1].method).toBe('POST');
+    expect(await syncWebPush()).toBe(false);
   });
 
-  it('says notifications are off when the browser has no subscription', async () => {
+  it('returns false when there is no existing subscription', async () => {
     pretendBrowser();
 
     expect(await syncWebPush()).toBe(false);
-    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

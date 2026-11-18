@@ -3,7 +3,7 @@ import { api } from './api';
 const KEY_PATH = '/api/v1/notifications/web-push/key/';
 const SUBSCRIPTION_PATH = '/api/v1/notifications/web-push/';
 
-/** The person said no to the browser's "Allow notifications?" question, or blocked the site earlier. */
+/** The person said no to the browser's notification permission request. */
 export class WebPushBlocked extends Error {}
 
 /** True when this browser can show notifications while the site is closed. */
@@ -13,18 +13,39 @@ export const webPushSupported = () =>
   'PushManager' in window &&
   'Notification' in window;
 
-/** The key the browser needs to subscribe. Empty when the server has browser notifications switched off. */
+/** Retrieve the current public VAPID key from the backend. */
 export async function getWebPushKey(): Promise<string> {
   const { public_key } = await api<{ public_key: string }>(KEY_PATH);
   return public_key;
 }
 
-/** The server's key is URL-safe base64 text; the browser wants it as bytes. */
-function keyToBytes(key: string) {
+function keyToBytes(key: string): Uint8Array<ArrayBuffer> {
   const padded = (key + '='.repeat((4 - (key.length % 4)) % 4))
     .replace(/-/g, '+')
     .replace(/_/g, '/');
-  return Uint8Array.from(atob(padded), (character) => character.charCodeAt(0));
+
+  const binary = atob(padded);
+  const bytes = new Uint8Array(new ArrayBuffer(binary.length));
+
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+
+  return bytes;
+}
+
+/** Check whether a browser subscription was created using the current VAPID key. */
+function subscriptionMatchesKey(subscription: PushSubscription, publicKey: string): boolean {
+  const existingKey = subscription.options.applicationServerKey;
+
+  if (!existingKey) return false;
+
+  const expected = keyToBytes(publicKey);
+  const actual = new Uint8Array(existingKey);
+
+  return (
+    expected.length === actual.length && expected.every((byte, index) => byte === actual[index])
+  );
 }
 
 const currentSubscription = async () => {
@@ -33,38 +54,72 @@ const currentSubscription = async () => {
 };
 
 const tellServer = (subscription: PushSubscription) =>
-  api<void>(SUBSCRIPTION_PATH, { method: 'POST', body: JSON.stringify(subscription.toJSON()) });
+  api<void>(SUBSCRIPTION_PATH, {
+    method: 'POST',
+    body: JSON.stringify(subscription.toJSON()),
+  });
 
 /**
- * If this browser already has notifications on, tell the server it belongs to the signed-in person.
- * A browser keeps its subscription when someone signs out, so the next person to sign in takes it over.
- * Returns whether notifications are on.
+ * Reuse a subscription only when it matches the current VAPID public key.
+ * Otherwise remove the old subscription and create a new one.
+ */
+async function getOrCreateSubscription(
+  registration: ServiceWorkerRegistration,
+  publicKey: string,
+): Promise<PushSubscription> {
+  let subscription = await registration.pushManager.getSubscription();
+
+  if (subscription && !subscriptionMatchesKey(subscription, publicKey)) {
+    await subscription.unsubscribe();
+    subscription = null;
+  }
+
+  return (
+    subscription ??
+    (await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: keyToBytes(publicKey),
+    }))
+  );
+}
+
+/**
+ * Reconcile an existing browser subscription with the current server key.
+ * Also registers the subscription for whoever is currently signed in.
  */
 export async function syncWebPush(): Promise<boolean> {
   if (Notification.permission !== 'granted') return false;
-  const subscription = await currentSubscription();
-  if (!subscription) return false;
+
+  const publicKey = await getWebPushKey();
+  if (!publicKey) return false;
+
+  const registration = await navigator.serviceWorker.getRegistration();
+  if (!registration) return false;
+
+  const existing = await registration.pushManager.getSubscription();
+  if (!existing) return false;
+
+  const subscription = await getOrCreateSubscription(registration, publicKey);
+
   await tellServer(subscription);
   return true;
 }
 
-/** Ask the browser for permission, subscribe, and give the server the subscription. */
+/** Ask for permission, subscribe, and register the subscription with the backend. */
 export async function enableWebPush(publicKey: string) {
-  if ((await Notification.requestPermission()) !== 'granted') throw new WebPushBlocked();
+  if ((await Notification.requestPermission()) !== 'granted') {
+    throw new WebPushBlocked();
+  }
 
   await navigator.serviceWorker.register('/sw.js');
   const registration = await navigator.serviceWorker.ready;
-  const subscription =
-    (await registration.pushManager.getSubscription()) ??
-    (await registration.pushManager.subscribe({
-      userVisibleOnly: true, // the browser requires every push to show a notification
-      applicationServerKey: keyToBytes(publicKey),
-    }));
+
+  const subscription = await getOrCreateSubscription(registration, publicKey);
 
   await tellServer(subscription);
 }
 
-/** Tell the server to stop, then drop the subscription from this browser. */
+/** Tell the server to stop, then remove the browser subscription. */
 export async function disableWebPush() {
   const subscription = await currentSubscription();
   if (!subscription) return;
@@ -73,5 +128,6 @@ export async function disableWebPush() {
     method: 'DELETE',
     body: JSON.stringify({ endpoint: subscription.endpoint }),
   });
+
   await subscription.unsubscribe();
 }
