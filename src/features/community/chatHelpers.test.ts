@@ -5,6 +5,9 @@ import {
   formatWhen,
   initials,
   mergeMessages,
+  fileProblem,
+  formatSize,
+  MAX_FILE_BYTES,
   photoProblem,
   previewOf,
 } from './chatHelpers';
@@ -15,6 +18,7 @@ const msg = (id: number, read = false): ChatMessage => ({
   body: `m${id}`,
   sticker: '',
   imageUrl: null,
+  file: null,
   createdAt: '',
   mine: true,
   read,
@@ -72,6 +76,38 @@ describe('photoProblem', () => {
     expect(photoProblem({ type: 'image/jpeg', size: MAX_PHOTO_BYTES })).toBe('');
     expect(photoProblem({ type: 'application/pdf', size: 10 })).toMatch(/Choose a picture/);
     expect(photoProblem({ type: 'image/png', size: MAX_PHOTO_BYTES + 1 })).toMatch(/under 8 MB/);
+  });
+});
+
+describe('fileProblem', () => {
+  it('accepts everyday documents up to 10 MB, whatever the letter case', () => {
+    expect(fileProblem({ name: 'plan.pdf', size: 10 })).toBe('');
+    expect(fileProblem({ name: 'Budget.XLSX', size: MAX_FILE_BYTES })).toBe('');
+    expect(fileProblem({ name: 'notes.txt', size: 1 })).toBe('');
+  });
+
+  it('says why it refuses anything else', () => {
+    expect(fileProblem({ name: 'setup.exe', size: 10 })).toMatch(/not allowed/);
+    expect(fileProblem({ name: 'page.html', size: 10 })).toMatch(/not allowed/);
+    expect(fileProblem({ name: 'README', size: 10 })).toMatch(/not allowed/);
+    expect(fileProblem({ name: 'a.pdf', size: 0 })).toMatch(/empty/);
+    expect(fileProblem({ name: 'a.pdf', size: MAX_FILE_BYTES + 1 })).toMatch(/under 10 MB/);
+  });
+});
+
+describe('formatSize', () => {
+  it('reads as bytes, KB or MB', () => {
+    expect(formatSize(850)).toBe('850 B');
+    expect(formatSize(12 * 1024)).toBe('12 KB');
+    expect(formatSize(3.4 * 1024 * 1024)).toBe('3.4 MB');
+  });
+});
+
+describe('previewOf for a file', () => {
+  it('shows the file name when there is no caption, and the caption when there is one', () => {
+    const file = { name: 'plan.pdf', size: 5, url: '/f' };
+    expect(previewOf({ ...msg(1), body: '', file })).toBe('plan.pdf');
+    expect(previewOf({ ...msg(1), body: 'Agenda', file })).toBe('Agenda');
   });
 });
 
