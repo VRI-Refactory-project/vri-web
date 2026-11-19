@@ -5,7 +5,6 @@ import { useAuth } from '../../hooks/useAuth';
 import { collectErrors, validateName } from '../../lib/validation';
 import { describeError } from '../../services/api';
 import {
-  DEPARTMENTS,
   getStaff,
   lastActiveLabel,
   reinstateStaff,
@@ -14,6 +13,7 @@ import {
   type StaffMember,
   type StaffStatus,
 } from '../../services/staff';
+import { fetchMyDepartments, type InstitutionDepartment } from '../../services/institutions';
 import './StaffProfilePage.css';
 
 // V2-006: one staff member, opened from "View profile" on the staff list. The institution admin
@@ -45,6 +45,7 @@ export function StaffProfilePage() {
   const { id = '' } = useParams();
   const { session } = useAuth();
   const [person, setPerson] = useState<StaffMember>();
+  const [institutionDepartments, setInstitutionDepartments] = useState<InstitutionDepartment[]>([]);
   const [loadError, setLoadError] = useState<string>();
 
   // Edit form
@@ -73,15 +74,26 @@ export function StaffProfilePage() {
     };
   }, [id]);
 
+  useEffect(() => {
+    let active = true;
+    fetchMyDepartments()
+      .then((items) => active && setInstitutionDepartments(items.filter((item) => item.active)))
+      .catch(() => active && setInstitutionDepartments([]));
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const errors = collectErrors({
     fullName: validateName(form.fullName, 'the staff member’s full name'),
   });
   const isMe = person?.userId === session?.user.id;
   // Departments saved before the list existed (or typed elsewhere) still show as an option.
   const departments =
-    form.department && !DEPARTMENTS.includes(form.department)
-      ? [form.department, ...DEPARTMENTS]
-      : DEPARTMENTS;
+    form.department &&
+    !institutionDepartments.some((department) => department.name === form.department)
+      ? [{ id: form.department, name: form.department }, ...institutionDepartments]
+      : institutionDepartments;
 
   const onSave = async (e: FormEvent) => {
     e.preventDefault();
@@ -93,7 +105,10 @@ export function StaffProfilePage() {
       showPerson(
         await updateStaff(person.id, {
           fullName: form.fullName,
-          department: form.department,
+          department:
+            departments.find((department) => department.id === form.department)?.name ??
+            form.department,
+          departmentId: departments.find((department) => department.name === form.department)?.id,
           role: form.role as (typeof ROLES)[number],
         }),
       );
@@ -218,8 +233,8 @@ export function StaffProfilePage() {
                 >
                   <option value="">No department</option>
                   {departments.map((d) => (
-                    <option key={d} value={d}>
-                      {d}
+                    <option key={d.id} value={d.name}>
+                      {d.name}
                     </option>
                   ))}
                 </select>

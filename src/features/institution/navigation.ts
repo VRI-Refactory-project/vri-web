@@ -1,4 +1,4 @@
-import { Home, Users, Video, BarChart3, Settings } from 'lucide-react';
+import { Home, Users, Video, BarChart3, Settings, Building2 } from 'lucide-react';
 import type { NavItem } from '../../components/dashboard/DashboardLayout';
 
 export const institutionNavigation: NavItem[] = [
@@ -7,4 +7,10 @@ export const institutionNavigation: NavItem[] = [
   { id: 'sessions', label: 'Sessions', to: '/dashboard/institution/sessions', icon: Video },
   { id: 'analytics', label: 'Analytics', to: '/dashboard/institution/analytics', icon: BarChart3 },
   { id: 'settings', label: 'Settings', to: '/dashboard/institution/settings', icon: Settings },
+  {
+    id: 'profile',
+    label: 'Institution Profile',
+    to: '/dashboard/institution/profile',
+    icon: Building2,
+  },
 ];

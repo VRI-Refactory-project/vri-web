@@ -7,6 +7,7 @@ import * as staffService from '../../services/staff';
 import type { StaffMember } from '../../services/staff';
 import { StaffProfilePage } from './StaffProfilePage';
 import * as authService from '../../services/auth';
+import * as institutionService from '../../services/institutions';
 
 const sarah: StaffMember = {
   id: '12',
@@ -45,7 +46,13 @@ const renderPage = (id = '12') =>
   );
 
 describe('StaffProfilePage', () => {
-  beforeEach(signInAsGrace);
+  beforeEach(() => {
+    signInAsGrace();
+    vi.spyOn(institutionService, 'fetchMyDepartments').mockResolvedValue([
+      { id: 'healthcare-id', name: 'Healthcare', active: true },
+      { id: 'reception-id', name: 'Reception', active: true },
+    ]);
+  });
   afterEach(() => {
     vi.restoreAllMocks();
     sessionStorage.clear();
@@ -74,6 +81,7 @@ describe('StaffProfilePage', () => {
     expect(update).toHaveBeenCalledWith('12', {
       fullName: 'Sarah Nakato',
       department: 'Reception',
+      departmentId: 'reception-id',
       role: 'Admin',
     });
   });
