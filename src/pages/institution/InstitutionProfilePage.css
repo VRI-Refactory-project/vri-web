@@ -156,11 +156,20 @@
 }
 .ip-add {
   display: flex;
+  align-items: center;
   gap: 10px;
   margin-bottom: 15px;
+  min-width: 0;
 }
 .ip-add input {
   margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.ip-add .ip-primary {
+  flex: 0 0 auto;
+  min-height: 48px;
+  white-space: nowrap;
 }
 .ip-department-list {
   display: grid;
