@@ -118,7 +118,7 @@
 //   );
 // }
 
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronDown } from 'lucide-react';
 import { PhoneField } from '../../components/PhoneField';
@@ -129,7 +129,8 @@ import {
   validatePhoneNumber,
 } from '../../lib/validation';
 import { describeError } from '../../services/api';
-import { createStaff, DEPARTMENTS } from '../../services/staff';
+import { createStaff } from '../../services/staff';
+import { fetchMyDepartments, type InstitutionDepartment } from '../../services/institutions';
 import './CreateStaffAccountPage.css';
 
 // The backend's two institution roles (SRS 2.4): Institutional User (Staff) and Institution Admin.
@@ -149,6 +150,14 @@ export function CreateStaffAccountPage() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string>();
+  const [departments, setDepartments] = useState<InstitutionDepartment[]>([]);
+  const [departmentsError, setDepartmentsError] = useState('');
+
+  useEffect(() => {
+    fetchMyDepartments()
+      .then((items) => setDepartments(items.filter((item) => item.active)))
+      .catch(() => setDepartmentsError('Departments could not be loaded. Refresh and try again.'));
+  }, []);
 
   // An error shows once the person leaves the field, or tries to submit.
   const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
@@ -187,7 +196,9 @@ export function CreateStaffAccountPage() {
         fullName: form.fullName,
         email: form.email,
         phone: form.phone,
-        department: form.department,
+        department:
+          departments.find((item) => item.id === form.department)?.name ?? form.department,
+        departmentId: form.department,
         role: form.role as (typeof ROLES)[number],
       });
       navigate('/dashboard/institution/staff/created', {
@@ -290,14 +301,24 @@ export function CreateStaffAccountPage() {
                 className={shown('department') ? 'csa-input csa-input--error' : 'csa-input'}
               >
                 <option value="">Select department</option>
-                {DEPARTMENTS.map((d) => (
-                  <option key={d} value={d}>
-                    {d}
+                {departments.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
                   </option>
                 ))}
               </select>
               <ChevronDown size={16} className="csa-select-icon" />
             </div>
+            {departmentsError && (
+              <p className="csa-field-error" role="alert">
+                {departmentsError}
+              </p>
+            )}
+            {!departmentsError && departments.length === 0 && (
+              <p className="csa-field-error">
+                Add departments in Institution Profile before creating staff accounts.
+              </p>
+            )}
             {shown('department') && (
               <p className="csa-field-error" id="csa-department-error">
                 {shown('department')}
@@ -340,7 +361,11 @@ export function CreateStaffAccountPage() {
             </p>
           )}
 
-          <button type="submit" className="csa-submit" disabled={submitting}>
+          <button
+            type="submit"
+            className="csa-submit"
+            disabled={submitting || departments.length === 0}
+          >
             {submitting ? 'Creating...' : 'Create account'}
           </button>
         </form>
