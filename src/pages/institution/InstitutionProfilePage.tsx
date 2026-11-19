@@ -26,6 +26,8 @@ import {
 import './InstitutionProfilePage.css';
 
 const EMPTY: InstitutionProfile = { name: '', email: '', phone: '', type: '', description: '' };
+const INITIAL_DEPARTMENT_LIMIT = 7;
+const DEPARTMENT_PAGE_SIZE = 5;
 const TYPES = [
   ['HOSPITAL', 'Hospital or clinic'],
   ['COURT', 'Court'],
@@ -40,6 +42,7 @@ export function InstitutionProfilePage() {
   const [profile, setProfile] = useState(EMPTY);
   const [draft, setDraft] = useState(EMPTY);
   const [departments, setDepartments] = useState<InstitutionDepartment[]>([]);
+  const [visibleDepartmentCount, setVisibleDepartmentCount] = useState(INITIAL_DEPARTMENT_LIMIT);
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -51,6 +54,15 @@ export function InstitutionProfilePage() {
   const [departmentDraft, setDepartmentDraft] = useState('');
   const [departmentToDelete, setDepartmentToDelete] = useState<InstitutionDepartment | null>(null);
   const [deletingDepartment, setDeletingDepartment] = useState(false);
+
+  useEffect(() => {
+    if (!error && !notice) return;
+    const timeout = window.setTimeout(() => {
+      setError('');
+      setNotice('');
+    }, 5000);
+    return () => window.clearTimeout(timeout);
+  }, [error, notice]);
 
   const load = async () => {
     setLoading(true);
@@ -150,6 +162,8 @@ export function InstitutionProfilePage() {
     }
   };
 
+  const activeDepartments = departments.filter((item) => item.active);
+
   return (
     <main className="institution-profile">
       <header className="ip-header">
@@ -169,15 +183,23 @@ export function InstitutionProfilePage() {
           </button>
         )}
       </header>
-      {error && (
-        <p className="ip-alert" role="alert">
-          {error}
-        </p>
-      )}
-      {notice && (
-        <p className="ip-notice" role="status">
-          {notice}
-        </p>
+      {(error || notice) && (
+        <div
+          className={`ip-toast ${error ? 'ip-toast--error' : 'ip-toast--success'}`}
+          role={error ? 'alert' : 'status'}
+        >
+          <span>{error || notice}</span>
+          <button
+            type="button"
+            aria-label="Dismiss message"
+            onClick={() => {
+              setError('');
+              setNotice('');
+            }}
+          >
+            <X size={18} />
+          </button>
+        </div>
       )}
       {loading ? (
         <div className="ip-loading">Loading institution profile…</div>
@@ -300,59 +322,69 @@ export function InstitutionProfilePage() {
                 </form>
               )}
               <div className="ip-department-list">
-                {departments
-                  .filter((item) => item.active)
-                  .map((department) => (
-                    <div className="ip-department" key={department.id}>
-                      <span className="ip-dept-icon">
-                        <Users size={18} />
-                      </span>
-                      {editingId === department.id ? (
-                        <input
-                          aria-label="Department name"
-                          value={departmentDraft}
-                          onChange={(e) => setDepartmentDraft(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') void saveDepartment(department.id);
-                          }}
-                        />
-                      ) : (
-                        <span className="ip-dept-name">{department.name}</span>
-                      )}
-                      <span className="ip-active">Active</span>
-                      {editingId === department.id ? (
-                        <button
-                          className="ip-icon-button"
-                          aria-label="Save department"
-                          onClick={() => void saveDepartment(department.id)}
-                        >
-                          <Check />
-                        </button>
-                      ) : (
-                        <button
-                          className="ip-icon-button"
-                          aria-label={`Edit ${department.name}`}
-                          onClick={() => {
-                            setEditingId(department.id);
-                            setDepartmentDraft(department.name);
-                          }}
-                        >
-                          <Pencil />
-                        </button>
-                      )}
+                {activeDepartments.slice(0, visibleDepartmentCount).map((department) => (
+                  <div className="ip-department" key={department.id}>
+                    <span className="ip-dept-icon">
+                      <Users size={18} />
+                    </span>
+                    {editingId === department.id ? (
+                      <input
+                        aria-label="Department name"
+                        value={departmentDraft}
+                        onChange={(e) => setDepartmentDraft(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') void saveDepartment(department.id);
+                        }}
+                      />
+                    ) : (
+                      <span className="ip-dept-name">{department.name}</span>
+                    )}
+                    <span className="ip-active">Active</span>
+                    {editingId === department.id ? (
                       <button
-                        className="ip-icon-button ip-delete"
-                        aria-label={`Delete ${department.name}`}
-                        onClick={() => setDepartmentToDelete(department)}
+                        className="ip-icon-button"
+                        aria-label="Save department"
+                        onClick={() => void saveDepartment(department.id)}
                       >
-                        <Trash2 />
+                        <Check />
                       </button>
-                    </div>
-                  ))}
-                {!departments.some((item) => item.active) && (
+                    ) : (
+                      <button
+                        className="ip-icon-button"
+                        aria-label={`Edit ${department.name}`}
+                        onClick={() => {
+                          setEditingId(department.id);
+                          setDepartmentDraft(department.name);
+                        }}
+                      >
+                        <Pencil />
+                      </button>
+                    )}
+                    <button
+                      className="ip-icon-button ip-delete"
+                      aria-label={`Delete ${department.name}`}
+                      onClick={() => setDepartmentToDelete(department)}
+                    >
+                      <Trash2 />
+                    </button>
+                  </div>
+                ))}
+                {!activeDepartments.length && (
                   <p className="ip-empty">
                     No departments yet. Add the departments your institution uses.
                   </p>
+                )}
+                {activeDepartments.length > visibleDepartmentCount && (
+                  <button
+                    className="ip-view-more"
+                    type="button"
+                    onClick={() =>
+                      setVisibleDepartmentCount((count) => count + DEPARTMENT_PAGE_SIZE)
+                    }
+                  >
+                    View more departments ({activeDepartments.length - visibleDepartmentCount}{' '}
+                    remaining)
+                  </button>
                 )}
               </div>
             </section>

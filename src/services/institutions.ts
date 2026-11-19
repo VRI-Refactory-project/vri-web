@@ -18,6 +18,13 @@ const recordOf = (value: unknown): Record<string, unknown> =>
     : {};
 const textOf = (...values: unknown[]) =>
   values.find((value): value is string => typeof value === 'string') ?? '';
+const idOf = (...values: unknown[]) => {
+  const value = values.find(
+    (candidate) =>
+      (typeof candidate === 'string' && candidate.length > 0) || typeof candidate === 'number',
+  );
+  return value === undefined ? '' : String(value);
+};
 
 function profileFrom(value: unknown): InstitutionProfile {
   const raw = recordOf(value);
@@ -40,7 +47,7 @@ function departmentsFrom(value: unknown): InstitutionDepartment[] {
     .map((item) => {
       const raw = recordOf(item);
       return {
-        id: textOf(raw.id, raw.uuid, raw.pk, raw.name),
+        id: idOf(raw.id, raw.uuid, raw.pk, raw.department_id, raw.department_uuid),
         name: textOf(raw.name, raw.department_name, raw.title),
         active: raw.is_active !== false && raw.active !== false && raw.status !== 'INACTIVE',
       };
