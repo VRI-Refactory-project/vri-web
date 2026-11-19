@@ -13,6 +13,9 @@ const room = vi.hoisted(() => {
     connect: vi.fn().mockResolvedValue(undefined),
     disconnect: vi.fn().mockResolvedValue(undefined),
     localParticipant: {
+      identity: 'user-1',
+      metadata: '',
+      setName: vi.fn(),
       publishTrack: vi.fn().mockResolvedValue(undefined),
       publishData: vi.fn().mockResolvedValue(undefined),
       setScreenShareEnabled: vi.fn().mockResolvedValue(undefined),
@@ -38,6 +41,7 @@ vi.mock('livekit-client', () => ({
     TrackMuted: 'trackMuted',
     TrackUnmuted: 'trackUnmuted',
     ParticipantNameChanged: 'participantNameChanged',
+    ParticipantMetadataChanged: 'participantMetadataChanged',
     ConnectionQualityChanged: 'connectionQualityChanged',
     LocalTrackPublished: 'localTrackPublished',
     LocalTrackUnpublished: 'localTrackUnpublished',
@@ -77,6 +81,8 @@ beforeEach(() => {
   room.localParticipant.publishTrack.mockClear();
   room.localParticipant.publishData.mockClear();
   room.localParticipant.setScreenShareEnabled.mockClear();
+  room.localParticipant.setName.mockClear();
+  room.localParticipant.metadata = '';
   vi.mocked(getCallToken).mockClear();
 });
 
@@ -122,6 +128,61 @@ describe('createLiveKitConnection', () => {
     expect(people[0]).toMatchObject({ id: 'user-9', name: 'Amina Okafor', cameraOff: false });
     expect(people[0].stream.getVideoTracks()).toEqual([videoTrack]);
     expect(people[0].stream.getAudioTracks()).toEqual([audioTrack]);
+  });
+
+  it('tags the interpreter and the hearing guest from the role in their token', async () => {
+    const e = events();
+    const noTracks = () => undefined;
+    room.remoteParticipants.set('user-9', {
+      identity: 'user-9',
+      name: 'Amina Okafor',
+      metadata: JSON.stringify({ role: 'interpreter' }),
+      getTrackPublication: noTracks,
+    });
+    room.remoteParticipants.set('guest-3', {
+      identity: 'guest-3',
+      name: 'Peter',
+      metadata: '',
+      getTrackPublication: noTracks,
+    });
+    room.remoteParticipants.set('user-5', {
+      identity: 'user-5',
+      name: 'Sam',
+      metadata: JSON.stringify({ role: 'participant' }),
+      getTrackPublication: noTracks,
+    });
+    const connection = createLiveKitConnection(e);
+
+    await connection.join('7', null);
+
+    const [people] = e.onPeople.mock.calls.at(-1)!;
+    expect(people.map((p: { role?: string }) => p.role)).toEqual([
+      'interpreter',
+      'guest',
+      undefined,
+    ]);
+  });
+
+  it('tells the page your own role once you are in the room', async () => {
+    room.localParticipant.metadata = JSON.stringify({ role: 'interpreter' });
+    const onSelfRole = vi.fn();
+    const connection = createLiveKitConnection({ ...events(), onSelfRole });
+
+    await connection.join('7', null);
+
+    expect(onSelfRole).toHaveBeenCalledWith('interpreter');
+  });
+
+  it('renames you in the call, trimmed and not too long', () => {
+    const connection = createLiveKitConnection(events());
+
+    connection.setName?.('   Grace   ');
+    connection.setName?.('   ');
+    connection.setName?.('x'.repeat(100));
+
+    expect(room.localParticipant.setName).toHaveBeenCalledTimes(2);
+    expect(room.localParticipant.setName).toHaveBeenNthCalledWith(1, 'Grace');
+    expect(room.localParticipant.setName.mock.calls[1][0]).toHaveLength(40);
   });
 
   it('marks a person whose camera is muted as camera off, and keeps their stream', async () => {
