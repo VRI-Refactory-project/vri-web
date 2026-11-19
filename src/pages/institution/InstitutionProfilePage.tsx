@@ -7,6 +7,7 @@ import {
   Phone,
   Plus,
   RotateCcw,
+  Save,
   Trash2,
   Users,
   X,
@@ -185,7 +186,7 @@ export function InstitutionProfilePage() {
                   <p>Update your institution information.</p>
                 </div>
               </div>
-              <form onSubmit={saveProfile}>
+              <form id="institution-profile-form" onSubmit={saveProfile}>
                 <label className="ip-field">
                   Institution Name <b>*</b>
                   <input
@@ -257,10 +258,6 @@ export function InstitutionProfilePage() {
                       }}
                     >
                       <X size={16} /> Cancel
-                    </button>
-                    <button className="ip-primary" disabled={saving}>
-                      <Check size={16} />
-                      {saving ? 'Saving…' : 'Save Changes'}
                     </button>
                   </div>
                 )}
@@ -361,6 +358,14 @@ export function InstitutionProfilePage() {
               }}
             >
               <RotateCcw size={17} /> Reset Changes
+            </button>
+            <button
+              type="submit"
+              form="institution-profile-form"
+              className="ip-primary"
+              disabled={!editing || saving}
+            >
+              <Save size={18} /> {saving ? 'Saving…' : 'Save Changes'}
             </button>
           </div>
         </>
