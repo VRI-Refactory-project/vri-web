@@ -125,7 +125,8 @@ export function liveKitConnectionWith(
   getToken: (sessionId: string) => Promise<CallToken>,
 ): CreateConnection {
   return (events) => {
-    const room = new Room({ adaptiveStream: true, dynacast: true });
+    // const room = new Room({ adaptiveStream: true, dynacast: true });
+    const room = new Room({ adaptiveStream: false, dynacast: true });
     // One stream per person for the whole call, so their video does not restart on every change.
     const streams = new Map<string, MediaStream>();
     let leaving = false;
