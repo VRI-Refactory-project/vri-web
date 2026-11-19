@@ -388,86 +388,16 @@
     grid-template-columns: 1fr;
   }
 }
-@media (max-width: 760px) {
+@media (max-width: 600px) {
   .institution-profile {
-    padding: 8px 12px 24px;
+    padding: 0 0 24px;
   }
   .ip-header {
     align-items: flex-start;
     gap: 12px;
   }
   .ip-header h1 {
-    font-size: 26px;
-  }
-  .ip-grid {
-    gap: 14px;
-  }
-  .ip-card {
-    padding: 18px;
-  }
-  .ip-departments .ip-card-heading {
-    display: grid;
-    grid-template-columns: 34px minmax(0, 1fr);
-    gap: 8px 12px;
-    align-items: center;
-  }
-  .ip-departments .ip-card-heading > svg {
-    width: 32px;
-    height: 32px;
-    grid-column: 1;
-    grid-row: 1;
-  }
-  .ip-departments .ip-card-heading > div {
-    grid-column: 2;
-    min-width: 0;
-  }
-  .ip-departments .ip-card-heading > .ip-outline {
-    grid-column: 1 / -1;
-    width: 100%;
-  }
-  .ip-department {
-    display: grid;
-    grid-template-columns: 36px minmax(0, 1fr) auto auto auto;
-    gap: 8px;
-    padding: 9px;
-  }
-  .ip-dept-icon {
-    width: 34px;
-    height: 34px;
-  }
-  .ip-dept-name {
-    min-width: 0;
-    overflow-wrap: anywhere;
-    font-size: 15px;
-  }
-  .ip-department input {
-    width: 100%;
-    min-width: 0;
-    padding: 8px;
-    font-size: 14px;
-  }
-  .ip-active {
-    padding: 5px 8px;
-    font-size: 12px;
-  }
-  .ip-icon-button {
-    width: 34px;
-    height: 34px;
-  }
-}
-@media (max-width: 600px) {
-  .institution-profile {
-    padding: 8px 10px 24px;
-  }
-  .ip-header {
-    flex-direction: column;
-    margin-bottom: 18px;
-  }
-  .ip-header h1 {
     font-size: 24px;
-  }
-  .ip-header .ip-primary {
-    width: 100%;
   }
   .ip-primary,
   .ip-secondary,
@@ -476,7 +406,7 @@
     font-size: 14px;
   }
   .ip-card {
-    padding: 15px;
+    padding: 17px;
   }
   .ip-card-heading {
     gap: 10px;
@@ -488,67 +418,21 @@
     font-size: 13px;
   }
   .ip-department {
-    grid-template-columns: 30px minmax(0, 1fr) auto auto auto;
-    gap: 6px;
-    padding: 8px 6px;
+    gap: 7px;
+    padding: 8px;
   }
-  .ip-dept-icon,
-  .ip-icon-button {
-    width: 30px;
-    height: 30px;
-  }
-  .ip-icon-button svg {
-    width: 16px;
-    height: 16px;
+  .ip-dept-icon {
+    width: 34px;
+    height: 34px;
   }
   .ip-active {
-    padding: 4px 6px;
-    font-size: 11px;
+    padding: 5px 8px;
   }
-  .ip-dept-name {
-    font-size: 13px;
-  }
-  .ip-add {
-    gap: 7px;
-  }
-  .ip-add .ip-primary {
-    flex-basis: 82px;
-    width: 82px;
-    padding: 9px 8px;
-  }
-  .ip-footer {
-    gap: 8px;
-  }
-  .ip-footer > button {
-    flex: 1 1 0;
-    min-width: 0;
-    gap: 5px;
-    padding: 10px 7px;
-    white-space: nowrap;
-    font-size: 12px;
+  .ip-icon-button {
+    width: 34px;
+    height: 34px;
   }
   .ip-footer {
     padding: 10px;
-  }
-  .ip-toast {
-    top: max(10px, env(safe-area-inset-top));
-    left: 12px;
-    width: calc(100vw - 24px);
-    max-width: 560px;
-    padding: 11px 12px;
-    transform: none;
-    font-size: 14px;
-  }
-  .ip-dialog-backdrop {
-    padding: 12px;
-  }
-  .ip-dialog {
-    padding: 22px 18px;
-  }
-  .ip-dialog-actions {
-    flex-direction: column-reverse;
-  }
-  .ip-dialog-actions button {
-    width: 100%;
   }
 }
