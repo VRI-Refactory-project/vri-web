@@ -39,6 +39,10 @@ function fakeCall(overrides: Partial<Record<string, unknown>> = {}): Call {
     pickQuality: vi.fn(),
     openChat: vi.fn(),
     sendChat: vi.fn(),
+    reactions: [],
+    handRaised: false,
+    toggleHand: vi.fn(),
+    react: vi.fn(),
     ...overrides,
   } as unknown as Call;
 }
@@ -152,5 +156,109 @@ describe('CallScreen', () => {
 
     rerender(<CallScreen call={fakeCall()} selfName="S" onLeave={vi.fn()} onEnd={vi.fn()} />);
     expect(screen.getByRole('button', { name: /end call/i })).toBeInTheDocument();
+  });
+
+  it('opens the participants list from More, with the tags, and closes the chat', async () => {
+    const openChat = vi.fn();
+    const call = fakeCall({
+      selfRole: 'guest',
+      others: [
+        { id: 'u9', name: 'Amina Okafor', role: 'interpreter', stream: null, cameraOff: true },
+      ],
+      openChat,
+    });
+    render(<CallScreen call={call} selfName="Peter" onLeave={vi.fn()} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'More' }));
+    await userEvent.click(screen.getByRole('menuitem', { name: /Participants/ }));
+
+    const panel = within(screen.getByLabelText('Participants'));
+    expect(panel.getByText(/Peter \(You\)/)).toBeInTheDocument();
+    expect(panel.getByText('Interpreter')).toBeInTheDocument();
+    expect(openChat).toHaveBeenCalledWith(false);
+  });
+
+  it('shows a hand on the tile of someone who raised one', () => {
+    const call = fakeCall({
+      others: [{ id: 'u9', name: 'Amina Okafor', stream: null, cameraOff: true, handRaised: true }],
+    });
+    render(<CallScreen call={call} selfName="S" onLeave={vi.fn()} />);
+
+    expect(screen.getByRole('img', { name: 'Amina Okafor has a hand raised' })).toBeInTheDocument();
+  });
+
+  it('shows reactions on the screen, with words for screen readers', () => {
+    const call = fakeCall({
+      reactions: [{ id: 'r1', from: 'Amina Okafor', emoji: '👏', label: 'clapping' }],
+    });
+    render(<CallScreen call={call} selfName="S" onLeave={vi.fn()} />);
+
+    expect(document.querySelector('.ls-reactions')).toHaveTextContent('Amina Okafor');
+    expect(screen.getByText('clapping')).toBeInTheDocument();
+  });
+
+  it('sends the reaction and the raised hand picked in More', async () => {
+    const react = vi.fn();
+    const toggleHand = vi.fn();
+    render(<CallScreen call={fakeCall({ react, toggleHand })} selfName="S" onLeave={vi.fn()} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'More' }));
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Send heart' }));
+    await userEvent.click(screen.getByRole('button', { name: 'More' }));
+    await userEvent.click(screen.getByRole('menuitemcheckbox', { name: /Raise hand/ }));
+
+    expect(react).toHaveBeenCalledWith('❤️');
+    expect(toggleHand).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows a red LIVE bubble in the top bar', () => {
+    render(<CallScreen call={fakeCall()} selfName="S" onLeave={vi.fn()} />);
+
+    expect(document.querySelector('.ls-live')).toHaveTextContent('LIVE');
+  });
+
+  it('makes Leave red for people who cannot end the call, and plain for the one who can', () => {
+    const { rerender } = render(<CallScreen call={fakeCall()} selfName="S" onLeave={vi.fn()} />);
+    expect(screen.getByRole('button', { name: /leave call/i })).toHaveClass('cc__btn--end');
+
+    rerender(<CallScreen call={fakeCall()} selfName="S" onLeave={vi.fn()} onEnd={vi.fn()} />);
+    expect(screen.getByRole('button', { name: /leave call/i })).not.toHaveClass('cc__btn--end');
+  });
+
+  it('lets the Deaf user remove a hearing guest from the list, but nobody else', async () => {
+    const onRemoveGuest = vi.fn().mockResolvedValue(undefined);
+    const others = [
+      { id: 'user-9', name: 'Amina Okafor', stream: null, cameraOff: true },
+      { id: 'guest-12', name: 'Peter', role: 'guest', stream: null, cameraOff: true },
+    ];
+    render(
+      <CallScreen
+        call={fakeCall({ others })}
+        selfName="S"
+        onLeave={vi.fn()}
+        onRemoveGuest={onRemoveGuest}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'More' }));
+    await userEvent.click(screen.getByRole('menuitem', { name: /Participants/ }));
+
+    expect(screen.queryByRole('button', { name: 'Remove Amina Okafor' })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Remove Peter' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Yes, remove Peter' }));
+
+    expect(onRemoveGuest).toHaveBeenCalledWith(12);
+  });
+
+  it('gives nobody a Remove button when the viewer may not remove anyone', async () => {
+    const others = [
+      { id: 'guest-12', name: 'Peter', role: 'guest', stream: null, cameraOff: true },
+    ];
+    render(<CallScreen call={fakeCall({ others })} selfName="S" onLeave={vi.fn()} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'More' }));
+    await userEvent.click(screen.getByRole('menuitem', { name: /Participants/ }));
+
+    expect(screen.queryByRole('button', { name: /^Remove/ })).not.toBeInTheDocument();
   });
 });

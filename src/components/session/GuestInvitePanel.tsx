@@ -81,56 +81,59 @@ export function GuestInvitePanel({ sessionId }: { sessionId: string }) {
     );
   }
 
+  // It opens on top of the call, so the video does not shrink while the panel is open.
   return (
-    <section className="gip" aria-label="Invite a hearing guest">
-      <form className="gip-form" onSubmit={invite}>
-        <label htmlFor="gip-email">Guest’s email</label>
-        <input
-          id="gip-email"
-          type="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <button type="submit" className="ls-btn ls-btn--primary" disabled={busy}>
-          {busy ? 'Sending…' : 'Send invitation'}
-        </button>
-      </form>
-      <p className="gip-hint">They get a link by email. They do not need an account.</p>
-      {error && (
-        <p className="ls-error" role="alert">
-          {error}
-        </p>
-      )}
-      {guests.length > 0 && (
-        <ul className="gip-list">
-          {guests.map((guest) => (
-            <li key={guest.id} className="gip-item">
-              <span>
-                {guest.email}
-                <span
-                  className={`gip-status${guest.joined_at && !guest.removed_at ? ' gip-status--joined' : ''}`}
-                >
-                  {statusOf(guest)}
+    <div className="gip-backdrop">
+      <section className="gip" role="dialog" aria-modal="true" aria-label="Invite a hearing guest">
+        <form className="gip-form" onSubmit={invite}>
+          <label htmlFor="gip-email">Guest’s email</label>
+          <input
+            id="gip-email"
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <button type="submit" className="ls-btn ls-btn--primary" disabled={busy}>
+            {busy ? 'Sending…' : 'Send invitation'}
+          </button>
+        </form>
+        <p className="gip-hint">They get a link by email. They do not need an account.</p>
+        {error && (
+          <p className="ls-error" role="alert">
+            {error}
+          </p>
+        )}
+        {guests.length > 0 && (
+          <ul className="gip-list">
+            {guests.map((guest) => (
+              <li key={guest.id} className="gip-item">
+                <span>
+                  {guest.email}
+                  <span
+                    className={`gip-status${guest.joined_at && !guest.removed_at ? ' gip-status--joined' : ''}`}
+                  >
+                    {statusOf(guest)}
+                  </span>
                 </span>
-              </span>
-              {!guest.removed_at && (
-                <button
-                  type="button"
-                  className="ls-btn ls-btn--outline"
-                  aria-label={`Remove ${guest.email}`}
-                  onClick={() => remove(guest)}
-                >
-                  Remove
-                </button>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
-      <button type="button" className="gip-close" onClick={() => setOpen(false)}>
-        Close
-      </button>
-    </section>
+                {!guest.removed_at && (
+                  <button
+                    type="button"
+                    className="ls-btn ls-btn--outline"
+                    aria-label={`Remove ${guest.email}`}
+                    onClick={() => remove(guest)}
+                  >
+                    Remove
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+        <button type="button" className="gip-close" onClick={() => setOpen(false)}>
+          Close
+        </button>
+      </section>
+    </div>
   );
 }
