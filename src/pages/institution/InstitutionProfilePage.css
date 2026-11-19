@@ -159,17 +159,22 @@
   align-items: center;
   gap: 10px;
   margin-bottom: 15px;
+  width: 100%;
   min-width: 0;
+  box-sizing: border-box;
 }
 .ip-add input {
   margin: 0;
-  flex: 1 1 auto;
+  width: 0;
+  flex: 1 1 0%;
   min-width: 0;
 }
 .ip-add .ip-primary {
-  flex: 0 0 auto;
+  flex: 0 0 92px;
+  width: 92px;
   min-height: 48px;
   white-space: nowrap;
+  padding: 10px 12px;
 }
 .ip-department-list {
   display: grid;
@@ -249,6 +254,80 @@
   padding: 12px 16px;
   border-radius: 10px;
   margin: 0 0 14px;
+}
+.ip-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(21 13 48 / 48%);
+  backdrop-filter: blur(3px);
+}
+.ip-dialog {
+  width: min(100%, 440px);
+  box-sizing: border-box;
+  padding: 28px;
+  border: 1px solid #e7e0fa;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgb(27 14 67 / 24%);
+  text-align: center;
+}
+.ip-dialog-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  color: #bd2441;
+  background: #fff0f2;
+}
+.ip-dialog h2 {
+  margin: 0 0 9px;
+  color: #25105f;
+  font-size: 22px;
+}
+.ip-dialog p {
+  margin: 0;
+  color: #625d78;
+  line-height: 1.55;
+}
+.ip-dialog .ip-dialog-error {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: #fff0f0;
+  color: #a11;
+  font-size: 14px;
+}
+.ip-dialog-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 24px;
+}
+.ip-dialog-actions button {
+  min-height: 46px;
+  padding: 10px 16px;
+}
+.ip-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #bf2441;
+  border-radius: 11px;
+  background: #bf2441;
+  color: #fff;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+.ip-danger:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }
 .ip-alert {
   color: #a11;

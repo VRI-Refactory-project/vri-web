@@ -49,6 +49,8 @@ export function InstitutionProfilePage() {
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [departmentDraft, setDepartmentDraft] = useState('');
+  const [departmentToDelete, setDepartmentToDelete] = useState<InstitutionDepartment | null>(null);
+  const [deletingDepartment, setDeletingDepartment] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -131,16 +133,20 @@ export function InstitutionProfilePage() {
       setError(describeError(err));
     }
   };
-  const removeDepartment = async (department: InstitutionDepartment) => {
-    if (!window.confirm(`Delete ${department.name}? Staff assigned to it may need reassignment.`))
-      return;
+  const removeDepartment = async () => {
+    if (!departmentToDelete) return;
+    const department = departmentToDelete;
+    setDeletingDepartment(true);
     setError('');
     try {
       await deleteMyDepartment(department.id);
       setDepartments((items) => items.filter((item) => item.id !== department.id));
       setNotice('Department deleted.');
+      setDepartmentToDelete(null);
     } catch (err) {
       setError(describeError(err));
+    } finally {
+      setDeletingDepartment(false);
     }
   };
 
@@ -191,8 +197,8 @@ export function InstitutionProfilePage() {
                   Institution Name <b>*</b>
                   <input
                     required
-                    value={editing ? draft.name : profile.name}
-                    readOnly={!editing}
+                    value={draft.name}
+                    onFocus={() => setEditing(true)}
                     onChange={(e) => setDraft({ ...draft, name: e.target.value })}
                   />
                 </label>
@@ -200,8 +206,8 @@ export function InstitutionProfilePage() {
                   Institution Type <b>*</b>
                   <select
                     required
-                    disabled={!editing}
-                    value={editing ? draft.type : profile.type}
+                    value={draft.type}
+                    onFocus={() => setEditing(true)}
                     onChange={(e) => setDraft({ ...draft, type: e.target.value })}
                   >
                     <option value="">Select institution type</option>
@@ -219,8 +225,8 @@ export function InstitutionProfilePage() {
                     <input
                       required
                       type="email"
-                      value={editing ? draft.email : profile.email}
-                      readOnly={!editing}
+                      value={draft.email}
+                      onFocus={() => setEditing(true)}
                       onChange={(e) => setDraft({ ...draft, email: e.target.value })}
                     />
                   </span>
@@ -232,8 +238,8 @@ export function InstitutionProfilePage() {
                     <input
                       required
                       type="tel"
-                      value={editing ? draft.phone : profile.phone}
-                      readOnly={!editing}
+                      value={draft.phone}
+                      onFocus={() => setEditing(true)}
                       onChange={(e) => setDraft({ ...draft, phone: e.target.value })}
                     />
                   </span>
@@ -242,8 +248,7 @@ export function InstitutionProfilePage() {
                   Description
                   <textarea
                     rows={3}
-                    value={editing ? draft.description : profile.description}
-                    readOnly={!editing}
+                    value={draft.description}
                     onFocus={() => {
                       if (!editing) setEditing(true);
                     }}
@@ -338,7 +343,7 @@ export function InstitutionProfilePage() {
                       <button
                         className="ip-icon-button ip-delete"
                         aria-label={`Delete ${department.name}`}
-                        onClick={() => void removeDepartment(department)}
+                        onClick={() => setDepartmentToDelete(department)}
                       >
                         <Trash2 />
                       </button>
@@ -366,11 +371,60 @@ export function InstitutionProfilePage() {
               type="submit"
               form="institution-profile-form"
               className="ip-primary"
-              disabled={!editing || saving}
+              disabled={saving}
             >
               <Save size={18} /> {saving ? 'Saving…' : 'Save Changes'}
             </button>
           </div>
+          {departmentToDelete && (
+            <div
+              className="ip-dialog-backdrop"
+              onMouseDown={(event) => {
+                if (event.target === event.currentTarget && !deletingDepartment)
+                  setDepartmentToDelete(null);
+              }}
+            >
+              <section
+                className="ip-dialog"
+                role="alertdialog"
+                aria-modal="true"
+                aria-labelledby="ip-dialog-title"
+                aria-describedby="ip-dialog-description"
+              >
+                <span className="ip-dialog-icon">
+                  <Trash2 size={22} />
+                </span>
+                <h2 id="ip-dialog-title">Delete department?</h2>
+                <p id="ip-dialog-description">
+                  Delete <strong>{departmentToDelete.name}</strong>? Staff assigned to this
+                  department may need to be reassigned first.
+                </p>
+                {error && (
+                  <p className="ip-dialog-error" role="alert">
+                    {error}
+                  </p>
+                )}
+                <div className="ip-dialog-actions">
+                  <button
+                    type="button"
+                    className="ip-secondary"
+                    disabled={deletingDepartment}
+                    onClick={() => setDepartmentToDelete(null)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="ip-danger"
+                    disabled={deletingDepartment}
+                    onClick={() => void removeDepartment()}
+                  >
+                    {deletingDepartment ? 'Deleting…' : 'Delete department'}
+                  </button>
+                </div>
+              </section>
+            </div>
+          )}
         </>
       )}
     </main>
