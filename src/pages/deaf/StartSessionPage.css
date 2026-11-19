@@ -715,6 +715,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
+}
+
 /* Container for the two buttons */
 .ss-found-actions {
   display: grid;
