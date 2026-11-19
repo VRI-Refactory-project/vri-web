@@ -116,7 +116,9 @@ describe('LiveSessionPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /join session/i }));
     expect(screen.getByText('Connecting with Amina Okafor')).toBeTruthy();
     await waitFor(() => expect(screen.getByRole('button', { name: /end call/i })).toBeTruthy());
-    expect(screen.getByText('Connected with Amina Okafor')).toBeTruthy();
+    // In the call the status note is replaced by the red LIVE bubble.
+    expect(screen.getByText('LIVE')).toBeTruthy();
+    expect(screen.queryByText('Connected with Amina Okafor')).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: /end call/i }));
     expect(screen.getByText('End this session?')).toBeTruthy();

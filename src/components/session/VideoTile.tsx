@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Maximize2, Minimize2, Pencil } from 'lucide-react';
 import { MAX_NAME_LENGTH, type CallRole } from '../../features/session/callConnection';
+import { ROLE_LABEL } from '../../features/session/roles';
 import { barsFor, type ConnectionQuality } from '../../features/session/videoQuality';
 import { initials } from './initials';
 
@@ -20,16 +21,13 @@ interface Props {
   onSpotlight?: () => void;
   /** True while this tile is the one the person picked to be the big one. */
   spotlighted?: boolean;
-  /** Shown under the name as a tag: Interpreter, or Hearing guest. */
+  /** Shown under the name as a tag: Deaf user, Interpreter, Institution or Hearing guest. */
   role?: CallRole;
+  /** Shows a raised hand on the tile. */
+  handRaised?: boolean;
   /** Lets the person change their own name. Only give it to their own tile. */
   onRename?: (name: string) => void;
 }
-
-const ROLE_LABEL: Record<CallRole, string> = {
-  interpreter: 'Interpreter',
-  guest: 'Hearing guest',
-};
 
 /** Three bars that fill up with the quality of someone's connection. */
 function NetworkBars({ quality }: { quality: ConnectionQuality }) {
@@ -60,6 +58,7 @@ export function VideoTile({
   onSpotlight,
   spotlighted,
   role,
+  handRaised,
   onRename,
 }: Props) {
   const [editing, setEditing] = useState(false);
@@ -123,6 +122,11 @@ export function VideoTile({
         </button>
       )}
 
+      {handRaised && (
+        <span className="vt__hand" role="img" aria-label={`${name} has a hand raised`}>
+          ✋
+        </span>
+      )}
       <figcaption className="vt__name">
         {editing ? (
           <form className="vt__rename" onSubmit={saveName}>

@@ -14,6 +14,7 @@ import { BrandMark } from '../../components/session/BrandMark';
 import { CallControls } from '../../components/session/CallControls';
 import { CallScreen } from '../../components/session/CallScreen';
 import { GuestInvitePanel } from '../../components/session/GuestInvitePanel';
+import { removeInvitation } from '../../services/guestInvitations';
 import { VideoTile } from '../../components/session/VideoTile';
 import { useCall } from '../../features/session/useCall';
 import { useAuth } from '../../hooks/useAuth';
@@ -492,14 +493,9 @@ export function LiveSessionPage({
         selfPicture={selfProfilePicture}
         selfEmail={session?.user?.email}
         highlightName={viewerRole === 'deaf' ? interpreterName : undefined}
-        headerExtra={
-          <>
-            <SessionStatusBanner
-              state="ACTIVE"
-              interpreterName={viewerRole === 'deaf' ? interpreterName : undefined}
-            />
-            {viewerRole === 'deaf' && id && <GuestInvitePanel sessionId={id} />}
-          </>
+        headerExtra={viewerRole === 'deaf' && id ? <GuestInvitePanel sessionId={id} /> : undefined}
+        onRemoveGuest={
+          viewerRole === 'deaf' && id ? (guestId) => removeInvitation(id, guestId) : undefined
         }
         onLeave={leaveCall}
         onEnd={canEnd ? () => setPhase('confirmEnd') : undefined}

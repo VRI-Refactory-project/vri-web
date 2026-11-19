@@ -3,6 +3,7 @@ import {
   Captions,
   ChevronUp,
   Ellipsis,
+  Hand,
   LogOut,
   MessageSquare,
   Mic,
@@ -12,7 +13,9 @@ import {
   Signal,
   Video,
   VideoOff,
+  Users,
 } from 'lucide-react';
+import { REACTIONS } from '../../features/session/reactions';
 import type { MediaDevice } from '../../features/session/useLocalMedia';
 import {
   QUALITY_ORDER,
@@ -52,6 +55,12 @@ interface Props {
   onToggleChat?: () => void;
   chatOpen?: boolean;
   unread?: number;
+  /** The "More" menu: raise hand, reactions and the participants list. Leave out to keep it off. */
+  onToggleHand?: () => void;
+  handRaised?: boolean;
+  onReact?: (emoji: string) => void;
+  onToggleParticipants?: () => void;
+  participantCount?: number;
 }
 
 interface DeviceMenuProps {
@@ -148,6 +157,95 @@ function QualityMenu({
   );
 }
 
+interface MoreMenuProps {
+  onToggleHand?: () => void;
+  handRaised?: boolean;
+  onReact?: (emoji: string) => void;
+  onToggleParticipants?: () => void;
+  participantCount?: number;
+}
+
+/** "More": raise or lower your hand, send a reaction, and open the participants list. */
+function MoreMenu({
+  onToggleHand,
+  handRaised,
+  onReact,
+  onToggleParticipants,
+  participantCount,
+}: MoreMenuProps) {
+  const [open, setOpen] = useState(false);
+  const close = () => setOpen(false);
+  return (
+    <div className="cc__menu-wrap">
+      <button
+        type="button"
+        className="cc__btn"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span className="cc__icon">
+          <Ellipsis size={18} />
+        </span>
+        More
+      </button>
+      {open && (
+        <ul className="cc__menu" role="menu" aria-label="More">
+          {onReact && (
+            <li role="none" className="cc__reactions">
+              {REACTIONS.map((r) => (
+                <button
+                  key={r.emoji}
+                  type="button"
+                  role="menuitem"
+                  aria-label={`Send ${r.label}`}
+                  title={r.label}
+                  onClick={() => {
+                    onReact(r.emoji);
+                    close();
+                  }}
+                >
+                  {r.emoji}
+                </button>
+              ))}
+            </li>
+          )}
+          {onToggleHand && (
+            <li role="none">
+              <button
+                type="button"
+                role="menuitemcheckbox"
+                aria-checked={Boolean(handRaised)}
+                onClick={() => {
+                  onToggleHand();
+                  close();
+                }}
+              >
+                <Hand size={16} /> {handRaised ? 'Lower hand' : 'Raise hand'}
+              </button>
+            </li>
+          )}
+          {onToggleParticipants && (
+            <li role="none">
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  onToggleParticipants();
+                  close();
+                }}
+              >
+                <Users size={16} /> Participants
+                {participantCount !== undefined && ` (${participantCount})`}
+              </button>
+            </li>
+          )}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 /** The bar under the call: mute, video, share, chat, leave, end call (starter only), and two later buttons. */
 export function CallControls({
   micOn,
@@ -172,6 +270,11 @@ export function CallControls({
   onToggleChat,
   chatOpen,
   unread = 0,
+  onToggleHand,
+  handRaised,
+  onReact,
+  onToggleParticipants,
+  participantCount,
 }: Props) {
   return (
     <div className="cc" role="toolbar" aria-label="Call controls">
@@ -242,7 +345,12 @@ export function CallControls({
             </button>
           )}
           {onLeave && (
-            <button type="button" className="cc__btn" onClick={onLeave}>
+            // Anyone who cannot end the call for everyone gets Leave in red, like End Call.
+            <button
+              type="button"
+              className={canEnd ? 'cc__btn' : 'cc__btn cc__btn--end'}
+              onClick={onLeave}
+            >
               <span className="cc__icon">
                 <LogOut size={18} />
               </span>
@@ -263,12 +371,15 @@ export function CallControls({
             </span>
             Live Captions
           </button>
-          <button type="button" className="cc__btn" disabled title="Coming soon">
-            <span className="cc__icon">
-              <Ellipsis size={18} />
-            </span>
-            More
-          </button>
+          {(onToggleHand || onReact || onToggleParticipants) && (
+            <MoreMenu
+              onToggleHand={onToggleHand}
+              handRaised={handRaised}
+              onReact={onReact}
+              onToggleParticipants={onToggleParticipants}
+              participantCount={participantCount}
+            />
+          )}
         </>
       )}
     </div>

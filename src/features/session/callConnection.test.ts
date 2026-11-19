@@ -16,6 +16,7 @@ const room = vi.hoisted(() => {
       identity: 'user-1',
       metadata: '',
       setName: vi.fn(),
+      setAttributes: vi.fn().mockResolvedValue(undefined),
       publishTrack: vi.fn().mockResolvedValue(undefined),
       publishData: vi.fn().mockResolvedValue(undefined),
       setScreenShareEnabled: vi.fn().mockResolvedValue(undefined),
@@ -42,6 +43,7 @@ vi.mock('livekit-client', () => ({
     TrackUnmuted: 'trackUnmuted',
     ParticipantNameChanged: 'participantNameChanged',
     ParticipantMetadataChanged: 'participantMetadataChanged',
+    ParticipantAttributesChanged: 'participantAttributesChanged',
     ConnectionQualityChanged: 'connectionQualityChanged',
     LocalTrackPublished: 'localTrackPublished',
     LocalTrackUnpublished: 'localTrackUnpublished',
@@ -82,6 +84,7 @@ beforeEach(() => {
   room.localParticipant.publishData.mockClear();
   room.localParticipant.setScreenShareEnabled.mockClear();
   room.localParticipant.setName.mockClear();
+  room.localParticipant.setAttributes.mockClear();
   room.localParticipant.metadata = '';
   vi.mocked(getCallToken).mockClear();
 });
@@ -130,7 +133,7 @@ describe('createLiveKitConnection', () => {
     expect(people[0].stream.getAudioTracks()).toEqual([audioTrack]);
   });
 
-  it('tags the interpreter and the hearing guest from the role in their token', async () => {
+  it('tags each person with their role from their token', async () => {
     const e = events();
     const noTracks = () => undefined;
     room.remoteParticipants.set('user-9', {
@@ -148,7 +151,7 @@ describe('createLiveKitConnection', () => {
     room.remoteParticipants.set('user-5', {
       identity: 'user-5',
       name: 'Sam',
-      metadata: JSON.stringify({ role: 'participant' }),
+      metadata: JSON.stringify({ role: 'deaf' }),
       getTrackPublication: noTracks,
     });
     const connection = createLiveKitConnection(e);
@@ -156,11 +159,7 @@ describe('createLiveKitConnection', () => {
     await connection.join('7', null);
 
     const [people] = e.onPeople.mock.calls.at(-1)!;
-    expect(people.map((p: { role?: string }) => p.role)).toEqual([
-      'interpreter',
-      'guest',
-      undefined,
-    ]);
+    expect(people.map((p: { role?: string }) => p.role)).toEqual(['interpreter', 'guest', 'deaf']);
   });
 
   it('tells the page your own role once you are in the room', async () => {
@@ -183,6 +182,83 @@ describe('createLiveKitConnection', () => {
     expect(room.localParticipant.setName).toHaveBeenCalledTimes(2);
     expect(room.localParticipant.setName).toHaveBeenNthCalledWith(1, 'Grace');
     expect(room.localParticipant.setName.mock.calls[1][0]).toHaveLength(40);
+  });
+
+  it('shows who has a hand raised, and tells the page when someone raises one', async () => {
+    const e = events();
+    const onReaction = vi.fn();
+    const noTracks = () => undefined;
+    const raised = {
+      identity: 'user-9',
+      name: 'Amina Okafor',
+      attributes: { hand: '1' },
+      getTrackPublication: noTracks,
+    };
+    room.remoteParticipants.set('user-9', raised);
+    const connection = createLiveKitConnection({ ...e, onReaction });
+    await connection.join('7', null);
+
+    const [people] = e.onPeople.mock.calls.at(-1)!;
+    expect(people[0].handRaised).toBe(true);
+
+    room.handlers.get('participantAttributesChanged')!({ hand: '1' }, raised);
+    expect(onReaction).toHaveBeenCalledWith(
+      expect.objectContaining({ from: 'Amina Okafor', emoji: '✋', label: 'raised their hand' }),
+    );
+  });
+
+  it('does not announce a lowered hand', async () => {
+    const onReaction = vi.fn();
+    createLiveKitConnection({ ...events(), onReaction });
+
+    room.handlers.get('participantAttributesChanged')!({ hand: '' }, { identity: 'user-9' });
+
+    expect(onReaction).not.toHaveBeenCalled();
+  });
+
+  it('raises and lowers your own hand', () => {
+    const connection = createLiveKitConnection(events());
+
+    connection.setHandRaised?.(true);
+    connection.setHandRaised?.(false);
+
+    expect(room.localParticipant.setAttributes).toHaveBeenNthCalledWith(1, { hand: '1' });
+    expect(room.localParticipant.setAttributes).toHaveBeenNthCalledWith(2, { hand: '' });
+  });
+
+  it('sends a reaction to the room and shows it to the sender straight away', () => {
+    const onReaction = vi.fn();
+    const connection = createLiveKitConnection({ ...events(), onReaction });
+
+    connection.sendReaction?.('👏');
+    connection.sendReaction?.('🔥'); // not one of the allowed reactions
+
+    expect(room.localParticipant.publishData).toHaveBeenCalledTimes(1);
+    expect(room.localParticipant.publishData.mock.calls[0][1]).toEqual({
+      reliable: true,
+      topic: 'reaction',
+    });
+    expect(onReaction).toHaveBeenCalledTimes(1);
+    expect(onReaction).toHaveBeenCalledWith(
+      expect.objectContaining({ from: 'You', emoji: '👏', label: 'clapping' }),
+    );
+  });
+
+  it('shows reactions from others, and ignores broken or unknown ones', () => {
+    const onReaction = vi.fn();
+    createLiveKitConnection({ ...events(), onReaction });
+    const receive = room.handlers.get('dataReceived')!;
+    const who = { identity: 'user-9', name: 'Amina Okafor' };
+    const body = (text: string) => new TextEncoder().encode(text);
+
+    receive(body(JSON.stringify({ emoji: '❤️' })), who, undefined, 'reaction');
+    receive(body(JSON.stringify({ emoji: '🔥' })), who, undefined, 'reaction');
+    receive(body('not json'), who, undefined, 'reaction');
+
+    expect(onReaction).toHaveBeenCalledTimes(1);
+    expect(onReaction).toHaveBeenCalledWith(
+      expect.objectContaining({ from: 'Amina Okafor', emoji: '❤️', label: 'heart' }),
+    );
   });
 
   it('marks a person whose camera is muted as camera off, and keeps their stream', async () => {

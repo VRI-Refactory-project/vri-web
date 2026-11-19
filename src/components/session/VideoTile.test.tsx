@@ -48,4 +48,14 @@ describe('VideoTile names and tags', () => {
     expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
     expect(onRename).not.toHaveBeenCalled();
   });
+
+  it('shows a raised hand on the tile', () => {
+    render(<VideoTile name="Sam" handRaised />);
+    expect(screen.getByRole('img', { name: 'Sam has a hand raised' })).toBeInTheDocument();
+  });
+
+  it('shows no hand when it is down', () => {
+    render(<VideoTile name="Sam" />);
+    expect(screen.queryByRole('img', { name: /hand raised/ })).not.toBeInTheDocument();
+  });
 });

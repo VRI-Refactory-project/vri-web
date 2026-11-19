@@ -7,6 +7,7 @@ import { BrandMark } from './BrandMark';
 import { CallControls } from './CallControls';
 import { ChatPanel } from './ChatPanel';
 import { initials } from './initials';
+import { ParticipantsPanel } from './ParticipantsPanel';
 import { VideoTile } from './VideoTile';
 import '../../pages/session/LiveSessionPage.css';
 import './CallScreen.css';
@@ -25,6 +26,8 @@ interface Props {
   onLeave: () => void;
   /** Only the Deaf user ends the session for everyone. Leave out for everyone else. */
   onEnd?: () => void;
+  /** Only the Deaf user removes a hearing guest. Gets the guest's invitation number. */
+  onRemoveGuest?: (invitationId: number) => Promise<unknown>;
 }
 
 /** One tile on the screen, whoever or whatever it shows. */
@@ -38,6 +41,7 @@ interface Tile {
   screen?: boolean;
   quality?: ConnectionQuality;
   role?: CallRole;
+  handRaised?: boolean;
   self?: boolean;
 }
 
@@ -58,12 +62,14 @@ export function CallScreen({
   headerExtra,
   onLeave,
   onEnd,
+  onRemoveGuest,
 }: Props) {
   const { media, mode } = call;
   // The name you picked in the call wins over your account name, for you and for the others.
   const shownName = call.renamedTo ?? selfName;
   // The tile the person chose to make big. Nothing chosen means the screen picks one itself.
   const [pinned, setPinned] = useState<string | null>(null);
+  const [participantsOpen, setParticipantsOpen] = useState(false);
 
   const tiles: Tile[] = [
     {
@@ -75,6 +81,7 @@ export function CallScreen({
       muted: true,
       picture: selfPicture,
       quality: call.selfQuality,
+      handRaised: call.handRaised,
       self: true,
     },
     ...call.others.map((person) => ({
@@ -85,8 +92,22 @@ export function CallScreen({
       cameraOff: person.cameraOff,
       screen: person.screen,
       quality: person.quality,
+      handRaised: person.handRaised,
     })),
   ];
+
+  // A shared screen is its own tile, but it is not a person, so it is not in the people list.
+  const people = tiles
+    .filter((tile) => !tile.screen)
+    .map((tile) => ({
+      id: tile.id,
+      name: tile.name,
+      role: tile.role,
+      self: tile.self,
+      handRaised: tile.handRaised,
+      cameraOff: tile.cameraOff,
+      removable: Boolean(onRemoveGuest) && tile.id.startsWith('guest-'),
+    }));
 
   // Without a choice: a shared screen first, then the other person, and only you when alone.
 
@@ -103,6 +124,7 @@ export function CallScreen({
       screen={tile.screen}
       quality={tile.quality}
       role={tile.role}
+      handRaised={tile.handRaised}
       onRename={tile.self ? call.rename : undefined}
       highlight={
         tile.self ||
@@ -119,6 +141,10 @@ export function CallScreen({
       <header className="ls-top">
         <BrandMark />
         <span className="ls-top__right">
+          <span className="ls-live" role="status">
+            <i aria-hidden="true" />
+            LIVE
+          </span>
           <span className="ls-timer" aria-label="Call length">
             {formatDuration(call.seconds)}
           </span>
@@ -175,6 +201,17 @@ export function CallScreen({
           )}
         </div>
 
+        {participantsOpen && (
+          <ParticipantsPanel
+            people={people}
+            onClose={() => setParticipantsOpen(false)}
+            onRename={call.rename}
+            onRemove={
+              onRemoveGuest ? (id) => onRemoveGuest(Number(id.slice('guest-'.length))) : undefined
+            }
+          />
+        )}
+
         {call.chatOpen && (
           <ChatPanel
             messages={call.messages}
@@ -183,6 +220,16 @@ export function CallScreen({
           />
         )}
       </div>
+
+      <ul className="ls-reactions" role="status" aria-live="polite">
+        {call.reactions.map((reaction) => (
+          <li key={reaction.id} className="ls-reaction">
+            <span>{reaction.from}</span>
+            <span aria-hidden="true"> {reaction.emoji} </span>
+            <span>{reaction.label}</span>
+          </li>
+        ))}
+      </ul>
 
       {(call.accessNotice ?? call.error) && (
         <p className="ls-error" role="alert">
@@ -206,7 +253,18 @@ export function CallScreen({
         sharing={call.sharing}
         quality={call.quality}
         onPickQuality={call.pickQuality}
-        onToggleChat={() => call.openChat(!call.chatOpen)}
+        onToggleChat={() => {
+          setParticipantsOpen(false);
+          call.openChat(!call.chatOpen);
+        }}
+        onToggleHand={call.toggleHand}
+        handRaised={call.handRaised}
+        onReact={call.react}
+        onToggleParticipants={() => {
+          if (!participantsOpen) call.openChat(false);
+          setParticipantsOpen((open) => !open);
+        }}
+        participantCount={people.length}
         chatOpen={call.chatOpen}
         unread={call.unread}
         onLeave={onLeave}
