@@ -220,10 +220,22 @@
 }
 
 /* The tag under the name: Interpreter, or Hearing guest. */
-.vt__tag {
+/* .vt__tag {
   font-size: 0.68rem;
   font-weight: 700;
   color: #4a3a86;
+} */
+
+.vt__tag {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: #4a3a86;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 .vt__edit {
