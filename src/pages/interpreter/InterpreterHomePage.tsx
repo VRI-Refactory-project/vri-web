@@ -18,6 +18,8 @@ import {
   timeOf,
   useMySessions,
 } from '../../features/interpreter/homeSessions';
+// 👇 Import the new hook
+import { useInterpreterNotifications } from '../../features/interpreter/useInterpreterNotifications';
 import './InterpreterHomePage.css';
 import bannerImage from '../../assets/suit.png';
 
@@ -55,6 +57,10 @@ function Avatar({ name, photo }: { name: string; photo: string | null }) {
 export function InterpreterHomePage() {
   const { session } = useAuth();
   const firstName = session?.user.name?.split(' ')[0] || 'there';
+
+  // 👇 Call the hook here
+  const { unreadCount } = useInterpreterNotifications();
+
   const { available, availableNow, reason, setAvailable, loading, saving, error } =
     useAvailability();
   const { sessions } = useMySessions();
@@ -90,7 +96,8 @@ export function InterpreterHomePage() {
         <div className="ih-topbar-actions">
           <button className="ih-icon-btn relative" aria-label="Notifications">
             <Bell size={20} className="ih-icon" />
-            <span className="ih-notification-dot"></span>
+            {/* 👇 The dynamic red dot */}
+            {unreadCount > 0 && <span className="ih-notification-dot"></span>}
           </button>
         </div>
       </header>
