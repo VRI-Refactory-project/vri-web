@@ -244,6 +244,9 @@ export function InstitutionProfilePage() {
                     rows={3}
                     value={editing ? draft.description : profile.description}
                     readOnly={!editing}
+                    onFocus={() => {
+                      if (!editing) setEditing(true);
+                    }}
                     onChange={(e) => setDraft({ ...draft, description: e.target.value })}
                   />
                 </label>
@@ -286,7 +289,7 @@ export function InstitutionProfilePage() {
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                   />
-                  <button className="ip-primary">
+                  <button type="submit" className="ip-primary">
                     <Plus size={16} /> Add
                   </button>
                 </form>
