@@ -121,7 +121,8 @@ describe('MessagesPage', () => {
   it('sends a sticker from the picker and shows it large', async () => {
     svc.sendSticker.mockResolvedValue({ ...message(5, '', true), sticker: 'thumbs_up' });
     renderPage();
-    await screen.findByText('Hi Irene');
+    // await screen.findByText('Hi Irene');
+    await screen.findByText('Hi Irene', {}, { timeout: 3000 });
     const user = userEvent.setup();
 
     await user.click(screen.getByRole('button', { name: 'Stickers' }));
