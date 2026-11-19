@@ -92,27 +92,30 @@ export function CallScreen({
 
   const main = tiles.find((tile) => tile.id === pinned);
 
-  const tileFor = (tile: Tile) => (
-    <VideoTile
-      key={tile.id}
-      name={tile.name}
-      stream={tile.stream}
-      cameraOff={tile.cameraOff}
-      muted={tile.muted}
-      profilePicture={tile.picture}
-      screen={tile.screen}
-      quality={tile.quality}
-      role={tile.role}
-      onRename={tile.self ? call.rename : undefined}
-      highlight={
-        tile.self ||
-        tile.name === highlightName ||
-        (highlightName !== undefined && tile.role === 'interpreter')
-      }
-      spotlighted={pinned === tile.id}
-      onSpotlight={() => setPinned((current) => (current === tile.id ? null : tile.id))}
-    />
-  );
+  const tileFor = (tile: Tile) => {
+    console.log(tile.name, '->', tile.role);
+    return (
+      <VideoTile
+        key={tile.id}
+        name={tile.name}
+        stream={tile.stream}
+        cameraOff={tile.cameraOff}
+        muted={tile.muted}
+        profilePicture={tile.picture}
+        screen={tile.screen}
+        quality={tile.quality}
+        role={tile.role}
+        onRename={tile.self ? call.rename : undefined}
+        highlight={
+          tile.self ||
+          tile.name === highlightName ||
+          (highlightName !== undefined && tile.role === 'interpreter')
+        }
+        spotlighted={pinned === tile.id}
+        onSpotlight={() => setPinned((current) => (current === tile.id ? null : tile.id))}
+      />
+    );
+  };
 
   return (
     <main className="ls ls--call">
