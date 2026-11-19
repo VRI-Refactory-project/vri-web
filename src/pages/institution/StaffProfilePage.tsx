@@ -89,10 +89,11 @@ export function StaffProfilePage() {
   });
   const isMe = person?.userId === session?.user.id;
   // Departments saved before the list existed (or typed elsewhere) still show as an option.
-  const departments = form.department &&
+  const departments =
+    form.department &&
     !institutionDepartments.some((department) => department.name === form.department)
-    ? [{ id: form.department, name: form.department }, ...institutionDepartments]
-    : institutionDepartments;
+      ? [{ id: form.department, name: form.department }, ...institutionDepartments]
+      : institutionDepartments;
 
   const onSave = async (e: FormEvent) => {
     e.preventDefault();
@@ -104,7 +105,9 @@ export function StaffProfilePage() {
       showPerson(
         await updateStaff(person.id, {
           fullName: form.fullName,
-          department: departments.find((department) => department.id === form.department)?.name ?? form.department,
+          department:
+            departments.find((department) => department.id === form.department)?.name ??
+            form.department,
           departmentId: departments.find((department) => department.name === form.department)?.id,
           role: form.role as (typeof ROLES)[number],
         }),
