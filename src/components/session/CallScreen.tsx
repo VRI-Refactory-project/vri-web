@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react';
+import type { CallRole } from '../../features/session/callConnection';
 import type { Call } from '../../features/session/useCall';
 import type { ConnectionQuality } from '../../features/session/videoQuality';
 import { formatDuration } from '../../services/liveSession';
@@ -36,6 +37,7 @@ interface Tile {
   picture?: string | null;
   screen?: boolean;
   quality?: ConnectionQuality;
+  role?: CallRole;
   self?: boolean;
 }
 
@@ -58,13 +60,16 @@ export function CallScreen({
   onEnd,
 }: Props) {
   const { media, mode } = call;
+  // The name you picked in the call wins over your account name, for you and for the others.
+  const shownName = call.renamedTo ?? selfName;
   // The tile the person chose to make big. Nothing chosen means the screen picks one itself.
   const [pinned, setPinned] = useState<string | null>(null);
 
   const tiles: Tile[] = [
     {
       id: SELF,
-      name: selfName,
+      name: shownName,
+      role: call.selfRole,
       stream: media.stream,
       cameraOff: !media.camOn,
       muted: true,
@@ -75,6 +80,7 @@ export function CallScreen({
     ...call.others.map((person) => ({
       id: person.id,
       name: person.name,
+      role: person.role,
       stream: person.stream,
       cameraOff: person.cameraOff,
       screen: person.screen,
@@ -96,7 +102,13 @@ export function CallScreen({
       profilePicture={tile.picture}
       screen={tile.screen}
       quality={tile.quality}
-      highlight={tile.self || tile.name === highlightName}
+      role={tile.role}
+      onRename={tile.self ? call.rename : undefined}
+      highlight={
+        tile.self ||
+        tile.name === highlightName ||
+        (highlightName !== undefined && tile.role === 'interpreter')
+      }
       spotlighted={pinned === tile.id}
       onSpotlight={() => setPinned((current) => (current === tile.id ? null : tile.id))}
     />

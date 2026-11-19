@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { describeError } from '../../services/api';
-import type { ChatMessage, CreateConnection, RemotePerson } from './callConnection';
+import {
+  MAX_NAME_LENGTH,
+  type CallRole,
+  type ChatMessage,
+  type CreateConnection,
+  type RemotePerson,
+} from './callConnection';
 import { useLocalMedia } from './useLocalMedia';
 import { QUALITY_PRESETS, type ConnectionQuality, type VideoQualityChoice } from './videoQuality';
 
@@ -29,6 +35,9 @@ export function useCall({ createConnection, mode = { video: true, audio: true } 
   const [seenCount, setSeenCount] = useState(0);
   const [sharing, setSharing] = useState(false);
   const [selfQuality, setSelfQuality] = useState<ConnectionQuality>('unknown');
+  // Your own role (for the tag) and the name you picked in the call, if you changed it.
+  const [selfRole, setSelfRole] = useState<CallRole | undefined>(undefined);
+  const [renamedTo, setRenamedTo] = useState<string | null>(null);
   const [quality, setQuality] = useState<VideoQualityChoice>('auto');
   const [phase, setPhase] = useState<'idle' | 'joining' | 'live'>('idle');
   // True when the connection dropped without the person leaving.
@@ -51,6 +60,7 @@ export function useCall({ createConnection, mode = { video: true, audio: true } 
       onChat: (message) => setMessages((all) => [...all, message]),
       onSharing: setSharing,
       onSelfQuality: setSelfQuality,
+      onSelfRole: setSelfRole,
     }),
   );
 
@@ -130,6 +140,14 @@ export function useCall({ createConnection, mode = { video: true, audio: true } 
     void media.setVideoLimits(preset.outgoing);
   };
 
+  /** Changes the name everyone in the call sees for you. It does not change your account. */
+  const rename = (name: string) => {
+    const clean = name.trim().slice(0, MAX_NAME_LENGTH);
+    if (!clean) return;
+    setRenamedTo(clean);
+    connection.setName?.(clean);
+  };
+
   const openChat = (open: boolean) => {
     setChatOpen(open);
     // Everything up to now has been seen, whether the chat is opening or closing.
@@ -148,6 +166,8 @@ export function useCall({ createConnection, mode = { video: true, audio: true } 
     unread,
     sharing,
     selfQuality,
+    selfRole,
+    renamedTo,
     quality,
     phase,
     lost,
@@ -162,6 +182,7 @@ export function useCall({ createConnection, mode = { video: true, audio: true } 
     toggleShare,
     pickDevice,
     pickQuality,
+    rename,
     openChat,
     sendChat: (text: string) => connection.sendChat?.(text),
   };

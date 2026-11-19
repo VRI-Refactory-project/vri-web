@@ -2,10 +2,32 @@ import { Room, RoomEvent, Track, VideoQuality, type RemoteParticipant } from 'li
 import { getCallToken, type CallToken } from '../../services/callToken';
 import type { ConnectionQuality } from './videoQuality';
 
+/** A role shown as a tag under someone's name. Only these two get one. */
+export type CallRole = 'interpreter' | 'guest';
+
+/**
+ * The role the server signed into the person's token (and the guest identity as a fallback).
+ * People can rename themselves, but not change this.
+ */
+function roleOf(metadata: string | undefined, identity: string | undefined): CallRole | undefined {
+  try {
+    const role = (JSON.parse(metadata || '{}') as { role?: unknown }).role;
+    if (role === 'interpreter' || role === 'guest') return role;
+  } catch {
+    // broken metadata: fall back to the identity below
+  }
+  return identity?.startsWith('guest-') ? 'guest' : undefined;
+}
+
+/** Longest name a person may give themselves in the call. */
+export const MAX_NAME_LENGTH = 40;
+
 /** Someone else in the call, with the stream the screen plays for them. */
 export interface RemotePerson {
   id: string;
   name: string;
+  /** Shown as a tag under the name: Interpreter, or Hearing guest. */
+  role?: CallRole;
   /** Their camera and microphone together, so one element plays both. */
   stream: MediaStream;
   cameraOff: boolean;
@@ -35,6 +57,8 @@ export interface CallEvents {
   onSharing?(on: boolean): void;
   /** How good your own connection is. */
   onSelfQuality?(quality: ConnectionQuality): void;
+  /** Your own role, once you are in the room. */
+  onSelfRole?(role: CallRole | undefined): void;
 }
 
 /**
@@ -49,6 +73,8 @@ export interface CallConnection {
   leave(): void;
   /** Starts or stops sharing the viewer's screen. */
   setScreenShare?(on: boolean): Promise<void>;
+  /** Changes the name the others see for you. */
+  setName?(name: string): void;
   /** Sends a chat message to everyone in the call. */
   sendChat?(text: string): void;
   /** Swaps the camera or microphone being sent, after the viewer picks another device. */
@@ -126,6 +152,7 @@ export function liveKitConnectionWith(
         {
           id: p.identity,
           name,
+          role: roleOf(p.metadata, p.identity),
           stream,
           cameraOff: !camera?.track || camera.isMuted,
           quality: toQuality(p.connectionQuality),
@@ -179,6 +206,7 @@ export function liveKitConnectionWith(
       .on(RoomEvent.TrackMuted, send)
       .on(RoomEvent.TrackUnmuted, send)
       .on(RoomEvent.ParticipantNameChanged, send)
+      .on(RoomEvent.ParticipantMetadataChanged, send)
       .on(RoomEvent.ConnectionQualityChanged, (quality, participant) => {
         if (participant.isLocal) events.onSelfQuality?.(toQuality(quality));
         else send();
@@ -225,6 +253,7 @@ export function liveKitConnectionWith(
           void room.disconnect();
           return;
         }
+        events.onSelfRole?.(roleOf(room.localParticipant.metadata, room.localParticipant.identity));
         for (const track of local?.getTracks() ?? []) {
           await room.localParticipant.publishTrack(track, {
             source: track.kind === 'video' ? Track.Source.Camera : Track.Source.Microphone,
@@ -246,6 +275,10 @@ export function liveKitConnectionWith(
           // The person closed the browser's "choose a screen" box, so nothing is being shared.
           events.onSharing?.(false);
         }
+      },
+      setName(name) {
+        const clean = name.trim().slice(0, MAX_NAME_LENGTH);
+        if (clean) room.localParticipant.setName(clean);
       },
       sendChat(text) {
         const body = text.trim().slice(0, MAX_CHAT_LENGTH);
