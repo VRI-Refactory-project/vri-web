@@ -9,14 +9,8 @@ import { normalizePhone } from '../lib/validation';
 const BASE = '/api/v1/institutions/me/staff/';
 const MY_PROFILE = '/api/v1/institutions/me/profile/';
 
-/** The departments the forms offer. Saved by the API as the staff member's job title. */
-export const DEPARTMENTS = [
-  'Healthcare',
-  'Reception',
-  'Social Services',
-  'IT Support',
-  'Administration',
-];
+/** @deprecated Departments are owned by each institution; kept as an empty compatibility export. */
+export const DEPARTMENTS: string[] = [];
 
 /** Shape returned by the API (StaffSerializer). */
 export interface ApiStaff {
@@ -57,6 +51,7 @@ export interface NewStaffMember {
   email: string;
   phone: string;
   department: string;
+  departmentId?: string;
   role: 'Admin' | 'Staff';
 }
 
@@ -110,7 +105,7 @@ export async function createStaff(d: NewStaffMember): Promise<StaffMember> {
       full_name: d.fullName.trim(),
       email: d.email.trim(),
       phone_number: normalizePhone(d.phone),
-      job_title: d.department,
+      ...(d.departmentId ? { department_id: d.departmentId } : { job_title: d.department }),
       role: d.role === 'Admin' ? 'ADMIN' : 'STAFF',
     }),
   });
@@ -126,13 +121,15 @@ export async function getStaff(id: string): Promise<StaffMember> {
 export interface StaffChanges {
   fullName?: string;
   department?: string;
+  departmentId?: string;
   role?: 'Admin' | 'Staff';
 }
 
 export async function updateStaff(id: string, changes: StaffChanges): Promise<StaffMember> {
   const body: Record<string, string> = {};
   if (changes.fullName !== undefined) body.full_name = changes.fullName.trim();
-  if (changes.department !== undefined) body.job_title = changes.department;
+  if (changes.departmentId !== undefined) body.department_id = changes.departmentId;
+  else if (changes.department !== undefined) body.job_title = changes.department;
   if (changes.role !== undefined) body.role = changes.role === 'Admin' ? 'ADMIN' : 'STAFF';
   const raw = await api<ApiStaff>(`${BASE}${id}/`, { method: 'PATCH', body: JSON.stringify(body) });
   return toStaffMember(raw);
