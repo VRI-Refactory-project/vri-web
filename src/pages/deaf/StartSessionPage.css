@@ -679,3 +679,40 @@
     gap: 16px;
   }
 }
+
+/* The "no interpreter found" pop-up. */
+.ss-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(27, 18, 64, 0.55);
+}
+
+.ss-modal {
+  width: min(26rem, 100%);
+  padding: 1.75rem;
+  border-radius: 1rem;
+  background: #fff;
+  color: #1b1240;
+  text-align: center;
+}
+
+.ss-modal h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.35rem;
+}
+
+.ss-modal p {
+  margin: 0 0 1.25rem;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.ss-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
