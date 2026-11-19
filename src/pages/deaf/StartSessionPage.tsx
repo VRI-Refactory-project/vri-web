@@ -326,6 +326,9 @@ import './StartSessionPage.css';
 const WAITING = ['CREATED', 'QUEUED', 'OFFERED'];
 const MATCHED = ['ACCEPTED', 'CONNECTING', 'ACTIVE'];
 
+/** How long we look for an interpreter before we stop and say none was found. */
+export const WAIT_LIMIT_MS = 3 * 60 * 1000;
+
 /** The words that differ between a Deaf user asking for themselves and staff asking for a client. */
 const COPY = {
   deaf: {
@@ -472,6 +475,24 @@ export function StartSessionPage({ pollMs }: Props) {
   const emergency = params.get('priority') === 'emergency';
   const state = request?.state;
 
+  // After 3 minutes without an interpreter, stop the request and tell the person.
+  const [noInterpreter, setNoInterpreter] = useState(false);
+  const waitingId = request && state && WAITING.includes(state) ? request.id : null;
+  const createdAt = request?.createdAt;
+  useEffect(() => {
+    if (!waitingId || !createdAt) return;
+    const left = Math.max(0, Date.parse(createdAt) + WAIT_LIMIT_MS - Date.now());
+    const timer = setTimeout(async () => {
+      if (await cancel()) setNoInterpreter(true);
+    }, left);
+    return () => clearTimeout(timer);
+  }, [waitingId, createdAt, cancel]);
+
+  const tryAgain = () => {
+    setNoInterpreter(false);
+    void start(emergency ? 'EMERGENCY' : undefined, context);
+  };
+
   if (request && state && MATCHED.includes(state)) {
     return (
       <div className="ss-page">
@@ -567,6 +588,35 @@ export function StartSessionPage({ pollMs }: Props) {
         </p>
       </div>
 
+      {noInterpreter && (
+        <div className="ss-modal-backdrop">
+          <div
+            className="ss-modal"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="ss-modal-title"
+            aria-describedby="ss-modal-text"
+          >
+            <h2 id="ss-modal-title">No interpreter found</h2>
+            <p id="ss-modal-text">
+              We could not find an available interpreter in 3 minutes. Please try again in a few
+              minutes.
+            </p>
+            <div className="ss-modal-actions">
+              <button type="button" className="ss-btn ss-btn--primary" onClick={tryAgain}>
+                Try again
+              </button>
+              <button
+                type="button"
+                className="ss-btn ss-btn--outline"
+                onClick={() => setNoInterpreter(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {error && (
         <p className="ss-alert" role="alert">
           {error}
