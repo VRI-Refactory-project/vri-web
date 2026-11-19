@@ -679,3 +679,81 @@
     gap: 16px;
   }
 }
+
+/* The "no interpreter found" pop-up. */
+.ss-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(27, 18, 64, 0.55);
+}
+
+.ss-modal {
+  width: min(26rem, 100%);
+  padding: 1.75rem;
+  border-radius: 1rem;
+  background: #fff;
+  color: #1b1240;
+  text-align: center;
+}
+
+.ss-modal h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.35rem;
+}
+
+.ss-modal p {
+  margin: 0 0 1.25rem;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.ss-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+/* Container for the two buttons */
+.ss-found-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Makes them equal width */
+  gap: 12px;
+  margin-top: 24px;
+}
+
+/* The Cancel Button */
+.ss-btn--danger-outline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: transparent;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 12px 16px;
+}
+
+.ss-btn--danger-outline:hover:not(:disabled) {
+  background: #fee2e2;
+  color: #7f1d1d;
+  border-color: #fca5a5;
+}
+
+.ss-btn--danger-outline:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsive: stack them on small screens */
+@media (max-width: 500px) {
+  .ss-found-actions {
+    grid-template-columns: 1fr;
+  }
+}
