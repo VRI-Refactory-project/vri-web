@@ -368,8 +368,15 @@ describe('screen sharing, chat and devices', () => {
     const e = { ...events(), onSharing: vi.fn() };
     createLiveKitConnection(e);
 
-    room.handlers.get('localTrackPublished')!({ source: 'screen_share' });
-    expect(e.onSharing).toHaveBeenLastCalledWith(true);
+    const shared = { kind: 'video' };
+    room.handlers.get('localTrackPublished')!({
+      source: 'screen_share',
+      track: { mediaStreamTrack: shared },
+    });
+    // What you are sharing comes along, so your own screen can show it too.
+    const [on, screen] = e.onSharing.mock.calls.at(-1)!;
+    expect(on).toBe(true);
+    expect(screen.getVideoTracks()).toEqual([shared]);
     room.handlers.get('localTrackUnpublished')!({ source: 'screen_share' });
     expect(e.onSharing).toHaveBeenLastCalledWith(false);
     room.handlers.get('localTrackPublished')!({ source: 'camera' });

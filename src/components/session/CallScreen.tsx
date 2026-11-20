@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react';
+import { MonitorUp } from 'lucide-react';
 import type { CallRole } from '../../features/session/callConnection';
 import { pickSpotlight } from '../../features/session/spotlight';
 import type { Call } from '../../features/session/useCall';
@@ -47,6 +48,7 @@ interface Tile {
 }
 
 const SELF = 'self';
+const SELF_SCREEN = 'self#screen';
 
 /**
  * The call, as every role sees it (the Figma design): the SignConnect logo and the person's profile
@@ -85,6 +87,19 @@ export function CallScreen({
       handRaised: call.handRaised,
       self: true,
     },
+    // What you are sharing, as the others see it. Like theirs, it becomes the big tile.
+    ...(call.selfScreen
+      ? [
+          {
+            id: SELF_SCREEN,
+            name: 'Your screen',
+            stream: call.selfScreen,
+            cameraOff: false,
+            muted: true,
+            screen: true,
+          },
+        ]
+      : []),
     ...call.others.map((person) => ({
       id: person.id,
       name: person.name,
@@ -184,6 +199,16 @@ export function CallScreen({
       </header>
 
       {headerExtra && <div className="ls-call-header">{headerExtra}</div>}
+
+      {call.sharing && (
+        <div className="ls-presenting" role="status">
+          <MonitorUp size={18} aria-hidden="true" />
+          <span>You’re presenting your screen to everyone</span>
+          <button type="button" className="ls-presenting__stop" onClick={call.toggleShare}>
+            Stop presenting
+          </button>
+        </div>
+      )}
 
       <div className="ls-body">
         <div className="ls-spot">

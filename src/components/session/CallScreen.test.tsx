@@ -50,6 +50,9 @@ function fakeCall(overrides: Partial<Record<string, unknown>> = {}): Call {
 const mainTile = () => within(document.querySelector('.ls-main') as HTMLElement);
 const sideTiles = () => within(document.querySelector('.ls-side') as HTMLElement);
 
+// jsdom has no MediaStream; the screen only hands it to the video element.
+const sharedScreen = {} as MediaStream;
+
 // A Deaf user's call with the interpreter and a hearing guest.
 const interpreted = [
   { id: 'guest-3', name: 'Peter', role: 'guest', stream: null, cameraOff: true },
@@ -111,6 +114,56 @@ describe('CallScreen', () => {
 
     expect(mainTile().getByLabelText('Peter’s screen')).toBeInTheDocument();
     expect(sideTiles().getByLabelText('Amina Okafor')).toBeInTheDocument();
+  });
+
+  it('shows the person sharing what they share, big, with a bar to stop presenting', async () => {
+    const toggleShare = vi.fn();
+    const call = fakeCall({
+      selfRole: 'deaf',
+      others: interpreted,
+      sharing: true,
+      selfScreen: sharedScreen,
+      toggleShare,
+    });
+    render(<CallScreen call={call} selfName="Shadia" onLeave={vi.fn()} />);
+
+    expect(mainTile().getByLabelText('Your screen')).toBeInTheDocument();
+    expect(sideTiles().getByLabelText('Shadia')).toBeInTheDocument();
+    expect(sideTiles().getByLabelText('Amina Okafor')).toBeInTheDocument();
+    expect(screen.getByText(/you’re presenting your screen/i)).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Stop presenting' }));
+    expect(toggleShare).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows no presenting bar and no screen tile while you are not sharing', () => {
+    render(
+      <CallScreen
+        call={fakeCall({ selfRole: 'deaf', others: interpreted })}
+        selfName="Shadia"
+        onLeave={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByText(/you’re presenting/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Your screen')).not.toBeInTheDocument();
+  });
+
+  it('does not count your shared screen as a person in the call', async () => {
+    const call = fakeCall({
+      selfRole: 'deaf',
+      others: interpreted,
+      sharing: true,
+      selfScreen: sharedScreen,
+    });
+    render(<CallScreen call={call} selfName="Shadia" onLeave={vi.fn()} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'More' }));
+    await userEvent.click(screen.getByRole('menuitem', { name: /Participants/ }));
+
+    const panel = within(screen.getByLabelText('Participants'));
+    expect(panel.queryByText('Your screen')).not.toBeInTheDocument();
+    expect(panel.getByText(/Shadia \(You\)/)).toBeInTheDocument();
   });
 
   it('lets you pin someone else, and goes back to its own choice when you unpin', async () => {

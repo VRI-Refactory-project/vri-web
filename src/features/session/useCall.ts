@@ -35,6 +35,12 @@ export function useCall({ createConnection, mode = { video: true, audio: true } 
   // How many messages were there when the chat was last open, so the rest count as unread.
   const [seenCount, setSeenCount] = useState(0);
   const [sharing, setSharing] = useState(false);
+  // What you are sharing, so your own screen shows it too (null when you are not sharing).
+  const [selfScreen, setSelfScreen] = useState<MediaStream | null>(null);
+  const stopSharing = useCallback(() => {
+    setSharing(false);
+    setSelfScreen(null);
+  }, []);
   const [selfQuality, setSelfQuality] = useState<ConnectionQuality>('unknown');
   // Your own role (for the tag) and the name you picked in the call, if you changed it.
   const [selfRole, setSelfRole] = useState<CallRole | undefined>(undefined);
@@ -58,11 +64,14 @@ export function useCall({ createConnection, mode = { video: true, audio: true } 
       onLost: () => {
         setError('You were disconnected from the call. Join again to reconnect.');
         setPhase('idle');
-        setSharing(false);
+        stopSharing();
         setLost(true);
       },
       onChat: (message) => setMessages((all) => [...all, message]),
-      onSharing: setSharing,
+      onSharing: (on, screen) => {
+        setSharing(on);
+        setSelfScreen(on ? (screen ?? null) : null);
+      },
       onSelfQuality: setSelfQuality,
       onSelfRole: setSelfRole,
       onReaction: (reaction) => {
@@ -105,9 +114,9 @@ export function useCall({ createConnection, mode = { video: true, audio: true } 
   const leave = useCallback(() => {
     connection.leave();
     startedAt.current = 0;
-    setSharing(false);
+    stopSharing();
     setPhase('idle');
-  }, [connection]);
+  }, [connection, stopSharing]);
 
   useEffect(() => {
     if (phase !== 'live') return;
@@ -182,6 +191,7 @@ export function useCall({ createConnection, mode = { video: true, audio: true } 
     chatOpen,
     unread,
     sharing,
+    selfScreen,
     selfQuality,
     selfRole,
     renamedTo,
