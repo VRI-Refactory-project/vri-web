@@ -45,6 +45,29 @@ describe('StartSessionPage', () => {
     expect(createSessionRequest).not.toHaveBeenCalled();
   });
 
+  it('shows the SignConnect logo on the Connect card, not a camera icon', () => {
+    renderPage();
+    const card = screen.getByRole('region', { name: 'Connect' });
+    expect(card.querySelector('.logo-disc img')).toBeTruthy();
+  });
+
+  it('shows the SignConnect logo while looking, and on Connect now once someone accepts', async () => {
+    vi.mocked(createSessionRequest).mockResolvedValue(request('QUEUED'));
+    vi.mocked(getSessionRequest).mockResolvedValueOnce(request('QUEUED'));
+    renderPage();
+    await userEvent.click(screen.getByRole('button', { name: 'Connect now' }));
+
+    const looking = await screen.findByRole('region', { name: 'Request status' });
+    expect(looking.querySelector('.ss-pulse .logo-disc img')).toBeTruthy();
+
+    vi.mocked(getSessionRequest).mockResolvedValue(
+      request('ACCEPTED', { interpreter: { name: 'Amina Okafor', languages: '' } }),
+    );
+    const connect = await screen.findByRole('link', { name: /Connect now/ });
+    expect(connect.querySelector('.logo-disc img')).toBeTruthy();
+    expect(connect.querySelector('svg')).toBeNull();
+  });
+
   it('sends an emergency request when opened from the Emergency Request button', async () => {
     vi.mocked(createSessionRequest).mockResolvedValue(request('QUEUED'));
     vi.mocked(getSessionRequest).mockResolvedValue(request('QUEUED'));

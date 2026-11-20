@@ -122,6 +122,12 @@
   border: 0;
 }
 
+/* Greyed out with a lighter purple rather than see-through, so the logo on it stays sharp. */
+.ls-btn--primary:disabled {
+  opacity: 1;
+  background: #8b80b6;
+}
+
 .ls-btn--outline {
   background: #fff;
   color: #1b1240;

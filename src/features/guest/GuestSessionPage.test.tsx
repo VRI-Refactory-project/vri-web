@@ -122,6 +122,19 @@ describe('GuestSessionPage: how the hearing guest joins', () => {
     expect(screen.queryByRole('button', { name: /end call/i })).not.toBeInTheDocument();
   });
 
+  it('shows the SignConnect logo on Join session, not a camera icon', async () => {
+    render(
+      <MemoryRouter initialEntries={['/join/abc']}>
+        <Routes>
+          <Route path="/join/:token" element={<GuestSessionPage />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+    const join = await screen.findByRole('button', { name: /join session/i });
+    expect(join.querySelector('.logo-disc img')).toBeTruthy();
+    expect(join.querySelector('svg')).toBeNull();
+  });
+
   it('shows the SignConnect name in the call header', async () => {
     await joinWith(null);
 

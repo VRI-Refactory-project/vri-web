@@ -1,15 +1,7 @@
 import { useEffect, useState } from 'react';
-import {
-  Calendar,
-  Check,
-  ChevronLeft,
-  User,
-  Video,
-  ArrowRight,
-  Lightbulb,
-  XCircle,
-} from 'lucide-react';
+import { Calendar, Check, ChevronLeft, User, ArrowRight, Lightbulb, XCircle } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { LogoDisc } from '../../components/session/BrandMark';
 import { useRequesterPaths } from '../../features/dashboard/requesterPaths';
 import { useSessionRequest } from '../../hooks/useSessionRequest';
 import { SESSION_CONTEXTS, type SessionContext } from '../../services/sessionRequests';
@@ -97,7 +89,7 @@ function Waiting({
         <span className="ss-ring" />
         <span className="ss-ring ss-ring--late" />
         <span className="ss-pulse-core">
-          <Video size={30} />
+          <LogoDisc size={58} />
         </span>
       </div>
 
@@ -234,7 +226,7 @@ export function StartSessionPage({ pollMs }: Props) {
               state={{ interpreterName: request.interpreter?.name }}
               className="ss-btn ss-btn--primary"
             >
-              <Video size={18} aria-hidden="true" /> Connect now
+              <LogoDisc size={22} /> Connect now
             </Link>
           </div>
         </section>
@@ -323,9 +315,7 @@ export function StartSessionPage({ pollMs }: Props) {
       <div className="ss-grid">
         <div className="ss-left">
           <section className="ss-connect" aria-labelledby="ss-connect-title">
-            <span className="ss-tile" aria-hidden="true">
-              <Video size={22} />
-            </span>
+            <LogoDisc size={48} />
             <h2 id="ss-connect-title">Connect</h2>
             <p>Find an available Ugandan Sign Language interpreter.</p>
             {paths.staff && (
