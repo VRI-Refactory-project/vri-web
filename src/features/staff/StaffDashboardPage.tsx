@@ -1,4 +1,4 @@
-import { CircleHelp, MessageSquare, Video, ChevronRight } from 'lucide-react';
+import { CircleHelp, MessageSquare, Video, ChevronRight, AlertCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 // interpreter2.png made smaller for the web (66 KB instead of 1.8 MB); the banner shows it at ~220px.
@@ -81,9 +81,18 @@ export function StaffDashboardPage() {
           <p className="sd-hero-desc">
             For a Deaf client who is with you: connect a certified interpreter in about two minutes.
           </p>
-          <Link to={`${BASE}/start-session`} className="sd-hero-btn">
-            Start Interpreter Session
-          </Link>
+
+          {/* Wrapped the buttons in a flex container */}
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '16px' }}>
+            <Link to={`${BASE}/start-session`} className="sd-hero-btn">
+              Start Interpreter Session
+            </Link>
+
+            <Link to={`${BASE}/start-session?priority=emergency`} className="sd-hero-btn-emergency">
+              <AlertCircle size={18} />
+              Emergency Request
+            </Link>
+          </div>
         </div>
         <div className="sd-hero-image">
           <img src={heroImage} alt="" />
