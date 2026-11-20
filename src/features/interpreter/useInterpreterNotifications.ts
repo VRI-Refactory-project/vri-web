@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
-import { fetchNotifications, type AppNotification } from '../../services/notifications';
+import {
+  fetchNotifications,
+  markAllNotificationsRead,
+  type AppNotification,
+} from '../../services/notifications';
 
 export function useInterpreterNotifications() {
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
@@ -8,10 +12,21 @@ export function useInterpreterNotifications() {
 
   const unreadCount = notifications.filter((n) => n.read_at === null).length;
 
+  // 👇 We define markAllRead outside the effect, but it uses the setter safely
+  const markAllRead = async () => {
+    try {
+      await markAllNotificationsRead();
+      // Instantly update the UI so the red dot disappears
+      setNotifications((prev) => prev.map((n) => ({ ...n, read_at: new Date().toISOString() })));
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to mark notifications as read';
+      console.error(message);
+    }
+  };
+
   useEffect(() => {
     let cancelled = false;
 
-    // 👇 Define the load function INSIDE the effect to avoid dependency warnings and cascading renders
     const load = async (isInitial = false) => {
       if (isInitial) setLoading(true);
       try {
@@ -22,7 +37,6 @@ export function useInterpreterNotifications() {
           setLoading(false);
         }
       } catch (err: unknown) {
-        // 👇 Fixed the "any" error by using "unknown" and checking the type
         if (!cancelled) {
           const message = err instanceof Error ? err.message : 'Failed to load notifications';
           setError(message);
@@ -31,12 +45,10 @@ export function useInterpreterNotifications() {
       }
     };
 
-    // Run immediately on mount
     void load(true);
 
-    // Check for new notifications every 30 seconds
     const interval = setInterval(() => {
-      void load(false); // Don't show the loading spinner for background polls
+      void load(false);
     }, 30000);
 
     return () => {
@@ -45,5 +57,5 @@ export function useInterpreterNotifications() {
     };
   }, []);
 
-  return { notifications, unreadCount, loading, error };
+  return { notifications, unreadCount, loading, error, markAllRead };
 }
