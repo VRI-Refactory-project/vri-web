@@ -47,74 +47,95 @@ function fakeCall(overrides: Partial<Record<string, unknown>> = {}): Call {
   } as unknown as Call;
 }
 
-const gridTiles = () => within(document.querySelector('.ls-grid') as HTMLElement);
 const mainTile = () => within(document.querySelector('.ls-main') as HTMLElement);
 const sideTiles = () => within(document.querySelector('.ls-side') as HTMLElement);
 
+// A Deaf user's call with the interpreter and a hearing guest.
+const interpreted = [
+  { id: 'guest-3', name: 'Peter', role: 'guest', stream: null, cameraOff: true },
+  { id: 'u9', name: 'Amina Okafor', role: 'interpreter', stream: null, cameraOff: true },
+];
+
 describe('CallScreen', () => {
-  it('shows all participants in a horizontal grid by default', () => {
-    render(<CallScreen call={fakeCall()} selfName="Shadia" onLeave={vi.fn()} />);
+  it('spotlights the interpreter for the Deaf user without being asked', () => {
+    const call = fakeCall({ selfRole: 'deaf', others: interpreted });
+    render(<CallScreen call={call} selfName="Shadia" onLeave={vi.fn()} />);
 
-    const grid = document.querySelector('.ls-grid');
-
-    expect(grid).toBeInTheDocument();
-    expect(grid).toHaveStyle({
-      gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-    });
-
-    expect(gridTiles().getByLabelText('Shadia')).toBeInTheDocument();
-    expect(gridTiles().getByLabelText('Amina Okafor')).toBeInTheDocument();
-    expect(gridTiles().getByLabelText('Ivan Koreta')).toBeInTheDocument();
+    expect(mainTile().getByLabelText('Amina Okafor')).toBeInTheDocument();
+    expect(sideTiles().getByLabelText('Shadia')).toBeInTheDocument();
+    expect(sideTiles().getByLabelText('Peter')).toBeInTheDocument();
+    // The screen chose it, so there is nothing to unpin.
+    expect(
+      screen.queryByRole('button', { name: /spotlight from Amina Okafor/ }),
+    ).not.toBeInTheDocument();
   });
 
-  it('shows only you when you are alone, with a waiting note', () => {
+  it('spotlights the Deaf user for the interpreter', () => {
+    const call = fakeCall({
+      selfRole: 'interpreter',
+      others: [
+        { id: 'guest-3', name: 'Peter', role: 'guest', stream: null, cameraOff: true },
+        { id: 'u2', name: 'Shadia', role: 'deaf', stream: null, cameraOff: true },
+      ],
+    });
+    render(<CallScreen call={call} selfName="Amina Okafor" onLeave={vi.fn()} />);
+
+    expect(mainTile().getByLabelText('Shadia')).toBeInTheDocument();
+  });
+
+  it('shows you big when you are alone, with a waiting note beside you', () => {
     render(<CallScreen call={fakeCall({ others: [] })} selfName="Shadia" onLeave={vi.fn()} />);
 
-    expect(gridTiles().getByLabelText('Shadia')).toBeInTheDocument();
-    expect(screen.getByText(/waiting for others/i)).toBeInTheDocument();
+    expect(mainTile().getByLabelText('Shadia')).toBeInTheDocument();
+    expect(sideTiles().getByText(/waiting for others/i)).toBeInTheDocument();
   });
 
-  it('keeps a shared screen in the participant grid by default', () => {
+  it('spotlights a shared screen for everyone', () => {
     const others = [
-      { id: 'u9', name: 'Amina Okafor', stream: null, cameraOff: true },
+      ...interpreted,
       {
-        id: 'u9#screen',
-        name: 'Amina Okafor’s screen',
+        id: 'guest-3#screen',
+        name: 'Peter’s screen',
         stream: null,
         cameraOff: false,
         screen: true,
       },
     ];
-
-    render(<CallScreen call={fakeCall({ others })} selfName="Shadia" onLeave={vi.fn()} />);
-
-    expect(gridTiles().getByLabelText('Amina Okafor')).toBeInTheDocument();
-    expect(gridTiles().getByLabelText('Amina Okafor’s screen')).toBeInTheDocument();
-  });
-
-  it('spotlights the tile the person picks, and returns to the grid when picked again', async () => {
-    render(<CallScreen call={fakeCall()} selfName="Shadia" onLeave={vi.fn()} />);
-
-    // Initially, everyone is in the grid.
-    expect(gridTiles().getByLabelText('Shadia')).toBeInTheDocument();
-    expect(gridTiles().getByLabelText('Amina Okafor')).toBeInTheDocument();
-    expect(gridTiles().getByLabelText('Ivan Koreta')).toBeInTheDocument();
-
-    // Select Ivan.
-    await userEvent.click(screen.getByRole('button', { name: 'Spotlight Ivan Koreta' }));
-
-    expect(mainTile().getByLabelText('Ivan Koreta')).toBeInTheDocument();
-    expect(sideTiles().getByLabelText('Shadia')).toBeInTheDocument();
-    expect(sideTiles().getByLabelText('Amina Okafor')).toBeInTheDocument();
-
-    // Remove spotlight.
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Remove spotlight from Ivan Koreta' }),
+    render(
+      <CallScreen
+        call={fakeCall({ selfRole: 'deaf', others })}
+        selfName="Shadia"
+        onLeave={vi.fn()}
+      />,
     );
 
-    expect(gridTiles().getByLabelText('Shadia')).toBeInTheDocument();
-    expect(gridTiles().getByLabelText('Amina Okafor')).toBeInTheDocument();
-    expect(gridTiles().getByLabelText('Ivan Koreta')).toBeInTheDocument();
+    expect(mainTile().getByLabelText('Peter’s screen')).toBeInTheDocument();
+    expect(sideTiles().getByLabelText('Amina Okafor')).toBeInTheDocument();
+  });
+
+  it('lets you pin someone else, and goes back to its own choice when you unpin', async () => {
+    const call = fakeCall({ selfRole: 'deaf', others: interpreted });
+    render(<CallScreen call={call} selfName="Shadia" onLeave={vi.fn()} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Spotlight Shadia' }));
+    expect(mainTile().getByLabelText('Shadia')).toBeInTheDocument();
+    expect(sideTiles().getByLabelText('Amina Okafor')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Remove spotlight from Shadia' }));
+    expect(mainTile().getByLabelText('Amina Okafor')).toBeInTheDocument();
+    expect(sideTiles().getByLabelText('Shadia')).toBeInTheDocument();
+  });
+
+  it('goes back to its own choice when the pinned person leaves', async () => {
+    const call = fakeCall({ selfRole: 'deaf', others: interpreted });
+    const { rerender } = render(<CallScreen call={call} selfName="Shadia" onLeave={vi.fn()} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Spotlight Peter' }));
+    expect(mainTile().getByLabelText('Peter')).toBeInTheDocument();
+
+    const left = fakeCall({ selfRole: 'deaf', others: [interpreted[1]] });
+    rerender(<CallScreen call={left} selfName="Shadia" onLeave={vi.fn()} />);
+
+    expect(mainTile().getByLabelText('Amina Okafor')).toBeInTheDocument();
   });
 
   it('shows connection bars on each tile, including your own', () => {

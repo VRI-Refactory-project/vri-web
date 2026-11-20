@@ -73,25 +73,6 @@
   gap: 1rem;
 }
 
-/* Default layout: participant tiles share one row,
-   then wrap into another row after four. */
-.ls-grid {
-  display: grid;
-  flex: 1;
-  min-width: 0;
-  min-height: 0;
-  gap: 1rem;
-  grid-auto-rows: minmax(0, 1fr);
-  align-content: stretch;
-}
-
-.ls-grid > .vt {
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  aspect-ratio: auto;
-}
-
 /* Spotlight mode: large participant on the left,
    remaining participants on the right INSIDE the video stage. */
 .ls-main {
@@ -670,13 +651,6 @@
 
 .vt--screen .vt__video {
   object-position: 50% 50%;
-}
-
-.ls-grid > .vt {
-  aspect-ratio: 16 / 9;
-  height: auto;
-  max-height: 100%;
-  align-self: center;
 }
 
 .ls-side {
