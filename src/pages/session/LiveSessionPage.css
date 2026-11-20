@@ -1006,12 +1006,6 @@
     gap: 6px;
   }
 
-  .ls--call .ls-grid {
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)) !important;
-    gap: 8px;
-    align-content: center;
-  }
-
   .ls--call .cc {
     display: grid;
     flex: 0 0 auto;
@@ -1092,10 +1086,6 @@
   .ls--call {
     padding-right: 8px;
     padding-left: 8px;
-  }
-
-  .ls--call .ls-grid {
-    grid-template-columns: minmax(0, 1fr) !important;
   }
 
   .ls--call .cc {

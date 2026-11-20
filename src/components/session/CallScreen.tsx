@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import type { CallRole } from '../../features/session/callConnection';
+import { pickSpotlight } from '../../features/session/spotlight';
 import type { Call } from '../../features/session/useCall';
 import type { ConnectionQuality } from '../../features/session/videoQuality';
 import { formatDuration } from '../../services/liveSession';
@@ -109,9 +110,12 @@ export function CallScreen({
       removable: Boolean(onRemoveGuest) && tile.id.startsWith('guest-'),
     }));
 
-  // Without a choice: a shared screen first, then the other person, and only you when alone.
-
-  const main = tiles.find((tile) => tile.id === pinned);
+  // The big tile: the one the person pinned, or else the screen's own choice (see pickSpotlight).
+  // There is always one, because your own tile is always there.
+  const mainId = pickSpotlight(tiles, pinned, call.selfRole);
+  const main = tiles.find((tile) => tile.id === mainId) ?? tiles[0];
+  const side = tiles.filter((tile) => tile.id !== main.id);
+  const isPinned = (tile: Tile) => pinned === tile.id && tile.id === main.id;
 
   const tileFor = (tile: Tile) => (
     <VideoTile
@@ -131,8 +135,16 @@ export function CallScreen({
         tile.name === highlightName ||
         (highlightName !== undefined && tile.role === 'interpreter')
       }
-      spotlighted={pinned === tile.id}
-      onSpotlight={() => setPinned((current) => (current === tile.id ? null : tile.id))}
+      spotlighted={isPinned(tile)}
+      // A small tile can be pinned, and a pinned tile unpinned. The big tile the screen chose by
+      // itself has no button: pinning it would change nothing.
+      onSpotlight={
+        tile.id !== main.id
+          ? () => setPinned(tile.id)
+          : isPinned(tile)
+            ? () => setPinned(null)
+            : undefined
+      }
     />
   );
 
@@ -175,30 +187,17 @@ export function CallScreen({
 
       <div className="ls-body">
         <div className="ls-spot">
-          {main ? (
-            <>
-              <div className="ls-main">{tileFor(main)}</div>
+          <div className="ls-main">{tileFor(main)}</div>
 
-              <div className="ls-side">
-                {tiles.filter((tile) => tile.id !== main.id).map(tileFor)}
+          <div className="ls-side">
+            {side.map(tileFor)}
+            {/* Holds the place where the others will appear. */}
+            {call.others.length === 0 && (
+              <div className="vt ls-waiting" role="status">
+                Waiting for others to join…
               </div>
-            </>
-          ) : (
-            <div
-              className="ls-grid"
-              style={{
-                gridTemplateColumns: `repeat(${Math.min(tiles.length, 4)}, minmax(0, 1fr))`,
-              }}
-            >
-              {tiles.map(tileFor)}
-            </div>
-          )}
-
-          {call.others.length === 0 && (
-            <div className="vt ls-waiting" role="status">
-              Waiting for others to join…
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {participantsOpen && (
