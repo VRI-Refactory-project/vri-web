@@ -64,6 +64,43 @@
 
 /* One big tile with the others in a column beside it (Figma). */
 
+/* "You're presenting" bar, shown to the person sharing their screen (like Meet, Teams, Zoom). */
+.ls-presenting {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  flex-shrink: 0;
+  margin-bottom: 0.75rem;
+  padding: 0.55rem 0.75rem 0.55rem 1rem;
+  border-radius: 0.75rem;
+  background: #3b2579;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.ls-presenting > span {
+  flex: 1;
+  min-width: 10rem;
+}
+
+.ls-presenting__stop {
+  padding: 0.4rem 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: #fff;
+  color: #3b2579;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ls-presenting__stop:focus-visible {
+  outline: 3px solid #d8b4fe;
+  outline-offset: 2px;
+}
+
 /* The video stage stays separate from the chat panel. */
 .ls-spot {
   display: flex;

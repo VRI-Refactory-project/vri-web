@@ -58,8 +58,11 @@ export interface CallEvents {
   onLost(): void;
   /** A chat message arrived, or one of your own was sent. */
   onChat?(message: ChatMessage): void;
-  /** Your own screen share started or stopped (the browser's "Stop sharing" button counts too). */
-  onSharing?(on: boolean): void;
+  /**
+   * Your own screen share started or stopped (the browser's "Stop sharing" button counts too).
+   * While it is on, `screen` is what you are sharing, so you can see it as the others do.
+   */
+  onSharing?(on: boolean, screen?: MediaStream): void;
   /** How good your own connection is. */
   onSelfQuality?(quality: ConnectionQuality): void;
   /** Your own role, once you are in the room. */
@@ -247,7 +250,10 @@ export function liveKitConnectionWith(
         else send();
       })
       .on(RoomEvent.LocalTrackPublished, (publication) => {
-        if (publication.source === Track.Source.ScreenShare) events.onSharing?.(true);
+        if (publication.source !== Track.Source.ScreenShare) return;
+        const screen = new MediaStream();
+        setStreamTrack(screen, 'video', publication.track?.mediaStreamTrack);
+        events.onSharing?.(true, screen);
       })
       .on(RoomEvent.LocalTrackUnpublished, (publication) => {
         if (publication.source === Track.Source.ScreenShare) events.onSharing?.(false);
