@@ -268,6 +268,12 @@
 //   });
 
 //   describe('interpreter', () => {
+it('says Continue, because the interpreter still confirms their email and uploads certificates', () => {
+  renderPage('interpreter');
+  expect(screen.getByRole('button', { name: /continue/i })).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /create account/i })).not.toBeInTheDocument();
+});
+
 //     it('requires an email', async () => {
 //       const spy = vi.spyOn(registration, 'registerInterpreter');
 //       renderPage('interpreter');
@@ -522,6 +528,11 @@ describe('CreateAccountPage', () => {
     expect(screen.queryByLabelText('Specialisation')).not.toBeInTheDocument();
   });
 
+  it('says Create account for a deaf user', () => {
+    renderPage();
+    expect(screen.getByRole('button', { name: /create account/i })).toBeInTheDocument();
+  });
+
   it('stops the phone number at the longest length for the country', async () => {
     const user = userEvent.setup();
     renderPage();
@@ -754,7 +765,7 @@ describe('CreateAccountPage', () => {
         'Confirm password': 'Secret-pass-1',
       });
       await user.click(screen.getByRole('checkbox'));
-      await user.click(screen.getByRole('button', { name: /create account/i }));
+      await user.click(screen.getByRole('button', { name: /continue/i }));
       expect(screen.getByText('Enter your email address.')).toBeInTheDocument();
       expect(spy).not.toHaveBeenCalled();
     });
@@ -777,7 +788,7 @@ describe('CreateAccountPage', () => {
       await pick(user, 'Medical / health');
 
       await user.click(screen.getByRole('checkbox'));
-      await user.click(screen.getByRole('button', { name: /create account/i }));
+      await user.click(screen.getByRole('button', { name: /continue/i }));
 
       await waitFor(() => expect(screen.getByText('upload certificates')).toBeInTheDocument());
 
@@ -850,7 +861,7 @@ describe('CreateAccountPage', () => {
         renderPage('interpreter');
         await fillInterpreter(user);
         await user.click(screen.getByRole('checkbox'));
-        await user.click(screen.getByRole('button', { name: /create account/i }));
+        await user.click(screen.getByRole('button', { name: /continue/i }));
         expect(screen.getByText('Choose at least one specialisation.')).toBeInTheDocument();
         expect(spy).not.toHaveBeenCalled();
       });
@@ -860,7 +871,7 @@ describe('CreateAccountPage', () => {
         renderPage('interpreter');
         await pick(user, 'Other (please specify)');
         await user.type(screen.getByLabelText('Your specialisation'), '123');
-        await user.click(screen.getByRole('button', { name: /create account/i }));
+        await user.click(screen.getByRole('button', { name: /continue/i }));
         expect(screen.getByText('Describe your specialisation using letters.')).toBeInTheDocument();
       });
 
@@ -872,7 +883,7 @@ describe('CreateAccountPage', () => {
         await pick(user, 'Other (please specify)');
         await user.type(screen.getByLabelText('Your specialisation'), 'legal / court');
         await user.click(screen.getByRole('checkbox'));
-        await user.click(screen.getByRole('button', { name: /create account/i }));
+        await user.click(screen.getByRole('button', { name: /continue/i }));
         expect(screen.getByText(/already in the list/i)).toBeInTheDocument();
         expect(spy).not.toHaveBeenCalled();
       });
