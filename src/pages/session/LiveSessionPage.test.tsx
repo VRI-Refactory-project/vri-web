@@ -144,6 +144,13 @@ describe('LiveSessionPage', () => {
     expect(screen.getByText('Deaf home')).toBeTruthy();
   });
 
+  it('shows the SignConnect logo on Join Session, not a camera icon', () => {
+    renderPage('deaf');
+    const join = screen.getByRole('button', { name: /join session/i });
+    expect(join.querySelector('.logo-disc img')).toBeTruthy();
+    expect(join.querySelector('svg')).toBeNull();
+  });
+
   it('asks the video server to join this session when Join Session is pressed', async () => {
     const call = fakeCall();
     renderPage('deaf', call);

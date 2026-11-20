@@ -1,16 +1,8 @@
 import { useEffect, useState } from 'react';
-import {
-  ChevronLeft,
-  ChevronRight,
-  PhoneOff,
-  CheckCircle2,
-  Video as VideoIcon,
-  X,
-  Star,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight, PhoneOff, CheckCircle2, X, Star } from 'lucide-react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { SessionStatusBanner } from '../../components/session/SessionStatusBanner';
-import { BrandMark } from '../../components/session/BrandMark';
+import { BrandMark, LogoDisc } from '../../components/session/BrandMark';
 import { CallControls } from '../../components/session/CallControls';
 import { CallScreen } from '../../components/session/CallScreen';
 import { GuestInvitePanel } from '../../components/session/GuestInvitePanel';
@@ -556,7 +548,7 @@ export function LiveSessionPage({
             onClick={join}
             disabled={joining}
           >
-            <VideoIcon size={18} aria-hidden="true" /> {joining ? 'Connecting…' : 'Join Session'}
+            <LogoDisc /> {joining ? 'Connecting…' : 'Join Session'}
           </button>
           <button
             type="button"

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Video } from 'lucide-react';
 import { AuthLayout } from '../../components/Authlayout'; // IMPORTED AuthLayout
+import { LogoDisc } from '../../components/session/BrandMark';
 import { ApiError } from '../../services/api';
 import type { CallToken } from '../../services/callToken';
 import { getGuestLobby, joinAsGuest } from '../../services/guestSession';
@@ -202,7 +202,7 @@ export function GuestSessionPage() {
               className="ls-btn ls-btn--primary"
               style={{ marginTop: 0 }}
             >
-              <Video size={18} aria-hidden="true" /> {busy ? 'Joining…' : 'Join session'}
+              <LogoDisc /> {busy ? 'Joining…' : 'Join session'}
             </button>
           </>
         )}
