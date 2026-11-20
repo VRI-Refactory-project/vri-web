@@ -5,6 +5,7 @@ import { SessionStatusBanner } from '../../components/session/SessionStatusBanne
 import { BrandMark, LogoDisc } from '../../components/session/BrandMark';
 import { CallControls } from '../../components/session/CallControls';
 import { CallScreen } from '../../components/session/CallScreen';
+import { ReturnCountdown } from '../../components/session/ReturnCountdown';
 import { GuestInvitePanel } from '../../components/session/GuestInvitePanel';
 import { removeInvitation } from '../../services/guestInvitations';
 import { VideoTile } from '../../components/session/VideoTile';
@@ -127,6 +128,8 @@ export function LiveSessionPage({
   const [endedByMe, setEndedByMe] = useState(false);
   // True for a person who only left the call. The session carries on for the others, so they may rejoin.
   const [leftEarly, setLeftEarly] = useState(false);
+  // True when the call closed because the person was alone and did not answer "Are you still there?".
+  const [closedAlone, setClosedAlone] = useState(false);
   const home = homeOverride ?? HOME[viewerRole];
 
   // --- Feedback Wizard State ---
@@ -214,6 +217,7 @@ export function LiveSessionPage({
   const join = async () => {
     setJoinError(null);
     setLeftEarly(false);
+    setClosedAlone(false);
     setPhase('joining');
     const joined = await call.join(id ?? '');
     setPhase(joined ? 'call' : 'lobby');
@@ -260,6 +264,13 @@ export function LiveSessionPage({
   // Only the person who started the session (the Deaf user) can end it for everyone.
   const canEnd = viewerRole === 'deaf';
 
+  // Nobody answered "Are you still there?": the Deaf user's session ends, anyone else leaves.
+  const closeAlone = () => {
+    setClosedAlone(true);
+    if (canEnd) void endCall();
+    else leaveCall();
+  };
+
   const selfName = session?.user?.name || 'You';
   const selfProfilePicture =
     (session?.user as unknown as { profilePicture?: string; photo_url?: string })?.profilePicture ||
@@ -268,8 +279,11 @@ export function LiveSessionPage({
 
   if (phase === 'ended') {
     // The person who ended it hears "You left"; everyone else is told how the session ended.
-    const endedTitle =
-      leftEarly || (endedByMe && endedState === 'COMPLETED')
+    const endedTitle = closedAlone
+      ? leftEarly
+        ? 'You left because no one else was in the call'
+        : 'The session ended because no one else was in the call'
+      : leftEarly || (endedByMe && endedState === 'COMPLETED')
         ? 'You left the session'
         : labelFor(endedState).title;
     // Rejoin only makes sense for someone who left while the session carries on for the others.
@@ -280,6 +294,8 @@ export function LiveSessionPage({
       <div className="gm-ended-page">
         <div className="gm-ended-content">
           <h1 className="gm-ended-title">{endedTitle}</h1>
+
+          <ReturnCountdown onReturn={() => navigate(home)} />
 
           <div className="gm-ended-actions">
             {canRejoin && (
@@ -491,6 +507,7 @@ export function LiveSessionPage({
         }
         onLeave={leaveCall}
         onEnd={canEnd ? () => setPhase('confirmEnd') : undefined}
+        onAloneTimeout={closeAlone}
       />
     );
   }

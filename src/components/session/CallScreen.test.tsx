@@ -1,7 +1,8 @@
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Call } from '../../features/session/useCall';
+import { ALONE_MS, ANSWER_SECONDS } from './AloneCheck';
 import { CallScreen } from './CallScreen';
 
 afterEach(cleanup);
@@ -86,11 +87,12 @@ describe('CallScreen', () => {
     expect(mainTile().getByLabelText('Shadia')).toBeInTheDocument();
   });
 
-  it('shows you big when you are alone, with a waiting note beside you', () => {
+  it('fills the screen with you when you are alone: no empty tile, just a waiting note', () => {
     render(<CallScreen call={fakeCall({ others: [] })} selfName="Shadia" onLeave={vi.fn()} />);
 
     expect(mainTile().getByLabelText('Shadia')).toBeInTheDocument();
-    expect(sideTiles().getByText(/waiting for others/i)).toBeInTheDocument();
+    expect(mainTile().getByText(/waiting for others/i)).toBeInTheDocument();
+    expect(document.querySelector('.ls-side')).toBeNull();
   });
 
   it('spotlights a shared screen for everyone', () => {
@@ -164,6 +166,86 @@ describe('CallScreen', () => {
     const panel = within(screen.getByLabelText('Participants'));
     expect(panel.queryByText('Your screen')).not.toBeInTheDocument();
     expect(panel.getByText(/Shadia \(You\)/)).toBeInTheDocument();
+  });
+
+  describe('"Are you still there?"', () => {
+    afterEach(() => vi.useRealTimers());
+    const wait = (ms: number) => act(() => vi.advanceTimersByTime(ms));
+
+    it('asks after 5 minutes alone, and closes the call when nobody answers', () => {
+      vi.useFakeTimers();
+      const onAloneTimeout = vi.fn();
+      render(
+        <CallScreen
+          call={fakeCall({ others: [] })}
+          selfName="S"
+          onLeave={vi.fn()}
+          onAloneTimeout={onAloneTimeout}
+        />,
+      );
+
+      wait(ALONE_MS - 1000);
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+      wait(1000);
+      expect(screen.getByRole('alertdialog', { name: 'Are you still there?' })).toHaveTextContent(
+        'You’ll leave the call',
+      );
+
+      wait(ANSWER_SECONDS * 1000);
+      expect(onAloneTimeout).toHaveBeenCalledTimes(1);
+    });
+
+    it('starts again from 5 minutes when the person answers', () => {
+      vi.useFakeTimers();
+      const onAloneTimeout = vi.fn();
+      render(
+        <CallScreen
+          call={fakeCall({ others: [] })}
+          selfName="S"
+          onLeave={vi.fn()}
+          onEnd={vi.fn()}
+          onAloneTimeout={onAloneTimeout}
+        />,
+      );
+      wait(ALONE_MS);
+      // The Deaf user is told the session itself will end.
+      expect(screen.getByRole('alertdialog')).toHaveTextContent('The session will end');
+
+      fireEvent.click(screen.getByRole('button', { name: 'I’m still here' }));
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+
+      wait(ALONE_MS - 1000);
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+      expect(onAloneTimeout).not.toHaveBeenCalled();
+      wait(1000);
+      expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+    });
+
+    it('never asks while someone else is in the call, and resets when they arrive', () => {
+      vi.useFakeTimers();
+      const alone = fakeCall({ others: [] });
+      const { rerender } = render(<CallScreen call={alone} selfName="S" onLeave={vi.fn()} />);
+      wait(ALONE_MS - 1000);
+
+      rerender(<CallScreen call={fakeCall()} selfName="S" onLeave={vi.fn()} />);
+      wait(ALONE_MS * 2);
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+
+      // They leave again: a fresh 5 minutes, not the 1 second that was left.
+      rerender(<CallScreen call={alone} selfName="S" onLeave={vi.fn()} />);
+      wait(1000);
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    });
+
+    it('leaves the call by default when no timeout action is given (guests)', () => {
+      vi.useFakeTimers();
+      const onLeave = vi.fn();
+      render(<CallScreen call={fakeCall({ others: [] })} selfName="S" onLeave={onLeave} />);
+
+      wait(ALONE_MS);
+      wait(ANSWER_SECONDS * 1000);
+      expect(onLeave).toHaveBeenCalledTimes(1);
+    });
   });
 
   it('lets you pin someone else, and goes back to its own choice when you unpin', async () => {

@@ -10,6 +10,8 @@ import type {
 } from '../../features/session/callConnection';
 import type { OpenSessionSocket, SessionEvents } from '../../features/session/sessionSocket';
 import type { SessionRequestState } from '../../services/sessionRequests';
+import { ALONE_MS, ANSWER_SECONDS } from '../../components/session/AloneCheck';
+import { RETURN_DELAY_MS, RETURN_SECONDS } from '../../components/session/ReturnCountdown';
 import { LiveSessionPage } from './LiveSessionPage';
 import { AuthProvider } from '../../features/auth/AuthProvider'; // IMPORTED AuthProvider
 
@@ -125,6 +127,67 @@ describe('LiveSessionPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /continue session/i }));
     expect(screen.getByRole('button', { name: /end call/i })).toBeTruthy();
+  });
+
+  describe('timers', () => {
+    afterEach(() => vi.useRealTimers());
+    const wait = (ms: number) => act(() => vi.advanceTimersByTime(ms));
+
+    const joinAlone = async (role: 'deaf' | 'interpreter') => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      renderPage(role);
+      fireEvent.click(screen.getByRole('button', { name: /join session/i }));
+      await waitFor(() => expect(screen.getByRole('button', { name: /leave call/i })).toBeTruthy());
+      // The call screen appeared after an async join, outside act: let React run its effects (the
+      // timers start there) before the clock is moved.
+      await act(async () => {});
+    };
+
+    it('returns to the dashboard 5 seconds after the call ends, counting down from 10', async () => {
+      await joinAlone('deaf');
+      fireEvent.click(screen.getByRole('button', { name: /end call/i }));
+      fireEvent.click(screen.getByRole('button', { name: /^end session$/i }));
+      await waitFor(() =>
+        expect(screen.getByRole('heading', { name: 'You left the session' })).toBeTruthy(),
+      );
+      await act(async () => {});
+
+      wait(RETURN_DELAY_MS);
+      expect(screen.getByText('Returning to your dashboard')).toBeTruthy();
+      wait(RETURN_SECONDS * 1000);
+
+      expect(screen.getByText('Deaf home')).toBeTruthy();
+    });
+
+    it('ends the Deaf user’s session when they stay alone and do not answer', async () => {
+      await joinAlone('deaf');
+
+      wait(ALONE_MS);
+      expect(screen.getByRole('alertdialog', { name: 'Are you still there?' })).toBeTruthy();
+      wait(ANSWER_SECONDS * 1000);
+
+      await waitFor(() =>
+        expect(
+          screen.getByRole('heading', {
+            name: 'The session ended because no one else was in the call',
+          }),
+        ).toBeTruthy(),
+      );
+      expect(endSession).toHaveBeenCalledWith('7');
+    });
+
+    it('only takes the interpreter out of the call, so they may rejoin', async () => {
+      await joinAlone('interpreter');
+
+      wait(ALONE_MS);
+      wait(ANSWER_SECONDS * 1000);
+
+      expect(
+        screen.getByRole('heading', { name: 'You left because no one else was in the call' }),
+      ).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Rejoin' })).toBeTruthy();
+      expect(endSession).not.toHaveBeenCalled();
+    });
   });
 
   // 👇 UPDATED TEST 👇

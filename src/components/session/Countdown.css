@@ -1,0 +1,126 @@
+/* SignConnect's countdown: the logo in a purple ring that drains, the seconds under it. */
+.cd {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.cd__ring {
+  position: relative;
+  width: 88px;
+  height: 88px;
+}
+
+.cd__ring svg {
+  display: block;
+  /* Start draining from the top, going clockwise. */
+  transform: rotate(-90deg);
+}
+
+.cd__track,
+.cd__progress {
+  fill: none;
+  stroke-width: 6;
+}
+
+.cd__track {
+  stroke: #e9e3fb;
+}
+
+.cd__progress {
+  stroke: #3b2579;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.9s linear;
+}
+
+.cd__logo {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.cd__logo .logo-disc {
+  box-shadow: 0 0 0 4px #f4effe;
+}
+
+.cd__seconds {
+  color: #3b2579;
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cd__progress {
+    transition: none;
+  }
+}
+
+/* Call ended: "Returning to your dashboard" (ReturnCountdown). */
+.return-cd {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.5rem 0 1.25rem;
+}
+
+.return-cd__text {
+  margin: 0;
+  color: #4a4565;
+  font-size: 0.95rem;
+}
+
+.return-cd__stay {
+  padding: 0.25rem 0.5rem;
+  border: 0;
+  background: none;
+  color: #3b2579;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* "Are you still there?" (AloneCheck): a card over the call. */
+.alone-check {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(27, 18, 64, 0.55);
+}
+
+.alone-check__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(100%, 24rem);
+  padding: 1.75rem 1.5rem 1.5rem;
+  border-radius: 1.25rem;
+  background: #fff;
+  color: #1b1240;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(27, 18, 64, 0.35);
+}
+
+.alone-check__card h2 {
+  margin: 1rem 0 0.4rem;
+  font-size: 1.35rem;
+}
+
+.alone-check__card p {
+  margin: 0 0 0.5rem;
+  color: #4a4565;
+  line-height: 1.45;
+}
+
+.return-cd__stay:focus-visible {
+  outline: 3px solid #3b2579;
+  outline-offset: 2px;
+}

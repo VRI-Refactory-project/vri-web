@@ -5,6 +5,7 @@ import { pickSpotlight } from '../../features/session/spotlight';
 import type { Call } from '../../features/session/useCall';
 import type { ConnectionQuality } from '../../features/session/videoQuality';
 import { formatDuration } from '../../services/liveSession';
+import { AloneCheck } from './AloneCheck';
 import { BrandMark } from './BrandMark';
 import { CallControls } from './CallControls';
 import { ChatPanel } from './ChatPanel';
@@ -28,6 +29,11 @@ interface Props {
   onLeave: () => void;
   /** Only the Deaf user ends the session for everyone. Leave out for everyone else. */
   onEnd?: () => void;
+  /**
+   * What happens when the person has been alone for 5 minutes and does not answer "Are you still
+   * there?". Defaults to leaving the call.
+   */
+  onAloneTimeout?: () => void;
   /** Only the Deaf user removes a hearing guest. Gets the guest's invitation number. */
   onRemoveGuest?: (invitationId: number) => Promise<unknown>;
 }
@@ -65,6 +71,7 @@ export function CallScreen({
   headerExtra,
   onLeave,
   onEnd,
+  onAloneTimeout,
   onRemoveGuest,
 }: Props) {
   const { media, mode } = call;
@@ -212,17 +219,17 @@ export function CallScreen({
 
       <div className="ls-body">
         <div className="ls-spot">
-          <div className="ls-main">{tileFor(main)}</div>
-
-          <div className="ls-side">
-            {side.map(tileFor)}
-            {/* Holds the place where the others will appear. */}
+          <div className="ls-main">
+            {tileFor(main)}
+            {/* Alone, you fill the stage (as in Google Meet): no empty tile, just a note. */}
             {call.others.length === 0 && (
-              <div className="vt ls-waiting" role="status">
+              <p className="ls-waiting" role="status">
                 Waiting for others to join…
-              </div>
+              </p>
             )}
           </div>
+
+          {side.length > 0 && <div className="ls-side">{side.map(tileFor)}</div>}
         </div>
 
         {participantsOpen && (
@@ -244,6 +251,11 @@ export function CallScreen({
           />
         )}
       </div>
+
+      {/* Only there while nobody else is in the call, so someone joining resets it. */}
+      {call.others.every((person) => person.screen) && (
+        <AloneCheck ends={Boolean(onEnd)} onTimeout={onAloneTimeout ?? onLeave} />
+      )}
 
       <ul className="ls-reactions" role="status" aria-live="polite">
         {call.reactions.map((reaction) => (

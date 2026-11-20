@@ -331,12 +331,22 @@
   height: 3rem;
 }
 
+/* "Waiting for others to join…", on your own tile while you are alone in the call. */
 .ls-waiting {
-  display: grid;
-  place-items: center;
+  position: absolute;
+  top: 1rem;
+  left: 50%;
+  z-index: 3;
+  max-width: calc(100% - 2rem);
   margin: 0;
-  padding: 1rem;
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #3b2579;
+  font-size: 0.9rem;
+  font-weight: 600;
   text-align: center;
+  transform: translateX(-50%);
 }
 
 /* ========================================= */

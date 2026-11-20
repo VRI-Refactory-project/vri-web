@@ -113,6 +113,7 @@
 /* Spotlight mode: large participant on the left,
    remaining participants on the right INSIDE the video stage. */
 .ls-main {
+  position: relative;
   display: flex;
   flex: 1;
   min-width: 0;
