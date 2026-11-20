@@ -18,8 +18,9 @@ import {
   timeOf,
   useMySessions,
 } from '../../features/interpreter/homeSessions';
-// 👇 Import the new hook
+// 👇 Import the hook and the new dropdown component
 import { useInterpreterNotifications } from '../../features/interpreter/useInterpreterNotifications';
+import { NotificationDropdown } from '../../features/interpreter/NotificationDropdown';
 import './InterpreterHomePage.css';
 import bannerImage from '../../assets/suit.png';
 
@@ -58,8 +59,11 @@ export function InterpreterHomePage() {
   const { session } = useAuth();
   const firstName = session?.user.name?.split(' ')[0] || 'there';
 
-  // 👇 Call the hook here
-  const { unreadCount } = useInterpreterNotifications();
+  // 👇 Get notifications and the markAllRead function from the hook
+  const { notifications, unreadCount, markAllRead } = useInterpreterNotifications();
+
+  // 👇 State to show/hide the dropdown
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const { available, availableNow, reason, setAvailable, loading, saving, error } =
     useAvailability();
@@ -94,11 +98,27 @@ export function InterpreterHomePage() {
     <div className="ih-page">
       <header className="ih-topbar">
         <div className="ih-topbar-actions">
-          <button className="ih-icon-btn relative" aria-label="Notifications">
-            <Bell size={20} className="ih-icon" />
-            {/* 👇 The dynamic red dot */}
-            {unreadCount > 0 && <span className="ih-notification-dot"></span>}
-          </button>
+          {/* 👇 Wrap the bell in a relative div to position the dropdown */}
+          <div style={{ position: 'relative' }}>
+            <button
+              className="ih-icon-btn relative"
+              aria-label="Notifications"
+              onClick={() => setShowNotifications(!showNotifications)}
+            >
+              <Bell size={20} className="ih-icon" />
+              {/* 👇 Dynamic red dot */}
+              {unreadCount > 0 && <span className="ih-notification-dot"></span>}
+            </button>
+
+            {/* 👇 Show the dropdown when the bell is clicked */}
+            {showNotifications && (
+              <NotificationDropdown
+                notifications={notifications}
+                onClose={() => setShowNotifications(false)}
+                onMarkAllRead={markAllRead}
+              />
+            )}
+          </div>
         </div>
       </header>
 
