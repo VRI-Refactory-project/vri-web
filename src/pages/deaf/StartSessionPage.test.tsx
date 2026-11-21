@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { ApiError } from '../../services/api';
@@ -9,7 +9,7 @@ import {
   getSessionRequest,
   type SessionRequest,
 } from '../../services/sessionRequests';
-import { StartSessionPage } from './StartSessionPage';
+import { StartSessionPage, WAIT_LIMIT_MS } from './StartSessionPage';
 
 vi.mock('../../services/sessionRequests', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../services/sessionRequests')>()),
@@ -21,7 +21,7 @@ vi.mock('../../services/sessionRequests', async (importOriginal) => ({
 const request = (state: SessionRequest['state'], extra: Partial<SessionRequest> = {}) => ({
   id: '12',
   state,
-  createdAt: '2026-10-20T08:00:00Z',
+  createdAt: new Date().toISOString(),
   ...extra,
 });
 
@@ -43,6 +43,29 @@ describe('StartSessionPage', () => {
     expect(screen.getByRole('heading', { name: 'Start a VRI session' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Connect now' })).toBeEnabled();
     expect(createSessionRequest).not.toHaveBeenCalled();
+  });
+
+  it('shows the SignConnect logo on the Connect card, not a camera icon', () => {
+    renderPage();
+    const card = screen.getByRole('region', { name: 'Connect' });
+    expect(card.querySelector('.logo-disc img')).toBeTruthy();
+  });
+
+  it('shows the SignConnect logo while looking, and on Connect now once someone accepts', async () => {
+    vi.mocked(createSessionRequest).mockResolvedValue(request('QUEUED'));
+    vi.mocked(getSessionRequest).mockResolvedValueOnce(request('QUEUED'));
+    renderPage();
+    await userEvent.click(screen.getByRole('button', { name: 'Connect now' }));
+
+    const looking = await screen.findByRole('region', { name: 'Request status' });
+    expect(looking.querySelector('.ss-pulse .logo-disc img')).toBeTruthy();
+
+    vi.mocked(getSessionRequest).mockResolvedValue(
+      request('ACCEPTED', { interpreter: { name: 'Amina Okafor', languages: '' } }),
+    );
+    const connect = await screen.findByRole('link', { name: /Connect now/ });
+    expect(connect.querySelector('.logo-disc img')).toBeTruthy();
+    expect(connect.querySelector('svg')).toBeNull();
   });
 
   it('sends an emergency request when opened from the Emergency Request button', async () => {
@@ -149,5 +172,50 @@ describe('StartSessionPage', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('could not connect you');
     expect(screen.getByRole('button', { name: 'Connect now' })).toBeEnabled();
+  });
+
+  it('stops after 3 minutes and says no interpreter was found', async () => {
+    const sent = new Date(Date.now() - WAIT_LIMIT_MS + 150).toISOString();
+    vi.mocked(createSessionRequest).mockResolvedValue(request('QUEUED', { createdAt: sent }));
+    vi.mocked(getSessionRequest).mockResolvedValue(request('QUEUED', { createdAt: sent }));
+    vi.mocked(cancelSessionRequest).mockResolvedValue(request('CANCELLED'));
+    renderPage();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Connect now' }));
+
+    expect(await screen.findByRole('alertdialog', {}, { timeout: 2000 })).toHaveTextContent(
+      'No interpreter found',
+    );
+    expect(cancelSessionRequest).toHaveBeenCalledWith('12');
+  });
+
+  it('lets the person close the pop-up or try again', async () => {
+    const sent = new Date(Date.now() - WAIT_LIMIT_MS + 100).toISOString();
+    vi.mocked(createSessionRequest).mockResolvedValue(request('QUEUED', { createdAt: sent }));
+    vi.mocked(getSessionRequest).mockResolvedValue(request('QUEUED', { createdAt: sent }));
+    vi.mocked(cancelSessionRequest).mockResolvedValue(request('CANCELLED'));
+    renderPage();
+    await userEvent.click(screen.getByRole('button', { name: 'Connect now' }));
+    await screen.findByRole('alertdialog', {}, { timeout: 2000 });
+
+    vi.mocked(createSessionRequest).mockResolvedValue(request('QUEUED'));
+    await act(async () => {
+      await userEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    });
+
+    expect(createSessionRequest).toHaveBeenCalledTimes(2);
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  });
+
+  it('keeps waiting when the request is still young', async () => {
+    vi.mocked(createSessionRequest).mockResolvedValue(request('QUEUED'));
+    vi.mocked(getSessionRequest).mockResolvedValue(request('QUEUED'));
+    renderPage();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Connect now' }));
+    await screen.findByRole('heading', { name: 'Finding an interpreter' });
+
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(cancelSessionRequest).not.toHaveBeenCalled();
   });
 });

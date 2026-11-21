@@ -1,10 +1,13 @@
-import { Check, CheckCheck, Search, Send, X } from 'lucide-react';
+import { Check, CheckCheck, FileText, MessagesSquare, Search, Send, Users, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Avatar } from '../../features/community/Avatar';
+import { AttachFile } from '../../features/community/AttachFile';
 import { AttachPhoto } from '../../features/community/AttachPhoto';
+import { ChatFile } from '../../features/community/ChatFile';
 import { ChatImage } from '../../features/community/ChatImage';
 import {
+  fileProblem,
   formatWhen,
   mergeMessages,
   photoProblem,
@@ -19,6 +22,7 @@ import {
   getConversations,
   getMessages,
   markRead,
+  sendFile,
   sendMessage,
   sendPhoto,
   sendSticker,
@@ -43,11 +47,12 @@ export function MessagesPage() {
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState('');
   const [photo, setPhoto] = useState<{ file: File; preview: string } | null>(null);
+  const [doc, setDoc] = useState<File | null>(null);
   const endRef = useRef<HTMLLIElement>(null);
 
   const requested = Number(params.get('c'));
-  const activeId =
-    conversations?.find((c) => c.id === requested)?.id ?? conversations?.[0]?.id ?? null;
+  // No chat opens by itself: you pick one (or follow a notification link that names it).
+  const activeId = conversations?.find((c) => c.id === requested)?.id ?? null;
   const active = conversations?.find((c) => c.id === activeId) ?? null;
 
   const refreshList = useCallback(async () => {
@@ -65,9 +70,10 @@ export function MessagesPage() {
   }, [refreshList]);
   useInterval(refreshList, LIST_REFRESH_MS);
 
-  // A photo waiting to be sent belongs to the conversation it was chosen in.
+  // A photo or file waiting to be sent belongs to the conversation it was chosen in.
   useEffect(() => {
     setPhoto(null);
+    setDoc(null);
   }, [activeId]);
   const previewUrl = photo?.preview;
   useEffect(() => () => (previewUrl ? URL.revokeObjectURL?.(previewUrl) : undefined), [previewUrl]);
@@ -165,6 +171,14 @@ export function MessagesPage() {
           setPhoto(null);
         },
       );
+    } else if (doc) {
+      void deliver(
+        (id) => sendFile(id, doc, body),
+        () => {
+          setDraft('');
+          setDoc(null);
+        },
+      );
     } else if (body) {
       void deliver(
         (id) => sendMessage(id, body),
@@ -176,7 +190,19 @@ export function MessagesPage() {
   const choosePhoto = (file: File) => {
     const problem = photoProblem(file);
     setSendError(problem);
-    if (!problem) setPhoto({ file, preview: URL.createObjectURL?.(file) ?? '' });
+    if (!problem) {
+      setDoc(null);
+      setPhoto({ file, preview: URL.createObjectURL?.(file) ?? '' });
+    }
+  };
+
+  const chooseFile = (file: File) => {
+    const problem = fileProblem(file);
+    setSendError(problem);
+    if (!problem) {
+      setPhoto(null);
+      setDoc(file);
+    }
   };
 
   const sendStickerNow = (stickerId: string) => void deliver((id) => sendSticker(id, stickerId));
@@ -276,6 +302,7 @@ export function MessagesPage() {
                         {m.imageUrl && (
                           <ChatImage key={m.imageUrl} path={m.imageUrl} alt={m.body || 'Photo'} />
                         )}
+                        {m.file && <ChatFile file={m.file} />}
                         {m.body && <p>{m.body}</p>}
                       </>
                     )}
@@ -314,12 +341,27 @@ export function MessagesPage() {
                   </button>
                 </div>
               )}
+              {doc && (
+                <div className="cm-pending">
+                  <FileText className="cm-pending-file" size={32} aria-hidden />
+                  <span className="cm-pending-name">{doc.name}</span>
+                  <button
+                    type="button"
+                    aria-label="Remove file"
+                    disabled={sending}
+                    onClick={() => setDoc(null)}
+                  >
+                    <X size={16} aria-hidden />
+                  </button>
+                </div>
+              )}
               <form className="dx-compose" onSubmit={send}>
                 <StickerPicker onPick={sendStickerNow} disabled={sending} />
                 <AttachPhoto onPick={choosePhoto} disabled={sending} />
+                <AttachFile onPick={chooseFile} disabled={sending} />
                 <input
-                  aria-label={photo ? 'Add a caption' : 'Write a message'}
-                  placeholder={photo ? 'Add a caption…' : 'Write a message…'}
+                  aria-label={photo || doc ? 'Add a caption' : 'Write a message'}
+                  placeholder={photo || doc ? 'Add a caption…' : 'Write a message…'}
                   maxLength={2000}
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
@@ -328,18 +370,40 @@ export function MessagesPage() {
                   type="submit"
                   className="dx-send"
                   aria-label="Send"
-                  disabled={(!draft.trim() && !photo) || sending}
+                  disabled={(!draft.trim() && !photo && !doc) || sending}
                 >
                   <Send size={18} aria-hidden />
                 </button>
               </form>
             </>
           ) : (
-            <p className="dx-empty">
-              {conversations === null
-                ? 'Loading your conversations…'
-                : 'Select a conversation to read it.'}
-            </p>
+            <div className="cm-welcome">
+              <MessagesSquare size={56} aria-hidden />
+              {conversations === null ? (
+                <p>Loading your conversations…</p>
+              ) : (
+                <>
+                  <h2>Your messages</h2>
+                  <p>Select a conversation to read it and reply.</p>
+                  <div className="cm-welcome-actions">
+                    {conversations.length > 0 && (
+                      <button
+                        type="button"
+                        className="cm-welcome-action"
+                        onClick={() => setParams({ c: String(conversations[0].id) })}
+                      >
+                        <Send size={22} aria-hidden />
+                        <span>Send message</span>
+                      </button>
+                    )}
+                    <Link className="cm-welcome-action" to={COMMUNITY_PATH}>
+                      <Users size={22} aria-hidden />
+                      <span>Community</span>
+                    </Link>
+                  </div>
+                </>
+              )}
+            </div>
           )}
         </section>
       </div>

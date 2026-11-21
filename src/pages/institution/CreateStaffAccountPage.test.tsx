@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { ApiError } from '../../services/api';
 import * as staffService from '../../services/staff';
+import * as institutionService from '../../services/institutions';
 import { CreateStaffAccountPage } from './CreateStaffAccountPage';
 
 const renderPage = () =>
@@ -24,6 +25,11 @@ async function fillIn() {
 }
 
 describe('CreateStaffAccountPage', () => {
+  beforeEach(() => {
+    vi.spyOn(institutionService, 'fetchMyDepartments').mockResolvedValue([
+      { id: 'healthcare-id', name: 'Healthcare', active: true },
+    ]);
+  });
   afterEach(() => vi.restoreAllMocks());
 
   it('offers only the backend’s roles, Staff and Admin', () => {
@@ -53,6 +59,7 @@ describe('CreateStaffAccountPage', () => {
         fullName: 'Sarah Nakato',
         email: 'sarah@mulago.example',
         department: 'Healthcare',
+        departmentId: 'healthcare-id',
         role: 'Staff',
         phone: expect.stringMatching(/^\+\d+772111000$/),
       }),

@@ -1,11 +1,38 @@
 import { Room, RoomEvent, Track, VideoQuality, type RemoteParticipant } from 'livekit-client';
 import { getCallToken, type CallToken } from '../../services/callToken';
 import type { ConnectionQuality } from './videoQuality';
+import { findReaction, type Reaction } from './reactions';
+
+/** The role shown as a tag under someone's name: their role on the platform, or a hearing guest. */
+export type CallRole = 'deaf' | 'interpreter' | 'institution' | 'admin' | 'guest';
+
+const CALL_ROLES: readonly string[] = ['deaf', 'interpreter', 'institution', 'admin', 'guest'];
+
+/**
+ * The role the server signed into the person's token (and the guest identity as a fallback).
+ * People can rename themselves, but not change this.
+ */
+function roleOf(metadata: string | undefined, identity: string | undefined): CallRole | undefined {
+  try {
+    const role = (JSON.parse(metadata || '{}') as { role?: unknown }).role;
+    if (typeof role === 'string' && CALL_ROLES.includes(role)) return role as CallRole;
+  } catch {
+    // broken metadata: fall back to the identity below
+  }
+  return identity?.startsWith('guest-') ? 'guest' : undefined;
+}
+
+/** Longest name a person may give themselves in the call. */
+export const MAX_NAME_LENGTH = 40;
 
 /** Someone else in the call, with the stream the screen plays for them. */
 export interface RemotePerson {
   id: string;
   name: string;
+  /** Shown as a tag under the name: Deaf user, Interpreter, Institution or Hearing guest. */
+  role?: CallRole;
+  /** True while the person has their hand raised. */
+  handRaised?: boolean;
   /** Their camera and microphone together, so one element plays both. */
   stream: MediaStream;
   cameraOff: boolean;
@@ -31,10 +58,17 @@ export interface CallEvents {
   onLost(): void;
   /** A chat message arrived, or one of your own was sent. */
   onChat?(message: ChatMessage): void;
-  /** Your own screen share started or stopped (the browser's "Stop sharing" button counts too). */
-  onSharing?(on: boolean): void;
+  /**
+   * Your own screen share started or stopped (the browser's "Stop sharing" button counts too).
+   * While it is on, `screen` is what you are sharing, so you can see it as the others do.
+   */
+  onSharing?(on: boolean, screen?: MediaStream): void;
   /** How good your own connection is. */
   onSelfQuality?(quality: ConnectionQuality): void;
+  /** Your own role, once you are in the room. */
+  onSelfRole?(role: CallRole | undefined): void;
+  /** A reaction was sent, or someone raised their hand. */
+  onReaction?(reaction: Reaction): void;
 }
 
 /**
@@ -49,8 +83,14 @@ export interface CallConnection {
   leave(): void;
   /** Starts or stops sharing the viewer's screen. */
   setScreenShare?(on: boolean): Promise<void>;
+  /** Changes the name the others see for you. */
+  setName?(name: string): void;
   /** Sends a chat message to everyone in the call. */
   sendChat?(text: string): void;
+  /** Raises or lowers your hand. It stays up for people who join later. */
+  setHandRaised?(raised: boolean): void;
+  /** Sends a quick reaction (one of REACTIONS) to everyone in the call. */
+  sendReaction?(emoji: string): void;
   /** Swaps the camera or microphone being sent, after the viewer picks another device. */
   replaceTrack?(kind: 'audio' | 'video', track: MediaStreamTrack): Promise<void>;
   /** Limits how sharp the video coming from the others may be, to save data. */
@@ -60,6 +100,8 @@ export interface CallConnection {
 export type CreateConnection = (events: CallEvents) => CallConnection;
 
 const CHAT_TOPIC = 'chat';
+const REACTION_TOPIC = 'reaction';
+let reactionCount = 0;
 
 /** LiveKit reports quality as one of these words; anything else counts as unknown. */
 function toQuality(value: unknown): ConnectionQuality {
@@ -68,6 +110,15 @@ function toQuality(value: unknown): ConnectionQuality {
     : 'unknown';
 }
 const MAX_CHAT_LENGTH = 2000;
+
+/** The emoji inside a reaction message, or undefined when the message is broken. */
+function readReactionEmoji(payload: Uint8Array): unknown {
+  try {
+    return (JSON.parse(new TextDecoder().decode(payload)) as { emoji?: unknown }).emoji;
+  } catch {
+    return undefined;
+  }
+}
 
 /** Keeps one track of the given kind on the stream, swapping it when LiveKit gives a new one. */
 function setStreamTrack(stream: MediaStream, kind: 'audio' | 'video', track?: MediaStreamTrack) {
@@ -99,7 +150,8 @@ export function liveKitConnectionWith(
   getToken: (sessionId: string) => Promise<CallToken>,
 ): CreateConnection {
   return (events) => {
-    const room = new Room({ adaptiveStream: true, dynacast: true });
+    // const room = new Room({ adaptiveStream: true, dynacast: true });
+    const room = new Room({ adaptiveStream: false, dynacast: true });
     // One stream per person for the whole call, so their video does not restart on every change.
     const streams = new Map<string, MediaStream>();
     let leaving = false;
@@ -126,6 +178,8 @@ export function liveKitConnectionWith(
         {
           id: p.identity,
           name,
+          role: roleOf(p.metadata, p.identity),
+          handRaised: p.attributes?.hand === '1',
           stream,
           cameraOff: !camera?.track || camera.isMuted,
           quality: toQuality(p.connectionQuality),
@@ -179,17 +233,43 @@ export function liveKitConnectionWith(
       .on(RoomEvent.TrackMuted, send)
       .on(RoomEvent.TrackUnmuted, send)
       .on(RoomEvent.ParticipantNameChanged, send)
+      .on(RoomEvent.ParticipantMetadataChanged, send)
+      .on(RoomEvent.ParticipantAttributesChanged, (changed, participant) => {
+        send();
+        if (changed?.hand === '1' && participant && participant !== room.localParticipant) {
+          events.onReaction?.({
+            id: `${participant.identity}-hand-${++reactionCount}`,
+            from: participant.name || 'Participant',
+            emoji: '✋',
+            label: 'raised their hand',
+          });
+        }
+      })
       .on(RoomEvent.ConnectionQualityChanged, (quality, participant) => {
         if (participant.isLocal) events.onSelfQuality?.(toQuality(quality));
         else send();
       })
       .on(RoomEvent.LocalTrackPublished, (publication) => {
-        if (publication.source === Track.Source.ScreenShare) events.onSharing?.(true);
+        if (publication.source !== Track.Source.ScreenShare) return;
+        const screen = new MediaStream();
+        setStreamTrack(screen, 'video', publication.track?.mediaStreamTrack);
+        events.onSharing?.(true, screen);
       })
       .on(RoomEvent.LocalTrackUnpublished, (publication) => {
         if (publication.source === Track.Source.ScreenShare) events.onSharing?.(false);
       })
       .on(RoomEvent.DataReceived, (payload, participant, _kind, topic) => {
+        if (topic === REACTION_TOPIC) {
+          const found = findReaction(readReactionEmoji(payload));
+          if (found) {
+            events.onReaction?.({
+              id: `${participant?.identity ?? 'unknown'}-${++reactionCount}`,
+              from: participant?.name || 'Participant',
+              ...found,
+            });
+          }
+          return;
+        }
         if (topic !== CHAT_TOPIC) return;
         const message = readChat(payload);
         if (!message) return;
@@ -225,6 +305,7 @@ export function liveKitConnectionWith(
           void room.disconnect();
           return;
         }
+        events.onSelfRole?.(roleOf(room.localParticipant.metadata, room.localParticipant.identity));
         for (const track of local?.getTracks() ?? []) {
           await room.localParticipant.publishTrack(track, {
             source: track.kind === 'video' ? Track.Source.Camera : Track.Source.Microphone,
@@ -247,6 +328,10 @@ export function liveKitConnectionWith(
           events.onSharing?.(false);
         }
       },
+      setName(name) {
+        const clean = name.trim().slice(0, MAX_NAME_LENGTH);
+        if (clean) room.localParticipant.setName(clean);
+      },
       sendChat(text) {
         const body = text.trim().slice(0, MAX_CHAT_LENGTH);
         if (!body) return;
@@ -254,6 +339,17 @@ export function liveKitConnectionWith(
         const payload = new TextEncoder().encode(JSON.stringify({ text: body, at }));
         void room.localParticipant.publishData(payload, { reliable: true, topic: CHAT_TOPIC });
         events.onChat?.({ id: `me-${at}`, from: 'You', text: body, mine: true, at });
+      },
+      setHandRaised(raised) {
+        // An empty value removes the attribute, so a lowered hand leaves nothing behind.
+        void room.localParticipant.setAttributes({ hand: raised ? '1' : '' });
+      },
+      sendReaction(emoji) {
+        const found = findReaction(emoji);
+        if (!found) return;
+        const payload = new TextEncoder().encode(JSON.stringify({ emoji: found.emoji }));
+        void room.localParticipant.publishData(payload, { reliable: true, topic: REACTION_TOPIC });
+        events.onReaction?.({ id: `me-${++reactionCount}`, from: 'You', ...found });
       },
       setIncomingQuality(quality) {
         incoming = quality;

@@ -109,16 +109,19 @@ export function useSessionRequest(
     [resumeOpen, follow],
   );
 
+  /** Cancel the open request. Returns true when it was cancelled. */
   const cancel = useCallback(async () => {
-    if (!id) return;
+    if (!id) return false;
     setBusy(true);
     setError(null);
     try {
       await cancelSessionRequest(id);
       currentId.current = null;
       setRequest(null);
+      return true;
     } catch (err) {
       setError(messageFor(err));
+      return false;
     } finally {
       setBusy(false);
     }

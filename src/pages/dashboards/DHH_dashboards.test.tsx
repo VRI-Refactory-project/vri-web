@@ -226,4 +226,60 @@ describe('DashboardPage (deaf)', () => {
     expect(screen.getByText('1')).toBeInTheDocument();
     expect(screen.queryByText('No upcoming sessions yet.')).not.toBeInTheDocument();
   });
+
+  describe('booked sessions routing', () => {
+    const booking = (id: number, status: string, interpreter_name: string | null = null) => ({
+      id,
+      date: '2026-12-01',
+      time: '10:00',
+      duration: 30,
+      session_type: 'medical',
+      status,
+      interpreter_name,
+    });
+
+    it('says who a confirmed booking is with and that a pending one is waiting', async () => {
+      respondWith([], [], [booking(1, 'CONFIRMED', 'Amina Okafor'), booking(2, 'PENDING')]);
+      renderPage();
+      expect(await screen.findByText('Confirmed with Amina Okafor')).toBeInTheDocument();
+      expect(screen.getByText('Waiting for an interpreter')).toBeInTheDocument();
+    });
+
+    it('shows Join call instead of Cancel once the call can be opened, and opens it', async () => {
+      respondWith([], [], [{ ...booking(3, 'CONFIRMED', 'Amina Okafor'), can_join: true }]);
+      const base = fetchMock.getMockImplementation()!;
+      fetchMock.mockImplementation(async (url: string, init?: RequestInit) =>
+        init?.method === 'POST' ? ok({ request_id: 41 }) : base(url),
+      );
+      renderPage();
+      await userEvent.click(await screen.findByRole('button', { name: 'Join call' }));
+
+      expect(screen.queryByRole('button', { name: 'Cancel booking' })).not.toBeInTheDocument();
+      const post = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST');
+      expect(String(post?.[0])).toContain('/interpreters/sessions/booked/3/start/');
+    });
+
+    it('says when the interpreter did not join and offers no buttons', async () => {
+      respondWith([], [], [{ ...booking(6, 'CONFIRMED', 'Amina Okafor'), no_show: 'interpreter' }]);
+      renderPage();
+
+      expect(await screen.findByText('Interpreter did not join')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Cancel booking' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Join call' })).not.toBeInTheDocument();
+    });
+
+    it('cancels a booking and shows it as cancelled', async () => {
+      respondWith([], [], [booking(7, 'PENDING')]);
+      const base = fetchMock.getMockImplementation()!;
+      fetchMock.mockImplementation(async (url: string, init?: RequestInit) =>
+        init?.method === 'POST' ? ok({ id: 7, status: 'CANCELLED' }) : base(url),
+      );
+      renderPage();
+      await userEvent.click(await screen.findByRole('button', { name: 'Cancel booking' }));
+      expect(await screen.findByText('Cancelled', { selector: 'span:not(.badge)' })).toBeVisible();
+      const post = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST');
+      expect(String(post?.[0])).toContain('/interpreters/sessions/booked/7/cancel/');
+      expect(screen.queryByRole('button', { name: 'Cancel booking' })).not.toBeInTheDocument();
+    });
+  });
 });

@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { describeError } from '../../services/api';
-import type { ChatMessage, CreateConnection, RemotePerson } from './callConnection';
+import {
+  MAX_NAME_LENGTH,
+  type CallRole,
+  type ChatMessage,
+  type CreateConnection,
+  type RemotePerson,
+} from './callConnection';
+import { REACTION_MS, type Reaction } from './reactions';
 import { useLocalMedia } from './useLocalMedia';
 import { QUALITY_PRESETS, type ConnectionQuality, type VideoQualityChoice } from './videoQuality';
 
@@ -28,8 +35,20 @@ export function useCall({ createConnection, mode = { video: true, audio: true } 
   // How many messages were there when the chat was last open, so the rest count as unread.
   const [seenCount, setSeenCount] = useState(0);
   const [sharing, setSharing] = useState(false);
+  // What you are sharing, so your own screen shows it too (null when you are not sharing).
+  const [selfScreen, setSelfScreen] = useState<MediaStream | null>(null);
+  const stopSharing = useCallback(() => {
+    setSharing(false);
+    setSelfScreen(null);
+  }, []);
   const [selfQuality, setSelfQuality] = useState<ConnectionQuality>('unknown');
+  // Your own role (for the tag) and the name you picked in the call, if you changed it.
+  const [selfRole, setSelfRole] = useState<CallRole | undefined>(undefined);
+  const [renamedTo, setRenamedTo] = useState<string | null>(null);
   const [quality, setQuality] = useState<VideoQualityChoice>('auto');
+  // Reactions on the screen for a few seconds, and whether your own hand is up.
+  const [reactions, setReactions] = useState<Reaction[]>([]);
+  const [handRaised, setHandRaised] = useState(false);
   const [phase, setPhase] = useState<'idle' | 'joining' | 'live'>('idle');
   // True when the connection dropped without the person leaving.
   const [lost, setLost] = useState(false);
@@ -45,12 +64,23 @@ export function useCall({ createConnection, mode = { video: true, audio: true } 
       onLost: () => {
         setError('You were disconnected from the call. Join again to reconnect.');
         setPhase('idle');
-        setSharing(false);
+        stopSharing();
         setLost(true);
       },
       onChat: (message) => setMessages((all) => [...all, message]),
-      onSharing: setSharing,
+      onSharing: (on, screen) => {
+        setSharing(on);
+        setSelfScreen(on ? (screen ?? null) : null);
+      },
       onSelfQuality: setSelfQuality,
+      onSelfRole: setSelfRole,
+      onReaction: (reaction) => {
+        setReactions((all) => [...all.slice(-4), reaction]);
+        setTimeout(
+          () => setReactions((all) => all.filter((r) => r.id !== reaction.id)),
+          REACTION_MS,
+        );
+      },
     }),
   );
 
@@ -84,9 +114,9 @@ export function useCall({ createConnection, mode = { video: true, audio: true } 
   const leave = useCallback(() => {
     connection.leave();
     startedAt.current = 0;
-    setSharing(false);
+    stopSharing();
     setPhase('idle');
-  }, [connection]);
+  }, [connection, stopSharing]);
 
   useEffect(() => {
     if (phase !== 'live') return;
@@ -130,6 +160,20 @@ export function useCall({ createConnection, mode = { video: true, audio: true } 
     void media.setVideoLimits(preset.outgoing);
   };
 
+  /** Changes the name everyone in the call sees for you. It does not change your account. */
+  const rename = (name: string) => {
+    const clean = name.trim().slice(0, MAX_NAME_LENGTH);
+    if (!clean) return;
+    setRenamedTo(clean);
+    connection.setName?.(clean);
+  };
+
+  const toggleHand = () => {
+    const next = !handRaised;
+    setHandRaised(next);
+    connection.setHandRaised?.(next);
+  };
+
   const openChat = (open: boolean) => {
     setChatOpen(open);
     // Everything up to now has been seen, whether the chat is opening or closing.
@@ -147,7 +191,12 @@ export function useCall({ createConnection, mode = { video: true, audio: true } 
     chatOpen,
     unread,
     sharing,
+    selfScreen,
     selfQuality,
+    selfRole,
+    renamedTo,
+    reactions,
+    handRaised,
     quality,
     phase,
     lost,
@@ -162,6 +211,9 @@ export function useCall({ createConnection, mode = { video: true, audio: true } 
     toggleShare,
     pickDevice,
     pickQuality,
+    rename,
+    toggleHand,
+    react: (emoji: string) => connection.sendReaction?.(emoji),
     openChat,
     sendChat: (text: string) => connection.sendChat?.(text),
   };

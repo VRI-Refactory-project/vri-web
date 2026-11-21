@@ -5,9 +5,13 @@
   gap: 0.5rem;
 }
 
+.ls-brand {
+  font-size: 1.5rem;
+}
+
 .ls-brand__logo {
-  height: 2rem;
-  width: 2rem;
+  height: 3.25rem;
+  width: 3.25rem;
   object-fit: contain;
 }
 
@@ -60,6 +64,43 @@
 
 /* One big tile with the others in a column beside it (Figma). */
 
+/* "You're presenting" bar, shown to the person sharing their screen (like Meet, Teams, Zoom). */
+.ls-presenting {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  flex-shrink: 0;
+  margin-bottom: 0.75rem;
+  padding: 0.55rem 0.75rem 0.55rem 1rem;
+  border-radius: 0.75rem;
+  background: #3b2579;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.ls-presenting > span {
+  flex: 1;
+  min-width: 10rem;
+}
+
+.ls-presenting__stop {
+  padding: 0.4rem 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: #fff;
+  color: #3b2579;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ls-presenting__stop:focus-visible {
+  outline: 3px solid #d8b4fe;
+  outline-offset: 2px;
+}
+
 /* The video stage stays separate from the chat panel. */
 .ls-spot {
   display: flex;
@@ -69,28 +110,10 @@
   gap: 1rem;
 }
 
-/* Default layout: participant tiles share one row,
-   then wrap into another row after four. */
-.ls-grid {
-  display: grid;
-  flex: 1;
-  min-width: 0;
-  min-height: 0;
-  gap: 1rem;
-  grid-auto-rows: minmax(0, 1fr);
-  align-content: stretch;
-}
-
-.ls-grid > .vt {
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  aspect-ratio: auto;
-}
-
 /* Spotlight mode: large participant on the left,
    remaining participants on the right INSIDE the video stage. */
 .ls-main {
+  position: relative;
   display: flex;
   flex: 1;
   min-width: 0;
@@ -306,9 +329,10 @@
 .chat {
   display: flex;
   flex-direction: column;
-  width: 20rem;
+  width: 24rem;
   flex-shrink: 0;
   min-height: 0;
+  font-size: var(--chat-size, 1.25rem); /* set by the size buttons in the chat header */
   background: #fff;
   border: 1px solid #cfcae6;
   border-radius: 1rem;
@@ -326,7 +350,31 @@
 
 .chat__head h2 {
   margin: 0;
+  margin-right: auto;
   font-size: 1rem;
+}
+
+.chat__size {
+  display: flex;
+  gap: 0.25rem;
+  margin-right: 0.5rem;
+}
+
+.chat__size button {
+  display: grid;
+  place-items: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  border: 1px solid #6f5fb0;
+  border-radius: 0.4rem;
+  background: none;
+  color: #e8e4f8;
+  cursor: pointer;
+}
+
+.chat__size button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .chat__close {
@@ -352,7 +400,7 @@
 
 .chat__empty {
   color: #6b6785;
-  font-size: 0.85rem;
+  font-size: 0.9em;
   text-align: center;
 }
 
@@ -373,13 +421,13 @@
 }
 
 .chat__from {
-  font-size: 0.7rem;
+  font-size: 0.75em;
   font-weight: 700;
   color: #3b2579;
 }
 
 .chat__text {
-  font-size: 0.9rem;
+  font-size: 1em;
   color: #1b1240;
 }
 
@@ -433,4 +481,216 @@
     width: 100%;
     max-height: 40%;
   }
+}
+
+/* The participants list reuses the chat panel's frame. */
+.pp__list {
+  flex: 1;
+  margin: 0;
+  padding: 0.5rem 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.pp__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid #eeebf8;
+  color: #1b1240;
+}
+
+.pp__who {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.pp__name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.pp__tag {
+  font-size: 0.75em;
+  font-weight: 700;
+  color: #4a3a86;
+}
+
+.pp__state {
+  display: flex;
+  gap: 0.5rem;
+  color: #6b6785;
+}
+
+/* A raised hand on a tile. */
+.vt__hand {
+  position: absolute;
+  top: 0.6rem;
+  left: 0.6rem;
+  z-index: 2;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: #fff;
+  font-size: 1.1rem;
+}
+
+/* Reactions float over the bottom of the call for a few seconds. */
+.ls-reactions {
+  position: fixed;
+  left: 1rem;
+  bottom: 6.5rem;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  pointer-events: none;
+}
+
+.ls-reaction {
+  width: fit-content;
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  background: #2a1b5c;
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+/* Text for screen readers only. */
+.ls-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* The row of emoji at the top of the More menu. */
+.cc__reactions {
+  display: grid;
+  grid-template-columns: repeat(7, auto);
+  gap: 0.25rem;
+  padding: 0.25rem;
+}
+
+.cc__reactions button {
+  width: auto;
+  padding: 0.35rem 0.5rem;
+  font-size: 1.25rem;
+}
+
+/* The red "LIVE" bubble in the top bar, while the session is running. */
+.ls-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.8rem;
+  border-radius: 999px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.ls-live i {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: #fff;
+  animation: ls-live-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes ls-live-pulse {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ls-live i {
+    animation: none;
+  }
+}
+
+/* Rename and remove, inside the participants list. */
+.pp__problem {
+  margin: 0;
+  padding: 0.5rem 1rem;
+  background: #fee2e2;
+  color: #7f1d1d;
+  font-size: 0.85em;
+}
+
+.pp__rename {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.pp__rename input {
+  min-width: 0;
+  flex: 1;
+  padding: 0.2rem 0.4rem;
+  border: 1px solid #cfcae6;
+  border-radius: 0.4rem;
+  font: inherit;
+}
+
+.pp__edit {
+  margin-left: 0.4rem;
+  padding: 0.15rem;
+  border: 0;
+  background: none;
+  color: #4a3a86;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.pp__rename button,
+.pp__remove,
+.pp__confirm button {
+  padding: 0.2rem 0.6rem;
+  border: 1px solid #cfcae6;
+  border-radius: 0.4rem;
+  background: #fff;
+  color: #1b1240;
+  font: inherit;
+  font-size: 0.85em;
+  cursor: pointer;
+}
+
+.pp__rename button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pp__remove,
+.pp__confirm .pp__danger {
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.pp__confirm {
+  display: flex;
+  gap: 0.3rem;
+}
+
+/* Layout: everyone is shown whole, from the top of their head down, and kept big enough to see. */
+.vt__video {
+  object-position: 50% 15%;
+}
+
+.vt--screen .vt__video {
+  object-position: 50% 50%;
+}
+
+.ls-side {
+  width: clamp(14rem, 24vw, 22rem);
 }

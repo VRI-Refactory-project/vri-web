@@ -1,6 +1,109 @@
 // src/services/institutions.ts
 import { api } from './api';
 
+export type InstitutionProfile = {
+  name: string;
+  email: string;
+  phone: string;
+  type: string;
+  description: string;
+};
+
+export type InstitutionDepartment = { id: string; name: string; active: boolean };
+const MY_PROFILE = '/api/v1/institutions/me/institution-profile/';
+const MY_DEPARTMENTS = '/api/v1/institutions/me/departments/';
+const recordOf = (value: unknown): Record<string, unknown> =>
+  value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+const textOf = (...values: unknown[]) =>
+  values.find((value): value is string => typeof value === 'string') ?? '';
+const idOf = (...values: unknown[]) => {
+  const value = values.find(
+    (candidate) =>
+      (typeof candidate === 'string' && candidate.length > 0) || typeof candidate === 'number',
+  );
+  return value === undefined ? '' : String(value);
+};
+
+function profileFrom(value: unknown): InstitutionProfile {
+  const raw = recordOf(value);
+  return {
+    name: textOf(raw.organisation_name, raw.organization_name, raw.institution_name, raw.name),
+    email: textOf(raw.email, raw.contact_email, raw.official_email),
+    phone: textOf(raw.phone_number, raw.phone, raw.contact_phone),
+    type: textOf(raw.organisation_type, raw.organization_type, raw.institution_type, raw.type),
+    description: textOf(raw.description),
+  };
+}
+
+function departmentsFrom(value: unknown): InstitutionDepartment[] {
+  const outer = recordOf(value);
+  const rows = Array.isArray(value)
+    ? value
+    : (['results', 'departments', 'data', 'items'].map((key) => outer[key]).find(Array.isArray) ??
+      []);
+  return rows
+    .map((item) => {
+      const raw = recordOf(item);
+      return {
+        id: idOf(raw.id, raw.uuid, raw.pk, raw.department_id, raw.department_uuid),
+        name: textOf(raw.name, raw.department_name, raw.title),
+        active: raw.is_active !== false && raw.active !== false && raw.status !== 'INACTIVE',
+      };
+    })
+    .filter((department) => department.name);
+}
+
+export async function fetchMyInstitutionProfile(): Promise<InstitutionProfile> {
+  return profileFrom(await api<unknown>(MY_PROFILE));
+}
+
+export async function updateMyInstitutionProfile(
+  profile: InstitutionProfile,
+): Promise<InstitutionProfile> {
+  return profileFrom(
+    await api<unknown>(MY_PROFILE, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        organisation_name: profile.name.trim(),
+        organisation_type: profile.type,
+        email: profile.email.trim(),
+        phone_number: profile.phone.trim(),
+        description: profile.description.trim(),
+      }),
+    }),
+  );
+}
+
+export async function fetchMyDepartments(): Promise<InstitutionDepartment[]> {
+  return departmentsFrom(await api<unknown>(MY_DEPARTMENTS));
+}
+
+export async function createMyDepartment(name: string): Promise<InstitutionDepartment> {
+  const raw = recordOf(
+    await api<unknown>(MY_DEPARTMENTS, {
+      method: 'POST',
+      body: JSON.stringify({ name: name.trim() }),
+    }),
+  );
+  return departmentsFrom([raw])[0];
+}
+
+export async function renameMyDepartment(id: string, name: string): Promise<InstitutionDepartment> {
+  const raw = recordOf(
+    await api<unknown>(`${MY_DEPARTMENTS}${encodeURIComponent(id)}/`, {
+      method: 'PATCH',
+      body: JSON.stringify({ name: name.trim() }),
+    }),
+  );
+  return departmentsFrom([raw])[0];
+}
+
+export async function deleteMyDepartment(id: string): Promise<void> {
+  await api(`${MY_DEPARTMENTS}${encodeURIComponent(id)}/`, { method: 'DELETE' });
+}
+
 export type InstitutionStatus = 'approved' | 'pending' | 'deactivated';
 
 export type InstitutionSector =

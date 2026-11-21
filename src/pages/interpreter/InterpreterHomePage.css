@@ -961,3 +961,26 @@ a.ih-recent-details {
     padding: 24px !important;
   }
 }
+
+.ih-booking-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ih-btn-small {
+  padding: 6px 12px;
+  font-size: 12px;
+  box-shadow: none;
+}
+
+.ih-btn-small:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.ih-booking-state {
+  font-size: 12px;
+  font-weight: 600;
+  color: #15803d;
+}

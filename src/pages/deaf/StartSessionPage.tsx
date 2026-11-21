@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Calendar, Check, ChevronLeft, User, Video, ArrowRight, Lightbulb } from 'lucide-react';
+import { Calendar, Check, ChevronLeft, User, ArrowRight, Lightbulb, XCircle } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { LogoDisc } from '../../components/session/BrandMark';
 import { useRequesterPaths } from '../../features/dashboard/requesterPaths';
 import { useSessionRequest } from '../../hooks/useSessionRequest';
 import { SESSION_CONTEXTS, type SessionContext } from '../../services/sessionRequests';
@@ -8,6 +9,9 @@ import './StartSessionPage.css';
 
 const WAITING = ['CREATED', 'QUEUED', 'OFFERED'];
 const MATCHED = ['ACCEPTED', 'CONNECTING', 'ACTIVE'];
+
+/** How long we look for an interpreter before we stop and say none was found. */
+export const WAIT_LIMIT_MS = 3 * 60 * 1000;
 
 /** The words that differ between a Deaf user asking for themselves and staff asking for a client. */
 const COPY = {
@@ -85,7 +89,7 @@ function Waiting({
         <span className="ss-ring" />
         <span className="ss-ring ss-ring--late" />
         <span className="ss-pulse-core">
-          <Video size={30} />
+          <LogoDisc size={58} />
         </span>
       </div>
 
@@ -155,12 +159,30 @@ export function StartSessionPage({ pollMs }: Props) {
   const emergency = params.get('priority') === 'emergency';
   const state = request?.state;
 
+  // After 3 minutes without an interpreter, stop the request and tell the person.
+  const [noInterpreter, setNoInterpreter] = useState(false);
+  const waitingId = request && state && WAITING.includes(state) ? request.id : null;
+  const createdAt = request?.createdAt;
+  useEffect(() => {
+    if (!waitingId || !createdAt) return;
+    const left = Math.max(0, Date.parse(createdAt) + WAIT_LIMIT_MS - Date.now());
+    const timer = setTimeout(async () => {
+      if (await cancel()) setNoInterpreter(true);
+    }, left);
+    return () => clearTimeout(timer);
+  }, [waitingId, createdAt, cancel]);
+
+  const tryAgain = () => {
+    setNoInterpreter(false);
+    void start(emergency ? 'EMERGENCY' : undefined, context);
+  };
+
   if (request && state && MATCHED.includes(state)) {
     return (
       <div className="ss-page">
-        <button type="button" className="ss-back" onClick={cancel} disabled={busy}>
-          <ChevronLeft size={18} aria-hidden="true" /> Back
-        </button>
+        <Link to={paths.home} className="ss-back">
+          <ChevronLeft size={18} aria-hidden="true" /> Back to Dashboard
+        </Link>
         <h1 className="ss-title">Interpreter found</h1>
         <p className="ss-subtitle">Review and connect when you’re ready.</p>
         {error && (
@@ -188,13 +210,25 @@ export function StartSessionPage({ pollMs }: Props) {
               <dd>Ugandan Sign Language</dd>
             </div>
           </dl>
-          <Link
-            to={paths.live(request.id)}
-            state={{ interpreterName: request.interpreter?.name }}
-            className="ss-btn ss-btn--primary"
-          >
-            <Video size={18} aria-hidden="true" /> Connect now
-          </Link>
+
+          {/* New layout with Cancel and Connect buttons */}
+          <div className="ss-found-actions">
+            <button
+              type="button"
+              className="ss-btn ss-btn--danger-outline"
+              onClick={cancel}
+              disabled={busy}
+            >
+              <XCircle size={18} aria-hidden="true" /> Cancel request
+            </button>
+            <Link
+              to={paths.live(request.id)}
+              state={{ interpreterName: request.interpreter?.name }}
+              className="ss-btn ss-btn--primary"
+            >
+              <LogoDisc size={22} /> Connect now
+            </Link>
+          </div>
         </section>
       </div>
     );
@@ -238,6 +272,35 @@ export function StartSessionPage({ pollMs }: Props) {
         </p>
       </div>
 
+      {noInterpreter && (
+        <div className="ss-modal-backdrop">
+          <div
+            className="ss-modal"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="ss-modal-title"
+            aria-describedby="ss-modal-text"
+          >
+            <h2 id="ss-modal-title">No interpreter found</h2>
+            <p id="ss-modal-text">
+              We could not find an available interpreter in 3 minutes. Please try again in a few
+              minutes.
+            </p>
+            <div className="ss-modal-actions">
+              <button type="button" className="ss-btn ss-btn--primary" onClick={tryAgain}>
+                Try again
+              </button>
+              <button
+                type="button"
+                className="ss-btn ss-btn--outline"
+                onClick={() => setNoInterpreter(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {error && (
         <p className="ss-alert" role="alert">
           {error}
@@ -252,9 +315,7 @@ export function StartSessionPage({ pollMs }: Props) {
       <div className="ss-grid">
         <div className="ss-left">
           <section className="ss-connect" aria-labelledby="ss-connect-title">
-            <span className="ss-tile" aria-hidden="true">
-              <Video size={22} />
-            </span>
+            <LogoDisc size={48} />
             <h2 id="ss-connect-title">Connect</h2>
             <p>Find an available Ugandan Sign Language interpreter.</p>
             {paths.staff && (

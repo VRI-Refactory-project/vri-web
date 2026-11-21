@@ -331,4 +331,137 @@ describe('InterpreterHomePage', () => {
     expect(screen.getByText(label)).toBeInTheDocument();
     expect(document.querySelector('.ih-cal-day-active')).toBeNull();
   });
+
+  describe('scheduled session routing', () => {
+    const post = () => fetchMock.mock.calls.find(([, init]) => init?.method === 'POST');
+
+    it('asks for an answer on an offered booking and shows the count', async () => {
+      booked = reply(true, 200, [
+        booking(1, 'Sierah Tabbuti', '09:00:00', { my_state: 'offered' }),
+        booking(2, 'Brian Okello', '11:00:00', { my_state: 'confirmed', status: 'CONFIRMED' }),
+      ]);
+      renderHome();
+
+      const list = card('Booked sessions');
+      expect(await within(list).findByRole('button', { name: 'Accept' })).toBeInTheDocument();
+      expect(within(list).getAllByRole('button', { name: 'Decline' })).toHaveLength(1);
+      expect(within(list).getByRole('button', { name: 'Give back' })).toBeInTheDocument();
+      expect(screen.getByText('1 to answer')).toBeInTheDocument();
+    });
+
+    it('does not show an unanswered offer as the upcoming session', async () => {
+      booked = reply(true, 200, [
+        booking(1, 'Sierah Tabbuti', '09:00:00', { my_state: 'offered' }),
+        booking(2, 'Brian Okello', '11:00:00', { my_state: 'confirmed', status: 'CONFIRMED' }),
+      ]);
+      renderHome();
+
+      const upcoming = card('Upcoming session');
+      expect(await within(upcoming).findByText('Brian Okello')).toBeInTheDocument();
+      expect(within(upcoming).queryByText('Sierah Tabbuti')).not.toBeInTheDocument();
+    });
+
+    it('accepts an offer and reloads the list', async () => {
+      booked = reply(true, 200, [
+        booking(4, 'Sierah Tabbuti', '09:00:00', { my_state: 'offered' }),
+      ]);
+      renderHome();
+      fireEvent.click(await screen.findByRole('button', { name: 'Accept' }));
+
+      await waitFor(() => expect(post()).toBeTruthy());
+      expect(String(post()?.[0])).toContain('/interpreters/booked-sessions/4/accept/');
+    });
+
+    it('declines an offer and gives back a confirmed session', async () => {
+      booked = reply(true, 200, [
+        booking(4, 'Sierah Tabbuti', '09:00:00', { my_state: 'offered' }),
+        booking(5, 'Brian Okello', '11:00:00', { my_state: 'confirmed', status: 'CONFIRMED' }),
+      ]);
+      renderHome();
+      fireEvent.click(await screen.findByRole('button', { name: 'Decline' }));
+      await waitFor(() => expect(post()).toBeTruthy());
+      expect(String(post()?.[0])).toContain('/booked-sessions/4/decline/');
+
+      fireEvent.click(await screen.findByRole('button', { name: 'Give back' }));
+      await waitFor(() =>
+        expect(
+          fetchMock.mock.calls.some(
+            ([url, init]) =>
+              init?.method === 'POST' && String(url).includes('/booked-sessions/5/release/'),
+          ),
+        ).toBe(true),
+      );
+    });
+
+    it('offers Join call, not Give back, once the call can be opened', async () => {
+      booked = reply(true, 200, [
+        booking(5, 'Brian Okello', '11:00:00', {
+          my_state: 'confirmed',
+          status: 'CONFIRMED',
+          can_join: true,
+        }),
+      ]);
+      renderHome();
+
+      expect(await screen.findByRole('button', { name: 'Join call' })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Give back' })).not.toBeInTheDocument();
+    });
+
+    it('opens the call for the booking when Join call is pressed', async () => {
+      booked = reply(true, 200, [
+        booking(5, 'Brian Okello', '11:00:00', {
+          my_state: 'confirmed',
+          status: 'CONFIRMED',
+          can_join: true,
+        }),
+      ]);
+      renderHome();
+      const base = fetchMock.getMockImplementation()!;
+      fetchMock.mockImplementation(async (url: string, init?: RequestInit) =>
+        init?.method === 'POST' ? reply(true, 200, { request_id: 77 }) : base(url, init),
+      );
+      fireEvent.click(await screen.findByRole('button', { name: 'Join call' }));
+
+      await waitFor(() => expect(post()).toBeTruthy());
+      expect(String(post()?.[0])).toContain('/interpreters/sessions/booked/5/start/');
+    });
+
+    it('shows why the call cannot be opened yet', async () => {
+      booked = reply(true, 200, [
+        booking(5, 'Brian Okello', '11:00:00', {
+          my_state: 'confirmed',
+          status: 'CONFIRMED',
+          can_join: true,
+        }),
+      ]);
+      renderHome();
+      const base = fetchMock.getMockImplementation()!;
+      fetchMock.mockImplementation(async (url: string, init?: RequestInit) =>
+        init?.method === 'POST'
+          ? reply(false, 400, { detail: 'This session is over.' })
+          : base(url, init),
+      );
+      fireEvent.click(await screen.findByRole('button', { name: 'Join call' }));
+
+      expect(await screen.findByRole('alert')).toHaveTextContent('This session is over.');
+    });
+
+    it('shows the server message when someone else took the booking first', async () => {
+      booked = reply(true, 200, [
+        booking(4, 'Sierah Tabbuti', '09:00:00', { my_state: 'offered' }),
+      ]);
+      renderHome();
+      const base = fetchMock.getMockImplementation()!;
+      fetchMock.mockImplementation(async (url: string, init?: RequestInit) =>
+        init?.method === 'POST'
+          ? reply(false, 400, { detail: 'Another interpreter has already taken this session.' })
+          : base(url, init),
+      );
+      fireEvent.click(await screen.findByRole('button', { name: 'Accept' }));
+
+      expect(await screen.findByRole('alert')).toHaveTextContent(
+        'Another interpreter has already taken this session.',
+      );
+    });
+  });
 });

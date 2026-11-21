@@ -115,4 +115,45 @@ describe('ChatPanel', () => {
 
     expect(onClose).toHaveBeenCalled();
   });
+
+  it('has no More menu when nothing is offered in it', () => {
+    render(<CallControls {...base} />);
+    expect(screen.queryByRole('button', { name: 'More' })).not.toBeInTheDocument();
+  });
+
+  it('raises and lowers the hand from the More menu', async () => {
+    const onToggleHand = vi.fn();
+    const { rerender } = render(<CallControls {...base} onToggleHand={onToggleHand} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'More' }));
+    await userEvent.click(screen.getByRole('menuitemcheckbox', { name: /Raise hand/ }));
+    expect(onToggleHand).toHaveBeenCalledTimes(1);
+
+    rerender(<CallControls {...base} onToggleHand={onToggleHand} handRaised />);
+    await userEvent.click(screen.getByRole('button', { name: 'More' }));
+    expect(screen.getByRole('menuitemcheckbox', { name: /Lower hand/ })).toBeChecked();
+  });
+
+  it('sends a reaction from the More menu and closes it', async () => {
+    const onReact = vi.fn();
+    render(<CallControls {...base} onReact={onReact} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'More' }));
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Send clapping' }));
+
+    expect(onReact).toHaveBeenCalledWith('👏');
+    expect(screen.queryByRole('menu', { name: 'More' })).not.toBeInTheDocument();
+  });
+
+  it('opens the participants list from the More menu, with the count', async () => {
+    const onToggleParticipants = vi.fn();
+    render(
+      <CallControls {...base} onToggleParticipants={onToggleParticipants} participantCount={3} />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'More' }));
+    await userEvent.click(screen.getByRole('menuitem', { name: /Participants \(3\)/ }));
+
+    expect(onToggleParticipants).toHaveBeenCalledTimes(1);
+  });
 });

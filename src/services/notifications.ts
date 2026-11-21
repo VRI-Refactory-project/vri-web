@@ -36,3 +36,7 @@ export async function fetchNotifications(): Promise<AppNotification[]> {
 export async function markNotificationRead(id: number): Promise<void> {
   await api(`/api/v1/notifications/${id}/read/`, { method: 'POST' });
 }
+
+export async function markAllNotificationsRead(): Promise<void> {
+  await api('/api/v1/notifications/read-all/', { method: 'POST' });
+}

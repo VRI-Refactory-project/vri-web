@@ -273,3 +273,108 @@
 .cm-pending button:focus-visible {
   background: #ede9f8;
 }
+
+/* Documents */
+.cm-file {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 220px;
+  max-width: 280px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(124, 92, 219, 0.1);
+  color: inherit;
+}
+.dx-msg .cm-file + p {
+  margin-top: 6px;
+}
+.cm-file-text {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+}
+.cm-file-text strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+}
+.cm-file-text small {
+  font-size: 12px;
+  opacity: 0.8;
+}
+.cm-file-save {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 10px;
+  background: #fff;
+  color: #3b2579;
+  cursor: pointer;
+}
+.cm-file-save:disabled {
+  opacity: 0.5;
+  cursor: progress;
+}
+.cm-pending .cm-pending-file {
+  flex: none;
+  color: #3b2579;
+}
+.cm-pending .cm-pending-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Nothing selected yet */
+.cm-welcome {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 32px;
+  text-align: center;
+  color: #6b6486;
+}
+.cm-welcome h2 {
+  margin: 8px 0 0;
+  font-size: 20px;
+  color: #3b2579;
+}
+.cm-welcome p {
+  margin: 0;
+  font-size: 14px;
+}
+.cm-welcome-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
+}
+.cm-welcome-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 110px;
+  padding: 14px 18px;
+  border: 1px solid #ddd6f3;
+  border-radius: 14px;
+  background: #fff;
+  color: #3b2579;
+  font: inherit;
+  font-size: 13px;
+  text-decoration: none;
+  cursor: pointer;
+}
+.cm-welcome-action:hover,
+.cm-welcome-action:focus-visible {
+  background: #f3f0fc;
+}

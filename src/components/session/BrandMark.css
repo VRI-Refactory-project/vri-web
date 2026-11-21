@@ -1,0 +1,14 @@
+/* The SignConnect logo on a white disc (LogoDisc). The size comes from the component. */
+.logo-disc {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.logo-disc img {
+  width: 76%;
+  height: 76%;
+  object-fit: contain;
+}

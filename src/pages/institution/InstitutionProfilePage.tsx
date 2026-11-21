@@ -1,22 +1,38 @@
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import {
   Building2,
-  Pencil,
-  X,
   Check,
-  Loader2,
-  AlertCircle,
-  CheckCircle2,
+  Pencil,
+  Plus,
+  RotateCcw,
+  Save,
+  Trash2,
+  Users,
+  X,
 } from 'lucide-react';
 import {
+  createMyDepartment,
+  deleteMyDepartment,
+  fetchMyDepartments,
   fetchMyInstitutionAccount,
+  renameMyDepartment,
   updateMyInstitutionAccount,
+  type InstitutionDepartment,
   type MyInstitutionAccount,
   type OrganisationType,
 } from '../../services/institutions';
-import { ApiError } from '../../services/api';
+import { describeError } from '../../services/api';
 import './InstitutionProfilePage.css';
+
+const EMPTY_PROFILE: MyInstitutionAccount = {
+  organisation_name: '',
+  organisation_type: 'SCHOOL',
+  organisation_type_other: '',
+};
+
+const INITIAL_DEPARTMENT_LIMIT = 7;
+const DEPARTMENT_PAGE_SIZE = 5;
 
 const ORGANISATION_TYPES: { value: OrganisationType; label: string }[] = [
   { value: 'HOSPITAL', label: 'Hospital / health facility' },
@@ -28,60 +44,62 @@ const ORGANISATION_TYPES: { value: OrganisationType; label: string }[] = [
   { value: 'OTHER', label: 'Other' },
 ];
 
-const EMPTY_PROFILE: MyInstitutionAccount = {
-  organisation_name: '',
-  organisation_type: 'SCHOOL',
-  organisation_type_other: '',
-};
-
-function getErrorMessage(error: unknown): string {
-  if (error instanceof ApiError) {
-    return error.message;
-  }
-
-  return 'Something went wrong. Please try again.';
-}
-
 export function InstitutionProfilePage() {
   const [profile, setProfile] = useState<MyInstitutionAccount>(EMPTY_PROFILE);
-  const [editForm, setEditForm] = useState<MyInstitutionAccount>(EMPTY_PROFILE);
-  const [isEditing, setIsEditing] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+  const [draft, setDraft] = useState<MyInstitutionAccount>(EMPTY_PROFILE);
+  const [departments, setDepartments] = useState<InstitutionDepartment[]>([]);
+  const [visibleDepartmentCount, setVisibleDepartmentCount] =
+    useState(INITIAL_DEPARTMENT_LIMIT);
+
+  const [editing, setEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [notice, setNotice] = useState('');
+
+  const [newName, setNewName] = useState('');
+  const [adding, setAdding] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [departmentDraft, setDepartmentDraft] = useState('');
+  const [departmentToDelete, setDepartmentToDelete] =
+    useState<InstitutionDepartment | null>(null);
+  const [deletingDepartment, setDeletingDepartment] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const [nextProfile, nextDepartments] = await Promise.all([
+        fetchMyInstitutionAccount(),
+        fetchMyDepartments(),
+      ]);
+
+      setProfile(nextProfile);
+      setDraft(nextProfile);
+      setDepartments(nextDepartments);
+      setVisibleDepartmentCount(INITIAL_DEPARTMENT_LIMIT);
+    } catch (err) {
+      setError(describeError(err));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    let active = true;
+    void load();
+  }, [load]);
 
-    async function loadProfile() {
-      try {
-        setIsLoading(true);
-        setError('');
+  useEffect(() => {
+    if (!error && !notice) return;
 
-        const data = await fetchMyInstitutionAccount();
+    const timeout = window.setTimeout(() => {
+      setError('');
+      setNotice('');
+    }, 5000);
 
-        if (active) {
-          setProfile(data);
-          setEditForm(data);
-        }
-      } catch (err) {
-        if (active) {
-          setError(getErrorMessage(err));
-        }
-      } finally {
-        if (active) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    loadProfile();
-
-    return () => {
-      active = false;
-    };
-  }, []);
+    return () => window.clearTimeout(timeout);
+  }, [error, notice]);
 
   const initials = profile.organisation_name
     .split(' ')
@@ -94,241 +112,468 @@ export function InstitutionProfilePage() {
     (type) => type.value === profile.organisation_type,
   );
 
-  function handleEdit() {
-    setEditForm({ ...profile });
-    setError('');
-    setSuccess('');
-    setIsEditing(true);
-  }
+  const activeDepartments = departments.filter((item) => item.active);
 
-  function handleCancel() {
-    setEditForm({ ...profile });
-    setError('');
-    setIsEditing(false);
-  }
+  const saveProfile = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
 
-  async function handleSave() {
     setError('');
-    setSuccess('');
+    setNotice('');
 
-    if (!editForm.organisation_name.trim()) {
+    if (!draft.organisation_name.trim()) {
       setError('Organisation name is required.');
       return;
     }
 
     if (
-      editForm.organisation_type === 'OTHER' &&
-      !editForm.organisation_type_other.trim()
+      draft.organisation_type === 'OTHER' &&
+      !draft.organisation_type_other.trim()
     ) {
       setError('Please specify the type of organisation.');
       return;
     }
 
-    try {
-      setIsSaving(true);
+    setSaving(true);
 
+    try {
       const response = await updateMyInstitutionAccount({
-        organisation_name: editForm.organisation_name.trim(),
-        organisation_type: editForm.organisation_type,
+        organisation_name: draft.organisation_name.trim(),
+        organisation_type: draft.organisation_type,
         organisation_type_other:
-          editForm.organisation_type === 'OTHER'
-            ? editForm.organisation_type_other.trim()
+          draft.organisation_type === 'OTHER'
+            ? draft.organisation_type_other.trim()
             : '',
       });
 
       setProfile(response.updated_data);
-      setEditForm(response.updated_data);
-      setIsEditing(false);
-      setSuccess(response.message || 'Institution profile updated successfully.');
+      setDraft(response.updated_data);
+      setEditing(false);
+      setNotice(response.message || 'Institution profile updated successfully.');
     } catch (err) {
-      setError(getErrorMessage(err));
+      setError(describeError(err));
     } finally {
-      setIsSaving(false);
+      setSaving(false);
     }
-  }
+  };
 
-  if (isLoading) {
+  const addDepartment = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!newName.trim()) return;
+
+    setError('');
+    setNotice('');
+
+    try {
+      const added = await createMyDepartment(newName.trim());
+
+      setDepartments((items) => [...items, added]);
+      setNewName('');
+      setAdding(false);
+      setNotice('Department added.');
+    } catch (err) {
+      setError(describeError(err));
+    }
+  };
+
+  const saveDepartment = async (id: string) => {
+    if (!departmentDraft.trim()) return;
+
+    setError('');
+    setNotice('');
+
+    try {
+      const updated = await renameMyDepartment(id, departmentDraft.trim());
+
+      setDepartments((items) =>
+        items.map((item) => (item.id === id ? updated : item)),
+      );
+
+      setEditingId(null);
+      setNotice('Department updated.');
+    } catch (err) {
+      setError(describeError(err));
+    }
+  };
+
+  const removeDepartment = async () => {
+    if (!departmentToDelete) return;
+
+    const department = departmentToDelete;
+
+    setDeletingDepartment(true);
+    setError('');
+    setNotice('');
+
+    try {
+      await deleteMyDepartment(department.id);
+
+      setDepartments((items) =>
+        items.filter((item) => item.id !== department.id),
+      );
+
+      setNotice('Department deleted.');
+      setDepartmentToDelete(null);
+    } catch (err) {
+      setError(describeError(err));
+    } finally {
+      setDeletingDepartment(false);
+    }
+  };
+
+  if (loading) {
     return (
-      <div className="profile-page profile-loading">
-        <Loader2 className="spin" size={24} />
-        <p>Loading institution profile...</p>
-      </div>
+      <main className="institution-profile">
+        <div className="ip-loading">Loading institution profile...</div>
+      </main>
     );
   }
 
   return (
-    <div className="profile-page">
-      <header className="profile-header">
-        <div className="profile-header-text">
+    <main className="institution-profile">
+      <header className="ip-header">
+        <div>
           <h1>Institution Profile</h1>
-          <p>View and update your organisation's information.</p>
+          <p>Manage and update your institution details.</p>
         </div>
 
-        {!isEditing && (
-          <button className="edit-profile-btn" onClick={handleEdit}>
-            <Pencil size={16} />
-            Edit Profile
+        {!editing && (
+          <button
+            type="button"
+            className="ip-primary"
+            onClick={() => {
+              setDraft({ ...profile });
+              setEditing(true);
+            }}
+          >
+            <Pencil size={17} /> Edit Profile
           </button>
         )}
       </header>
 
-      {error && (
-        <div className="profile-message profile-error" role="alert">
-          <AlertCircle size={18} />
-          {error}
+      {(error || notice) && (
+        <div
+          className={`ip-toast ${error ? 'ip-toast--error' : 'ip-toast--success'}`}
+          role={error ? 'alert' : 'status'}
+        >
+          <span>{error || notice}</span>
+          <button
+            type="button"
+            aria-label="Dismiss message"
+            onClick={() => {
+              setError('');
+              setNotice('');
+            }}
+          >
+            <X size={18} />
+          </button>
         </div>
       )}
 
-      {success && (
-        <div className="profile-message profile-success" role="status">
-          <CheckCircle2 size={18} />
-          {success}
-        </div>
-      )}
-
-      <section className="profile-hero-card">
-        <div className="profile-avatar-large">
-          {initials || <Building2 size={30} />}
-        </div>
-
-        <div className="profile-hero-info">
-          <h2>{profile.organisation_name || 'Institution'}</h2>
-          <p>
-            {selectedType?.label || profile.organisation_type}
-            {profile.organisation_type === 'OTHER' &&
-              profile.organisation_type_other &&
-              ` · ${profile.organisation_type_other}`}
-          </p>
-        </div>
-      </section>
-
-      <section className="profile-details-card">
-        <h3 className="profile-details-title">Organisation information</h3>
-
-        <div className="profile-details-list">
-          <div className="profile-detail-row">
-            <div className="profile-icon-wrap">
-              <Building2 size={18} />
+      <div className="ip-grid">
+        <section className="ip-card">
+          <div className="ip-card-heading">
+            <Building2 />
+            <div>
+              <h2>Institution Details</h2>
+              <p>View and update your institution information.</p>
             </div>
+          </div>
 
-            <div className="profile-detail-text">
-              <span className="detail-label">ORGANISATION NAME</span>
+          <div className="ip-profile-summary">
+            <div className="profile-avatar-large">
+              {initials || <Building2 size={30} />}
+            </div>
+            <div>
+              <h3>{profile.organisation_name || 'Institution'}</h3>
+              <p>
+                {selectedType?.label || profile.organisation_type}
+                {profile.organisation_type === 'OTHER' &&
+                  profile.organisation_type_other &&
+                  ` · ${profile.organisation_type_other}`}
+              </p>
+            </div>
+          </div>
 
-              {isEditing ? (
+          <form id="institution-profile-form" onSubmit={saveProfile}>
+            <label className="ip-field">
+              Organisation Name <b>*</b>
+              <input
+                required
+                maxLength={200}
+                value={draft.organisation_name}
+                disabled={!editing || saving}
+                onChange={(event) =>
+                  setDraft({ ...draft, organisation_name: event.target.value })
+                }
+              />
+            </label>
+
+            <label className="ip-field">
+              Organisation Type <b>*</b>
+              <select
+                required
+                value={draft.organisation_type}
+                disabled={!editing || saving}
+                onChange={(event) =>
+                  setDraft({
+                    ...draft,
+                    organisation_type: event.target.value as OrganisationType,
+                    organisation_type_other: '',
+                  })
+                }
+              >
+                {ORGANISATION_TYPES.map((type) => (
+                  <option key={type.value} value={type.value}>
+                    {type.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            {draft.organisation_type === 'OTHER' && (
+              <label className="ip-field">
+                Specify Organisation Type <b>*</b>
                 <input
-                  className="profile-input"
-                  value={editForm.organisation_name}
-                  onChange={(event) =>
-                    setEditForm({
-                      ...editForm,
-                      organisation_name: event.target.value,
-                    })
-                  }
-                  maxLength={200}
                   required
-                />
-              ) : (
-                <span className="detail-value">
-                  {profile.organisation_name || '—'}
-                </span>
-              )}
-            </div>
-          </div>
-
-          <div className="profile-detail-row">
-            <div className="profile-icon-wrap">
-              <Building2 size={18} />
-            </div>
-
-            <div className="profile-detail-text">
-              <span className="detail-label">ORGANISATION TYPE</span>
-
-              {isEditing ? (
-                <select
-                  className="profile-input"
-                  value={editForm.organisation_type}
+                  maxLength={100}
+                  placeholder="Enter organisation type"
+                  value={draft.organisation_type_other}
+                  disabled={!editing || saving}
                   onChange={(event) =>
-                    setEditForm({
-                      ...editForm,
-                      organisation_type: event.target.value as OrganisationType,
-                      organisation_type_other: '',
+                    setDraft({
+                      ...draft,
+                      organisation_type_other: event.target.value,
                     })
                   }
+                />
+              </label>
+            )}
+
+            {editing && (
+              <div className="ip-actions">
+                <button
+                  type="button"
+                  className="ip-secondary"
+                  disabled={saving}
+                  onClick={() => {
+                    setDraft({ ...profile });
+                    setEditing(false);
+                    setError('');
+                  }}
                 >
-                  {ORGANISATION_TYPES.map((type) => (
-                    <option key={type.value} value={type.value}>
-                      {type.label}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <span className="detail-value">
-                  {selectedType?.label || profile.organisation_type}
-                </span>
-              )}
+                  <X size={16} /> Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  className="ip-primary"
+                  disabled={saving}
+                >
+                  <Save size={17} />
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            )}
+          </form>
+        </section>
+
+        <section className="ip-card ip-departments">
+          <div className="ip-card-heading">
+            <Users />
+            <div>
+              <h2>Departments</h2>
+              <p>Manage the departments under your institution.</p>
             </div>
+
+            <button
+              type="button"
+              className="ip-outline"
+              onClick={() => setAdding((value) => !value)}
+            >
+              <Plus size={18} />
+              {adding ? 'Close' : 'Add Department'}
+            </button>
           </div>
 
-          {editForm.organisation_type === 'OTHER' && (
-            <div className="profile-detail-row">
-              <div className="profile-icon-wrap">
-                <Building2 size={18} />
-              </div>
-
-              <div className="profile-detail-text">
-                <span className="detail-label">SPECIFY ORGANISATION TYPE</span>
-
-                {isEditing ? (
-                  <input
-                    className="profile-input"
-                    value={editForm.organisation_type_other}
-                    onChange={(event) =>
-                      setEditForm({
-                        ...editForm,
-                        organisation_type_other: event.target.value,
-                      })
-                    }
-                    maxLength={100}
-                    placeholder="Enter organisation type"
-                    required
-                  />
-                ) : (
-                  <span className="detail-value">
-                    {profile.organisation_type_other || '—'}
-                  </span>
-                )}
-              </div>
-            </div>
+          {adding && (
+            <form className="ip-add" onSubmit={addDepartment}>
+              <input
+                aria-label="New department name"
+                autoFocus
+                required
+                maxLength={100}
+                placeholder="Department name"
+                value={newName}
+                onChange={(event) => setNewName(event.target.value)}
+              />
+              <button type="submit" className="ip-primary">
+                <Plus size={16} /> Add
+              </button>
+            </form>
           )}
-        </div>
 
-        {isEditing && (
-          <div className="profile-edit-actions">
-            <button
-              className="btn-cancel"
-              onClick={handleCancel}
-              disabled={isSaving}
-            >
-              <X size={16} />
-              Cancel
-            </button>
+          <div className="ip-department-list">
+            {activeDepartments
+              .slice(0, visibleDepartmentCount)
+              .map((department) => (
+                <div className="ip-department" key={department.id}>
+                  <span className="ip-dept-icon">
+                    <Users size={18} />
+                  </span>
 
-            <button
-              className="btn-save"
-              onClick={handleSave}
-              disabled={isSaving}
-            >
-              {isSaving ? (
-                <Loader2 className="spin" size={16} />
-              ) : (
-                <Check size={16} />
-              )}
-              {isSaving ? 'Saving...' : 'Save Changes'}
-            </button>
+                  {editingId === department.id ? (
+                    <input
+                      aria-label="Department name"
+                      value={departmentDraft}
+                      onChange={(event) =>
+                        setDepartmentDraft(event.target.value)
+                      }
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') {
+                          event.preventDefault();
+                          void saveDepartment(department.id);
+                        }
+                      }}
+                    />
+                  ) : (
+                    <span className="ip-dept-name">{department.name}</span>
+                  )}
+
+                  <span className="ip-active">Active</span>
+
+                  {editingId === department.id ? (
+                    <button
+                      type="button"
+                      className="ip-icon-button"
+                      aria-label="Save department"
+                      onClick={() => void saveDepartment(department.id)}
+                    >
+                      <Check />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="ip-icon-button"
+                      aria-label={`Edit ${department.name}`}
+                      onClick={() => {
+                        setEditingId(department.id);
+                        setDepartmentDraft(department.name);
+                      }}
+                    >
+                      <Pencil />
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    className="ip-icon-button ip-delete"
+                    aria-label={`Delete ${department.name}`}
+                    onClick={() => setDepartmentToDelete(department)}
+                  >
+                    <Trash2 />
+                  </button>
+                </div>
+              ))}
+
+            {!activeDepartments.length && (
+              <p className="ip-empty">
+                No departments yet. Add the departments your institution uses.
+              </p>
+            )}
+
+            {activeDepartments.length > visibleDepartmentCount && (
+              <button
+                type="button"
+                className="ip-view-more"
+                onClick={() =>
+                  setVisibleDepartmentCount(
+                    (count) => count + DEPARTMENT_PAGE_SIZE,
+                  )
+                }
+              >
+                View more departments (
+                {activeDepartments.length - visibleDepartmentCount} remaining)
+              </button>
+            )}
           </div>
-        )}
-      </section>
-    </div>
+        </section>
+      </div>
+
+      <div className="ip-footer">
+        <button
+          type="button"
+          className="ip-secondary"
+          onClick={() => {
+            setDraft({ ...profile });
+            setEditing(false);
+            void load();
+          }}
+        >
+          <RotateCcw size={17} /> Reset Changes
+        </button>
+      </div>
+
+      {departmentToDelete && (
+        <div
+          className="ip-dialog-backdrop"
+          onMouseDown={(event) => {
+            if (
+              event.target === event.currentTarget &&
+              !deletingDepartment
+            ) {
+              setDepartmentToDelete(null);
+            }
+          }}
+        >
+          <section
+            className="ip-dialog"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="ip-dialog-title"
+            aria-describedby="ip-dialog-description"
+          >
+            <span className="ip-dialog-icon">
+              <Trash2 size={22} />
+            </span>
+
+            <h2 id="ip-dialog-title">Delete department?</h2>
+
+            <p id="ip-dialog-description">
+              Delete <strong>{departmentToDelete.name}</strong>? Staff assigned
+              to this department may need to be reassigned first.
+            </p>
+
+            {error && (
+              <p className="ip-dialog-error" role="alert">
+                {error}
+              </p>
+            )}
+
+            <div className="ip-dialog-actions">
+              <button
+                type="button"
+                className="ip-secondary"
+                disabled={deletingDepartment}
+                onClick={() => setDepartmentToDelete(null)}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                className="ip-danger"
+                disabled={deletingDepartment}
+                onClick={() => void removeDepartment()}
+              >
+                {deletingDepartment ? 'Deleting...' : 'Delete department'}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+    </main>
   );
 }
+
 
