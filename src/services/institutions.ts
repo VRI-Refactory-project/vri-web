@@ -244,3 +244,42 @@ export async function updateInstitutionStatus(
   if (action === 'approve' || action === 'activate') return approveInstitution(id);
   return deactivateInstitution(id);
 }
+
+
+/* ---------- Institution self-service profile ---------- */
+
+export type OrganisationType =
+  | 'HOSPITAL'
+  | 'COURT'
+  | 'GOVERNMENT'
+  | 'SCHOOL'
+  | 'POLICE'
+  | 'CHURCH'
+  | 'OTHER';
+
+export interface MyInstitutionAccount {
+  organisation_name: string;
+  organisation_type: OrganisationType;
+  organisation_type_other: string;
+}
+
+export interface InstitutionAccountUpdateResponse {
+  message: string;
+  updated_data: MyInstitutionAccount;
+}
+
+const MY_INSTITUTION_ACCOUNT = '/api/v1/institutions/me/account/';
+
+export async function fetchMyInstitutionAccount(): Promise<MyInstitutionAccount> {
+  return api<MyInstitutionAccount>(MY_INSTITUTION_ACCOUNT);
+}
+
+export async function updateMyInstitutionAccount(
+  data: Partial<MyInstitutionAccount>,
+): Promise<InstitutionAccountUpdateResponse> {
+  return api<InstitutionAccountUpdateResponse>(MY_INSTITUTION_ACCOUNT, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
