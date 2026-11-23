@@ -1,4 +1,4 @@
-import { CircleHelp, Video, ChevronRight, AlertCircle } from 'lucide-react';
+import { CircleHelp, CalendarPlus, Video, ChevronRight, AlertCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 // interpreter2.png made smaller for the web (66 KB instead of 1.8 MB); the banner shows it at ~220px.
@@ -106,7 +106,8 @@ export function StaffDashboardPage() {
       </section>
 
       {/* The calendar lists the chosen day's sessions (today to start with), so there is no separate
-          "Recent sessions" card. Beside it: the active session, booked sessions and help. Chat is
+          "Recent sessions" card. Beside it: the active session, booked sessions, booking ahead and
+          help. Chat is
           for Deaf users only, so staff have none. */}
       <div className="sd-overview">
         <section className="sd-calendar" aria-label="Your calendar">
@@ -147,6 +148,29 @@ export function StaffDashboardPage() {
           </section>
 
           <StaffBookedSessions />
+
+          {/* The tutorial's "Book ahead" step points here (V2-065). */}
+          <section aria-labelledby="sd-book-session" data-tour="book-session">
+            <div className="sd-heading-row">
+              <h2 id="sd-book-session" className="sd-heading">
+                Book a session
+              </h2>
+              <Link to={`${BASE}/sessions`} className="sd-link">
+                View sessions <ChevronRight size={16} aria-hidden="true" />
+              </Link>
+            </div>
+            <div className="sd-card">
+              <div className="sd-row">
+                <span className="sd-tile">
+                  <CalendarPlus size={18} aria-hidden="true" />
+                </span>
+                <Link to={`${BASE}/schedule-session`} className="sd-row-text">
+                  <strong>Schedule a session</strong>
+                  <span>Book an interpreter session ahead of time.</span>
+                </Link>
+              </div>
+            </div>
+          </section>
 
           <section className="sd-card sd-help" aria-labelledby="sd-help-title">
             <span className="sd-tile">

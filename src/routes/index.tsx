@@ -66,6 +66,7 @@ import { ReportsPage } from '../pages/admin/ReportsPage';
 import { InstitutionSettingsPage } from '../pages/institution/InstitutionSettingsPage';
 import { InstitutionAnalyticsPage } from '../pages/institution/InstitutionAnalyticsPage';
 import { InstitutionSessionsPage } from '../pages/institution/InstitutionSessionsPage';
+import { InstitutionSessionDetailPage } from '../pages/institution/InstitutionSessionDetailPage';
 import { AuditLogsPage } from '../pages/admin/AuditLogsPage';
 import { ReportCategoryPage } from '../pages/admin/ReportCategoryPage';
 import { InterpreterSettingsPage } from '../pages/interpreter/SettingsPage';
@@ -210,6 +211,7 @@ const appRoutes: RouteObject[] = [
               { path: 'staff/new', element: <CreateStaffAccountPage /> },
               { path: 'staff/created', element: <StaffAccountCreatedPage /> },
               { path: 'sessions', element: <InstitutionSessionsPage /> },
+              { path: 'sessions/:id', element: <InstitutionSessionDetailPage /> },
               { path: 'analytics', element: <InstitutionAnalyticsPage /> },
               { path: 'settings', element: <InstitutionSettingsPage /> },
               { path: 'profile', element: <InstitutionProfilePage /> },
@@ -229,12 +231,10 @@ const appRoutes: RouteObject[] = [
               { path: 'start-session', element: <StartSessionPage /> },
               { path: 'schedule-session', element: <SchedulePage /> },
               {
+                // Their own sessions only (V2-030): other staff members' are private to them.
                 path: 'sessions',
                 element: (
-                  <SessionHistoryPage
-                    backTo="/dashboard/staff"
-                    detailsBase="/dashboard/staff/sessions"
-                  />
+                  <InstitutionSessionsPage scope="mine" detailsBase="/dashboard/staff/sessions" />
                 ),
               },
               {

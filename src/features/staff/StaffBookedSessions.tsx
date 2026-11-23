@@ -1,5 +1,5 @@
-import { CalendarClock, ChevronRight } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { CalendarClock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { bookingLabel, useMyBookings, type MyBooking } from '../sessions/myBookings';
 
 const LIVE_PATH = '/live/institution';
@@ -22,15 +22,10 @@ export function StaffBookedSessions() {
   const shown = bookings.filter((b) => b.status !== 'CANCELLED').slice(0, 3);
 
   return (
-    <section aria-labelledby="sd-booked" data-tour="booked-sessions">
-      <div className="sd-heading-row">
-        <h2 id="sd-booked" className="sd-heading">
-          Booked sessions
-        </h2>
-        <Link to="/dashboard/staff/schedule-session" className="sd-link">
-          Book a session <ChevronRight size={16} aria-hidden="true" />
-        </Link>
-      </div>
+    <section aria-labelledby="sd-booked">
+      <h2 id="sd-booked" className="sd-heading">
+        Booked sessions
+      </h2>
       <div className="sd-card">
         {error && <p role="alert">{error}</p>}
         {shown.length === 0 ? (
