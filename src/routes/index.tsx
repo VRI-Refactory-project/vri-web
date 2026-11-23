@@ -43,7 +43,6 @@ import { SessionsHubPage } from '../pages/deaf/SessionsHubPage';
 import { SessionHistoryPage } from '../pages/deaf/SessionHistoryPage';
 import { SessionDetailsPage } from '../pages/deaf/SessionDetailsPage';
 import { AccessibilityPage } from '../pages/deaf/AccessibilityPage';
-import { WalletPage } from '../pages/deaf/WalletPage';
 import { MessagesPage } from '../pages/deaf/MessagesPage';
 import { CommunityPage } from '../pages/deaf/CommunityPage';
 import { SchedulePage } from '../pages/deaf/SchedulePage';
@@ -163,7 +162,6 @@ const appRoutes: RouteObject[] = [
           { path: 'accessibility', element: <AccessibilityPage /> },
           { path: 'messages', element: <MessagesPage /> },
           { path: 'messages/community', element: <CommunityPage /> },
-          { path: 'wallet', element: <WalletPage /> },
           { path: 'profile', element: <DeafProfilePage /> },
           { path: 'settings', element: <DeafSettingsPage /> },
         ],
