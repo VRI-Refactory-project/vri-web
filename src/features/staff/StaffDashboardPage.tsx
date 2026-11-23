@@ -1,4 +1,4 @@
-import { CircleHelp, MessageSquare, Video, ChevronRight, AlertCircle } from 'lucide-react';
+import { CircleHelp, CalendarPlus, Video, ChevronRight, AlertCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 // interpreter2.png made smaller for the web (66 KB instead of 1.8 MB); the banner shows it at ~220px.
@@ -141,24 +141,24 @@ export function StaffDashboardPage() {
 
           <StaffBookedSessions />
 
-          <section aria-labelledby="sd-chat">
+          <section aria-labelledby="sd-book-session">
             <div className="sd-heading-row">
-              <h2 id="sd-chat" className="sd-heading">
-                Chat
+              <h2 id="sd-book-session" className="sd-heading">
+                Book a session
               </h2>
-              <Link to={`${BASE}/chat`} className="sd-link">
-                View chat <ChevronRight size={16} aria-hidden="true" />
+              <Link to={`${BASE}/sessions`} className="sd-link">
+                View sessions <ChevronRight size={16} aria-hidden="true" />
               </Link>
             </div>
             <div className="sd-card">
               <div className="sd-row">
                 <span className="sd-tile">
-                  <MessageSquare size={18} aria-hidden="true" />
+                  <CalendarPlus size={18} aria-hidden="true" />
                 </span>
-                <span className="sd-row-text">
-                  <strong>No conversations yet</strong>
-                  <span>Messages with interpreters and support will show here.</span>
-                </span>
+                <Link to={`${BASE}/schedule-session`} className="sd-row-text">
+                  <strong>Schedule a session</strong>
+                  <span>Book an interpreter session ahead of time.</span>
+                </Link>
               </div>
             </div>
           </section>
