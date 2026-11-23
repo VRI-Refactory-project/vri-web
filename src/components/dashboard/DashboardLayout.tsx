@@ -98,6 +98,8 @@ export function DashboardLayout({
                 key={id}
                 to={to}
                 end={end}
+                // What the staff tutorial points at (V2-065).
+                data-tour={id}
                 // Close sidebar on navigation for mobile
                 onClick={() => setIsSidebarOpen(false)}
                 className={({ isActive }) => (isActive ? 'dl-link dl-link--active' : 'dl-link')}

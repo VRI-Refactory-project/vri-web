@@ -9,6 +9,7 @@ import { getInstitutionOverview } from '../../services/institutionDashboard';
 import { getMySessions, type HistoryItem } from '../../services/mySessions';
 import { MiniCalendar } from './MiniCalendar';
 import { StaffBookedSessions } from './StaffBookedSessions';
+import { StaffTutorial } from './StaffTutorial';
 import './StaffDashboardPage.css';
 
 const BASE = '/dashboard/staff';
@@ -63,6 +64,8 @@ export function StaffDashboardPage() {
 
   return (
     <div className="sd-page">
+      {/* Opens by itself until it is finished or skipped (V2-065). */}
+      <StaffTutorial />
       <div className="sd-account" aria-label="Signed in as">
         <span className="sd-account-text">
           <strong>{name}</strong>
@@ -83,7 +86,10 @@ export function StaffDashboardPage() {
           </p>
 
           {/* Wrapped the buttons in a flex container */}
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '16px' }}>
+          <div
+            data-tour="start-session"
+            style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '16px' }}
+          >
             <Link to={`${BASE}/start-session`} className="sd-hero-btn">
               Start Interpreter Session
             </Link>

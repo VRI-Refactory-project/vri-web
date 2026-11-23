@@ -150,6 +150,12 @@
   font-size: 18px;
   font-weight: 700;
 }
+.sd-heading-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
 .sd-link {
   display: inline-flex;
   align-items: center;

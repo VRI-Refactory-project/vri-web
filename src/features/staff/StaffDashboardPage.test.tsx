@@ -4,6 +4,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { StaffDashboardPage } from './StaffDashboardPage';
 import type { HistoryItem } from '../../services/mySessions';
 
+// The tutorial has its own tests (StaffTutorial.test.tsx); here it stays closed.
+vi.mock('../../services/staffTutorial', () => ({
+  getTutorial: () =>
+    Promise.resolve({ steps: [], step: 0, completed: true, skipped: false, show: false }),
+  saveTutorial: () => Promise.resolve(),
+}));
+
 vi.mock('../../hooks/useAuth', () => ({
   useAuth: () => ({
     session: { user: { name: 'Sarah Kimuli', role: 'institution' } },
