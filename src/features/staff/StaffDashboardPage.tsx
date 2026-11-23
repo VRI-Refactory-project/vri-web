@@ -1,4 +1,4 @@
-import { CircleHelp, MessageSquare, Video, ChevronRight, AlertCircle } from 'lucide-react';
+import { CircleHelp, Video, ChevronRight, AlertCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 // interpreter2.png made smaller for the web (66 KB instead of 1.8 MB); the banner shows it at ~220px.
@@ -100,7 +100,8 @@ export function StaffDashboardPage() {
       </section>
 
       {/* The calendar lists the chosen day's sessions (today to start with), so there is no separate
-          "Recent sessions" card. Beside it: the active session, chat and help. */}
+          "Recent sessions" card. Beside it: the active session, booked sessions and help. Chat is
+          for Deaf users only, so staff have none. */}
       <div className="sd-overview">
         <section className="sd-calendar" aria-label="Your calendar">
           <MiniCalendar items={items ?? []} detailsBase={`${BASE}/sessions`} />
@@ -140,28 +141,6 @@ export function StaffDashboardPage() {
           </section>
 
           <StaffBookedSessions />
-
-          <section aria-labelledby="sd-chat">
-            <div className="sd-heading-row">
-              <h2 id="sd-chat" className="sd-heading">
-                Chat
-              </h2>
-              <Link to={`${BASE}/chat`} className="sd-link">
-                View chat <ChevronRight size={16} aria-hidden="true" />
-              </Link>
-            </div>
-            <div className="sd-card">
-              <div className="sd-row">
-                <span className="sd-tile">
-                  <MessageSquare size={18} aria-hidden="true" />
-                </span>
-                <span className="sd-row-text">
-                  <strong>No conversations yet</strong>
-                  <span>Messages with interpreters and support will show here.</span>
-                </span>
-              </div>
-            </div>
-          </section>
 
           <section className="sd-card sd-help" aria-labelledby="sd-help-title">
             <span className="sd-tile">

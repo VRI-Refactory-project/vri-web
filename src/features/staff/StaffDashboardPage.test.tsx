@@ -79,6 +79,13 @@ describe('StaffDashboardPage', () => {
     expect(await screen.findByText('No active session')).toBeInTheDocument();
   });
 
+  it('has no chat: chat is for Deaf users only', async () => {
+    renderPage();
+    expect(await screen.findByText('No active session')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Chat' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /chat/i })).not.toBeInTheDocument();
+  });
+
   it('shows which institution the staff member belongs to', async () => {
     renderPage();
     expect(await screen.findByText('Northside Medical Center')).toBeInTheDocument();
