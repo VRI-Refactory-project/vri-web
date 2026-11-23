@@ -33,7 +33,6 @@ import { InstitutionLayout } from '../features/institution/InstitutionLayout';
 import { InstitutionRoleRoute } from '../components/InstitutionRoleRoute';
 import { StaffLayout } from '../features/staff/StaffLayout';
 import { StaffDashboardPage } from '../features/staff/StaffDashboardPage';
-import { StaffChatPage } from '../features/staff/StaffChatPage';
 import { MyProfilePage } from '../features/staff/MyProfilePage';
 import { StaffSettingsPage } from '../features/staff/StaffSettingsPage';
 import { StaffHelpPage } from '../features/staff/StaffHelpPage';
@@ -243,7 +242,6 @@ const appRoutes: RouteObject[] = [
                 // Staff can cancel a request that is still waiting from here (V2-013).
                 element: <SessionDetailsPage backTo="/dashboard/staff/sessions" allowCancel />,
               },
-              { path: 'chat', element: <StaffChatPage /> },
               { path: 'profile', element: <MyProfilePage /> },
               { path: 'settings', element: <StaffSettingsPage /> },
               { path: 'help', element: <StaffHelpPage /> },
