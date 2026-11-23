@@ -10,6 +10,7 @@ import {
   MicOff,
   MonitorUp,
   PhoneOff,
+  PictureInPicture2,
   Signal,
   Video,
   VideoOff,
@@ -48,6 +49,9 @@ interface Props {
   /** Share screen. Leave out to hide the button. */
   onShareScreen?: () => void;
   sharing?: boolean;
+  /** Float the call above other tabs (picture-in-picture). Leave out where the browser cannot. */
+  onPopOut?: () => void;
+  poppedOut?: boolean;
   /** Video quality. Leave out to hide the button. */
   quality?: VideoQualityChoice;
   onPickQuality?: (choice: VideoQualityChoice) => void;
@@ -265,6 +269,8 @@ export function CallControls({
   onPickDevice,
   onShareScreen,
   sharing,
+  onPopOut,
+  poppedOut,
   quality = 'auto',
   onPickQuality,
   onToggleChat,
@@ -323,6 +329,19 @@ export function CallControls({
                 <MonitorUp size={18} />
               </span>
               {sharing ? 'Stop Sharing' : 'Share Screen'}
+            </button>
+          )}
+          {onPopOut && (
+            <button
+              type="button"
+              className="cc__btn"
+              onClick={onPopOut}
+              aria-pressed={Boolean(poppedOut)}
+            >
+              <span className="cc__icon">
+                <PictureInPicture2 size={18} />
+              </span>
+              {poppedOut ? 'Pop in' : 'Pop out'}
             </button>
           )}
           {onPickQuality && <QualityMenu quality={quality} onPick={onPickQuality} />}

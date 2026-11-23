@@ -418,3 +418,144 @@ describe('CallScreen', () => {
     expect(screen.queryByRole('button', { name: /^Remove/ })).not.toBeInTheDocument();
   });
 });
+
+describe('picture-in-picture (staying on the call in other tabs)', () => {
+  /** A stand-in for Chrome's floating window: a real second document the call can be drawn in. */
+  function fakePipWindow() {
+    const doc = document.implementation.createHTMLDocument('pip');
+    const listeners: Record<string, () => void> = {};
+    const win = {
+      document: doc,
+      close: vi.fn(() => listeners.pagehide?.()),
+      addEventListener: (type: string, fn: () => void) => (listeners[type] = fn),
+    };
+    const api = {
+      window: null as unknown,
+      requestWindow: vi.fn(async () => {
+        api.window = win;
+        return win;
+      }),
+    };
+    vi.stubGlobal('documentPictureInPicture', api);
+    return { api, win, doc, pagehide: () => listeners.pagehide?.() };
+  }
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  const deafCall = (overrides = {}) =>
+    fakeCall({
+      selfRole: 'deaf',
+      others: [
+        { id: 'u9', name: 'Amina Okafor', role: 'interpreter', stream: null, cameraOff: true },
+      ],
+      ...overrides,
+    });
+
+  it('has no Pop out button where the browser cannot float a call (Firefox)', () => {
+    render(<CallScreen call={deafCall()} selfName="Shadia" onLeave={vi.fn()} />);
+
+    expect(screen.queryByRole('button', { name: /pop out/i })).not.toBeInTheDocument();
+  });
+
+  it('pops the big tile out with Mute, Video and Leave, and they work from there', async () => {
+    const pip = fakePipWindow();
+    const toggleMic = vi.fn();
+    const toggleCam = vi.fn();
+    const onLeave = vi.fn();
+    render(
+      <CallScreen call={deafCall({ toggleMic, toggleCam })} selfName="Shadia" onLeave={onLeave} />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Pop out' }));
+
+    expect(pip.api.requestWindow).toHaveBeenCalledTimes(1);
+    const floating = within(pip.doc.body);
+    // The interpreter is the big tile for the Deaf user, so that is what floats.
+    expect(floating.getByLabelText('Amina Okafor')).toBeTruthy();
+    // It plays no sound of its own: the call screen already does.
+    expect((pip.doc.querySelector('video') as HTMLVideoElement).muted).toBe(true);
+
+    // The stand-in document has no window of its own, which role lookups and fireEvent need.
+    const button = (label: string) =>
+      pip.doc.querySelector(`button[aria-label="${label}"]`) as HTMLButtonElement;
+    act(() => button('Mute').click());
+    act(() => button('Stop video').click());
+    act(() => button('Leave call').click());
+    expect(toggleMic).toHaveBeenCalledTimes(1);
+    expect(toggleCam).toHaveBeenCalledTimes(1);
+    expect(onLeave).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('button', { name: 'Pop in' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('goes back to normal when the floating window is closed', async () => {
+    const pip = fakePipWindow();
+    render(<CallScreen call={deafCall()} selfName="Shadia" onLeave={vi.fn()} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Pop out' }));
+
+    act(() => pip.pagehide());
+
+    // jest-dom's matchers only know the main document, so the floating one is checked directly.
+    expect(pip.doc.body.innerHTML).toBe('');
+    expect(screen.getByRole('button', { name: 'Pop out' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+  });
+
+  it('closes the floating window when the call screen goes (leaving the call)', async () => {
+    const pip = fakePipWindow();
+    const { unmount } = render(
+      <CallScreen call={deafCall()} selfName="Shadia" onLeave={vi.fn()} />,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Pop out' }));
+
+    unmount();
+
+    expect(pip.win.close).toHaveBeenCalled();
+  });
+
+  it('asks Chrome to open it by itself when the person switches tabs', () => {
+    fakePipWindow();
+    const setActionHandler = vi.fn();
+    Object.defineProperty(navigator, 'mediaSession', {
+      configurable: true,
+      value: { setActionHandler },
+    });
+    const { unmount } = render(
+      <CallScreen call={deafCall()} selfName="Shadia" onLeave={vi.fn()} />,
+    );
+
+    expect(setActionHandler).toHaveBeenCalledWith('enterpictureinpicture', expect.any(Function));
+    unmount();
+    expect(setActionHandler).toHaveBeenLastCalledWith('enterpictureinpicture', null);
+    // @ts-expect-error -- jsdom has no mediaSession; take the stand-in away again.
+    delete navigator.mediaSession;
+  });
+
+  it('floats just the video where that is all the browser can do (Safari)', async () => {
+    Object.defineProperty(document, 'pictureInPictureEnabled', { configurable: true, value: true });
+    const requestPictureInPicture = vi.fn().mockResolvedValue(undefined);
+    HTMLVideoElement.prototype.requestPictureInPicture = requestPictureInPicture;
+    const call = deafCall({
+      others: [
+        {
+          id: 'u9',
+          name: 'Amina Okafor',
+          role: 'interpreter',
+          stream: {} as MediaStream,
+          cameraOff: false,
+        },
+      ],
+    });
+    render(<CallScreen call={call} selfName="Shadia" onLeave={vi.fn()} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Pop out' }));
+
+    expect(requestPictureInPicture).toHaveBeenCalledTimes(1);
+    expect(requestPictureInPicture.mock.contexts[0]).toBe(document.querySelector('.ls-main video'));
+    // @ts-expect-error -- undo the stand-ins for the other tests.
+    delete document.pictureInPictureEnabled;
+    // @ts-expect-error -- as above.
+    delete HTMLVideoElement.prototype.requestPictureInPicture;
+  });
+});
