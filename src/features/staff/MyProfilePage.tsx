@@ -162,16 +162,15 @@ export function MyProfilePage({ isInstitutionAdmin = false }: MyProfilePageProps
           </dl>
 
           <p>
-  {isInstitutionAdmin ? (
-    'Your email and administrator role cannot be changed from this page.'
-  ) : (
-    <>
-      Your email, department and role are managed by your institution’s administrator.
-      You can change your password in{' '}
-      <Link to="/dashboard/staff/settings">Settings</Link>.
-    </>
-  )}
-</p>
+            {isInstitutionAdmin ? (
+              'Your email and administrator role cannot be changed from this page.'
+            ) : (
+              <>
+                Your email, department and role are managed by your institution’s administrator. You
+                can change your password in <Link to="/dashboard/staff/settings">Settings</Link>.
+              </>
+            )}
+          </p>
         </section>
       )}
     </div>
