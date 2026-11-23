@@ -184,7 +184,6 @@
 //   );
 // }
 
-
 import { CircleHelp, CalendarPlus, Video, ChevronRight, AlertCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -345,7 +344,11 @@ export function StaffDashboardPage() {
             </div>
 
             {/* Made the whole card a Link so it's clickable and aligns properly */}
-            <Link to={`${BASE}/schedule-session`} className="sd-card sd-empty--link" style={{ display: 'block' }}>
+            <Link
+              to={`${BASE}/schedule-session`}
+              className="sd-card sd-empty--link"
+              style={{ display: 'block' }}
+            >
               <div className="sd-row">
                 <span className="sd-tile">
                   <CalendarPlus size={18} aria-hidden="true" />
@@ -357,7 +360,6 @@ export function StaffDashboardPage() {
               </div>
             </Link>
           </section>
-
         </div>
       </div>
 

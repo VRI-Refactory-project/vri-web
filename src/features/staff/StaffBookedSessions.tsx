@@ -31,7 +31,7 @@
 //           View all <ChevronRight size={16} aria-hidden="true" />
 //         </Link>
 //       </div>
-      
+
 //       <div className="sd-card">
 //         {error && <p role="alert">{error}</p>}
 //         {shown.length === 0 ? (
@@ -76,7 +76,6 @@
 //   );
 // }
 
-
 import { CalendarClock, ChevronRight, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -98,13 +97,12 @@ export function StaffBookedSessions() {
   const { bookings, error, busyId, join, cancel } = useMyBookings((id) =>
     navigate(`${LIVE_PATH}/${id}`),
   );
-  
+
   const [showAll, setShowAll] = useState(false);
 
   const activeBookings = bookings.filter((b) => b.status !== 'CANCELLED');
-  
-  // Show 3 by default, or all if showAll is true. 
-  // (Change '3' to '4' if you prefer 4).
+
+  // Show 3 by default, or all if showAll is true.
   const shown = showAll ? activeBookings : activeBookings.slice(0, 3);
 
   return (
@@ -113,22 +111,36 @@ export function StaffBookedSessions() {
         <h2 id="sd-booked" className="sd-heading">
           Booked sessions
         </h2>
-        
-        {/* Always show the button so you can see it, even if there are no bookings yet */}
-        <button 
-          type="button"
-          className="sd-link" 
-          onClick={() => setShowAll(!showAll)}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '2px' }}
-        >
-          {showAll ? (
-            <>View less <ChevronUp size={16} aria-hidden="true" /></>
-          ) : (
-            <>View all <ChevronRight size={16} aria-hidden="true" /></>
-          )}
-        </button>
+
+        {/* Only show the toggle button if there are more than 3 active bookings */}
+        {activeBookings.length > 3 && (
+          <button
+            type="button"
+            className="sd-link"
+            onClick={() => setShowAll(!showAll)}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '2px',
+            }}
+          >
+            {showAll ? (
+              <>
+                View less <ChevronUp size={16} aria-hidden="true" />
+              </>
+            ) : (
+              <>
+                View all <ChevronRight size={16} aria-hidden="true" />
+              </>
+            )}
+          </button>
+        )}
       </div>
-      
+
       <div className="sd-card">
         {error && <p role="alert">{error}</p>}
         {shown.length === 0 ? (

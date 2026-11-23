@@ -342,7 +342,10 @@
 
 /* Make the whole schedule card clickable and hover-able */
 a.sd-card.sd-empty--link {
-  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
   text-decoration: none;
   color: inherit;
 }
