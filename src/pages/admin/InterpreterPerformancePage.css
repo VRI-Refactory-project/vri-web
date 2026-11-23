@@ -109,6 +109,33 @@
   color: #b91c1c;
   font-weight: 700;
 }
+.ipm-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-top: 16px;
+  color: #64748b;
+  font-size: 13px;
+}
+.ipm-pagination > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ipm-pagination button {
+  padding: 7px 12px;
+  border: 1px solid #ddd8f0;
+  border-radius: 9px;
+  background: #fff;
+  color: #4b34a0;
+  font: inherit;
+  cursor: pointer;
+}
+.ipm-pagination button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
 .ipm-feedback-list {
   display: flex;
   flex-direction: column;
@@ -152,5 +179,9 @@
   }
   .ipm-trend small {
     display: none;
+  }
+  .ipm-pagination {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }

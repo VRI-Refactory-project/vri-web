@@ -223,8 +223,10 @@ export interface InterpreterMetrics {
     lowRatingCount: number;
     completedSessions: number;
   };
+  trendStartMonth: string;
   trends: InterpreterRatingTrend[];
   interpreters: InterpreterMetricRow[];
+  interpreterPagination: { count: number; page: number; pageSize: number };
   lowRatings: LowRatingFeedback[];
 }
 
@@ -235,16 +237,22 @@ interface ApiInterpreterMetrics {
     low_rating_count: number;
     completed_sessions: number;
   };
+  trend_start_month: string;
   trends: { month: string; average_rating: number | null; rating_count: number }[];
   interpreters: {
-    interpreter_id: number;
-    interpreter_name: string;
-    specialisation: string | null;
-    average_rating: number | null;
-    rating_count: number;
-    completed_sessions: number;
-    low_rating_count: number;
-  }[];
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: {
+      interpreter_id: number;
+      interpreter_name: string;
+      specialisation: string | null;
+      average_rating: number | null;
+      rating_count: number;
+      completed_sessions: number;
+      low_rating_count: number;
+    }[];
+  };
   low_ratings: {
     id: number;
     interpreter_name: string;
@@ -254,8 +262,13 @@ interface ApiInterpreterMetrics {
   }[];
 }
 
-export async function fetchInterpreterMetrics(): Promise<InterpreterMetrics> {
-  const raw = await api<ApiInterpreterMetrics>('/api/v1/dashboard/admin/interpreter-performance/');
+export async function fetchInterpreterMetrics(
+  page = 1,
+  pageSize = 10,
+): Promise<InterpreterMetrics> {
+  const raw = await api<ApiInterpreterMetrics>(
+    `/api/v1/dashboard/admin/interpreter-performance/?page=${page}&page_size=${pageSize}`,
+  );
   return {
     summary: {
       averageRating: raw.summary.average_rating,
@@ -263,12 +276,13 @@ export async function fetchInterpreterMetrics(): Promise<InterpreterMetrics> {
       lowRatingCount: raw.summary.low_rating_count,
       completedSessions: raw.summary.completed_sessions,
     },
+    trendStartMonth: raw.trend_start_month,
     trends: raw.trends.map((item) => ({
       month: item.month,
       averageRating: item.average_rating,
       ratingCount: item.rating_count,
     })),
-    interpreters: raw.interpreters.map((item) => ({
+    interpreters: raw.interpreters.results.map((item) => ({
       interpreterId: item.interpreter_id,
       interpreterName: item.interpreter_name,
       specialisation: item.specialisation ?? 'Not specified',
@@ -277,6 +291,7 @@ export async function fetchInterpreterMetrics(): Promise<InterpreterMetrics> {
       completedSessions: item.completed_sessions,
       lowRatingCount: item.low_rating_count,
     })),
+    interpreterPagination: { count: raw.interpreters.count, page, pageSize },
     lowRatings: raw.low_ratings.map((item) => ({
       id: item.id,
       interpreterName: item.interpreter_name,
