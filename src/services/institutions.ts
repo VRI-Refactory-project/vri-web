@@ -348,17 +348,10 @@ export async function updateInstitutionStatus(
   return deactivateInstitution(id);
 }
 
-
 /* ---------- Institution self-service profile ---------- */
 
 export type OrganisationType =
-  | 'HOSPITAL'
-  | 'COURT'
-  | 'GOVERNMENT'
-  | 'SCHOOL'
-  | 'POLICE'
-  | 'CHURCH'
-  | 'OTHER';
+  'HOSPITAL' | 'COURT' | 'GOVERNMENT' | 'SCHOOL' | 'POLICE' | 'CHURCH' | 'OTHER';
 
 export interface MyInstitutionAccount {
   organisation_name: string;
@@ -385,4 +378,3 @@ export async function updateMyInstitutionAccount(
     body: JSON.stringify(data),
   });
 }
-
