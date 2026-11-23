@@ -15,7 +15,14 @@ const ICONS: Record<TransactionIcon, LucideIcon> = {
 };
 
 /** One line of Recent activity: what it was, when, its status and the amount. */
-export function TransactionRow({ transaction }: { transaction: InterpreterTransaction }) {
+export function TransactionRow({
+  transaction,
+  symbol,
+}: {
+  transaction: InterpreterTransaction;
+  /** The money sign; "$" when not given. */
+  symbol?: string;
+}) {
   const { title, detail, date, amount, status, icon } = transaction;
   const Icon = ICONS[icon];
 
@@ -31,7 +38,9 @@ export function TransactionRow({ transaction }: { transaction: InterpreterTransa
         </span>
       </span>
       <span className={`iw-badge iw-badge--${status.toLowerCase()}`}>{status}</span>
-      <span className={`iw-amount${amount < 0 ? ' iw-amount--out' : ''}`}>{money(amount)}</span>
+      <span className={`iw-amount${amount < 0 ? ' iw-amount--out' : ''}`}>
+        {money(amount, symbol)}
+      </span>
       <ChevronRight className="iw-tx-chevron" size={18} aria-hidden="true" />
     </li>
   );

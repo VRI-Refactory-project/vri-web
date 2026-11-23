@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -15,8 +15,21 @@ const svc = vi.hoisted(() => ({
   downloadMessageFile: vi.fn(),
   getMessageImage: vi.fn(),
   markRead: vi.fn(),
+  deleteMessage: vi.fn(),
 }));
 vi.mock('../../services/community', () => svc);
+
+// The live connection is replaced by one the tests can speak through.
+const live = vi.hoisted(() => ({
+  events: null as null | import('../../features/community/chatSocket').ChatEvents,
+  close: vi.fn(),
+}));
+vi.mock('../../features/community/chatSocket', () => ({
+  openChatSocket: (events: import('../../features/community/chatSocket').ChatEvents) => {
+    live.events = events;
+    return { close: live.close };
+  },
+}));
 
 const person = (id: number, name: string) => ({ id, name, location: 'Kampala', photoUrl: null });
 const message = (id: number, body: string, mine: boolean, read = false): ChatMessage => ({
@@ -28,6 +41,7 @@ const message = (id: number, body: string, mine: boolean, read = false): ChatMes
   createdAt: new Date().toISOString(),
   mine,
   read,
+  deleted: false,
 });
 
 const sarah: Conversation = {
@@ -67,24 +81,53 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('MessagesPage', () => {
-  it('lists conversations and opens the first with its messages', async () => {
+  it('opens a conversation with its messages', async () => {
     renderPage();
 
     expect(await screen.findByText('Hi Irene')).toBeInTheDocument();
     expect(svc.getMessages).toHaveBeenCalledWith(1);
-    expect(screen.getByText('Say hello')).toBeInTheDocument();
     expect(screen.getByLabelText('Read')).toBeInTheDocument();
+  });
+
+  it('lists the conversations until one is picked, then shows only that chat', async () => {
+    renderPage('/dashboard/deaf/messages');
+    expect(await screen.findByText('Say hello')).toBeInTheDocument();
+    expect(screen.getByLabelText('Search conversations')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Messages' })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /Sarah Nsubuga/ }));
+
+    expect(await screen.findByText('Hi Irene')).toBeInTheDocument();
+    // No other conversations, no search, and no Community tabs to find other people.
+    expect(screen.queryByLabelText('Search conversations')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Daniel Ochieng/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Messages' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Back to messages' })).toBeInTheDocument();
+  });
+
+  it('goes back from a chat to the list of conversations', async () => {
+    renderPage();
+    await screen.findByText('Hi Irene');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Back to messages' }));
+
+    expect(await screen.findByLabelText('Search conversations')).toBeInTheDocument();
+    expect(screen.queryByText('Hi Irene')).not.toBeInTheDocument();
   });
 
   it('reads the unread messages of the open conversation and clears the badge', async () => {
     let finish: () => void = () => undefined;
     svc.markRead.mockReturnValue(new Promise<void>((resolve) => (finish = resolve)));
-    renderPage();
 
+    // The badge is on the list, so look at the list first, then open the chat.
+    renderPage('/dashboard/deaf/messages');
     expect(await screen.findByLabelText('1 unread')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /Sarah Nsubuga/ }));
     await waitFor(() => expect(svc.markRead).toHaveBeenCalledWith(1));
     finish();
-    await waitFor(() => expect(screen.queryByLabelText('1 unread')).not.toBeInTheDocument());
+    await userEvent.click(await screen.findByRole('button', { name: 'Back to messages' }));
+    await screen.findByLabelText('Search conversations');
+    expect(screen.queryByLabelText('1 unread')).not.toBeInTheDocument();
   });
 
   it('opens the conversation named in the address', async () => {
@@ -99,7 +142,8 @@ describe('MessagesPage', () => {
     renderPage();
     await screen.findByText('Hi Irene');
 
-    await userEvent.click(screen.getByRole('button', { name: /Daniel Ochieng/ }));
+    await userEvent.click(screen.getByRole('button', { name: 'Back to messages' }));
+    await userEvent.click(await screen.findByRole('button', { name: /Daniel Ochieng/ }));
 
     await waitFor(() => expect(svc.getMessages).toHaveBeenCalledWith(2));
   });
@@ -153,10 +197,11 @@ describe('MessagesPage', () => {
       messages: [{ ...message(9, '', false), sticker: 'heart' }],
       hasMore: false,
     });
-    renderPage();
+    renderPage('/dashboard/deaf/messages');
 
+    expect(await screen.findByText('Sticker')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /Sarah Nsubuga/ }));
     expect(await screen.findByRole('img', { name: 'Heart' })).toBeInTheDocument();
-    expect(screen.getByText('Sticker')).toBeInTheDocument();
   });
 
   it('shows a plain face for a sticker this version does not know', async () => {
@@ -253,12 +298,12 @@ describe('MessagesPage', () => {
       messages: [photo, { ...message(10, 'from the lake', false), imageUrl: '/api/p/10/' }],
       hasMore: false,
     });
-    renderPage();
+    renderPage('/dashboard/deaf/messages');
 
+    expect(await screen.findByText('Photo')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /Sarah Nsubuga/ }));
     expect(await screen.findByRole('img', { name: 'from the lake' })).toBeInTheDocument();
-    expect(screen.getAllByText('from the lake').length).toBeGreaterThan(0);
     expect(svc.getMessageImage).toHaveBeenCalledWith('/api/p/9/');
-    expect(screen.getByText('Photo')).toBeInTheDocument();
   });
 
   it('says so when a photo cannot be loaded', async () => {
@@ -307,8 +352,8 @@ describe('MessagesPage', () => {
   });
 
   it('searches conversations by name', async () => {
-    renderPage();
-    await screen.findByText('Hi Irene');
+    renderPage('/dashboard/deaf/messages');
+    await screen.findByText('Say hello');
 
     await userEvent.type(screen.getByLabelText('Search conversations'), 'dan');
 
@@ -417,14 +462,15 @@ describe('MessagesPage', () => {
     svc.getConversations.mockResolvedValue([{ ...sarah, lastMessage: received }]);
     svc.getMessages.mockResolvedValue({ messages: [received], hasMore: false });
     svc.downloadMessageFile.mockResolvedValue(undefined);
-    renderPage();
+    renderPage('/dashboard/deaf/messages');
     const user = userEvent.setup();
 
+    // The file's name stands in for the message in the list.
+    expect(await screen.findByText('plan.pdf')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Sarah Nsubuga/ }));
     await user.click(await screen.findByRole('button', { name: 'Download plan.pdf' }));
 
     expect(svc.downloadMessageFile).toHaveBeenCalledWith(attached);
-    // The name also stands in for the message in the list on the left.
-    expect(screen.getAllByText('plan.pdf').length).toBeGreaterThan(1);
   });
 
   it('says so when a download fails, and lets you try again', async () => {
@@ -485,5 +531,119 @@ describe('MessagesPage', () => {
 
     expect(await screen.findByText('Your messages')).toBeInTheDocument();
     expect(svc.getMessages).not.toHaveBeenCalled();
+  });
+
+  it('shows a message that arrives live, without waiting for the next refresh', async () => {
+    renderPage();
+    await screen.findByText('Hi Irene');
+
+    act(() => live.events?.onMessage(1, message(7, 'Are you there?', false)));
+
+    expect(await screen.findByText('Are you there?')).toBeInTheDocument();
+  });
+
+  it('does not put a live message from another chat into the open one', async () => {
+    renderPage();
+    await screen.findByText('Hi Irene');
+
+    act(() => live.events?.onMessage(2, message(8, 'For Daniel only', false)));
+
+    expect(screen.queryByText('For Daniel only')).not.toBeInTheDocument();
+    await waitFor(() => expect(svc.getConversations.mock.calls.length).toBeGreaterThan(1));
+  });
+
+  it('shows a live deletion as "This message was deleted"', async () => {
+    renderPage();
+    await screen.findByText('Hi Irene');
+
+    act(() => live.events?.onDeleted(1, 1));
+
+    expect(await screen.findByText('This message was deleted')).toBeInTheDocument();
+    expect(screen.queryByText('Hi Irene')).not.toBeInTheDocument();
+  });
+
+  it('turns the ticks blue when the other person reads a message live', async () => {
+    svc.getMessages.mockResolvedValue({
+      messages: [message(1, 'Hi Irene', false), message(3, 'Hi Sarah', true, false)],
+      hasMore: false,
+    });
+    renderPage();
+    await screen.findByText('Hi Sarah');
+    expect(screen.getByRole('img', { name: 'Sent' })).toBeInTheDocument();
+
+    act(() => live.events?.onRead(1, [3]));
+
+    expect(await screen.findByRole('img', { name: 'Read' })).toBeInTheDocument();
+  });
+
+  it('loads what was missed when the connection comes back', async () => {
+    renderPage();
+    await screen.findByText('Hi Irene');
+    svc.getMessages.mockResolvedValue({
+      messages: [message(1, 'Hi Irene', false), message(9, 'Sent while you were offline', false)],
+      hasMore: false,
+    });
+
+    act(() => live.events?.onOpen());
+
+    expect(await screen.findByText('Sent while you were offline')).toBeInTheDocument();
+  });
+
+  it('stops listening when the page is left', async () => {
+    const { unmount } = renderPage();
+    await screen.findByText('Hi Irene');
+
+    unmount();
+
+    expect(live.close).toHaveBeenCalled();
+  });
+
+  it('asks before deleting, then deletes for everyone', async () => {
+    svc.deleteMessage.mockResolvedValue({ ...message(3, '', true, true), deleted: true });
+    renderPage();
+    await screen.findByText('Hi Sarah');
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'Delete message' }));
+    expect(svc.deleteMessage).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Delete for everyone' }));
+
+    expect(svc.deleteMessage).toHaveBeenCalledWith(1, 3);
+    expect(await screen.findByText('You deleted this message')).toBeInTheDocument();
+    expect(screen.queryByText('Hi Sarah')).not.toBeInTheDocument();
+  });
+
+  it('keeps the message when you change your mind', async () => {
+    renderPage();
+    await screen.findByText('Hi Sarah');
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'Delete message' }));
+    await user.click(screen.getByRole('button', { name: 'Keep' }));
+
+    expect(svc.deleteMessage).not.toHaveBeenCalled();
+    expect(screen.getByText('Hi Sarah')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Delete message' })).toBeInTheDocument();
+  });
+
+  it('offers no delete for the other person’s messages', async () => {
+    renderPage();
+    await screen.findByText('Hi Irene');
+
+    // Only "Hi Sarah" is mine, so there is exactly one delete button.
+    expect(screen.getAllByRole('button', { name: 'Delete message' })).toHaveLength(1);
+  });
+
+  it('says so when a message cannot be deleted, and keeps it', async () => {
+    svc.deleteMessage.mockRejectedValue(new Error('offline'));
+    renderPage();
+    await screen.findByText('Hi Sarah');
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'Delete message' }));
+    await user.click(screen.getByRole('button', { name: 'Delete for everyone' }));
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    expect(screen.getByText('Hi Sarah')).toBeInTheDocument();
   });
 });

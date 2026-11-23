@@ -22,9 +22,25 @@ export function mergeMessages(shown: ChatMessage[], fresh: ChatMessage[]): ChatM
 
 /** What a conversation list shows for a message: its text, or a word for a sticker or photo. */
 export const previewOf = (message: ChatMessage): string =>
-  message.sticker
-    ? 'Sticker'
-    : message.body || (message.imageUrl ? 'Photo' : message.file ? message.file.name : '');
+  message.deleted
+    ? 'This message was deleted'
+    : message.sticker
+      ? 'Sticker'
+      : message.body || (message.imageUrl ? 'Photo' : message.file ? message.file.name : '');
+
+/** A message after its sender took it back: everything but who and when is gone. */
+export const asDeleted = (message: ChatMessage): ChatMessage => ({
+  ...message,
+  body: '',
+  sticker: '',
+  imageUrl: null,
+  file: null,
+  deleted: true,
+});
+
+/** Marks these messages as opened by the other person. */
+export const markAsRead = (shown: ChatMessage[], ids: number[]): ChatMessage[] =>
+  shown.map((m) => (ids.includes(m.id) ? { ...m, read: true } : m));
 
 export const MAX_PHOTO_BYTES = 8 * 1024 * 1024;
 

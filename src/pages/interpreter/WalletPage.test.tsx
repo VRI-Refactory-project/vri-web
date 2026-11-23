@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -7,12 +7,19 @@ import {
   type InterpreterTransaction,
   type InterpreterWallet,
 } from '../../services/interpreterWallet';
+import { ApiError } from '../../services/api';
+import { requestPayout } from '../../services/wallet';
 import { InterpreterWalletPage } from './WalletPage';
 
 // Keep the real helpers (date formatting); only the data source is replaced.
 vi.mock('../../services/interpreterWallet', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../services/interpreterWallet')>()),
   getInterpreterWallet: vi.fn(),
+}));
+
+vi.mock('../../services/wallet', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../services/wallet')>()),
+  requestPayout: vi.fn(),
 }));
 
 const WALLET: InterpreterWallet = {
@@ -69,6 +76,7 @@ const renderPage = () =>
 describe('InterpreterWalletPage', () => {
   beforeEach(() => {
     vi.mocked(getInterpreterWallet).mockReset();
+    vi.mocked(requestPayout).mockReset();
   });
 
   it('shows the heading and goes back to the dashboard home', async () => {
@@ -181,5 +189,104 @@ describe('InterpreterWalletPage', () => {
     expect(withdraw).toBeDisabled();
     expect(history).toBeDisabled();
     expect(withdraw).toHaveAccessibleDescription('Withdrawals open once payments are live.');
+  });
+
+  describe('with payments live', () => {
+    const LIVE: InterpreterWallet = {
+      ...WALLET,
+      symbol: 'UGX',
+      paymentsAvailable: true,
+      transactions: [
+        { ...ACTIVITY[0], amount: 30000 },
+        { ...ACTIVITY[2], amount: -8000, title: 'Payout' },
+      ],
+    };
+
+    it('shows shillings', async () => {
+      vi.mocked(getInterpreterWallet).mockResolvedValue(LIVE);
+      renderPage();
+
+      expect(await screen.findByText('UGX 27,000')).toBeInTheDocument();
+      expect(screen.getByText('+ UGX 30,000')).toBeInTheDocument();
+      expect(screen.getByText('- UGX 8,000')).toBeInTheDocument();
+    });
+
+    it('opens the withdrawal form and asks for a payout', async () => {
+      vi.mocked(getInterpreterWallet).mockResolvedValue(LIVE);
+      vi.mocked(requestPayout).mockResolvedValue({} as never);
+      renderPage();
+      const user = userEvent.setup();
+
+      await user.click(await screen.findByRole('button', { name: 'Withdraw funds' }));
+      await user.type(screen.getByLabelText('Amount (UGX)'), '8000');
+      await user.selectOptions(screen.getByLabelText('Mobile money network'), 'AIRTEL');
+      await user.click(screen.getByRole('button', { name: 'Request payout' }));
+
+      expect(requestPayout).toHaveBeenCalledWith({ amount: 8000, network: 'AIRTEL', phone: '' });
+      expect(await screen.findByText(/Payout requested/)).toBeInTheDocument();
+      // The form closes and the wallet is read again, so the held money shows.
+      expect(screen.queryByLabelText('Amount (UGX)')).not.toBeInTheDocument();
+      await waitFor(() => expect(getInterpreterWallet).toHaveBeenCalledTimes(2));
+    });
+
+    it('sends one request however many times the button is pressed', async () => {
+      vi.mocked(getInterpreterWallet).mockResolvedValue(LIVE);
+      let finish: (value: never) => void = () => {};
+      vi.mocked(requestPayout).mockReturnValue(new Promise((resolve) => (finish = resolve)));
+      renderPage();
+      const user = userEvent.setup();
+
+      await user.click(await screen.findByRole('button', { name: 'Withdraw funds' }));
+      await user.type(screen.getByLabelText('Amount (UGX)'), '8000');
+      const submit = screen.getByRole('button', { name: 'Request payout' });
+      await user.dblClick(submit);
+
+      expect(requestPayout).toHaveBeenCalledTimes(1);
+      finish({} as never);
+    });
+
+    it('says when there is not enough in the wallet, and keeps the form open', async () => {
+      vi.mocked(getInterpreterWallet).mockResolvedValue(LIVE);
+      vi.mocked(requestPayout).mockRejectedValue(
+        new ApiError(400, 'You do not have enough in your wallet.'),
+      );
+      renderPage();
+      const user = userEvent.setup();
+
+      await user.click(await screen.findByRole('button', { name: 'Withdraw funds' }));
+      await user.type(screen.getByLabelText('Amount (UGX)'), '900000');
+      await user.click(screen.getByRole('button', { name: 'Request payout' }));
+
+      expect(await screen.findByText('You do not have enough in your wallet.')).toBeInTheDocument();
+      expect(screen.getByLabelText('Amount (UGX)')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Request payout' })).not.toBeDisabled();
+    });
+
+    it('shows only the payouts when asked for the payout history', async () => {
+      vi.mocked(getInterpreterWallet).mockResolvedValue(LIVE);
+      renderPage();
+      const user = userEvent.setup();
+      await screen.findByText('Session payment');
+
+      await user.click(screen.getByRole('button', { name: 'View payout history' }));
+
+      expect(screen.getAllByRole('listitem')).toHaveLength(1);
+      expect(screen.getByText('Payout')).toBeInTheDocument();
+    });
+
+    it('keeps withdrawals off when the server has payments switched off', async () => {
+      vi.mocked(getInterpreterWallet).mockResolvedValue({ ...LIVE, paymentsAvailable: false });
+      renderPage();
+
+      expect(await screen.findByRole('button', { name: 'Withdraw funds' })).toBeDisabled();
+      expect(screen.getByText('Withdrawals open once payments are live.')).toBeInTheDocument();
+    });
+  });
+
+  it('says so when the wallet cannot be loaded', async () => {
+    vi.mocked(getInterpreterWallet).mockRejectedValue(new Error('Failed to fetch'));
+    renderPage();
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
   });
 });

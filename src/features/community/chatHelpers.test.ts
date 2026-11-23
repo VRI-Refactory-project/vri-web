@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import type { ChatMessage } from '../../services/community';
 import {
   MAX_PHOTO_BYTES,
+  asDeleted,
+  markAsRead,
   formatWhen,
   initials,
   mergeMessages,
@@ -22,6 +24,7 @@ const msg = (id: number, read = false): ChatMessage => ({
   createdAt: '',
   mine: true,
   read,
+  deleted: false,
 });
 
 describe('formatWhen', () => {
@@ -116,5 +119,36 @@ describe('stickers', () => {
     expect(new Set(STICKERS.map((s) => s.id)).size).toBe(STICKERS.length);
     expect(stickerFor('thumbs_up')?.label).toBe('Thumbs up');
     expect(stickerFor('nope')).toBeNull();
+  });
+});
+
+describe('deleted messages', () => {
+  it('keeps only who and when once a message is taken back', () => {
+    const photo: ChatMessage = {
+      ...msg(5),
+      sticker: 'ok',
+      imageUrl: '/photo',
+      file: { name: 'a.pdf', size: 1, url: '/file' },
+    };
+
+    expect(asDeleted(photo)).toMatchObject({
+      id: 5,
+      body: '',
+      sticker: '',
+      imageUrl: null,
+      file: null,
+      deleted: true,
+      mine: true,
+    });
+  });
+
+  it('says so in the conversation list', () => {
+    expect(previewOf(asDeleted(msg(1)))).toBe('This message was deleted');
+  });
+
+  it('marks only the named messages as read', () => {
+    const marked = markAsRead([msg(1), msg(2), msg(3)], [1, 3]);
+
+    expect(marked.map((m) => m.read)).toEqual([true, false, true]);
   });
 });

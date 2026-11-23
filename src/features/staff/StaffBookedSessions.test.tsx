@@ -13,9 +13,15 @@ const reply = (ok: boolean, status: number, body: unknown) => ({
   json: async () => body,
 });
 
+// A day or two ahead, so the tests keep working as the calendar moves on.
+const inDays = (days: number) => {
+  const d = new Date(Date.now() + days * 86_400_000);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
 const booking = (id: number, over = {}) => ({
   id,
-  date: '2026-12-01',
+  date: inDays(2),
   time: '10:00:00',
   duration: 30,
   session_type: 'medical',
@@ -101,5 +107,27 @@ describe('StaffBookedSessions', () => {
 
     expect(await screen.findByText('Interpreter did not join')).toBeInTheDocument();
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+
+  it('leaves out sessions that are over, so the next ones show', async () => {
+    respond([
+      booking(6, { date: inDays(-1), status: 'CONFIRMED', interpreter_name: 'Old Session' }),
+      booking(7, { status: 'CONFIRMED', interpreter_name: 'Amina Okafor' }),
+    ]);
+    renderCard();
+
+    expect(await screen.findByText('Confirmed with Amina Okafor')).toBeInTheDocument();
+    expect(screen.queryByText('Confirmed with Old Session')).not.toBeInTheDocument();
+  });
+
+  it('offers no Cancel for a session that has started', async () => {
+    const started = new Date(Date.now() - 5 * 60_000);
+    const hh = String(started.getHours()).padStart(2, '0');
+    const mm = String(started.getMinutes()).padStart(2, '0');
+    respond([booking(8, { date: inDays(0), time: `${hh}:${mm}:00` })]);
+    renderCard();
+
+    expect(await screen.findByText('No interpreter found')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
   });
 });
