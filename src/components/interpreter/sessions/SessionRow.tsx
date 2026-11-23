@@ -1,4 +1,4 @@
-import { Check, ChevronRight, Clock } from 'lucide-react';
+import { Check, ChevronRight, Clock, XCircle, AlertCircle } from 'lucide-react';
 import {
   dateTile,
   sessionDetail,
@@ -11,6 +11,8 @@ import './sessions.css';
 const STATUS_ICON: Record<SessionStatus, typeof Clock> = {
   upcoming: Clock,
   completed: Check,
+  cancelled: XCircle,
+  failed: AlertCircle,
 };
 
 /** One row of the sessions table: date box, who it is with, type and status. */

@@ -1,16 +1,5 @@
-
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import {
-  Building2,
-  Check,
-  Pencil,
-  Plus,
-  RotateCcw,
-  Save,
-  Trash2,
-  Users,
-  X,
-} from 'lucide-react';
+import { Building2, Check, Pencil, Plus, RotateCcw, Save, Trash2, Users, X } from 'lucide-react';
 import {
   createMyDepartment,
   deleteMyDepartment,
@@ -47,47 +36,59 @@ const ORGANISATION_TYPES: { value: OrganisationType; label: string }[] = [
 export function InstitutionProfilePage() {
   const [profile, setProfile] = useState<MyInstitutionAccount>(EMPTY_PROFILE);
   const [draft, setDraft] = useState<MyInstitutionAccount>(EMPTY_PROFILE);
+
   const [departments, setDepartments] = useState<InstitutionDepartment[]>([]);
-  const [visibleDepartmentCount, setVisibleDepartmentCount] =
-    useState(INITIAL_DEPARTMENT_LIMIT);
+  const [visibleDepartmentCount, setVisibleDepartmentCount] = useState(INITIAL_DEPARTMENT_LIMIT);
 
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
 
   const [newName, setNewName] = useState('');
   const [adding, setAdding] = useState(false);
+
   const [editingId, setEditingId] = useState<string | null>(null);
   const [departmentDraft, setDepartmentDraft] = useState('');
-  const [departmentToDelete, setDepartmentToDelete] =
-    useState<InstitutionDepartment | null>(null);
+
+  const [departmentToDelete, setDepartmentToDelete] = useState<InstitutionDepartment | null>(null);
   const [deletingDepartment, setDeletingDepartment] = useState(false);
 
   const load = useCallback(async () => {
-    setLoading(true);
-    setError('');
-
-    try {
-      const [nextProfile, nextDepartments] = await Promise.all([
-        fetchMyInstitutionAccount(),
-        fetchMyDepartments(),
-      ]);
-
-      setProfile(nextProfile);
-      setDraft(nextProfile);
-      setDepartments(nextDepartments);
-      setVisibleDepartmentCount(INITIAL_DEPARTMENT_LIMIT);
-    } catch (err) {
-      setError(describeError(err));
-    } finally {
-      setLoading(false);
-    }
+    return Promise.all([fetchMyInstitutionAccount(), fetchMyDepartments()]);
   }, []);
 
   useEffect(() => {
-    void load();
+    let active = true;
+
+    async function loadInitialData() {
+      try {
+        const [nextProfile, nextDepartments] = await load();
+
+        if (!active) return;
+
+        setProfile(nextProfile);
+        setDraft(nextProfile);
+        setDepartments(nextDepartments);
+        setVisibleDepartmentCount(INITIAL_DEPARTMENT_LIMIT);
+      } catch (err) {
+        if (active) {
+          setError(describeError(err));
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void loadInitialData();
+
+    return () => {
+      active = false;
+    };
   }, [load]);
 
   useEffect(() => {
@@ -108,9 +109,7 @@ export function InstitutionProfilePage() {
     .map((word) => word[0].toUpperCase())
     .join('');
 
-  const selectedType = ORGANISATION_TYPES.find(
-    (type) => type.value === profile.organisation_type,
-  );
+  const selectedType = ORGANISATION_TYPES.find((type) => type.value === profile.organisation_type);
 
   const activeDepartments = departments.filter((item) => item.active);
 
@@ -125,10 +124,7 @@ export function InstitutionProfilePage() {
       return;
     }
 
-    if (
-      draft.organisation_type === 'OTHER' &&
-      !draft.organisation_type_other.trim()
-    ) {
+    if (draft.organisation_type === 'OTHER' && !draft.organisation_type_other.trim()) {
       setError('Please specify the type of organisation.');
       return;
     }
@@ -140,14 +136,13 @@ export function InstitutionProfilePage() {
         organisation_name: draft.organisation_name.trim(),
         organisation_type: draft.organisation_type,
         organisation_type_other:
-          draft.organisation_type === 'OTHER'
-            ? draft.organisation_type_other.trim()
-            : '',
+          draft.organisation_type === 'OTHER' ? draft.organisation_type_other.trim() : '',
       });
 
       setProfile(response.updated_data);
       setDraft(response.updated_data);
       setEditing(false);
+
       setNotice(response.message || 'Institution profile updated successfully.');
     } catch (err) {
       setError(describeError(err));
@@ -185,9 +180,7 @@ export function InstitutionProfilePage() {
     try {
       const updated = await renameMyDepartment(id, departmentDraft.trim());
 
-      setDepartments((items) =>
-        items.map((item) => (item.id === id ? updated : item)),
-      );
+      setDepartments((items) => items.map((item) => (item.id === id ? updated : item)));
 
       setEditingId(null);
       setNotice('Department updated.');
@@ -208,9 +201,7 @@ export function InstitutionProfilePage() {
     try {
       await deleteMyDepartment(department.id);
 
-      setDepartments((items) =>
-        items.filter((item) => item.id !== department.id),
-      );
+      setDepartments((items) => items.filter((item) => item.id !== department.id));
 
       setNotice('Department deleted.');
       setDepartmentToDelete(null);
@@ -257,6 +248,7 @@ export function InstitutionProfilePage() {
           role={error ? 'alert' : 'status'}
         >
           <span>{error || notice}</span>
+
           <button
             type="button"
             aria-label="Dismiss message"
@@ -274,6 +266,7 @@ export function InstitutionProfilePage() {
         <section className="ip-card">
           <div className="ip-card-heading">
             <Building2 />
+
             <div>
               <h2>Institution Details</h2>
               <p>View and update your institution information.</p>
@@ -281,9 +274,8 @@ export function InstitutionProfilePage() {
           </div>
 
           <div className="ip-profile-summary">
-            <div className="profile-avatar-large">
-              {initials || <Building2 size={30} />}
-            </div>
+            <div className="profile-avatar-large">{initials || <Building2 size={30} />}</div>
+
             <div>
               <h3>{profile.organisation_name || 'Institution'}</h3>
               <p>
@@ -304,7 +296,10 @@ export function InstitutionProfilePage() {
                 value={draft.organisation_name}
                 disabled={!editing || saving}
                 onChange={(event) =>
-                  setDraft({ ...draft, organisation_name: event.target.value })
+                  setDraft({
+                    ...draft,
+                    organisation_name: event.target.value,
+                  })
                 }
               />
             </label>
@@ -365,11 +360,7 @@ export function InstitutionProfilePage() {
                   <X size={16} /> Cancel
                 </button>
 
-                <button
-                  type="submit"
-                  className="ip-primary"
-                  disabled={saving}
-                >
+                <button type="submit" className="ip-primary" disabled={saving}>
                   <Save size={17} />
                   {saving ? 'Saving...' : 'Save Changes'}
                 </button>
@@ -381,6 +372,7 @@ export function InstitutionProfilePage() {
         <section className="ip-card ip-departments">
           <div className="ip-card-heading">
             <Users />
+
             <div>
               <h2>Departments</h2>
               <p>Manage the departments under your institution.</p>
@@ -407,6 +399,7 @@ export function InstitutionProfilePage() {
                 value={newName}
                 onChange={(event) => setNewName(event.target.value)}
               />
+
               <button type="submit" className="ip-primary">
                 <Plus size={16} /> Add
               </button>
@@ -414,67 +407,63 @@ export function InstitutionProfilePage() {
           )}
 
           <div className="ip-department-list">
-            {activeDepartments
-              .slice(0, visibleDepartmentCount)
-              .map((department) => (
-                <div className="ip-department" key={department.id}>
-                  <span className="ip-dept-icon">
-                    <Users size={18} />
-                  </span>
+            {activeDepartments.slice(0, visibleDepartmentCount).map((department) => (
+              <div className="ip-department" key={department.id}>
+                <span className="ip-dept-icon">
+                  <Users size={18} />
+                </span>
 
-                  {editingId === department.id ? (
-                    <input
-                      aria-label="Department name"
-                      value={departmentDraft}
-                      onChange={(event) =>
-                        setDepartmentDraft(event.target.value)
+                {editingId === department.id ? (
+                  <input
+                    aria-label="Department name"
+                    value={departmentDraft}
+                    onChange={(event) => setDepartmentDraft(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault();
+                        void saveDepartment(department.id);
                       }
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter') {
-                          event.preventDefault();
-                          void saveDepartment(department.id);
-                        }
-                      }}
-                    />
-                  ) : (
-                    <span className="ip-dept-name">{department.name}</span>
-                  )}
+                    }}
+                  />
+                ) : (
+                  <span className="ip-dept-name">{department.name}</span>
+                )}
 
-                  <span className="ip-active">Active</span>
+                <span className="ip-active">Active</span>
 
-                  {editingId === department.id ? (
-                    <button
-                      type="button"
-                      className="ip-icon-button"
-                      aria-label="Save department"
-                      onClick={() => void saveDepartment(department.id)}
-                    >
-                      <Check />
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      className="ip-icon-button"
-                      aria-label={`Edit ${department.name}`}
-                      onClick={() => {
-                        setEditingId(department.id);
-                        setDepartmentDraft(department.name);
-                      }}
-                    >
-                      <Pencil />
-                    </button>
-                  )}
-
+                {editingId === department.id ? (
                   <button
                     type="button"
-                    className="ip-icon-button ip-delete"
-                    aria-label={`Delete ${department.name}`}
-                    onClick={() => setDepartmentToDelete(department)}
+                    className="ip-icon-button"
+                    aria-label="Save department"
+                    onClick={() => void saveDepartment(department.id)}
                   >
-                    <Trash2 />
+                    <Check />
                   </button>
-                </div>
-              ))}
+                ) : (
+                  <button
+                    type="button"
+                    className="ip-icon-button"
+                    aria-label={`Edit ${department.name}`}
+                    onClick={() => {
+                      setEditingId(department.id);
+                      setDepartmentDraft(department.name);
+                    }}
+                  >
+                    <Pencil />
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  className="ip-icon-button ip-delete"
+                  aria-label={`Delete ${department.name}`}
+                  onClick={() => setDepartmentToDelete(department)}
+                >
+                  <Trash2 />
+                </button>
+              </div>
+            ))}
 
             {!activeDepartments.length && (
               <p className="ip-empty">
@@ -486,14 +475,10 @@ export function InstitutionProfilePage() {
               <button
                 type="button"
                 className="ip-view-more"
-                onClick={() =>
-                  setVisibleDepartmentCount(
-                    (count) => count + DEPARTMENT_PAGE_SIZE,
-                  )
-                }
+                onClick={() => setVisibleDepartmentCount((count) => count + DEPARTMENT_PAGE_SIZE)}
               >
-                View more departments (
-                {activeDepartments.length - visibleDepartmentCount} remaining)
+                View more departments ({activeDepartments.length - visibleDepartmentCount}{' '}
+                remaining)
               </button>
             )}
           </div>
@@ -504,10 +489,24 @@ export function InstitutionProfilePage() {
         <button
           type="button"
           className="ip-secondary"
-          onClick={() => {
-            setDraft({ ...profile });
-            setEditing(false);
-            void load();
+          onClick={async () => {
+            setError('');
+            setNotice('');
+            setLoading(true);
+
+            try {
+              const [nextProfile, nextDepartments] = await load();
+
+              setProfile(nextProfile);
+              setDraft(nextProfile);
+              setDepartments(nextDepartments);
+              setVisibleDepartmentCount(INITIAL_DEPARTMENT_LIMIT);
+              setEditing(false);
+            } catch (err) {
+              setError(describeError(err));
+            } finally {
+              setLoading(false);
+            }
           }}
         >
           <RotateCcw size={17} /> Reset Changes
@@ -518,10 +517,7 @@ export function InstitutionProfilePage() {
         <div
           className="ip-dialog-backdrop"
           onMouseDown={(event) => {
-            if (
-              event.target === event.currentTarget &&
-              !deletingDepartment
-            ) {
+            if (event.target === event.currentTarget && !deletingDepartment) {
               setDepartmentToDelete(null);
             }
           }}
@@ -540,8 +536,8 @@ export function InstitutionProfilePage() {
             <h2 id="ip-dialog-title">Delete department?</h2>
 
             <p id="ip-dialog-description">
-              Delete <strong>{departmentToDelete.name}</strong>? Staff assigned
-              to this department may need to be reassigned first.
+              Delete <strong>{departmentToDelete.name}</strong>? Staff assigned to this department
+              may need to be reassigned first.
             </p>
 
             {error && (
@@ -575,5 +571,3 @@ export function InstitutionProfilePage() {
     </main>
   );
 }
-
-
