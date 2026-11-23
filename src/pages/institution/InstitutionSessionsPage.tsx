@@ -1,136 +1,147 @@
+import { ChevronRight, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Search, SlidersHorizontal, Video, ChevronRight } from 'lucide-react';
-import { api } from '../../services/api';
+import { Link } from 'react-router-dom';
+import { describeError } from '../../services/api';
+import {
+  CHANNEL_LABEL,
+  formatDuration,
+  formatWhen,
+  listInstitutionSessions,
+  outcomeLabel,
+  type InstitutionSession,
+  type SessionState,
+} from '../../services/institutionSessions';
 import './InstitutionSessionsPage.css';
 
-// 1. Define the data structure we expect from the backend
-interface ActiveSession {
-  id: number;
-  location: string;
-  interpreter: string;
-  status: 'Live' | 'Connecting';
-  duration: string;
-  type: 'live' | 'connecting';
-}
+const BASE = '/dashboard/institution/sessions';
 
+const TABS: { value: SessionState; label: string }[] = [
+  { value: 'history', label: 'History' },
+  { value: 'active', label: 'Active' },
+];
+
+/** What a search matches: the staff member, their department or the interpreter. */
+const matches = (session: InstitutionSession, query: string) => {
+  const q = query.trim().toLowerCase();
+  return (
+    !q ||
+    [session.staff.name, session.staff.department, session.interpreter_name ?? ''].some((field) =>
+      field.toLowerCase().includes(q),
+    )
+  );
+};
+
+/**
+ * The institution's sessions (V2-030): past ones to look back on, and the ones happening now. One
+ * row per session with when, who, how it came about, how long it ran and who interpreted. Only
+ * metadata: what was said in a session is never stored or shown.
+ */
 export function InstitutionSessionsPage() {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [tab, setTab] = useState<SessionState>('history');
+  const [search, setSearch] = useState('');
+  // The answer for one tab. While the shown tab has no answer yet, the page is loading.
+  const [result, setResult] = useState<{
+    tab: SessionState;
+    sessions?: InstitutionSession[];
+    error?: string;
+  } | null>(null);
 
-  // 2. State for data, loading, and errors
-  const [sessions, setSessions] = useState<ActiveSession[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // 3. Fetch data from the backend
   useEffect(() => {
     let cancelled = false;
-
-    // Replace this URL with your actual backend endpoint for active sessions
-    api<ActiveSession[]>('/api/v1/sessions/active/')
-      .then((data) => {
-        if (!cancelled) {
-          setSessions(data);
-          setLoading(false);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          // If backend isn't ready, just show empty list for now
-          setSessions([]);
-          setLoading(false);
-        }
-      });
-
+    listInstitutionSessions(tab).then(
+      (sessions) => !cancelled && setResult({ tab, sessions }),
+      (err) => !cancelled && setResult({ tab, error: describeError(err) }),
+    );
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [tab]);
 
-  // 4. Filter logic based on search input
-  const filteredSessions = sessions.filter(
-    (session) =>
-      session.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      session.interpreter.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
-
-  // 5. Calculate dynamic top metrics based on the real data
-  const activeCount = sessions.length;
-  const longestRunning =
-    sessions.length > 0
-      ? sessions.reduce((max, s) => (s.duration > max ? s.duration : max), '00:00')
-      : '00:00';
+  const loaded = result?.tab === tab ? result : null;
+  const shown = (loaded?.sessions ?? []).filter((session) => matches(session, search));
 
   return (
-    <div className="institution-sessions-page">
-      {/* Header */}
-      <header className="sessions-header">
-        <h1>Active sessions</h1>
-        <p>Manage and review live SignConnect interpreting sessions.</p>
+    <div className="isp">
+      <header className="isp-header">
+        <h1>Sessions</h1>
+        <p>Look back at your staff’s interpreting sessions, or see the ones happening now.</p>
       </header>
 
-      {/* Top Metric Cards */}
-      <section className="sessions-metrics">
-        <div className="metric-card">
-          <span className="metric-label">ACTIVE NOW</span>
-          <span className="metric-value">{activeCount}</span>
-        </div>
-        <div className="metric-card">
-          <span className="metric-label">LONGEST RUNNING</span>
-          <span className="metric-value">{longestRunning}</span>
-        </div>
-        <div className="metric-card">
-          <span className="metric-label">AVG. CONNECT TIME</span>
-          <span className="metric-value">Under 2 min</span> {/* Can be calculated later */}
-        </div>
-      </section>
+      <div className="isp-tabs" role="tablist" aria-label="Which sessions">
+        {TABS.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            role="tab"
+            aria-selected={tab === option.value}
+            className="isp-tab"
+            onClick={() => setTab(option.value)}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
 
-      {/* Search and Filter Bar */}
-      <section className="sessions-controls">
-        <div className="search-bar">
-          <Search size={18} className="search-icon" />
-          <input
-            type="text"
-            placeholder="Search by room, interpreter or department"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        <button className="filter-btn">
-          <SlidersHorizontal size={16} /> Filter
-        </button>
-      </section>
+      <label className="isp-search">
+        <Search size={18} aria-hidden="true" />
+        <input
+          type="search"
+          placeholder="Search by staff member, department or interpreter"
+          aria-label="Search sessions"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </label>
 
-      {/* Active Sessions List */}
-      <section className="sessions-list-container">
-        {loading ? (
-          <div className="empty-state">Loading active sessions...</div>
-        ) : filteredSessions.length === 0 ? (
-          <div className="empty-state">No active sessions right now.</div>
-        ) : (
-          filteredSessions.map((session) => (
-            <div key={session.id} className="session-row">
-              {/* Left Icon */}
-              <div className="session-icon-wrapper">
-                <Video size={20} className="session-icon" />
-              </div>
+      <p className="isp-note">
+        Only the details of each session are kept. What was said is never stored or shown.
+      </p>
 
-              {/* Details */}
-              <div className="session-details">
-                <h3>{session.location}</h3>
-                <p>{session.interpreter}</p>
-              </div>
-
-              {/* Status Badge */}
-              <div className={`active-status-badge ${session.type}`}>
-                <span className="status-dot"></span>
-                {session.status} {session.duration && `· ${session.duration}`}
-              </div>
-
-              {/* Right Arrow */}
-              <ChevronRight size={20} className="session-arrow" />
-            </div>
-          ))
-        )}
-      </section>
+      {!loaded ? (
+        <p className="isp-empty" role="status">
+          Loading sessions…
+        </p>
+      ) : loaded.error ? (
+        <p className="isp-error" role="alert">
+          {loaded.error}
+        </p>
+      ) : shown.length === 0 ? (
+        <p className="isp-empty">
+          {search.trim()
+            ? 'No sessions match your search.'
+            : tab === 'history'
+              ? 'No past sessions yet.'
+              : 'No sessions are running right now.'}
+        </p>
+      ) : (
+        <ul className="isp-list" aria-label={tab === 'history' ? 'Past sessions' : 'Active sessions'}>
+          <li className="isp-row isp-row--head" aria-hidden="true">
+            <span>Date</span>
+            <span>Staff member</span>
+            <span>Channel</span>
+            <span>Duration</span>
+            <span>Interpreter</span>
+            <span>Outcome</span>
+            <span />
+          </li>
+          {shown.map((session) => (
+            <li key={session.id}>
+              <Link to={`${BASE}/${session.id}`} className="isp-row">
+                <span className="isp-when">{formatWhen(session.created_at)}</span>
+                <span className="isp-staff">
+                  <strong>{session.staff.name}</strong>
+                  {session.staff.department && <small>{session.staff.department}</small>}
+                </span>
+                <span data-label="Channel">{CHANNEL_LABEL[session.channel]}</span>
+                <span data-label="Duration">{formatDuration(session.duration_minutes)}</span>
+                <span data-label="Interpreter">{session.interpreter_name ?? 'None'}</span>
+                <span className="isp-outcome">{outcomeLabel(session)}</span>
+                <ChevronRight size={18} aria-hidden="true" className="isp-arrow" />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
