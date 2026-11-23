@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { StaffLayout } from './StaffLayout';
@@ -26,6 +26,17 @@ describe('StaffLayout', () => {
       </MemoryRouter>,
     );
     expect(await screen.findByText('Northside Medical Center')).toBeInTheDocument();
+  });
+
+  it('has no Chat in the menu: chat is for Deaf users only', async () => {
+    render(
+      <MemoryRouter>
+        <StaffLayout />
+      </MemoryRouter>,
+    );
+    const menu = await screen.findByRole('navigation', { name: 'Institution staff' });
+    expect(within(menu).getByRole('link', { name: /Sessions/ })).toBeInTheDocument();
+    expect(within(menu).queryByRole('link', { name: /Chat/ })).not.toBeInTheDocument();
   });
 
   it('still opens when the institution cannot be loaded', async () => {

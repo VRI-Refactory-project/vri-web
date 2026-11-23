@@ -9,7 +9,7 @@
 .sd-page > :not(.sd-account) {
   max-width: 1240px;
 }
-/* The calendar with the active session and chat beside it. */
+/* The calendar with the active session and booked sessions beside it. */
 .sd-overview {
   display: grid;
   grid-template-columns: 340px minmax(0, 1fr);
@@ -154,6 +154,7 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
+  gap: 12px;
 }
 .sd-link {
   display: inline-flex;
