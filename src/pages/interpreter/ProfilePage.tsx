@@ -5,14 +5,13 @@ import { useAuth } from '../../hooks/useAuth';
 import { SignOutButton } from '../../components/SignOutButton';
 import { describeError } from '../../services/api';
 import { getMyPhoto, removeMyPhoto, uploadMyPhoto } from '../../services/photos';
+import { getMyInterpreterProfileStats } from '../../services/interpreterProfile';
 import { ProfilePhotoCropper } from '../dashboards/ProfilePhotoCropper';
 import './ProfilePage.css';
 
 interface InterpreterProfile {
   fullName: string;
   headline: string;
-  rating: number;
-  sessions: number;
   available: boolean;
   languages: string[];
   specialisations: string[];
@@ -34,8 +33,6 @@ export function ProfilePage() {
   const [form, setForm] = useState<InterpreterProfile>({
     fullName,
     headline: 'Certified ASL Interpreter · 8 years experience',
-    rating: 4.9,
-    sessions: 128,
     available: true,
     languages: ['Ugandan Sign Language', 'English', 'International Sign'],
     specialisations: ['Healthcare', 'Legal', 'Education'],
@@ -46,6 +43,11 @@ export function ProfilePage() {
   });
 
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [profileStats, setProfileStats] = useState<{
+    averageRating: number | null;
+    completedSessions: number;
+  } | null>(null);
+  const [statsError, setStatsError] = useState('');
   const [photoBusy, setPhotoBusy] = useState(false);
   const [photoError, setPhotoError] = useState('');
   const fileInput = useRef<HTMLInputElement>(null);
@@ -61,6 +63,26 @@ export function ProfilePage() {
         if (!cancelled) setPhotoUrl(url);
       },
       () => {},
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    getMyInterpreterProfileStats().then(
+      (stats) => {
+        if (!cancelled) {
+          setProfileStats({
+            averageRating: stats.average_rating,
+            completedSessions: stats.completed_sessions,
+          });
+        }
+      },
+      (err) => {
+        if (!cancelled) setStatsError(describeError(err));
+      },
     );
     return () => {
       cancelled = true;
@@ -236,10 +258,16 @@ export function ProfilePage() {
           <p className="ip-headline">{form.headline}</p>
           <div className="ip-stats">
             <span>
-              <Star size={14} className="ip-star" /> {form.rating.toFixed(2)}
+              <Star size={14} className="ip-star" />{' '}
+              {profileStats?.averageRating == null ? '—' : profileStats.averageRating.toFixed(2)}
             </span>
-            <span>{form.sessions} sessions</span>
+            <span>{profileStats ? profileStats.completedSessions : '—'} completed sessions</span>
           </div>
+          {statsError && (
+            <div className="ip-field-error" role="status">
+              {statsError}
+            </div>
+          )}
           {form.available && <span className="ip-pill">Available now</span>}
         </div>
       </div>
