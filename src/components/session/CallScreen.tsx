@@ -1,6 +1,7 @@
-import { useState, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { MonitorUp } from 'lucide-react';
 import type { CallRole } from '../../features/session/callConnection';
+import { usePictureInPicture } from '../../features/session/pictureInPicture';
 import { pickSpotlight } from '../../features/session/spotlight';
 import type { Call } from '../../features/session/useCall';
 import type { ConnectionQuality } from '../../features/session/videoQuality';
@@ -11,6 +12,7 @@ import { CallControls } from './CallControls';
 import { ChatPanel } from './ChatPanel';
 import { initials } from './initials';
 import { ParticipantsPanel } from './ParticipantsPanel';
+import { PipView } from './PipView';
 import { VideoTile } from './VideoTile';
 import '../../pages/session/LiveSessionPage.css';
 import './CallScreen.css';
@@ -80,6 +82,10 @@ export function CallScreen({
   // The tile the person chose to make big. Nothing chosen means the screen picks one itself.
   const [pinned, setPinned] = useState<string | null>(null);
   const [participantsOpen, setParticipantsOpen] = useState(false);
+  // Picture-in-picture keeps the big tile on top while the person works in other tabs. Where only a
+  // video can float (Safari), it is the big tile's video.
+  const stage = useRef<HTMLDivElement>(null);
+  const pip = usePictureInPicture(() => stage.current?.querySelector('video') ?? null);
 
   const tiles: Tile[] = [
     {
@@ -219,7 +225,7 @@ export function CallScreen({
 
       <div className="ls-body">
         <div className="ls-spot">
-          <div className="ls-main">
+          <div className="ls-main" ref={stage}>
             {tileFor(main)}
             {/* Alone, you fill the stage (as in Google Meet): no empty tile, just a note. */}
             {call.others.length === 0 && (
@@ -251,6 +257,31 @@ export function CallScreen({
           />
         )}
       </div>
+
+      {pip.pipWindow && (
+        <PipView
+          pipWindow={pip.pipWindow}
+          micOn={media.micOn}
+          camOn={media.camOn}
+          canMic={mode.audio}
+          canCam={mode.video}
+          onToggleMic={call.toggleMic}
+          onToggleCam={call.toggleCam}
+          onLeave={onLeave}
+        >
+          {/* Muted: the sound already plays on the call screen, and must not play twice. */}
+          <VideoTile
+            name={main.name}
+            stream={main.stream}
+            cameraOff={main.cameraOff}
+            muted
+            profilePicture={main.picture}
+            screen={main.screen}
+            role={main.role}
+            handRaised={main.handRaised}
+          />
+        </PipView>
+      )}
 
       {/* Only there while nobody else is in the call, so someone joining resets it. */}
       {call.others.every((person) => person.screen) && (
@@ -286,6 +317,8 @@ export function CallScreen({
         selectedCam={media.selectedCam}
         onPickDevice={(kind, id) => void call.pickDevice(kind, id)}
         onShareScreen={mode.video ? call.toggleShare : undefined}
+        onPopOut={pip.kind ? () => (pip.pipWindow ? pip.close() : void pip.open()) : undefined}
+        poppedOut={Boolean(pip.pipWindow)}
         sharing={call.sharing}
         quality={call.quality}
         onPickQuality={call.pickQuality}
