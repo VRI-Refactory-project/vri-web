@@ -191,6 +191,102 @@ export async function fetchInterpreterPerformance(): Promise<InterpreterPerforma
   };
 }
 
+/* ---------- Detailed interpreter metrics (V2-042) ---------- */
+export interface InterpreterMetricRow {
+  interpreterId: number;
+  interpreterName: string;
+  specialisation: string;
+  averageRating: number | null;
+  ratingCount: number;
+  completedSessions: number;
+  lowRatingCount: number;
+}
+
+export interface InterpreterRatingTrend {
+  month: string;
+  averageRating: number | null;
+  ratingCount: number;
+}
+
+export interface LowRatingFeedback {
+  id: number;
+  interpreterName: string;
+  sessionDate: string;
+  rating: number;
+  comment: string;
+}
+
+export interface InterpreterMetrics {
+  summary: {
+    averageRating: number | null;
+    ratingsCount: number;
+    lowRatingCount: number;
+    completedSessions: number;
+  };
+  trends: InterpreterRatingTrend[];
+  interpreters: InterpreterMetricRow[];
+  lowRatings: LowRatingFeedback[];
+}
+
+interface ApiInterpreterMetrics {
+  summary: {
+    average_rating: number | null;
+    ratings_count: number;
+    low_rating_count: number;
+    completed_sessions: number;
+  };
+  trends: { month: string; average_rating: number | null; rating_count: number }[];
+  interpreters: {
+    interpreter_id: number;
+    interpreter_name: string;
+    specialisation: string | null;
+    average_rating: number | null;
+    rating_count: number;
+    completed_sessions: number;
+    low_rating_count: number;
+  }[];
+  low_ratings: {
+    id: number;
+    interpreter_name: string;
+    session_date: string;
+    rating: number;
+    comment: string | null;
+  }[];
+}
+
+export async function fetchInterpreterMetrics(): Promise<InterpreterMetrics> {
+  const raw = await api<ApiInterpreterMetrics>('/api/v1/dashboard/admin/interpreter-performance/');
+  return {
+    summary: {
+      averageRating: raw.summary.average_rating,
+      ratingsCount: raw.summary.ratings_count,
+      lowRatingCount: raw.summary.low_rating_count,
+      completedSessions: raw.summary.completed_sessions,
+    },
+    trends: raw.trends.map((item) => ({
+      month: item.month,
+      averageRating: item.average_rating,
+      ratingCount: item.rating_count,
+    })),
+    interpreters: raw.interpreters.map((item) => ({
+      interpreterId: item.interpreter_id,
+      interpreterName: item.interpreter_name,
+      specialisation: item.specialisation ?? 'Not specified',
+      averageRating: item.average_rating,
+      ratingCount: item.rating_count,
+      completedSessions: item.completed_sessions,
+      lowRatingCount: item.low_rating_count,
+    })),
+    lowRatings: raw.low_ratings.map((item) => ({
+      id: item.id,
+      interpreterName: item.interpreter_name,
+      sessionDate: item.session_date,
+      rating: item.rating,
+      comment: item.comment ?? '',
+    })),
+  };
+}
+
 /* ---------- Verification status breakdown ---------- */
 export interface VerificationStatusBreakdown {
   approved: number;

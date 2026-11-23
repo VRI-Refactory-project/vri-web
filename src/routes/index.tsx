@@ -53,6 +53,7 @@ import { ProfilePage as InterpreterProfilePage } from '../pages/interpreter/Prof
 import { InterpreterSessionsPage } from '../pages/interpreter/SessionsPage';
 import { SettingsPage } from '../pages/admin/SettingsPage';
 import { AdminProfilePage } from '../pages/admin/AdminProfilePage';
+import { InterpreterPerformancePage } from '../pages/admin/InterpreterPerformancePage';
 import { CreateStaffAccountPage } from '../pages/institution/CreateStaffAccountPage';
 import { OfflinePage } from '../pages/OfflinePage';
 import { StaffAccountCreatedPage } from '../pages/institution/StaffAccountCreatedPage';
@@ -266,6 +267,7 @@ const appRoutes: RouteObject[] = [
           { path: 'institutions', element: <InstitutionAccountsPage /> },
           { path: 'institutions/:id', element: <InstitutionReviewPage /> },
           { path: 'sessions', element: <SessionsPage /> },
+          { path: 'interpreter-performance', element: <InterpreterPerformancePage /> },
           { path: 'reports', element: <ReportsPage /> },
           { path: 'reports/:category', element: <ReportCategoryPage /> },
           { path: 'audit-logs', element: <AuditLogsPage /> },
