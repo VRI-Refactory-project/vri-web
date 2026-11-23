@@ -17,6 +17,15 @@ export interface MyBooking {
   no_show?: '' | 'interpreter' | 'booker' | 'both';
 }
 
+const startOf = (b: MyBooking) => new Date(`${b.date}T${b.time}`).getTime();
+
+/** The planned start has passed. */
+export const hasStarted = (b: MyBooking, now = Date.now()) => startOf(b) <= now;
+
+/** The planned end has passed, with the 15 minutes the call can still be opened after it. */
+export const hasEnded = (b: MyBooking, now = Date.now()) =>
+  startOf(b) + (b.duration + 15) * 60_000 < now;
+
 /** What a booking's badge says: who is coming, that nobody has taken it, or what went wrong. */
 export function bookingLabel(booking: MyBooking) {
   if (booking.no_show === 'interpreter') return 'Interpreter did not join';
@@ -25,7 +34,9 @@ export function bookingLabel(booking: MyBooking) {
   if (booking.status === 'CONFIRMED') {
     return booking.interpreter_name ? `Confirmed with ${booking.interpreter_name}` : 'Confirmed';
   }
-  if (booking.status === 'PENDING') return 'Waiting for an interpreter';
+  if (booking.status === 'PENDING') {
+    return hasStarted(booking) ? 'No interpreter found' : 'Waiting for an interpreter';
+  }
   return booking.status.charAt(0) + booking.status.slice(1).toLowerCase();
 }
 
