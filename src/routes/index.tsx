@@ -214,6 +214,7 @@ const appRoutes: RouteObject[] = [
               { path: 'analytics', element: <InstitutionAnalyticsPage /> },
               { path: 'settings', element: <InstitutionSettingsPage /> },
               { path: 'profile', element: <InstitutionProfilePage /> },
+              { path: 'my-profile', element: <MyProfilePage isInstitutionAdmin /> },
             ],
           },
         ],

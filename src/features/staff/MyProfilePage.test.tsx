@@ -18,10 +18,10 @@ vi.mock('../../services/institutionDashboard', () => ({
 vi.mock('../../services/staff', () => ({ updateMyProfile: mocks.updateMyProfile }));
 vi.mock('../../hooks/useAuth', () => ({ useAuth: () => ({ updateUser: mocks.updateUser }) }));
 
-const renderPage = () =>
+const renderPage = (isInstitutionAdmin = false) =>
   render(
     <MemoryRouter>
-      <MyProfilePage />
+      <MyProfilePage isInstitutionAdmin={isInstitutionAdmin} />
     </MemoryRouter>,
   );
 
@@ -134,4 +134,23 @@ describe('MyProfilePage', () => {
     expect(screen.queryByLabelText('Full name')).not.toBeInTheDocument();
     expect(screen.getAllByText('Sarah Kimuli')).not.toHaveLength(0);
   });
+});
+
+it('shows the administrator-specific profile information', async () => {
+  mocks.institution = () =>
+    Promise.resolve({
+      name: 'Northside Medical Center',
+      role: 'ADMIN',
+      staff: { total: 3, active: 3, revoked: 0 },
+    });
+
+  renderPage(true);
+
+  expect(await screen.findByText('sarah@northside.example')).toBeInTheDocument();
+  expect(screen.getAllByText('Northside Medical Center')).not.toHaveLength(0);
+  expect(screen.getByText('Administrator')).toBeInTheDocument();
+
+  expect(
+    screen.getByText('Your email and administrator role cannot be changed from this page.'),
+  ).toBeInTheDocument();
 });
