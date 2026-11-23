@@ -51,3 +51,13 @@ export async function updateInterpreterProfile(
   });
   return toProfile(raw);
 }
+
+/** Live statistics returned by GET /api/v1/interpreters/me/profile/. */
+export interface InterpreterProfileStats {
+  average_rating: number | null;
+  completed_sessions: number;
+}
+
+export async function getMyInterpreterProfileStats(): Promise<InterpreterProfileStats> {
+  return api<InterpreterProfileStats>('/api/v1/interpreters/me/profile/');
+}
