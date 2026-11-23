@@ -224,7 +224,7 @@ export function CallScreen({
       )}
 
       <div className="ls-body">
-        <div className="ls-spot">
+        <div className={`ls-spot${side.length === 1 ? ' ls-spot--duo' : ''}`}>
           <div className="ls-main" ref={stage}>
             {tileFor(main)}
             {/* Alone, you fill the stage (as in Google Meet): no empty tile, just a note. */}

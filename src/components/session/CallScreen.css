@@ -695,6 +695,55 @@
   width: clamp(14rem, 24vw, 22rem);
 }
 
+/* Redesign: a big rounded stage with an even strip of equal tiles beside it. Nothing is cut off:
+   the strip shares its height between the tiles, however many there are. */
+.ls-spot {
+  gap: 0.75rem;
+}
+
+.ls-main > .vt,
+.ls-side > .vt {
+  border-radius: 1.25rem;
+  border: 1px solid rgba(124, 92, 255, 0.35);
+  box-shadow: 0 6px 20px rgba(42, 27, 92, 0.12);
+}
+
+.ls-side {
+  overflow: hidden;
+  width: clamp(13rem, 22vw, 20rem);
+}
+
+.ls-side > .vt {
+  flex: 1 1 0;
+  min-height: 0;
+  height: auto;
+  aspect-ratio: auto;
+}
+
+/* Two people: two equal tiles side by side, like a one-to-one call. */
+.ls-spot--duo > .ls-main,
+.ls-spot--duo > .ls-side {
+  flex: 1 1 0;
+  width: auto;
+}
+
+.ls-spot--duo > .ls-side > .vt {
+  height: 100%;
+}
+
+@media (max-width: 800px) {
+  .ls-spot--duo > .ls-main,
+  .ls-spot--duo > .ls-side {
+    flex: 1 1 0;
+  }
+  .ls-side {
+    overflow-x: auto;
+  }
+  .ls-side > .vt {
+    flex: 0 0 12rem;
+  }
+}
+
 /* The call in the floating picture-in-picture window (PipView). */
 .pip-body {
   margin: 0;
