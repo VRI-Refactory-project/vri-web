@@ -157,13 +157,30 @@ describe('InterpreterSessionsPage', () => {
     expect(await screen.findByText('No sessions yet.')).toBeInTheDocument();
   });
 
-  it('says plainly when booking is not live, without inventing sessions', async () => {
+  it('shows an error when sessions cannot be loaded', async () => {
     vi.mocked(getInterpreterSessions).mockResolvedValue(null);
     renderPage();
 
-    expect(await screen.findByRole('status')).toHaveTextContent(
-      'Booked sessions are not live yet.',
-    );
+    expect(await screen.findByRole('alert')).toHaveTextContent("We couldn't load your sessions.");
+    expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
     expect(screen.queryByRole('table')).not.toBeInTheDocument();
+  });
+
+  it('retries loading sessions when the Retry button is clicked', async () => {
+    vi.mocked(getInterpreterSessions).mockResolvedValueOnce(null).mockResolvedValueOnce(SESSIONS);
+
+    renderPage();
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /retry/i }));
+
+    expect(
+      await screen.findByRole('heading', {
+        level: 2,
+        name: 'Micheal Kiggundu',
+      }),
+    ).toBeInTheDocument();
+    expect(getInterpreterSessions).toHaveBeenCalledTimes(2);
   });
 });

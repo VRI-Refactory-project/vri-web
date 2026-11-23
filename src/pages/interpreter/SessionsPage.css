@@ -76,3 +76,29 @@
     font-size: 22px;
   }
 }
+
+.isn-notice p {
+  margin: 0 0 10px;
+}
+
+.isn-notice button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+
+.isn-notice button:hover {
+  opacity: 0.8;
+}
+
+.isn-notice button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
