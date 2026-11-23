@@ -115,6 +115,24 @@
   color: #64748b;
 }
 
+.ip-experience-field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.ip-experience-field input {
+  width: 180px;
+  padding: 8px 10px;
+  border: 1px solid #e2e0ee;
+  border-radius: 9px;
+  background: #f7f6fd;
+  font: inherit;
+}
+
 .ip-stats {
   display: flex;
   align-items: center;
