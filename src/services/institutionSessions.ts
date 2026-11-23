@@ -63,7 +63,8 @@ export const outcomeLabel = (session: InstitutionSession) =>
 
 /** General, Medical or Legal. */
 export const sessionTypeLabel = (session: InstitutionSession) =>
-  session.specialisation_required.charAt(0) + session.specialisation_required.slice(1).toLowerCase();
+  session.specialisation_required.charAt(0) +
+  session.specialisation_required.slice(1).toLowerCase();
 
 /** "12 min", "1 h 5 min", or a dash when the session never ran. */
 export function formatDuration(minutes: number | null) {
