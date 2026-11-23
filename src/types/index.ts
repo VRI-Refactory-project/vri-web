@@ -6,6 +6,9 @@ export type SelectableRole = Exclude<Role, 'admin'>;
 /** Inside an institution account: ADMIN runs the institution, STAFF books interpreters for it. */
 export type InstitutionRole = 'ADMIN' | 'STAFF';
 
+/** Where an institution's registration stands. Only an approved institution's people use the app. */
+export type InstitutionStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'DELETED';
+
 export interface AuthUser {
   id: string;
   name: string;
@@ -18,6 +21,8 @@ export interface AuthUser {
   emailVerified?: boolean;
   /** Only set for institution accounts. Missing is treated as ADMIN, the owner of the account. */
   institutionRole?: InstitutionRole | null;
+  /** Only set for institution accounts: whether their institution has been approved yet. */
+  institutionStatus?: InstitutionStatus | null;
 }
 
 export interface AuthSession {

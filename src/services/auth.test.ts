@@ -44,6 +44,7 @@ describe('signIn', () => {
         email: null,
         emailVerified: undefined,
         institutionRole: null,
+        institutionStatus: null,
       },
     });
   });
@@ -52,11 +53,17 @@ describe('signIn', () => {
     mockFetch(200, {
       access: 'a',
       refresh: 'r',
-      user: { ...apiUser, role: 'institution', institution_role: 'STAFF' },
+      user: {
+        ...apiUser,
+        role: 'institution',
+        institution_role: 'STAFF',
+        institution_status: 'APPROVED',
+      },
     });
     const session = await signIn('0772123456', 'secret');
     expect(session.user.role).toBe('institution');
     expect(session.user.institutionRole).toBe('STAFF');
+    expect(session.user.institutionStatus).toBe('APPROVED');
   });
 
   it('surfaces the API error message', async () => {
