@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { getConversations } from '../../services/community';
 import { useInterval } from '../../features/community/useInterval';
-import { Menu, X, type LucideIcon } from 'lucide-react';
+import { ChevronDown, Menu, X, type LucideIcon } from 'lucide-react';
 import logo from '../../assets/no_bg.png';
 import { useAuth } from '../../hooks/useAuth';
 import './DashboardLayout.css';
@@ -13,6 +13,7 @@ export interface NavItem {
   to: string;
   icon: LucideIcon;
   end?: boolean;
+  children?: NavItem[];
 }
 
 interface Props {
@@ -65,6 +66,7 @@ export function DashboardLayout({
 
   // NEW: State for the mobile sidebar
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
 
   return (
     <div className="dl-shell">
@@ -91,8 +93,70 @@ export function DashboardLayout({
           </p>
         )}
         <nav className="dl-nav" aria-label={navLabel}>
-          {links.map(({ id, label, to, icon: Icon, end }) => {
+          {links.map(({ id, label, to, icon: Icon, end, children }) => {
             const count = shownBadges[id] ?? 0;
+            if (children) {
+              const childIsActive = children.some(
+                (item) => pathname === item.to || pathname.startsWith(`${item.to}/`),
+              );
+              const expanded = moreOpen || childIsActive;
+              return (
+                <div className="dl-nav-group" key={id}>
+                  <button
+                    type="button"
+                    className={`dl-link dl-more-button${childIsActive ? ' dl-link--active' : ''}`}
+                    aria-expanded={expanded}
+                    onClick={() => setMoreOpen((open) => !open)}
+                  >
+                    <Icon size={16} aria-hidden="true" />
+                    <span>{label}</span>
+                    {count > 0 && !expanded && (
+                      <span className="dl-count" aria-label={`${count} open support requests`}>
+                        {count}
+                      </span>
+                    )}
+                    <ChevronDown
+                      className={
+                        expanded ? 'dl-more-chevron dl-more-chevron--open' : 'dl-more-chevron'
+                      }
+                      size={16}
+                      aria-hidden="true"
+                    />
+                  </button>
+                  {expanded && (
+                    <div className="dl-nav-submenu">
+                      {children.map((child) => {
+                        const ChildIcon = child.icon;
+                        const childCount = shownBadges[child.id] ?? 0;
+                        return (
+                          <NavLink
+                            key={child.id}
+                            to={child.to}
+                            onClick={() => setIsSidebarOpen(false)}
+                            className={({ isActive }) =>
+                              isActive
+                                ? 'dl-link dl-link--sub dl-link--active'
+                                : 'dl-link dl-link--sub'
+                            }
+                          >
+                            <ChildIcon size={16} aria-hidden="true" />
+                            <span>{child.label}</span>
+                            {childCount > 0 && (
+                              <span
+                                className="dl-count"
+                                aria-label={`${childCount} open support requests`}
+                              >
+                                {childCount}
+                              </span>
+                            )}
+                          </NavLink>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
             return (
               <NavLink
                 key={id}

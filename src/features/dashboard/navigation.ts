@@ -1,4 +1,4 @@
-import { Home, Video, MessageSquare, User, Settings } from 'lucide-react';
+import { Home, Video, MessageSquare, User, Settings, CircleHelp } from 'lucide-react';
 import type { NavItem } from '../../components/dashboard/DashboardLayout';
 
 export const deafNavigation: NavItem[] = [
@@ -7,4 +7,5 @@ export const deafNavigation: NavItem[] = [
   { id: 'messages', label: 'Messages', to: '/dashboard/deaf/messages', icon: MessageSquare },
   { id: 'profile', label: 'Profile', to: '/dashboard/deaf/profile', icon: User },
   { id: 'settings', label: 'Settings', to: '/dashboard/deaf/settings', icon: Settings },
+  { id: 'help', label: 'Help & Support', to: '/dashboard/deaf/help', icon: CircleHelp },
 ];

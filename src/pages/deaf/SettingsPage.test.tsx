@@ -6,7 +6,7 @@ import { SettingsPage } from './SettingsPage';
 afterEach(cleanup);
 
 describe('SettingsPage', () => {
-  it('links to the profile and accessibility pages', () => {
+  it('links to profile, accessibility, and help pages', () => {
     render(
       <MemoryRouter>
         <SettingsPage />
@@ -18,6 +18,8 @@ describe('SettingsPage', () => {
     expect(screen.getByRole('link', { name: /Accessibility/ }).getAttribute('href')).toBe(
       '/dashboard/deaf/accessibility',
     );
-    expect(screen.getAllByText('Soon')).toHaveLength(1);
+    expect(screen.getByRole('link', { name: /Help & Support/ }).getAttribute('href')).toBe(
+      '/dashboard/deaf/help',
+    );
   });
 });
