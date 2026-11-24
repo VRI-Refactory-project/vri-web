@@ -378,3 +378,65 @@
 .cm-welcome-action:focus-visible {
   background: #f3f0fc;
 }
+
+/* A message its sender took back, and the delete controls on your own messages. */
+.dx-msg p.cm-deleted {
+  font-style: italic;
+  opacity: 0.75;
+}
+
+.cm-msg-actions {
+  display: inline-flex;
+  gap: 8px;
+  margin-inline-start: 8px;
+}
+
+.cm-msg-actions button {
+  background: none;
+  border: 0;
+  padding: 2px;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.cm-msg-actions button[aria-label] {
+  text-decoration: none;
+}
+
+.cm-msg-actions button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.cm-msg-confirm {
+  font-weight: 600;
+}
+
+/* Inside a chat the conversation fills the page; the back button returns to the list. */
+.dx-chat.dx-chat--open {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.cm-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  min-height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.cm-back:hover {
+  background: #f1edfb;
+}
+
+.cm-back:focus-visible {
+  outline: 2px solid #5b2fc9;
+  outline-offset: 2px;
+}

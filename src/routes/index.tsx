@@ -43,7 +43,6 @@ import { SessionsHubPage } from '../pages/deaf/SessionsHubPage';
 import { SessionHistoryPage } from '../pages/deaf/SessionHistoryPage';
 import { SessionDetailsPage } from '../pages/deaf/SessionDetailsPage';
 import { AccessibilityPage } from '../pages/deaf/AccessibilityPage';
-import { WalletPage } from '../pages/deaf/WalletPage';
 import { MessagesPage } from '../pages/deaf/MessagesPage';
 import { CommunityPage } from '../pages/deaf/CommunityPage';
 import { SchedulePage } from '../pages/deaf/SchedulePage';
@@ -53,6 +52,7 @@ import { ProfilePage as InterpreterProfilePage } from '../pages/interpreter/Prof
 import { InterpreterSessionsPage } from '../pages/interpreter/SessionsPage';
 import { SettingsPage } from '../pages/admin/SettingsPage';
 import { AdminProfilePage } from '../pages/admin/AdminProfilePage';
+import { InterpreterPerformancePage } from '../pages/admin/InterpreterPerformancePage';
 import { CreateStaffAccountPage } from '../pages/institution/CreateStaffAccountPage';
 import { OfflinePage } from '../pages/OfflinePage';
 import { StaffAccountCreatedPage } from '../pages/institution/StaffAccountCreatedPage';
@@ -163,7 +163,6 @@ const appRoutes: RouteObject[] = [
           { path: 'accessibility', element: <AccessibilityPage /> },
           { path: 'messages', element: <MessagesPage /> },
           { path: 'messages/community', element: <CommunityPage /> },
-          { path: 'wallet', element: <WalletPage /> },
           { path: 'profile', element: <DeafProfilePage /> },
           { path: 'settings', element: <DeafSettingsPage /> },
         ],
@@ -215,6 +214,7 @@ const appRoutes: RouteObject[] = [
               { path: 'analytics', element: <InstitutionAnalyticsPage /> },
               { path: 'settings', element: <InstitutionSettingsPage /> },
               { path: 'profile', element: <InstitutionProfilePage /> },
+              { path: 'my-profile', element: <MyProfilePage isInstitutionAdmin /> },
             ],
           },
         ],
@@ -266,6 +266,7 @@ const appRoutes: RouteObject[] = [
           { path: 'institutions', element: <InstitutionAccountsPage /> },
           { path: 'institutions/:id', element: <InstitutionReviewPage /> },
           { path: 'sessions', element: <SessionsPage /> },
+          { path: 'interpreter-performance', element: <InterpreterPerformancePage /> },
           { path: 'reports', element: <ReportsPage /> },
           { path: 'reports/:category', element: <ReportCategoryPage /> },
           { path: 'audit-logs', element: <AuditLogsPage /> },

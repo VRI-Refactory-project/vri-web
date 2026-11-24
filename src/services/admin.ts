@@ -1,4 +1,4 @@
-import { api } from './api';
+import { ApiError, api } from './api';
 
 /* ---------- Summary (existing endpoint) ---------- */
 export interface AdminDashboardSummary {
@@ -188,6 +188,159 @@ export async function fetchInterpreterPerformance(): Promise<InterpreterPerforma
     completionRate: `${p.completion_rate ?? 0}%`,
     responseTrend: p.response_trend ?? '+0%',
     completionTrend: p.completion_trend ?? '+0%',
+  };
+}
+
+/* ---------- Detailed interpreter metrics (V2-042) ---------- */
+export interface InterpreterMetricRow {
+  interpreterId: number;
+  interpreterName: string;
+  specialisation: string;
+  averageRating: number | null;
+  ratingCount: number;
+  completedSessions: number;
+  lowRatingCount: number;
+}
+
+export interface InterpreterRatingTrend {
+  month: string;
+  averageRating: number | null;
+  ratingCount: number;
+}
+
+export interface LowRatingFeedback {
+  id: number;
+  interpreterName: string;
+  sessionDate: string;
+  rating: number;
+  comment: string;
+}
+
+export interface InterpreterMetrics {
+  summary: {
+    averageRating: number | null;
+    ratingsCount: number;
+    lowRatingCount: number;
+    completedSessions: number;
+  };
+  trendStartMonth: string;
+  trends: InterpreterRatingTrend[];
+  interpreters: InterpreterMetricRow[];
+  interpreterPagination: { count: number; page: number; pageSize: number };
+  lowRatings: LowRatingFeedback[];
+}
+
+interface ApiInterpreterRow {
+  interpreter_id: number;
+  interpreter_name: string;
+  specialisation: string | null;
+  average_rating: number | null;
+  rating_count: number;
+  completed_sessions: number;
+  low_rating_count: number;
+}
+
+interface ApiInterpreterMetrics {
+  summary: {
+    average_rating: number | null;
+    ratings_count: number;
+    low_rating_count: number;
+    completed_sessions: number;
+  };
+  trend_start_month?: string;
+  trends?: { month: string; average_rating: number | null; rating_count: number }[];
+  interpreters:
+    | ApiInterpreterRow[]
+    | {
+        count: number;
+        next: string | null;
+        previous: string | null;
+        results: ApiInterpreterRow[];
+      };
+  low_ratings: {
+    id: number;
+    interpreter_name: string;
+    session_date: string;
+    rating: number;
+    comment: string | null;
+  }[];
+}
+
+export async function fetchInterpreterMetrics(
+  page = 1,
+  pageSize = 10,
+): Promise<InterpreterMetrics> {
+  let raw: ApiInterpreterMetrics;
+  try {
+    raw = await api<ApiInterpreterMetrics>(
+      `/api/v1/dashboard/admin/interpreter-performance/?page=${page}&page_size=${pageSize}`,
+    );
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new ApiError(
+        502,
+        'The performance endpoint returned an unreadable response. The backend may need an update.',
+      );
+    }
+    throw error;
+  }
+
+  if (
+    !raw ||
+    !raw.summary ||
+    (!Array.isArray(raw.trends) && raw.trends !== undefined) ||
+    !Array.isArray(raw.low_ratings) ||
+    !raw.interpreters
+  ) {
+    throw new ApiError(
+      502,
+      'The performance data is incomplete. The frontend and backend API versions may not match.',
+    );
+  }
+  let rows: ApiInterpreterRow[];
+  let interpreterCount: number;
+  if (Array.isArray(raw.interpreters)) {
+    interpreterCount = raw.interpreters.length;
+    rows = raw.interpreters.slice((page - 1) * pageSize, page * pageSize);
+  } else if (Array.isArray(raw.interpreters.results)) {
+    interpreterCount = raw.interpreters.count;
+    rows = raw.interpreters.results;
+  } else {
+    throw new ApiError(
+      502,
+      'The performance data is incomplete. The frontend and backend API versions may not match.',
+    );
+  }
+  return {
+    summary: {
+      averageRating: raw.summary.average_rating,
+      ratingsCount: raw.summary.ratings_count,
+      lowRatingCount: raw.summary.low_rating_count,
+      completedSessions: raw.summary.completed_sessions,
+    },
+    trendStartMonth: raw.trend_start_month ?? `${new Date().getFullYear()}-01`,
+    trends: (raw.trends ?? []).map((item) => ({
+      month: item.month,
+      averageRating: item.average_rating,
+      ratingCount: item.rating_count,
+    })),
+    interpreters: rows.map((item) => ({
+      interpreterId: item.interpreter_id,
+      interpreterName: item.interpreter_name,
+      specialisation: item.specialisation ?? 'Not specified',
+      averageRating: item.average_rating,
+      ratingCount: item.rating_count,
+      completedSessions: item.completed_sessions,
+      lowRatingCount: item.low_rating_count,
+    })),
+    interpreterPagination: { count: interpreterCount, page, pageSize },
+    lowRatings: raw.low_ratings.map((item) => ({
+      id: item.id,
+      interpreterName: item.interpreter_name,
+      sessionDate: item.session_date,
+      rating: item.rating,
+      comment: item.comment ?? '',
+    })),
   };
 }
 

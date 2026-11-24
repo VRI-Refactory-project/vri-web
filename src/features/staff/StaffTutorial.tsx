@@ -80,10 +80,10 @@ export function StaffTutorial() {
   };
 
   return (
-    <div className="st-layer">
+    <div className="staff-tour-layer">
       {box ? (
         <div
-          className="st-spot"
+          className="staff-tour-spot"
           aria-hidden="true"
           style={{
             top: box.top - PAD,
@@ -93,12 +93,12 @@ export function StaffTutorial() {
           }}
         />
       ) : (
-        <div className="st-dim" aria-hidden="true" />
+        <div className="staff-tour-dim" aria-hidden="true" />
       )}
 
       <section
         ref={card}
-        className={`st-card${cardAt ? '' : ' st-card--centre'}`}
+        className={`staff-tour-card${cardAt ? '' : ' staff-tour-card--centre'}`}
         style={cardAt ?? undefined}
         role="dialog"
         aria-modal="true"
@@ -106,29 +106,33 @@ export function StaffTutorial() {
         aria-describedby="st-body"
         onKeyDown={(e) => e.key === 'Escape' && close('skip')}
       >
-        <p className="st-count">
+        <p className="staff-tour-count">
           Step {step + 1} of {tutorial.steps.length}
         </p>
         <h2 id="st-title">{current.title}</h2>
         <p id="st-body">{current.body}</p>
-        <div className="st-progress" aria-hidden="true">
+        <div className="staff-tour-progress" aria-hidden="true">
           {tutorial.steps.map((s, i) => (
-            <i key={s.id} className={i <= step ? 'is-done' : undefined} />
+            <i key={s.id} className={i <= step ? 'staff-tour-progress__done' : undefined} />
           ))}
         </div>
-        <div className="st-actions">
-          <button type="button" className="st-skip" onClick={() => close('skip')}>
+        <div className="staff-tour-actions">
+          <button type="button" className="staff-tour-skip" onClick={() => close('skip')}>
             Skip tour
           </button>
-          <span className="st-nav">
+          <span className="staff-tour-nav">
             {step > 0 && (
-              <button type="button" className="st-btn st-btn--ghost" onClick={() => go(step - 1)}>
+              <button
+                type="button"
+                className="staff-tour-button staff-tour-button--ghost"
+                onClick={() => go(step - 1)}
+              >
                 Back
               </button>
             )}
             <button
               type="button"
-              className="st-btn"
+              className="staff-tour-button"
               autoFocus
               key={step} // a fresh button each step, so focus lands on it again
               onClick={() => (last ? close('complete') : go(step + 1))}

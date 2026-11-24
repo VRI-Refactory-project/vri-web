@@ -176,6 +176,11 @@
   background: #fdf3d8;
   color: #a16207;
 }
+.dx-badge--failed {
+  background: #fde8e8;
+  color: #a4161a;
+}
+
 .dx-badge--processing {
   background: #e0f0ff;
   color: #382c77;
