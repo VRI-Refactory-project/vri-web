@@ -2,9 +2,12 @@ import { useState } from 'react';
 import { ChevronRight, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import './InstitutionSettingsPage.css';
+import { ChangePasswordModal } from '../../components/interpreter/settings/ChangePasswordModal';
 
 export function InstitutionSettingsPage() {
   const { logout } = useAuth();
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [passwordNotice, setPasswordNotice] = useState('');
 
   // State for toggles
   const [notifications, setNotifications] = useState({
@@ -137,18 +140,43 @@ export function InstitutionSettingsPage() {
         </div>
 
         <div className="settings-list">
-          <div
-            className="settings-item clickable"
-            onClick={() => alert('Change password modal here')}
-          >
+          <div className="settings-item clickable">
             <div className="settings-item-info">
               <h3>Change password</h3>
               <p>Update the password used to sign in.</p>
             </div>
-            <ChevronRight size={20} className="text-muted" />
+
+            <button
+              type="button"
+              className="settings-password-button"
+              onClick={() => {
+                setPasswordNotice('');
+                setChangingPassword(true);
+              }}
+            >
+              Change password
+              <ChevronRight size={20} aria-hidden="true" />
+            </button>
           </div>
         </div>
+
+        {passwordNotice && (
+          <div className="success-banner" role="status">
+            <CheckCircle2 size={18} className="success-icon" />
+            <span>{passwordNotice}</span>
+          </div>
+        )}
       </section>
+
+      {changingPassword && (
+        <ChangePasswordModal
+          onClose={() => setChangingPassword(false)}
+          onChanged={() => {
+            setChangingPassword(false);
+            setPasswordNotice('Password changed. Your other devices have been signed out.');
+          }}
+        />
+      )}
 
       {/* 4. Account */}
       <section className="settings-card">
