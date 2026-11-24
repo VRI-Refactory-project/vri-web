@@ -85,7 +85,16 @@
   background: transparent;
   text-align: left;
   font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.12;
+  color: rgba(255, 255, 255, 0.75);
   cursor: pointer;
+}
+
+.dl-nav-icon-spacer {
+  display: inline-block;
+  flex: 0 0 16px;
 }
 
 .dl-more-chevron {

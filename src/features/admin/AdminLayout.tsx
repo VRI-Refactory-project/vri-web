@@ -30,7 +30,7 @@ export function AdminLayout() {
     <DashboardLayout
       links={adminNavItems}
       navLabel="Admin"
-      badges={{ verifications: pending, more: openSupport, 'support-requests': openSupport }}
+      badges={{ verifications: pending, 'support-requests': openSupport }}
       accountTo="/dashboard/admin/settings"
       accountLabel="View account"
     />

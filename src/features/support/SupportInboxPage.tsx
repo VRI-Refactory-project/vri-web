@@ -34,17 +34,23 @@ function RequestEditor({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
+  const responseChanged = response !== (request.admin_response ?? '');
+  const hasChanges = responseChanged || status !== request.status;
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!hasChanges) return;
     setBusy(true);
     setError('');
     setSaved(false);
     try {
+      const nextStatus = status === 'OPEN' && responseChanged ? 'IN_PROGRESS' : status;
       const updated = await updateAdminSupportRequest(request.id, {
-        status,
+        status: nextStatus,
         admin_response: response,
       });
+      setStatus(updated.status);
+      setResponse(updated.admin_response ?? response);
       onSaved(updated);
       setSaved(true);
     } catch (err) {
@@ -57,8 +63,8 @@ function RequestEditor({
   return (
     <article className="si-detail">
       <header>
-        <span className={`si-status si-status--${request.status.toLowerCase()}`}>
-          {request.status.replace('_', ' ').toLowerCase()}
+        <span className={`si-status si-status--${status.toLowerCase()}`}>
+          {status.replace('_', ' ').toLowerCase()}
         </span>
         <time dateTime={request.created_at}>{new Date(request.created_at).toLocaleString()}</time>
       </header>
@@ -81,7 +87,10 @@ function RequestEditor({
           Status
           <select
             value={status}
-            onChange={(event) => setStatus(event.target.value as SupportStatus)}
+            onChange={(event) => {
+              setStatus(event.target.value as SupportStatus);
+              setSaved(false);
+            }}
           >
             <option value="OPEN">Open</option>
             <option value="IN_PROGRESS">In progress</option>
@@ -92,7 +101,10 @@ function RequestEditor({
           Admin response or follow-up note
           <textarea
             value={response}
-            onChange={(event) => setResponse(event.target.value)}
+            onChange={(event) => {
+              setResponse(event.target.value);
+              setSaved(false);
+            }}
             rows={5}
             maxLength={4000}
             placeholder="Record how this request was handled or what follow-up is needed."
@@ -108,7 +120,7 @@ function RequestEditor({
             Support request updated.
           </p>
         )}
-        <button className="si-save" type="submit" disabled={busy}>
+        <button className="si-save" type="submit" disabled={busy || !hasChanges}>
           {busy ? 'Saving…' : 'Save update'}
         </button>
       </form>
@@ -229,24 +241,25 @@ export function SupportInboxPage() {
                 </thead>
                 <tbody>
                   {data.results.map((item) => (
-                    <tr key={item.id}>
+                    <tr
+                      key={item.id}
+                      className="si-clickable-row"
+                      role="link"
+                      tabIndex={0}
+                      aria-label={`Open request: ${item.subject} from ${item.requester.name}`}
+                      onClick={() => setSelectedId(item.id)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') {
+                          event.preventDefault();
+                          setSelectedId(item.id);
+                        }
+                      }}
+                    >
                       <td>
-                        <button
-                          type="button"
-                          className="si-request-link"
-                          onClick={() => setSelectedId(item.id)}
-                        >
-                          {item.requester.name}
-                        </button>
+                        <span className="si-row-primary">{item.requester.name}</span>
                       </td>
                       <td>
-                        <button
-                          type="button"
-                          className="si-request-link si-request-subject"
-                          onClick={() => setSelectedId(item.id)}
-                        >
-                          {item.subject}
-                        </button>
+                        <span className="si-row-primary si-request-subject">{item.subject}</span>
                       </td>
                       <td>{roleLabel(item.requester.role)}</td>
                       <td>
