@@ -68,7 +68,6 @@ import { InstitutionAnalyticsPage } from '../pages/institution/InstitutionAnalyt
 import { InstitutionSessionsPage } from '../pages/institution/InstitutionSessionsPage';
 import { InstitutionSessionDetailPage } from '../pages/institution/InstitutionSessionDetailPage';
 import { AuditLogsPage } from '../pages/admin/AuditLogsPage';
-import { ReportCategoryPage } from '../pages/admin/ReportCategoryPage';
 import { InterpreterSettingsPage } from '../pages/interpreter/SettingsPage';
 import { InterpreterWalletPage } from '../pages/interpreter/WalletPage';
 import { GuestVideoPage } from '../features/video/GuestVideoPage';
@@ -273,7 +272,6 @@ const appRoutes: RouteObject[] = [
           { path: 'sessions', element: <SessionsPage /> },
           { path: 'interpreter-performance', element: <InterpreterPerformancePage /> },
           { path: 'reports', element: <ReportsPage /> },
-          { path: 'reports/:category', element: <ReportCategoryPage /> },
           { path: 'audit-logs', element: <AuditLogsPage /> },
           { path: 'settings', element: <SettingsPage /> },
           { path: 'support-requests', element: <SupportInboxPage /> },

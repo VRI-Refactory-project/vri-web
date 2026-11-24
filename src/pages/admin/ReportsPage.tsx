@@ -1,450 +1,335 @@
 // src/pages/admin/ReportsPage.tsx
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Download } from 'lucide-react';
 import {
-  Calendar,
-  Download,
-  FileText,
-  FlaskConical,
-  Flag,
-  LineChart as LineChartIcon,
-  MoreVertical,
-  ShieldCheck,
-  Star,
-  UserRound,
-  Wallet,
-} from 'lucide-react';
-import {
-  createAdminReport,
-  fetchAdminReportActivity,
-  fetchAdminReportOptions,
-  fetchAdminReportStats,
-  fetchAdminReports,
-  type AdminReport,
-  type AdminReportActivity,
-  type AdminReportStats,
-  type ReportOption,
+  REPORT_RANGES,
+  downloadCsv,
+  fetchResponseTimesReport,
+  fetchUsageReport,
+  formatSeconds,
+  responseTimesCsvRows,
+  usageCsvRows,
+  type ReportRange,
+  type ResponseTimesReport,
+  type UsageReport,
 } from '../../services/adminReports';
 import { describeError } from '../../services/api';
-import { useMobileViewMore } from '../../components/responsive/useMobileViewMore';
 import './ReportsPage.css';
 
-const CATEGORIES = [
-  {
-    id: 'usage',
-    label: 'Usage reports',
-    hint: 'Users, sessions and platform activity',
-    icon: UserRound,
-  },
-  {
-    id: 'quality',
-    label: 'Quality reports',
-    hint: 'Session quality and interpreter performance',
-    icon: Star,
-  },
-  {
-    id: 'verification',
-    label: 'Verification reports',
-    hint: 'Credentials, approvals and pending verification',
-    icon: ShieldCheck,
-  },
-  {
-    id: 'financial',
-    label: 'Financial reports',
-    hint: 'Payments, wallet and transaction summaries',
-    icon: Wallet,
-  },
-  {
-    id: 'institution',
-    label: 'Institution reports',
-    hint: 'Activity across organisations',
-    icon: Flag,
-  },
+type Tab = 'usage' | 'response-times';
+
+const TABS: { id: Tab; label: string }[] = [
+  { id: 'usage', label: 'Usage' },
+  { id: 'response-times', label: 'Response times' },
 ];
 
-type FileFormat = 'pdf' | 'excel' | 'csv';
+const STATUS_LABELS: Record<string, string> = {
+  CREATED: 'Created',
+  PENDING: 'Waiting for an interpreter',
+  OFFERED: 'Offered',
+  ASSIGNED: 'In session',
+  COMPLETED: 'Completed',
+  CANCELLED: 'Cancelled',
+  FAILED: 'Nobody available',
+};
+
+const SPECIALISATION_LABELS: Record<string, string> = {
+  GENERAL: 'General',
+  MEDICAL: 'Medical',
+  LEGAL: 'Legal',
+  OTHER: 'Other',
+};
+
+/** What was last loaded, and for which tab and range, so a slow answer never shows under the wrong tab. */
+interface Loaded {
+  key: string;
+  error: string;
+  usage: UsageReport | null;
+  times: ResponseTimesReport | null;
+}
+
+function StatCard({
+  label,
+  value,
+  hint,
+}: {
+  label: string;
+  value: string | number;
+  hint?: string;
+}) {
+  return (
+    <article className="reports-stat">
+      <span className="reports-stat__label">{label}</span>
+      <strong className="reports-stat__value">{value}</strong>
+      {hint && <small className="reports-stat__hint">{hint}</small>}
+    </article>
+  );
+}
+
+/** One horizontal bar per row, scaled to the biggest value. */
+function BarList({ rows }: { rows: { label: string; value: number }[] }) {
+  const max = Math.max(1, ...rows.map((row) => row.value));
+  if (rows.length === 0) return <p className="reports-empty">No requests in this period.</p>;
+  return (
+    <ul className="reports-bars">
+      {rows.map((row) => (
+        <li key={row.label}>
+          <span className="reports-bars__label">{row.label}</span>
+          <span className="reports-bars__track">
+            <span className="reports-bars__fill" style={{ width: `${(row.value / max) * 100}%` }} />
+          </span>
+          <strong className="reports-bars__value">{row.value}</strong>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** One vertical column per item (a day or an hour), scaled to the tallest. */
+function Columns({
+  items,
+  caption,
+}: {
+  items: { label: string; value: number; title: string }[];
+  caption: string;
+}) {
+  const max = Math.max(1, ...items.map((item) => item.value));
+  return (
+    <div className="reports-columns" role="img" aria-label={caption}>
+      {items.map((item) => (
+        <span key={item.label} className="reports-columns__item" title={item.title}>
+          <span
+            className="reports-columns__bar"
+            style={{ height: `${Math.max(2, (item.value / max) * 100)}%` }}
+          />
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function UsageView({ report }: { report: UsageReport }) {
+  const { summary } = report;
+  return (
+    <>
+      <section className="reports-stats">
+        <StatCard label="Requests" value={summary.requests} hint="Asked for an interpreter" />
+        <StatCard label="Sessions" value={summary.sessions} hint="An interpreter accepted" />
+        <StatCard label="Completed" value={summary.completed} />
+        <StatCard label="Cancelled" value={summary.cancelled} />
+        <StatCard label="Nobody available" value={summary.failed} />
+        <StatCard label="Emergency" value={summary.emergency} />
+      </section>
+
+      <section className="reports-panel">
+        <header className="reports-panel__head">
+          <h2>Requests per day</h2>
+          <p>Last {report.rangeDays} days. Hover a column to see the day.</p>
+        </header>
+        <Columns
+          caption={`Requests per day over the last ${report.rangeDays} days`}
+          items={report.byDay.map((row) => ({
+            label: row.date,
+            value: row.requests,
+            title: `${row.date}: ${row.requests} requests, ${row.sessions} sessions`,
+          }))}
+        />
+      </section>
+
+      <section className="reports-row">
+        <article className="reports-panel">
+          <header className="reports-panel__head">
+            <h2>By specialisation</h2>
+          </header>
+          <BarList
+            rows={report.bySpecialisation.map((row) => ({
+              label: SPECIALISATION_LABELS[row.specialisation] ?? row.specialisation,
+              value: row.count,
+            }))}
+          />
+        </article>
+        <article className="reports-panel">
+          <header className="reports-panel__head">
+            <h2>By status</h2>
+          </header>
+          <BarList
+            rows={report.byStatus.map((row) => ({
+              label: STATUS_LABELS[row.status] ?? row.status,
+              value: row.count,
+            }))}
+          />
+        </article>
+      </section>
+    </>
+  );
+}
+
+function ResponseTimesView({ report }: { report: ResponseTimesReport }) {
+  const { summary, offers } = report;
+  return (
+    <>
+      <section className="reports-stats">
+        <StatCard
+          label="Average time to accept"
+          value={formatSeconds(summary.avgSecondsToAccept)}
+          hint="From request to an interpreter accepting"
+        />
+        <StatCard
+          label="Average time in queue"
+          value={formatSeconds(summary.avgSecondsInQueue)}
+          hint="From request to the first offer"
+        />
+        <StatCard
+          label="Answered"
+          value={summary.answered}
+          hint={`of ${summary.requests} requests`}
+        />
+        <StatCard
+          label="Abandoned"
+          value={summary.abandoned}
+          hint="Cancelled before anyone accepted"
+        />
+        <StatCard label="Nobody available" value={summary.failed} />
+        <StatCard
+          label="Specialist not found"
+          value={summary.matchedByFallback}
+          hint="A general interpreter was offered"
+        />
+      </section>
+
+      <section className="reports-panel">
+        <header className="reports-panel__head">
+          <h2>Busiest hours</h2>
+          <p>Requests by hour of the day (Kampala time). Hover a column to see the hour.</p>
+        </header>
+        <Columns
+          caption="Requests by hour of the day"
+          items={report.peakHours.map((row) => ({
+            label: String(row.hour),
+            value: row.requests,
+            title: `${String(row.hour).padStart(2, '0')}:00: ${row.requests} requests`,
+          }))}
+        />
+      </section>
+
+      <section className="reports-panel">
+        <header className="reports-panel__head">
+          <h2>How interpreters answered offers</h2>
+          <p>
+            Acceptance rate:{' '}
+            <strong>
+              {offers.acceptanceRatePercent === null ? '—' : `${offers.acceptanceRatePercent}%`}
+            </strong>
+          </p>
+        </header>
+        <BarList
+          rows={[
+            { label: 'Accepted', value: offers.accepted },
+            { label: 'Declined', value: offers.declined },
+            { label: 'Not answered in time', value: offers.expired },
+          ]}
+        />
+      </section>
+    </>
+  );
+}
 
 export function ReportsPage() {
-  const [stats, setStats] = useState<AdminReportStats | null>(null);
-  const [reports, setReports] = useState<AdminReport[] | null>(null);
-  const [activity, setActivity] = useState<AdminReportActivity | null>(null);
-  const [error, setError] = useState('');
-  const mobileRows = useMobileViewMore(reports?.length ?? 0);
+  const [tab, setTab] = useState<Tab>('usage');
+  const [days, setDays] = useState<ReportRange>(30);
+  const [loaded, setLoaded] = useState<Loaded | null>(null);
 
-  const [reportTypes, setReportTypes] = useState<ReportOption[]>([]);
-  const [dateRanges, setDateRanges] = useState<ReportOption[]>([]);
-  const [institutions, setInstitutions] = useState<ReportOption[]>([]);
-  const [optionsLoaded, setOptionsLoaded] = useState(false);
-
-  const [reportType, setReportType] = useState('');
-  const [dateRange, setDateRange] = useState('');
-  const [institution, setInstitution] = useState('');
-  const [format, setFormat] = useState<FileFormat>('pdf');
-  const [generating, setGenerating] = useState(false);
+  const key = `${tab}-${days}`;
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([
-      fetchAdminReportStats(),
-      fetchAdminReports(),
-      fetchAdminReportActivity(),
-      fetchAdminReportOptions(),
-    ])
-      .then(([s, list, a, options]) => {
-        if (cancelled) return;
-        setStats(s);
-        setReports(list);
-        setActivity(a);
-        setReportTypes(options.reportTypes);
-        setDateRanges(options.dateRanges);
-        setInstitutions(options.institutions);
-        setReportType(options.reportTypes[0]?.value ?? '');
-        setDateRange(options.dateRanges[0]?.value ?? '');
-        setInstitution(options.institutions[0]?.value ?? '');
-        setOptionsLoaded(true);
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        setError(describeError(err));
-        setReports([]);
-        setOptionsLoaded(true);
-      });
+    const done = (patch: Partial<Loaded>) => {
+      if (!cancelled) setLoaded({ key, error: '', usage: null, times: null, ...patch });
+    };
+
+    if (tab === 'usage') {
+      fetchUsageReport(days)
+        .then((usage) => done({ usage }))
+        .catch((err) => done({ error: describeError(err) }));
+    } else {
+      fetchResponseTimesReport(days)
+        .then((times) => done({ times }))
+        .catch((err) => done({ error: describeError(err) }));
+    }
+
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [tab, days, key]);
 
-  const loading = reports === null;
-  const isEmpty = !loading && reports.length === 0;
-  const canGenerate = Boolean(reportType && dateRange && institution) && !generating;
+  const current = loaded?.key === key ? loaded : null;
+  const loading = current === null;
+  const usage = tab === 'usage' ? (current?.usage ?? null) : null;
+  const times = tab === 'response-times' ? (current?.times ?? null) : null;
 
-  const handleGenerate = async () => {
-    if (!canGenerate) return;
-    setGenerating(true);
-    setError('');
-    try {
-      const created = await createAdminReport({ reportType, dateRange, institution, format });
-      setReports((current) => (current ? [created, ...current] : [created]));
-    } catch (err) {
-      setError(describeError(err));
-    } finally {
-      setGenerating(false);
-    }
+  const handleExport = () => {
+    if (usage) downloadCsv(`usage-report-${days}-days.csv`, usageCsvRows(usage));
+    if (times) downloadCsv(`response-times-report-${days}-days.csv`, responseTimesCsvRows(times));
   };
 
   return (
     <div className="reports-page">
       <header className="reports-header">
-        <h1>Reports</h1>
-        <p>Create and download platform usage, quality and financial reports.</p>
+        <div>
+          <h1>Reports</h1>
+          <p>How the platform is being used, and how quickly requests are answered.</p>
+        </div>
+        <button
+          type="button"
+          className="reports-btn"
+          onClick={handleExport}
+          disabled={!usage && !times}
+        >
+          <Download size={15} /> Export CSV
+        </button>
       </header>
 
-      <section className="reports-stats">
-        <article className="reports-stat">
-          <div className="reports-stat__head">
-            <span className="reports-stat__icon">
-              <FileText size={14} />
-            </span>
-            <span className="reports-stat__label">Total reports</span>
-          </div>
-          <strong className="reports-stat__value">{stats?.totalReports ?? 0}</strong>
-          <small className="reports-stat__hint">
-            <span className="reports-delta reports-delta--up">
-              +{stats?.totalDeltaPercent ?? 0}%
-            </span>{' '}
-            <span>vs last 30 days</span>
-          </small>
-        </article>
-
-        <article className="reports-stat">
-          <div className="reports-stat__head">
-            <span className="reports-stat__icon">
-              <Calendar size={14} />
-            </span>
-            <span className="reports-stat__label">Reports this month</span>
-          </div>
-          <strong className="reports-stat__value">{stats?.reportsThisMonth ?? 0}</strong>
-          <small className="reports-stat__hint">
-            <span className="reports-delta reports-delta--up">
-              +{stats?.monthDeltaPercent ?? 0}%
-            </span>{' '}
-            <span>vs last month</span>
-          </small>
-        </article>
-
-        <article className="reports-stat">
-          <div className="reports-stat__head">
-            <span className="reports-stat__icon">
-              <Calendar size={14} />
-            </span>
-            <span className="reports-stat__label">Scheduled reports</span>
-          </div>
-          <strong className="reports-stat__value">{stats?.scheduledReports ?? 0}</strong>
-          <small className="reports-stat__hint">Scheduled and upcoming</small>
-        </article>
-
-        <article className="reports-stat">
-          <div className="reports-stat__head">
-            <span className="reports-stat__icon">
-              <Calendar size={14} />
-            </span>
-            <span className="reports-stat__label">Last generated</span>
-          </div>
-          <strong className="reports-stat__value" style={{ fontSize: 16 }}>
-            {stats?.lastGeneratedLabel || '—'}
-          </strong>
-          <small className="reports-stat__hint">Monthly usage report</small>
-        </article>
-      </section>
-
-      <section className="reports-row reports-row--top">
-        <article className="reports-panel">
-          <header className="reports-panel__head">
-            <div>
-              <h2>Generate report</h2>
-              <p>Select the information and period to include.</p>
-            </div>
-          </header>
-
-          <div className="reports-form">
-            <div className="reports-form__grid">
-              <label className="reports-field">
-                <span>Report type</span>
-                <select
-                  className="reports-select"
-                  value={reportType}
-                  onChange={(e) => setReportType(e.target.value)}
-                  disabled={!optionsLoaded || reportTypes.length === 0}
-                >
-                  {reportTypes.length === 0 ? (
-                    <option value="">No options available</option>
-                  ) : (
-                    reportTypes.map((t) => (
-                      <option key={t.value} value={t.value}>
-                        {t.label}
-                      </option>
-                    ))
-                  )}
-                </select>
-              </label>
-
-              <label className="reports-field">
-                <span>Date range</span>
-                <select
-                  className="reports-select"
-                  value={dateRange}
-                  onChange={(e) => setDateRange(e.target.value)}
-                  disabled={!optionsLoaded || dateRanges.length === 0}
-                >
-                  {dateRanges.length === 0 ? (
-                    <option value="">No options available</option>
-                  ) : (
-                    dateRanges.map((d) => (
-                      <option key={d.value} value={d.value}>
-                        {d.label}
-                      </option>
-                    ))
-                  )}
-                </select>
-              </label>
-
-              <label className="reports-field reports-field--full">
-                <span>Institution</span>
-                <select
-                  className="reports-select"
-                  value={institution}
-                  onChange={(e) => setInstitution(e.target.value)}
-                  disabled={!optionsLoaded || institutions.length === 0}
-                >
-                  {institutions.length === 0 ? (
-                    <option value="">No institutions available</option>
-                  ) : (
-                    institutions.map((i) => (
-                      <option key={i.value} value={i.value}>
-                        {i.label}
-                      </option>
-                    ))
-                  )}
-                </select>
-              </label>
-            </div>
-
-            <div className="reports-field">
-              <span>File format</span>
-              <div className="reports-pillgroup">
-                <button
-                  type="button"
-                  className={`reports-pill ${format === 'pdf' ? 'reports-pill--active' : ''}`}
-                  onClick={() => setFormat('pdf')}
-                >
-                  <FileText size={14} /> PDF
-                </button>
-                <button
-                  type="button"
-                  className={`reports-pill ${format === 'excel' ? 'reports-pill--active' : ''}`}
-                  onClick={() => setFormat('excel')}
-                >
-                  <FileText size={14} /> Excel
-                </button>
-                <button
-                  type="button"
-                  className={`reports-pill ${format === 'csv' ? 'reports-pill--active' : ''}`}
-                  onClick={() => setFormat('csv')}
-                >
-                  <FileText size={14} /> CSV
-                </button>
-              </div>
-            </div>
-
-            {error && (
-              <p className="reports-form-error" role="alert">
-                {error}
-              </p>
-            )}
-
-            <div className="reports-actions">
-              <button
-                type="button"
-                className="reports-btn reports-btn--primary"
-                onClick={() => void handleGenerate()}
-                disabled={!canGenerate}
-              >
-                <LineChartIcon size={15} />
-                {generating ? 'Generating…' : 'Generate report'}
-              </button>
-              <button type="button" className="reports-btn reports-btn--ghost" disabled>
-                <FlaskConical size={15} /> Preview report
-              </button>
-            </div>
-          </div>
-        </article>
-
-        <article className="reports-panel">
-          <header className="reports-panel__head">
-            <div>
-              <h2>Recent reports</h2>
-              <p>Generated by administrators</p>
-            </div>
-            <button type="button" className="reports-link">
-              View all reports
+      <div className="reports-toolbar">
+        <div className="reports-tabs" role="tablist" aria-label="Report">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              role="tab"
+              aria-selected={tab === t.id}
+              className={`reports-tab ${tab === t.id ? 'reports-tab--active' : ''}`}
+              onClick={() => setTab(t.id)}
+            >
+              {t.label}
             </button>
-          </header>
+          ))}
+        </div>
 
-          <div className="reports-table">
-            <div className="reports-table__head">
-              <span>REPORT NAME</span>
-              <span>GENERATED</span>
-              <span>GENERATED BY</span>
-              <span>STATUS</span>
-              <span>ACTION</span>
-            </div>
+        <div className="reports-ranges" role="group" aria-label="Period">
+          {REPORT_RANGES.map((range) => (
+            <button
+              key={range}
+              type="button"
+              aria-pressed={days === range}
+              className={`reports-pill ${days === range ? 'reports-pill--active' : ''}`}
+              onClick={() => setDays(range)}
+            >
+              Last {range} days
+            </button>
+          ))}
+        </div>
+      </div>
 
-            {loading ? (
-              <p className="reports-empty">Loading reports…</p>
-            ) : isEmpty ? (
-              <p className="reports-empty">No reports yet.</p>
-            ) : (
-              reports.map((r, index) => (
-                <div className="reports-table__row" key={r.id} {...mobileRows.itemProps(index)}>
-                  <span className="reports-table__name" data-card-primary>
-                    <FileText size={14} />
-                    <span>{r.name}</span>
-                  </span>
-                  <span className="reports-table__muted" data-label="Generated">
-                    {r.generatedAt}
-                  </span>
-                  <span className="reports-table__muted" data-label="Generated by">
-                    {r.generatedBy}
-                  </span>
-                  <span className={`reports-badge reports-badge--${r.status}`} data-label="Status">
-                    <i /> {r.status}
-                  </span>
-                  <span className="reports-table__actions" data-card-actions>
-                    <button type="button" className="reports-icon-btn" aria-label="Download">
-                      <Download size={14} />
-                    </button>
-                    <button type="button" className="reports-icon-btn" aria-label="More">
-                      <MoreVertical size={14} />
-                    </button>
-                  </span>
-                </div>
-              ))
-            )}
-          </div>
-          {mobileRows.button}
-        </article>
-      </section>
+      {loading && <p className="reports-empty">Loading report…</p>}
 
-      <section className="reports-row reports-row--bottom">
-        <article className="reports-panel">
-          <header className="reports-panel__head">
-            <div>
-              <h2>Platform activity</h2>
-            </div>
-            <select className="reports-select reports-select--small" defaultValue="30d">
-              <option value="7d">Last 7 days</option>
-              <option value="30d">Last 30 days</option>
-              <option value="90d">Last 90 days</option>
-            </select>
-          </header>
+      {current?.error && (
+        <p className="reports-form-error" role="alert">
+          Could not load the report: {current.error}
+        </p>
+      )}
 
-          <div className="reports-activity-stats">
-            <div className="reports-activity-stat">
-              <strong>{activity?.usersRegistered ?? 0}</strong>
-              <small>Users registered</small>
-              <span className="reports-delta reports-delta--up">
-                +{activity?.usersDeltaPercent ?? 0}%
-              </span>
-            </div>
-            <div className="reports-activity-stat">
-              <strong>{activity?.activeSessions ?? 0}</strong>
-              <small>Active sessions</small>
-              <span className="reports-delta reports-delta--up">
-                +{activity?.sessionsDeltaPercent ?? 0}%
-              </span>
-            </div>
-            <div className="reports-activity-stat">
-              <strong>{activity?.reportsCompleted ?? 0}</strong>
-              <small>Reports completed</small>
-              <span className="reports-delta reports-delta--up">
-                +{activity?.reportsDeltaPercent ?? 0}%
-              </span>
-            </div>
-            <div className="reports-activity-stat">
-              <strong>{activity?.sessionsCancelled ?? 0}</strong>
-              <small>Sessions cancelled</small>
-              <span className="reports-delta">+{activity?.cancelledDeltaPercent ?? 0}%</span>
-            </div>
-          </div>
-        </article>
-
-        <article className="reports-panel">
-          <header className="reports-panel__head">
-            <div>
-              <h2>Report categories</h2>
-            </div>
-          </header>
-          <ul className="reports-categories">
-            {CATEGORIES.map((c) => {
-              const Icon = c.icon;
-              return (
-                <li key={c.id}>
-                  <Link to={`/dashboard/admin/reports/${c.id}`} className="reports-category">
-                    <span className="reports-category__icon">
-                      <Icon size={16} />
-                    </span>
-                    <div className="reports-category__text">
-                      <strong>{c.label}</strong>
-                      <small>{c.hint}</small>
-                    </div>
-                    <span className="reports-category__arrow">›</span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </article>
-      </section>
+      {usage && <UsageView report={usage} />}
+      {times && <ResponseTimesView report={times} />}
     </div>
   );
 }
