@@ -27,6 +27,24 @@ export interface SupportRequestPage {
   results: SupportRequest[];
 }
 
+export interface MySupportRequest {
+  id: number;
+  subject: string;
+  category: string;
+  message: string;
+  status: SupportStatus;
+  admin_response: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MySupportRequestPage {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: MySupportRequest[];
+}
+
 export async function submitSupportRequest(input: {
   subject: string;
   category: string;
@@ -36,6 +54,11 @@ export async function submitSupportRequest(input: {
     '/api/v1/support/requests/',
     { method: 'POST', body: JSON.stringify(input) },
   );
+}
+
+export async function getMySupportRequests(page = 1, pageSize = 20) {
+  const query = new URLSearchParams({ page: String(page), page_size: String(pageSize) });
+  return api<MySupportRequestPage>(`/api/v1/support/requests/mine/?${query}`);
 }
 
 export async function getAdminSupportRequests(

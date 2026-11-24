@@ -1,8 +1,12 @@
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { LifeBuoy, Send } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { describeError } from '../../services/api';
-import { submitSupportRequest } from '../../services/support';
+import {
+  getMySupportRequests,
+  submitSupportRequest,
+  type MySupportRequestPage,
+} from '../../services/support';
 import './HelpSupportPage.css';
 
 export type SupportAudience = 'deaf' | 'interpreter' | 'institution_admin' | 'institution_staff';
@@ -162,6 +166,110 @@ interface Props {
   extraContent?: ReactNode;
 }
 
+const MY_REQUESTS_PAGE_SIZE = 20;
+
+function MySupportRequests({ refreshKey }: { refreshKey: number }) {
+  const [page, setPage] = useState(1);
+  const [data, setData] = useState<MySupportRequestPage | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    getMySupportRequests(page, MY_REQUESTS_PAGE_SIZE).then(
+      (result) => {
+        if (!cancelled) {
+          setData(result);
+          setLoading(false);
+          setError('');
+        }
+      },
+      (err) => {
+        if (!cancelled) {
+          setError(describeError(err));
+          setLoading(false);
+        }
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [page, refreshKey]);
+
+  return (
+    <section className="hs-card hs-my-requests" aria-labelledby="hs-my-requests-title">
+      <div className="hs-card-heading">
+        <LifeBuoy aria-hidden="true" />
+        <div>
+          <h2 id="hs-my-requests-title">My support requests</h2>
+          <p>Check your request status and read replies from the administrators.</p>
+        </div>
+      </div>
+      {error && (
+        <p className="hs-error" role="alert">
+          {error}
+        </p>
+      )}
+      {loading && <p className="hs-muted">Loading your requests…</p>}
+      {!loading && data?.results.length === 0 && (
+        <p className="hs-muted">You have not sent any support requests yet.</p>
+      )}
+      {!!data?.results.length && (
+        <div className="hs-request-list">
+          {data.results.map((request) => (
+            <article className="hs-request" key={request.id}>
+              <header>
+                <div>
+                  <h3>{request.subject}</h3>
+                  <span>{request.category.replaceAll('_', ' ')}</span>
+                </div>
+                <span className={`hs-status hs-status--${request.status.toLowerCase()}`}>
+                  {request.status.replace('_', ' ').toLowerCase()}
+                </span>
+              </header>
+              <time dateTime={request.created_at}>
+                Sent {new Date(request.created_at).toLocaleDateString()}
+              </time>
+              <p className="hs-request-message">{request.message}</p>
+              <div className="hs-admin-response">
+                <strong>Administrator response</strong>
+                <p>{request.admin_response || 'The administrators have not replied yet.'}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+      {data && data.count > MY_REQUESTS_PAGE_SIZE && (
+        <div className="hs-pagination">
+          <button
+            type="button"
+            disabled={!data.previous || loading}
+            onClick={() => {
+              setLoading(true);
+              setPage((current) => current - 1);
+            }}
+          >
+            Previous
+          </button>
+          <span>
+            Page {page} of {Math.ceil(data.count / MY_REQUESTS_PAGE_SIZE)}
+          </span>
+          <button
+            type="button"
+            disabled={!data.next || loading}
+            onClick={() => {
+              setLoading(true);
+              setPage((current) => current + 1);
+            }}
+          >
+            Next
+          </button>
+        </div>
+      )}
+    </section>
+  );
+}
+
 export function HelpSupportPage({ audience, extraContent }: Props) {
   const content = CONTENT[audience];
   const [subject, setSubject] = useState('');
@@ -170,6 +278,7 @@ export function HelpSupportPage({ audience, extraContent }: Props) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [sentId, setSentId] = useState<number | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -183,6 +292,7 @@ export function HelpSupportPage({ audience, extraContent }: Props) {
         message: message.trim(),
       });
       setSentId(request.id);
+      setRefreshKey((current) => current + 1);
       setSubject('');
       setMessage('');
     } catch (err) {
@@ -199,6 +309,7 @@ export function HelpSupportPage({ audience, extraContent }: Props) {
         <p>{content.description}</p>
       </header>
       {extraContent}
+      <MySupportRequests refreshKey={refreshKey} />
       <section className="hs-card hs-questions" aria-labelledby="hs-questions-title">
         <div className="hs-card-heading">
           <LifeBuoy aria-hidden="true" />
