@@ -168,13 +168,12 @@ export function useBookedSessions() {
 
   useEffect(() => {
     let cancelled = false;
-
-    api<ApiBooking[]>('/api/v1/interpreters/booked-sessions/').then(
-      (data) => {
+    const load = async () => {
+      try {
+        const data = await api<ApiBooking[]>('/api/v1/interpreters/booked-sessions/');
         if (cancelled) return;
         if (!Array.isArray(data)) {
           setLoadError('Could not load booked sessions. Please try again.');
-          setLoading(false);
           return;
         }
         setBookings(
@@ -190,16 +189,22 @@ export function useBookedSessions() {
             confirmed: b.my_state ? b.my_state === 'confirmed' : b.status === 'CONFIRMED',
           })),
         );
-        setLoading(false);
-      },
-      (err: unknown) => {
-        if (cancelled) return;
-        setLoadError(describeError(err));
-        setLoading(false);
-      },
-    );
+        setLoadError(null);
+      } catch (err) {
+        if (!cancelled) setLoadError(describeError(err));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    void load();
+    // Keep offers current when a staff member creates a booking while this dashboard is open.
+    const interval = window.setInterval(() => void load(), 30_000);
+    window.addEventListener('focus', load);
     return () => {
       cancelled = true;
+      window.clearInterval(interval);
+      window.removeEventListener('focus', load);
     };
   }, [round]);
 

@@ -1,4 +1,3 @@
-
 // import { bookingLabel, hasStarted } from '../../features/sessions/myBookings';
 // import { startBookedCall } from '../../features/interpreter/bookedSessions';
 // import {
@@ -521,9 +520,6 @@
 //     </>
 //   );
 // }
-
-
-
 
 import { bookingLabel, hasStarted } from '../../features/sessions/myBookings';
 import { startBookedCall } from '../../features/interpreter/bookedSessions';
