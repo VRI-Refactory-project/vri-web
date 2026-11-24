@@ -24,7 +24,12 @@ const ITEMS: Item[] = [
     icon: Accessibility,
     to: '/dashboard/deaf/accessibility',
   },
-  { title: 'Help & Support', text: 'Get help using SignConnect.', icon: CircleHelp },
+  {
+    title: 'Help & Support',
+    text: 'Quick answers or contact the SignConnect administrators.',
+    icon: CircleHelp,
+    to: '/dashboard/deaf/help',
+  },
 ];
 
 export function SettingsPage() {
