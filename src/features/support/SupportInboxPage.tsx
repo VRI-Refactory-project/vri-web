@@ -98,7 +98,7 @@ function RequestEditor({
           </select>
         </label>
         <label>
-          Admin response or follow-up note
+          Reply to requester
           <textarea
             value={response}
             onChange={(event) => {
@@ -107,8 +107,11 @@ function RequestEditor({
             }}
             rows={5}
             maxLength={4000}
-            placeholder="Record how this request was handled or what follow-up is needed."
+            placeholder="Write a response the requester can read in Help & Support."
           />
+          <small className="si-response-hint">
+            This reply will appear under My support requests on the requester’s Help & Support page.
+          </small>
         </label>
         {error && (
           <p className="si-error" role="alert">
