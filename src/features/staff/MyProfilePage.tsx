@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import type { FormEvent } from 'react';
 import { Link } from 'react-router-dom';
+import type { FormEvent } from 'react';
 import { FieldError } from '../../components/FieldError';
 import { PhoneField } from '../../components/PhoneField';
 import { useAuth } from '../../hooks/useAuth';
@@ -24,8 +24,15 @@ const initials = (name: string) =>
     .map((part) => part[0]?.toUpperCase())
     .join('');
 
-/** The signed-in staff member's own details, and the institution they belong to. */
-export function MyProfilePage() {
+interface MyProfilePageProps {
+  isInstitutionAdmin?: boolean;
+}
+
+/**
+ * Displays the signed-in user's personal details and their institution.
+ * Shared by institution administrators and institution staff.
+ */
+export function MyProfilePage({ isInstitutionAdmin = false }: MyProfilePageProps) {
   const { updateUser } = useAuth();
   const [account, setAccount] = useState<MyAccount | null>(null);
   const [institution, setInstitution] = useState<InstitutionOverview | null>(null);
@@ -35,14 +42,17 @@ export function MyProfilePage() {
 
   useEffect(() => {
     let cancelled = false;
+
     getMyAccount().then(
       (value) => !cancelled && setAccount(value),
       (err) => !cancelled && setError(describeError(err)),
     );
+
     getInstitutionOverview().then(
       (value) => !cancelled && setInstitution(value),
-      () => undefined, // the institution is extra detail: the page works without it
+      () => undefined,
     );
+
     return () => {
       cancelled = true;
     };
@@ -55,7 +65,7 @@ export function MyProfilePage() {
 
   const onSaved = (changes: Pick<MyAccount, 'name' | 'phone'>) => {
     setAccount((current) => current && { ...current, ...changes });
-    updateUser({ name: changes.name }); // the sidebar shows the name too
+    updateUser({ name: changes.name });
     setEditing(false);
     setSaved(true);
   };
@@ -63,8 +73,8 @@ export function MyProfilePage() {
   return (
     <div className="sh-page">
       <header className="sh-header">
-        <h1>Profile</h1>
-        <p>Your details on SignConnect.</p>
+        <h1>My Profile</h1>
+        <p>View and manage your personal details on SignConnect.</p>
       </header>
 
       {error && (
@@ -72,6 +82,7 @@ export function MyProfilePage() {
           {error}
         </p>
       )}
+
       {!error && !account && <p className="sh-note">Loading your profile…</p>}
 
       {account && (
@@ -80,10 +91,12 @@ export function MyProfilePage() {
             <span className="sp-avatar" aria-hidden="true">
               {initials(account.name)}
             </span>
+
             <div>
               <strong>{account.name}</strong>
-              <span>{institution ? institution.name : 'Institution staff'}</span>
+              <span>{institution ? institution.name : 'Institution account'}</span>
             </div>
+
             {!editing && (
               <button type="button" className="sp-btn sp-btn--ghost" onClick={startEditing}>
                 Edit
@@ -112,16 +125,19 @@ export function MyProfilePage() {
                   <dt>Full name</dt>
                   <dd>{account.name}</dd>
                 </div>
+
                 <div>
                   <dt>Phone</dt>
                   <dd>{account.phone}</dd>
                 </div>
               </>
             )}
+
             <div>
               <dt>Email</dt>
               <dd>
                 {account.email ?? 'None on this account'}
+
                 {account.email && (
                   <span className={account.emailVerified ? 'sp-badge' : 'sp-badge sp-badge--warn'}>
                     {account.emailVerified ? 'Verified' : 'Not verified'}
@@ -129,12 +145,14 @@ export function MyProfilePage() {
                 )}
               </dd>
             </div>
+
             {institution && (
               <>
                 <div>
                   <dt>Institution</dt>
                   <dd>{institution.name}</dd>
                 </div>
+
                 <div>
                   <dt>Role</dt>
                   <dd>{institution.role === 'ADMIN' ? 'Administrator' : 'Staff'}</dd>
@@ -142,9 +160,16 @@ export function MyProfilePage() {
               </>
             )}
           </dl>
+
           <p>
-            Your email, department and role are changed by your institution’s administrator. You can
-            change your password in <Link to="/dashboard/staff/settings">Settings</Link>.
+            {isInstitutionAdmin ? (
+              'Your email and administrator role cannot be changed from this page.'
+            ) : (
+              <>
+                Your email, department and role are managed by your institution’s administrator. You
+                can change your password in <Link to="/dashboard/staff/settings">Settings</Link>.
+              </>
+            )}
           </p>
         </section>
       )}
@@ -153,8 +178,14 @@ export function MyProfilePage() {
 }
 
 type Field = 'name' | 'phone';
+
 const ORDER: readonly Field[] = ['name', 'phone'];
-const SERVER_FIELDS: Record<Field, string> = { name: 'full_name', phone: 'phone_number' };
+
+const SERVER_FIELDS: Record<Field, string> = {
+  name: 'full_name',
+  phone: 'phone_number',
+};
+
 const fieldId = (name: Field) => `staff-profile-${name}`;
 
 interface EditDetailsFormProps {
@@ -163,11 +194,10 @@ interface EditDetailsFormProps {
   onCancel: () => void;
 }
 
-/** Name and phone number: the two details staff may change themselves. */
+/** Name and phone number: the two details users may change themselves. */
 function EditDetailsForm({ account, onSaved, onCancel }: EditDetailsFormProps) {
   const [name, setName] = useState(account.name);
   const [phone, setPhone] = useState(account.phone);
-  // A field's message from the server (e.g. phone number already used), until that field changes.
   const [serverErrors, setServerErrors] = useState<Partial<Record<Field, string>>>({});
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -176,9 +206,14 @@ function EditDetailsForm({ account, onSaved, onCancel }: EditDetailsFormProps) {
     name: validateName(name) ?? serverErrors.name,
     phone: validatePhone(phone) ?? serverErrors.phone,
   });
+
   const { shown, touch, fieldProps, check } = useFieldErrors(errors, ORDER, fieldId);
 
-  const setters: Record<Field, (value: string) => void> = { name: setName, phone: setPhone };
+  const setters: Record<Field, (value: string) => void> = {
+    name: setName,
+    phone: setPhone,
+  };
+
   const change = (field: Field) => (value: string) => {
     setters[field](value);
     setServerErrors((current) => ({ ...current, [field]: undefined }));
@@ -187,8 +222,11 @@ function EditDetailsForm({ account, onSaved, onCancel }: EditDetailsFormProps) {
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
+
     if (!check()) return;
+
     setSaving(true);
+
     try {
       const updated = await updateMyProfile({ fullName: name, phone });
       onSaved({ name: updated.name, phone: updated.phone });
@@ -200,8 +238,13 @@ function EditDetailsForm({ account, onSaved, onCancel }: EditDetailsFormProps) {
               phone: err.fieldError(SERVER_FIELDS.phone),
             })
           : {};
-      if (Object.keys(byField).length > 0) setServerErrors(byField);
-      else setError(describeError(err));
+
+      if (Object.keys(byField).length > 0) {
+        setServerErrors(byField);
+      } else {
+        setError(describeError(err));
+      }
+
       setSaving(false);
     }
   };
@@ -219,6 +262,7 @@ function EditDetailsForm({ account, onSaved, onCancel }: EditDetailsFormProps) {
         />
         <FieldError id={fieldId('name')} message={shown('name')} />
       </div>
+
       <div className="sp-field">
         <label htmlFor={fieldId('phone')}>Phone number</label>
         <PhoneField
@@ -231,15 +275,18 @@ function EditDetailsForm({ account, onSaved, onCancel }: EditDetailsFormProps) {
         />
         <FieldError id={fieldId('phone')} message={shown('phone')} />
       </div>
+
       {error && (
         <p className="sp-error" role="alert">
           {error}
         </p>
       )}
+
       <div className="sp-actions">
         <button type="submit" className="sp-btn" disabled={saving}>
           {saving ? 'Saving…' : 'Save changes'}
         </button>
+
         <button type="button" className="sp-btn sp-btn--ghost" onClick={onCancel} disabled={saving}>
           Cancel
         </button>

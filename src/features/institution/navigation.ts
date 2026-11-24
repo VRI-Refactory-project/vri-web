@@ -1,6 +1,5 @@
-import { Home, Users, Video, BarChart3, Settings, Building2 } from 'lucide-react';
+import { Home, Users, Video, BarChart3, Settings, Building2, UserRound } from 'lucide-react';
 import type { NavItem } from '../../components/dashboard/DashboardLayout';
-
 export const institutionNavigation: NavItem[] = [
   { id: 'home', label: 'Dashboard', to: '/dashboard/institution', icon: Home, end: true },
   { id: 'staff', label: 'Staff', to: '/dashboard/institution/staff', icon: Users },
@@ -12,5 +11,11 @@ export const institutionNavigation: NavItem[] = [
     label: 'Institution Profile',
     to: '/dashboard/institution/profile',
     icon: Building2,
+  },
+  {
+    id: 'my-profile',
+    label: 'My Profile',
+    to: '/dashboard/institution/my-profile',
+    icon: UserRound,
   },
 ];
