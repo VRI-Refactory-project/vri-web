@@ -624,14 +624,15 @@ export function DashboardPage() {
     }
   };
 
-  // Use the new bookedSessions state instead of the old dashboard data
-  const sessionCount = bookedSessions.length;
+  // Keep the upcoming count and cards clear of cancelled bookings, including stale API responses.
+  const upcomingSessions = bookedSessions.filter((session) => session.status !== 'CANCELLED');
+  const sessionCount = upcomingSessions.length;
 
   // Calculate this month's stats dynamically from bookedSessions
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
 
-  const sessionsThisMonth = bookedSessions.filter((session) => {
+  const sessionsThisMonth = upcomingSessions.filter((session) => {
     const sessionDate = new Date(session.date);
     return sessionDate.getMonth() === currentMonth && sessionDate.getFullYear() === currentYear;
   });
@@ -882,11 +883,11 @@ export function DashboardPage() {
           </p>
         )}
         <div className="session-grid">
-          {bookedSessions.length === 0 ? (
+          {upcomingSessions.length === 0 ? (
             <p className="text-muted">No upcoming sessions yet.</p>
           ) : (
             /* UPDATED: Sliced array based on state */
-            (showAllSessions ? bookedSessions : bookedSessions.slice(0, 4)).map((session) => (
+            (showAllSessions ? upcomingSessions : upcomingSessions.slice(0, 4)).map((session) => (
               <div key={session.id} className="session-card">
                 <div className="session-card-top">
                   <div className="session-date-box">
