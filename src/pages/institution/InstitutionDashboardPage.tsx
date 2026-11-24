@@ -43,7 +43,7 @@ interface InstitutionSessionApi {
 
 interface Department {
   name: string;
-  sessionsToday: number;
+  sessionsThisMonth: number;
   active: number;
 }
 
@@ -119,16 +119,11 @@ export function InstitutionDashboardPage({
 
         setOrgName(dashboard.institutionName);
 
-        const analytics = dashboard.sessions;
-
         setData((current) => ({
           ...current,
           staff: dashboard.staff.total,
           activeStaff: dashboard.staff.active,
           revokedStaff: dashboard.staff.revoked,
-
-          // Currently connected video calls
-          activeSessions: analytics.connectedVideoSessions,
         }));
       } else {
         console.error('Could not load institution dashboard:', dashboardResult.reason);
@@ -189,29 +184,45 @@ export function InstitutionDashboardPage({
 
         setData((current) => ({
           ...current,
+          activeSessions: requests.length,
           sessions: mappedSessions,
-          departments: current.departments.map((department) => ({
-            ...department,
-            active: activeByDepartment.get(department.name) || 0,
-          })),
         }));
       } else {
         console.error('Could not load active institution sessions:', sessionsResult.reason);
       }
 
-      // Populate department usage from monthly analytics
-      if (usageResult.status === 'fulfilled') {
-        const usage = usageResult.value;
+      // Combine monthly usage and active requests by department
+      const monthlyByDepartment = new Map<string, number>();
+      const activeByDepartment = new Map<string, number>();
 
-        setData((current) => ({
-          ...current,
-          departments: usage.byDepartment.map((department) => ({
-            name: department.label || 'No department',
-            sessionsToday: department.count,
-            active: current.departments.find((item) => item.name === department.label)?.active || 0,
-          })),
-        }));
+      if (usageResult.status === 'fulfilled') {
+        usageResult.value.byDepartment.forEach((department) => {
+          const name = department.label || 'No department';
+          monthlyByDepartment.set(name, department.count);
+        });
       }
+
+      if (sessionsResult.status === 'fulfilled') {
+        sessionsResult.value.forEach((request) => {
+          const department = request.staff.department || 'No department';
+
+          activeByDepartment.set(department, (activeByDepartment.get(department) || 0) + 1);
+        });
+      }
+
+      const departmentNames = new Set([
+        ...monthlyByDepartment.keys(),
+        ...activeByDepartment.keys(),
+      ]);
+
+      setData((current) => ({
+        ...current,
+        departments: Array.from(departmentNames).map((name) => ({
+          name,
+          sessionsThisMonth: monthlyByDepartment.get(name) || 0,
+          active: activeByDepartment.get(name) || 0,
+        })),
+      }));
     }
 
     loadDashboard();
@@ -455,8 +466,8 @@ export function InstitutionDashboardPage({
             >
               <strong>{department.name}</strong>
               <span>
-                {department.sessionsToday} {department.sessionsToday === 1 ? 'session' : 'sessions'}{' '}
-                this month
+                {department.sessionsThisMonth}{' '}
+                {department.sessionsThisMonth === 1 ? 'session' : 'sessions'} this month
               </span>
               <span className="id-teal">{department.active} active</span>
             </button>

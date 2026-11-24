@@ -161,3 +161,31 @@ describe('InstitutionDashboardPage', () => {
     expect(await screen.findByText('0 staff accounts with access revoked')).toBeInTheDocument();
   });
 });
+
+it('counts all active institution requests in the Active Sessions KPI', async () => {
+  renderPage();
+
+  const activeSessions = await screen.findByText('Active sessions', {
+    selector: '.id-kpi-label',
+  });
+
+  expect(activeSessions.closest('article')).toHaveTextContent('1');
+});
+
+it('shows monthly and active session counts for each department', async () => {
+  renderPage();
+
+  const outpatient = await screen.findByRole('button', {
+    name: /Outpatient/,
+  });
+
+  expect(outpatient).toHaveTextContent('12 sessions this month');
+  expect(outpatient).toHaveTextContent('1 active');
+
+  const emergency = screen.getByRole('button', {
+    name: /Emergency/,
+  });
+
+  expect(emergency).toHaveTextContent('8 sessions this month');
+  expect(emergency).toHaveTextContent('0 active');
+});
