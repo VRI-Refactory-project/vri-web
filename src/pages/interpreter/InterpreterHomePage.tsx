@@ -68,7 +68,14 @@ export function InterpreterHomePage() {
   const { available, availableNow, reason, setAvailable, loading, saving, error } =
     useAvailability();
   const { sessions } = useMySessions();
-  const { bookings, answer, busyId, error: bookingError } = useBookedSessions();
+  const {
+    bookings,
+    answer,
+    busyId,
+    error: bookingError,
+    loading: bookingsLoading,
+    loadError,
+  } = useBookedSessions();
   const navigate = useNavigate();
   const [joinError, setJoinError] = useState<string | null>(null);
   const join = async (id: number) => {
@@ -150,14 +157,16 @@ export function InterpreterHomePage() {
               <div className="ih-stat-header">
                 <CalendarCheck size={20} className="ih-icon-blue" />
                 <span className="ih-trend trend-green">
-                  {toAnswer > 0
-                    ? `${toAnswer} to answer`
-                    : bookings.length > 0
-                      ? 'Upcoming'
-                      : 'None yet'}
+                  {bookingsLoading
+                    ? 'Loading'
+                    : toAnswer > 0
+                      ? `${toAnswer} to answer`
+                      : bookings.length > 0
+                        ? 'Upcoming'
+                        : 'None yet'}
                 </span>
               </div>
-              <h2>{bookings.length}</h2>
+              <h2>{bookingsLoading ? '—' : bookings.length}</h2>
               <p>Booked sessions</p>
             </div>
 
@@ -184,7 +193,13 @@ export function InterpreterHomePage() {
                     </Link>
                   </div>
 
-                  {next ? (
+                  {loadError ? (
+                    <p className="ih-time-label ih-empty-note" role="alert">
+                      {loadError}
+                    </p>
+                  ) : bookingsLoading ? (
+                    <p className="ih-time-label ih-empty-note">Loading sessions…</p>
+                  ) : next ? (
                     <div className="ih-next-session-content">
                       <div className="ih-next-header">
                         <Avatar name={next.withName} photo={next.photo} />
@@ -229,7 +244,9 @@ export function InterpreterHomePage() {
                       {bookingError || joinError}
                     </p>
                   )}
-                  {bookings.length === 0 ? (
+                  {loadError ? null : bookingsLoading ? (
+                    <p className="ih-time-label ih-empty-note">Loading sessions…</p>
+                  ) : bookings.length === 0 ? (
                     <p className="ih-time-label ih-empty-note">No sessions have been booked yet.</p>
                   ) : (
                     <div className="ih-list-card-transparent">
