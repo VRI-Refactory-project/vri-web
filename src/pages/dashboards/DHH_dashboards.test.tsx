@@ -230,7 +230,8 @@ describe('DashboardPage (deaf)', () => {
   describe('booked sessions routing', () => {
     const booking = (id: number, status: string, interpreter_name: string | null = null) => ({
       id,
-      date: '2026-12-01',
+      // Two days ahead, so the tests keep working as the calendar moves on.
+      date: new Date(Date.now() + 2 * 86_400_000).toISOString().slice(0, 10),
       time: '10:00',
       duration: 30,
       session_type: 'medical',

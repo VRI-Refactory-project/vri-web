@@ -14,7 +14,7 @@
 // import { useNavigate } from 'react-router-dom';
 // import { useAuth } from '../../hooks/useAuth';
 // import { api, describeError } from '../../services/api';
-import { bookingLabel } from '../../features/sessions/myBookings';
+import { bookingLabel, hasStarted } from '../../features/sessions/myBookings';
 import { startBookedCall } from '../../features/interpreter/bookedSessions';
 // import './DHH_dashboard.css';
 // import { InterpreterProfileModal } from './InterpreterProfileModal';
@@ -478,7 +478,6 @@ import {
   Clock,
   CheckCircle2,
   AlertCircle,
-  Wallet,
 } from 'lucide-react';
 
 import { useEffect, useState } from 'react';
@@ -552,10 +551,6 @@ export function DashboardPage() {
   //   monthlySessions: 0,
   //   monthlyMinutes: 0,
   // });
-
-  const stats = {
-    walletBalance: 0,
-  };
 
   // Notifications State
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
@@ -664,13 +659,6 @@ export function DashboardPage() {
   };
 
   // --- HELPERS ---
-  const formatCurrency = (amount: number) => {
-    const formattedNumber = new Intl.NumberFormat('en-US', {
-      maximumFractionDigits: 0,
-    }).format(amount);
-    return `UGX ${formattedNumber}`;
-  };
-
   const formatTime = (totalMinutes: number) => {
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
@@ -845,15 +833,6 @@ export function DashboardPage() {
 
         <div className="stat-card">
           <div className="stat-header">
-            <span className="stat-label">Wallet</span>
-            <Wallet size={20} className="stat-icon" />
-          </div>
-          <span className="stat-value">{formatCurrency(stats.walletBalance)}</span>
-          <span className="stat-sub">Available balance</span>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-header">
             <span className="stat-label">This month</span>
             <Clock size={20} className="stat-icon" />
           </div>
@@ -920,6 +899,8 @@ export function DashboardPage() {
                     >
                       Join call
                     </button>
+                  ) : hasStarted(session) ? (
+                    <span>Ended</span>
                   ) : (
                     <button
                       type="button"

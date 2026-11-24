@@ -2,10 +2,11 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SchedulePage } from './SchedulePage';
-import { api } from '../../services/api';
+import { api, ApiError } from '../../services/api';
 
 // Mock the API module so we don't hit the real backend during tests
-vi.mock('../../services/api', () => ({
+vi.mock('../../services/api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../services/api')>()),
   api: vi.fn(),
 }));
 
@@ -60,5 +61,40 @@ describe('SchedulePage', () => {
     await waitFor(() => {
       expect(screen.getByText(/Session saved successfully/)).toBeTruthy();
     });
+  });
+
+  it('sends one booking however many times Save is pressed', async () => {
+    let finish: (value: unknown) => void = () => {};
+    vi.mocked(api).mockReturnValueOnce(new Promise((resolve) => (finish = resolve)));
+
+    show();
+    fill();
+    const save = screen.getByRole('button', { name: 'Save Session' });
+    fireEvent.click(save);
+    fireEvent.click(save);
+    fireEvent.click(save);
+
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Saving…' })).toBeDisabled());
+    expect(api).toHaveBeenCalledTimes(1);
+
+    finish({});
+    await waitFor(() => expect(screen.getByText(/Session saved successfully/)).toBeTruthy());
+    expect(screen.getByRole('button', { name: 'Save Session' })).not.toBeDisabled();
+  });
+
+  it('tells the person when they already have a session at that time', async () => {
+    vi.mocked(api).mockRejectedValueOnce(
+      new ApiError(400, 'You already have a session booked at that time.', {
+        time: ['You already have a session booked at that time.'],
+      }),
+    );
+
+    show();
+    fill();
+    fireEvent.click(screen.getByRole('button', { name: 'Save Session' }));
+
+    await waitFor(() =>
+      expect(screen.getByText('You already have a session booked at that time.')).toBeTruthy(),
+    );
   });
 });

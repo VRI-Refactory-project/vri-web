@@ -260,7 +260,7 @@ import {
   type ScheduleErrors,
   type ScheduleForm,
 } from '../../features/schedule/validateSchedule';
-import { api } from '../../services/api';
+import { api, ApiError } from '../../services/api';
 import './DeafExtras.css';
 
 const EMPTY: ScheduleForm = {
@@ -275,6 +275,10 @@ export function SchedulePage() {
   const [form, setForm] = useState<ScheduleForm>(EMPTY);
   const [errors, setErrors] = useState<ScheduleErrors>({});
   const [result, setResult] = useState<'saved' | 'unavailable' | null>(null);
+  const [problem, setProblem] = useState('');
+  const [saving, setSaving] = useState(false);
+  // A ref, because a second press can arrive before React has re-rendered the disabled button.
+  const inFlight = useRef(false);
 
   // State for the custom "Other" session type
   const [customSessionType, setCustomSessionType] = useState('');
@@ -287,6 +291,7 @@ export function SchedulePage() {
   // 👇 UPDATED: Real API call to the backend
   const submit = async (e: FormEvent) => {
     e.preventDefault();
+    if (inFlight.current) return;
 
     // Custom validation for the "Other" text field
     if (form.sessionType === 'other' && !customSessionType.trim()) {
@@ -297,8 +302,11 @@ export function SchedulePage() {
     const found = validateSchedule(form);
     setErrors(found);
     setResult(null);
+    setProblem('');
     if (Object.keys(found).length > 0) return;
 
+    inFlight.current = true;
+    setSaving(true);
     try {
       await api('/api/v1/interpreters/schedule/', {
         method: 'POST',
@@ -316,7 +324,14 @@ export function SchedulePage() {
       setCustomSessionType('');
     } catch (error) {
       console.error('Failed to save session', error);
+      // The server says why a booking was refused (for example, a session already at that time).
+      setProblem(
+        error instanceof ApiError && error.status === 400 ? (error.fieldError('time') ?? '') : '',
+      );
       setResult('unavailable');
+    } finally {
+      inFlight.current = false;
+      setSaving(false);
     }
   };
 
@@ -483,12 +498,12 @@ export function SchedulePage() {
           )}
           {result === 'unavailable' && (
             <p className="dx-notice" role="status">
-              We could not save your session. Please try again.
+              {problem || 'We could not save your session. Please try again.'}
             </p>
           )}
 
-          <button type="submit" className="dx-primary">
-            Save Session
+          <button type="submit" className="dx-primary" disabled={saving}>
+            {saving ? 'Saving…' : 'Save Session'}
           </button>
         </form>
 
