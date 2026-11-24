@@ -1,5 +1,5 @@
 /* The staff tutorial (V2-065): a dimmed screen, the part each step is about lit up, and a card. */
-.st-layer {
+.staff-tour-layer {
   position: fixed;
   inset: 0;
   z-index: 60;
@@ -7,7 +7,7 @@
 }
 
 /* Lights up one part of the screen by dimming everything around it. */
-.st-spot {
+.staff-tour-spot {
   position: fixed;
   border-radius: 12px;
   box-shadow:
@@ -21,13 +21,13 @@
   pointer-events: none;
 }
 
-.st-dim {
+.staff-tour-dim {
   position: fixed;
   inset: 0;
   background: rgba(27, 18, 64, 0.6);
 }
 
-.st-card {
+.staff-tour-card {
   position: fixed;
   box-sizing: border-box;
   width: min(340px, calc(100vw - 32px));
@@ -39,13 +39,13 @@
 }
 
 /* A step on its own, or a phone where the sidebar is hidden: the card sits in the middle. */
-.st-card--centre {
+.staff-tour-card--centre {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
 }
 
-.st-count {
+.staff-tour-count {
   margin: 0 0 4px;
   color: #6b6585;
   font-size: 12px;
@@ -54,48 +54,48 @@
   text-transform: uppercase;
 }
 
-.st-card h2 {
+.staff-tour-card h2 {
   margin: 0 0 8px;
   font-size: 19px;
 }
 
-.st-card p#st-body {
+.staff-tour-card p#st-body {
   margin: 0 0 14px;
   color: #4a4565;
   font-size: 14px;
   line-height: 1.5;
 }
 
-.st-progress {
+.staff-tour-progress {
   display: flex;
   gap: 4px;
   margin-bottom: 16px;
 }
 
-.st-progress i {
+.staff-tour-progress i {
   flex: 1;
   height: 4px;
   border-radius: 2px;
   background: #e9e3fb;
 }
 
-.st-progress i.is-done {
+.staff-tour-progress i.staff-tour-progress__done {
   background: #3b2579;
 }
 
-.st-actions {
+.staff-tour-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
 }
 
-.st-nav {
+.staff-tour-nav {
   display: flex;
   gap: 8px;
 }
 
-.st-skip {
+.staff-tour-skip {
   padding: 6px 4px;
   border: 0;
   background: none;
@@ -107,7 +107,7 @@
   cursor: pointer;
 }
 
-.st-btn {
+.staff-tour-button {
   padding: 9px 20px;
   border: 0;
   border-radius: 999px;
@@ -119,20 +119,20 @@
   cursor: pointer;
 }
 
-.st-btn--ghost {
+.staff-tour-button--ghost {
   border: 1.5px solid #cfcae6;
   background: #fff;
   color: #3b2579;
 }
 
-.st-btn:focus-visible,
-.st-skip:focus-visible {
+.staff-tour-button:focus-visible,
+.staff-tour-skip:focus-visible {
   outline: 3px solid #d8b4fe;
   outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .st-spot {
+  .staff-tour-spot {
     transition: none;
   }
 }

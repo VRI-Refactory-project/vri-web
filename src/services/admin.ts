@@ -1,4 +1,4 @@
-import { api } from './api';
+import { ApiError, api } from './api';
 
 /* ---------- Summary (existing endpoint) ---------- */
 export interface AdminDashboardSummary {
@@ -230,6 +230,16 @@ export interface InterpreterMetrics {
   lowRatings: LowRatingFeedback[];
 }
 
+interface ApiInterpreterRow {
+  interpreter_id: number;
+  interpreter_name: string;
+  specialisation: string | null;
+  average_rating: number | null;
+  rating_count: number;
+  completed_sessions: number;
+  low_rating_count: number;
+}
+
 interface ApiInterpreterMetrics {
   summary: {
     average_rating: number | null;
@@ -237,22 +247,16 @@ interface ApiInterpreterMetrics {
     low_rating_count: number;
     completed_sessions: number;
   };
-  trend_start_month: string;
-  trends: { month: string; average_rating: number | null; rating_count: number }[];
-  interpreters: {
-    count: number;
-    next: string | null;
-    previous: string | null;
-    results: {
-      interpreter_id: number;
-      interpreter_name: string;
-      specialisation: string | null;
-      average_rating: number | null;
-      rating_count: number;
-      completed_sessions: number;
-      low_rating_count: number;
-    }[];
-  };
+  trend_start_month?: string;
+  trends?: { month: string; average_rating: number | null; rating_count: number }[];
+  interpreters:
+    | ApiInterpreterRow[]
+    | {
+        count: number;
+        next: string | null;
+        previous: string | null;
+        results: ApiInterpreterRow[];
+      };
   low_ratings: {
     id: number;
     interpreter_name: string;
@@ -266,9 +270,47 @@ export async function fetchInterpreterMetrics(
   page = 1,
   pageSize = 10,
 ): Promise<InterpreterMetrics> {
-  const raw = await api<ApiInterpreterMetrics>(
-    `/api/v1/dashboard/admin/interpreter-performance/?page=${page}&page_size=${pageSize}`,
-  );
+  let raw: ApiInterpreterMetrics;
+  try {
+    raw = await api<ApiInterpreterMetrics>(
+      `/api/v1/dashboard/admin/interpreter-performance/?page=${page}&page_size=${pageSize}`,
+    );
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new ApiError(
+        502,
+        'The performance endpoint returned an unreadable response. The backend may need an update.',
+      );
+    }
+    throw error;
+  }
+
+  if (
+    !raw ||
+    !raw.summary ||
+    (!Array.isArray(raw.trends) && raw.trends !== undefined) ||
+    !Array.isArray(raw.low_ratings) ||
+    !raw.interpreters
+  ) {
+    throw new ApiError(
+      502,
+      'The performance data is incomplete. The frontend and backend API versions may not match.',
+    );
+  }
+  let rows: ApiInterpreterRow[];
+  let interpreterCount: number;
+  if (Array.isArray(raw.interpreters)) {
+    interpreterCount = raw.interpreters.length;
+    rows = raw.interpreters.slice((page - 1) * pageSize, page * pageSize);
+  } else if (Array.isArray(raw.interpreters.results)) {
+    interpreterCount = raw.interpreters.count;
+    rows = raw.interpreters.results;
+  } else {
+    throw new ApiError(
+      502,
+      'The performance data is incomplete. The frontend and backend API versions may not match.',
+    );
+  }
   return {
     summary: {
       averageRating: raw.summary.average_rating,
@@ -276,13 +318,13 @@ export async function fetchInterpreterMetrics(
       lowRatingCount: raw.summary.low_rating_count,
       completedSessions: raw.summary.completed_sessions,
     },
-    trendStartMonth: raw.trend_start_month,
-    trends: raw.trends.map((item) => ({
+    trendStartMonth: raw.trend_start_month ?? `${new Date().getFullYear()}-01`,
+    trends: (raw.trends ?? []).map((item) => ({
       month: item.month,
       averageRating: item.average_rating,
       ratingCount: item.rating_count,
     })),
-    interpreters: raw.interpreters.results.map((item) => ({
+    interpreters: rows.map((item) => ({
       interpreterId: item.interpreter_id,
       interpreterName: item.interpreter_name,
       specialisation: item.specialisation ?? 'Not specified',
@@ -291,7 +333,7 @@ export async function fetchInterpreterMetrics(
       completedSessions: item.completed_sessions,
       lowRatingCount: item.low_rating_count,
     })),
-    interpreterPagination: { count: raw.interpreters.count, page, pageSize },
+    interpreterPagination: { count: interpreterCount, page, pageSize },
     lowRatings: raw.low_ratings.map((item) => ({
       id: item.id,
       interpreterName: item.interpreter_name,
