@@ -12,7 +12,7 @@ export interface SupportRequest {
   created_at: string;
   updated_at: string;
   requester: {
-    id: number;
+    user_id: number;
     name: string;
     role: string;
     institution_name: string | null;

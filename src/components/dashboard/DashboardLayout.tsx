@@ -66,7 +66,9 @@ export function DashboardLayout({
 
   // NEW: State for the mobile sidebar
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [moreOpen, setMoreOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(() =>
+    links.some((item) => item.children?.some((child) => pathname === child.to)),
+  );
 
   return (
     <div className="dl-shell">
@@ -99,7 +101,7 @@ export function DashboardLayout({
               const childIsActive = children.some(
                 (item) => pathname === item.to || pathname.startsWith(`${item.to}/`),
               );
-              const expanded = moreOpen || childIsActive;
+              const expanded = moreOpen;
               return (
                 <div className="dl-nav-group" key={id}>
                   <button
@@ -132,7 +134,10 @@ export function DashboardLayout({
                           <NavLink
                             key={child.id}
                             to={child.to}
-                            onClick={() => setIsSidebarOpen(false)}
+                            onClick={() => {
+                              setMoreOpen(true);
+                              setIsSidebarOpen(false);
+                            }}
                             className={({ isActive }) =>
                               isActive
                                 ? 'dl-link dl-link--sub dl-link--active'

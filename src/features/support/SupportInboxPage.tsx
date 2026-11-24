@@ -1,3 +1,4 @@
+import { ArrowLeft } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 import { describeError } from '../../services/api';
 import {
@@ -70,7 +71,7 @@ function RequestEditor({
           {request.requester.institution_role
             ? ` (${request.requester.institution_role.toLowerCase()})`
             : ''}
-          {' · '}User #{request.requester.id}
+          {' · '}User #{request.requester.user_id}
         </span>
         {request.requester.institution_name && <span>{request.requester.institution_name}</span>}
       </div>
@@ -145,21 +146,19 @@ export function SupportInboxPage() {
     };
   }, [page, filter]);
 
-  const selected = data?.results.find((item) => item.id === selectedId) ?? data?.results[0] ?? null;
+  const selected = data?.results.find((item) => item.id === selectedId) ?? null;
 
   function saveUpdated(updated: SupportRequest) {
+    const leavesCurrentView = filter !== 'ALL' && updated.status !== filter;
+    if (leavesCurrentView) setSelectedId(null);
     setData((current) =>
       current
         ? {
             ...current,
-            count:
-              filter !== 'ALL' && updated.status !== filter
-                ? Math.max(0, current.count - 1)
-                : current.count,
-            results:
-              filter !== 'ALL' && updated.status !== filter
-                ? current.results.filter((item) => item.id !== updated.id)
-                : current.results.map((item) => (item.id === updated.id ? updated : item)),
+            count: leavesCurrentView ? Math.max(0, current.count - 1) : current.count,
+            results: leavesCurrentView
+              ? current.results.filter((item) => item.id !== updated.id)
+              : current.results.map((item) => (item.id === updated.id ? updated : item)),
           }
         : current,
     );
@@ -198,7 +197,15 @@ export function SupportInboxPage() {
           {error}
         </p>
       )}
-      <div className="si-workspace">
+      {selected ? (
+        <section className="si-detail-view" aria-label="Selected support request">
+          <button type="button" className="si-back" onClick={() => setSelectedId(null)}>
+            <ArrowLeft size={17} aria-hidden="true" />
+            Back to requests
+          </button>
+          <RequestEditor key={selected.id} request={selected} onSaved={saveUpdated} />
+        </section>
+      ) : (
         <section className="si-list" aria-label="Support request list">
           <div className="si-list-heading">
             <h2>Inbox</h2>
@@ -208,28 +215,56 @@ export function SupportInboxPage() {
           {!loading && data?.results.length === 0 && (
             <p className="si-muted">There are no requests in this view.</p>
           )}
-          {data?.results.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className={`si-list-item${selected?.id === item.id ? ' si-list-item--active' : ''}`}
-              onClick={() => setSelectedId(item.id)}
-            >
-              <span className="si-list-item-top">
-                <strong>{item.requester.name}</strong>
-                <time dateTime={item.created_at}>
-                  {new Date(item.created_at).toLocaleDateString()}
-                </time>
-              </span>
-              <span className="si-list-subject">{item.subject}</span>
-              <span className="si-list-meta">
-                {roleLabel(item.requester.role)}
-                <span className={`si-status si-status--${item.status.toLowerCase()}`}>
-                  {item.status.replace('_', ' ').toLowerCase()}
-                </span>
-              </span>
-            </button>
-          ))}
+          {!!data?.results.length && (
+            <div className="si-table-scroll">
+              <table className="si-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Requester</th>
+                    <th scope="col">Inquiry</th>
+                    <th scope="col">User type</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Received</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.results.map((item) => (
+                    <tr key={item.id}>
+                      <td>
+                        <button
+                          type="button"
+                          className="si-request-link"
+                          onClick={() => setSelectedId(item.id)}
+                        >
+                          {item.requester.name}
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          className="si-request-link si-request-subject"
+                          onClick={() => setSelectedId(item.id)}
+                        >
+                          {item.subject}
+                        </button>
+                      </td>
+                      <td>{roleLabel(item.requester.role)}</td>
+                      <td>
+                        <span className={`si-status si-status--${item.status.toLowerCase()}`}>
+                          {item.status.replace('_', ' ').toLowerCase()}
+                        </span>
+                      </td>
+                      <td>
+                        <time dateTime={item.created_at}>
+                          {new Date(item.created_at).toLocaleDateString()}
+                        </time>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
           {data && data.count > PAGE_SIZE && (
             <div className="si-pagination">
               <button
@@ -258,21 +293,7 @@ export function SupportInboxPage() {
             </div>
           )}
         </section>
-        <section className="si-detail-panel" aria-label="Selected support request">
-          {selected ? (
-            <RequestEditor key={selected.id} request={selected} onSaved={saveUpdated} />
-          ) : (
-            <div className="si-empty">
-              <strong>{loading ? 'Loading support inbox' : 'Choose a request'}</strong>
-              <span>
-                {loading
-                  ? 'Support requests will appear here.'
-                  : 'Select a message from the inbox to review and respond.'}
-              </span>
-            </div>
-          )}
-        </section>
-      </div>
+      )}
     </main>
   );
 }
