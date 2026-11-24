@@ -43,7 +43,10 @@ export function InterpreterPerformancePage() {
     let cancelled = false;
     fetchInterpreterMetrics(page, PAGE_SIZE).then(
       (data) => {
-        if (!cancelled) setMetrics(data);
+        if (!cancelled) {
+          setMetrics(data);
+          setError('');
+        }
       },
       (err) => {
         if (!cancelled) setError(describeError(err));
