@@ -1,3 +1,5 @@
+// import { bookingLabel, hasStarted } from '../../features/sessions/myBookings';
+// import { startBookedCall } from '../../features/interpreter/bookedSessions';
 // import {
 //   Video,
 //   Settings,
@@ -7,15 +9,12 @@
 //   Clock,
 //   CheckCircle2,
 //   AlertCircle,
-//   Wallet,
 // } from 'lucide-react';
 
 // import { useEffect, useState } from 'react';
 // import { useNavigate } from 'react-router-dom';
 // import { useAuth } from '../../hooks/useAuth';
 // import { api, describeError } from '../../services/api';
-import { bookingLabel, hasStarted } from '../../features/sessions/myBookings';
-import { startBookedCall } from '../../features/interpreter/bookedSessions';
 // import './DHH_dashboard.css';
 // import { InterpreterProfileModal } from './InterpreterProfileModal';
 // import bannerImage from '../../assets/suit.png';
@@ -23,12 +22,6 @@ import { startBookedCall } from '../../features/interpreter/bookedSessions';
 //   getAvailableInterpreters,
 //   type AvailableInterpreter,
 // } from '../../services/availableInterpreters';
-
-// /** The part of GET /api/v1/dashboard/deaf/ this page uses. */
-// interface DeafDashboard {
-//   requests: Record<string, unknown>[];
-//   sessions: Record<string, unknown>[];
-// }
 
 // /** Matches the NotificationSerializer from the backend */
 // interface NotificationItem {
@@ -41,7 +34,7 @@ import { startBookedCall } from '../../features/interpreter/bookedSessions';
 //   created_at: string;
 // }
 
-// // NEW: Interface for the scheduled sessions
+// // Interface for the scheduled sessions
 // interface BookedSession {
 //   id: number;
 //   date: string;
@@ -49,6 +42,9 @@ import { startBookedCall } from '../../features/interpreter/bookedSessions';
 //   duration: number;
 //   session_type: string;
 //   status: string;
+//   interpreter_name?: string | null;
+//   can_join?: boolean;
+//   no_show?: '' | 'interpreter' | 'booker' | 'both';
 // }
 
 // function greeting(date = new Date()) {
@@ -72,18 +68,20 @@ import { startBookedCall } from '../../features/interpreter/bookedSessions';
 //   const firstName = (session?.user.name ?? '').trim().split(/\s+/)[0] ?? '';
 
 //   // --- STATE ---
-//   const [sessions, setSessions] = useState<DeafDashboard['sessions'] | null>(null);
 //   const [bookedSessions, setBookedSessions] = useState<BookedSession[]>([]);
+//   const [cancelling, setCancelling] = useState<number | null>(null);
+//   const [bookingError, setBookingError] = useState<string | null>(null);
 //   const [interpreters, setInterpreters] = useState<AvailableInterpreter[] | null>(null);
 //   const [openProfileId, setOpenProfileId] = useState<number | null>(null);
 
 //   const [showAllInterpreters, setShowAllInterpreters] = useState(false);
+//   const [showAllSessions, setShowAllSessions] = useState(false);
 
-//   const [stats, setStats] = useState({
-//     walletBalance: 0,
-//     monthlySessions: 0,
-//     monthlyMinutes: 0,
-//   });
+//   // const [stats, setStats] = useState({
+//   //   walletBalance: 0,
+//   //   monthlySessions: 0,
+//   //   monthlyMinutes: 0,
+//   // });
 
 //   // Notifications State
 //   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
@@ -93,24 +91,7 @@ import { startBookedCall } from '../../features/interpreter/bookedSessions';
 //   useEffect(() => {
 //     let cancelled = false;
 
-//     // 1. Fetch Dashboard Data
-//     api<DeafDashboard>('/api/v1/dashboard/deaf/').then(
-//       (data) => {
-//         if (!cancelled) {
-//           setSessions(data.sessions);
-//           setStats({
-//             walletBalance: 0,
-//             monthlySessions: 0,
-//             monthlyMinutes: 0,
-//           });
-//         }
-//       },
-//       () => {
-//         if (!cancelled) setSessions([]);
-//       },
-//     );
-
-//     // 2. Fetch Notifications
+//     // 1. Fetch Notifications
 //     api<NotificationItem[]>('/api/v1/notifications/').then(
 //       (data) => {
 //         if (!cancelled) setNotifications(Array.isArray(data) ? data : []);
@@ -120,7 +101,7 @@ import { startBookedCall } from '../../features/interpreter/bookedSessions';
 //       },
 //     );
 
-//     // 3. Fetch Available Interpreters
+//     // 2. Fetch Available Interpreters
 //     getAvailableInterpreters().then(
 //       (list) => {
 //         if (!cancelled) setInterpreters(list);
@@ -130,10 +111,10 @@ import { startBookedCall } from '../../features/interpreter/bookedSessions';
 //       },
 //     );
 
-//     // 4. NEW: Fetch Booked Sessions
+//     // 3. Fetch Booked Sessions
 //     api<BookedSession[]>('/api/v1/interpreters/sessions/booked/').then(
 //       (data) => {
-//         if (!cancelled) setBookedSessions(data);
+//         if (!cancelled) setBookedSessions(Array.isArray(data) ? data : []);
 //       },
 //       () => {
 //         if (!cancelled) setBookedSessions([]);
@@ -145,7 +126,49 @@ import { startBookedCall } from '../../features/interpreter/bookedSessions';
 //     };
 //   }, []);
 
-//   const sessionCount = sessions?.length ?? 0;
+//   const joinBooking = async (id: number) => {
+//     setBookingError(null);
+//     try {
+//       navigate(`/live/deaf/${await startBookedCall(id)}`);
+//     } catch (err) {
+//       setBookingError(describeError(err));
+//     }
+//   };
+
+//   const cancelBooking = async (id: number) => {
+//     setCancelling(id);
+//     setBookingError(null);
+//     try {
+//       await api(`/api/v1/interpreters/sessions/booked/${id}/cancel/`, { method: 'POST' });
+//       setBookedSessions((list) =>
+//         list.map((b) => (b.id === id ? { ...b, status: 'CANCELLED' } : b)),
+//       );
+//     } catch (err) {
+//       setBookingError(describeError(err));
+//     } finally {
+//       setCancelling(null);
+//     }
+//   };
+
+//   // Keep the upcoming count and cards clear of cancelled bookings, including stale API responses.
+//   const upcomingSessions = bookedSessions.filter((session) => session.status !== 'CANCELLED');
+//   const sessionCount = upcomingSessions.length;
+
+//   // Calculate this month's stats dynamically from bookedSessions
+//   const currentMonth = new Date().getMonth();
+//   const currentYear = new Date().getFullYear();
+
+//   const sessionsThisMonth = upcomingSessions.filter((session) => {
+//     const sessionDate = new Date(session.date);
+//     return sessionDate.getMonth() === currentMonth && sessionDate.getFullYear() === currentYear;
+//   });
+
+//   const monthlySessionsCount = sessionsThisMonth.length;
+
+//   const monthlyMinutesCount = sessionsThisMonth.reduce(
+//     (total, session) => total + (session.duration || 0),
+//     0,
+//   );
 
 //   // Safety check added here
 //   const hasUnread = Array.isArray(notifications) && notifications.some((n) => n.read_at === null);
@@ -168,13 +191,6 @@ import { startBookedCall } from '../../features/interpreter/bookedSessions';
 //   };
 
 //   // --- HELPERS ---
-//   const formatCurrency = (amount: number) => {
-//     const formattedNumber = new Intl.NumberFormat('en-US', {
-//       maximumFractionDigits: 0,
-//     }).format(amount);
-//     return `UGX ${formattedNumber}`;
-//   };
-
 //   const formatTime = (totalMinutes: number) => {
 //     const hours = Math.floor(totalMinutes / 60);
 //     const minutes = totalMinutes % 60;
@@ -349,50 +365,86 @@ import { startBookedCall } from '../../features/interpreter/bookedSessions';
 
 //         <div className="stat-card">
 //           <div className="stat-header">
-//             <span className="stat-label">Wallet</span>
-//             <Wallet size={20} className="stat-icon" />
-//           </div>
-//           <span className="stat-value">{formatCurrency(stats.walletBalance)}</span>
-//           <span className="stat-sub">Available balance</span>
-//         </div>
-
-//         <div className="stat-card">
-//           <div className="stat-header">
 //             <span className="stat-label">This month</span>
 //             <Clock size={20} className="stat-icon" />
 //           </div>
 //           <span className="stat-value">
-//             {stats.monthlySessions} {stats.monthlySessions === 1 ? 'session' : 'sessions'}
+//             {/* UPDATED: Use the dynamically calculated variables */}
+//             {monthlySessionsCount} {monthlySessionsCount === 1 ? 'session' : 'sessions'}
 //           </span>
-//           <span className="stat-sub">{formatTime(stats.monthlyMinutes)} interpreted</span>
+//           <span className="stat-sub">{formatTime(monthlyMinutesCount)} interpreted</span>
 //         </div>
 //       </section>
 
-//       {/* UPDATED: Upcoming Sessions */}
+//       {/* Upcoming Sessions (Grid Layout) */}
 //       <section className="dashboard-section">
 //         <div className="section-header">
 //           <h3>Upcoming sessions</h3>
-//           <a href="#" className="view-all">
-//             View all <ChevronRight size={16} />
-//           </a>
+
+//           {/* UPDATED: Button with onClick */}
+//           <button className="view-all" onClick={() => setShowAllSessions(!showAllSessions)}>
+//             {showAllSessions ? 'Show less' : 'View all'} <ChevronRight size={16} />
+//           </button>
 //         </div>
 
-//         <div className="session-list">
-//           {bookedSessions.length === 0 ? (
+//         {bookingError && (
+//           <p className="text-muted" role="alert">
+//             {bookingError}
+//           </p>
+//         )}
+//         <div className="session-grid">
+//           {upcomingSessions.length === 0 ? (
 //             <p className="text-muted">No upcoming sessions yet.</p>
 //           ) : (
-//             bookedSessions.map((session) => (
+//             /* UPDATED: Sliced array based on state */
+//             (showAllSessions ? upcomingSessions : upcomingSessions.slice(0, 4)).map((session) => (
 //               <div key={session.id} className="session-card">
+//                 <div className="session-card-top">
+//                   <div className="session-date-box">
+//                     <span className="session-date-month">
+//                       {new Date(session.date).toLocaleString('default', { month: 'short' })}
+//                     </span>
+//                     <span className="session-date-day">{new Date(session.date).getDate()}</span>
+//                   </div>
+//                   <span className={`badge badge-${session.status.toLowerCase()}`}>
+//                     {bookingLabel(session)}
+//                   </span>
+//                 </div>
+
 //                 <div className="session-details">
 //                   <h4 style={{ textTransform: 'capitalize' }}>{session.session_type} Session</h4>
 //                   <p>
-//                     <Clock size={14} /> {session.date} at {session.time} ({session.duration} mins)
+//                     <Clock size={14} /> {session.time} • {session.duration} mins
 //                   </p>
 //                 </div>
-//                 <div className="session-status">
-//                   <span className="badge badge-scheduled">{session.status}</span>
+
+//                 <div className="session-card-footer">
+//                   {session.status === 'CANCELLED' ? (
+//                     <span>Cancelled</span>
+//                   ) : session.no_show ? (
+//                     <span>Missed</span>
+//                   ) : session.can_join ? (
+//                     <button
+//                       type="button"
+//                       className="session-join"
+//                       onClick={() => joinBooking(session.id)}
+//                     >
+//                       Join call
+//                     </button>
+//                   ) : hasStarted(session) ? (
+//                     <span>Ended</span>
+//                   ) : (
+//                     <button
+//                       type="button"
+//                       className="session-cancel"
+//                       disabled={cancelling === session.id}
+//                       onClick={() => cancelBooking(session.id)}
+//                     >
+//                       Cancel booking
+//                     </button>
+//                   )}
+//                   <ChevronRight size={16} className="session-arrow" />
 //                 </div>
-//                 <ChevronRight size={20} className="session-arrow" />
 //               </div>
 //             ))
 //           )}
@@ -405,7 +457,7 @@ import { startBookedCall } from '../../features/interpreter/bookedSessions';
 //           <h3>Available interpreters</h3>
 
 //           <button className="view-all" onClick={() => setShowAllInterpreters(!showAllInterpreters)}>
-//             {showAllInterpreters ? 'Show less' : 'See all'} <ChevronRight size={16} />
+//             {showAllInterpreters ? 'Show less' : 'View all'} <ChevronRight size={16} />
 //           </button>
 //         </div>
 
@@ -469,6 +521,8 @@ import { startBookedCall } from '../../features/interpreter/bookedSessions';
 //   );
 // }
 
+import { bookingLabel, hasStarted } from '../../features/sessions/myBookings';
+import { startBookedCall } from '../../features/interpreter/bookedSessions';
 import {
   Video,
   Settings,
@@ -545,12 +599,6 @@ export function DashboardPage() {
 
   const [showAllInterpreters, setShowAllInterpreters] = useState(false);
   const [showAllSessions, setShowAllSessions] = useState(false);
-
-  // const [stats, setStats] = useState({
-  //   walletBalance: 0,
-  //   monthlySessions: 0,
-  //   monthlyMinutes: 0,
-  // });
 
   // Notifications State
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
@@ -838,7 +886,6 @@ export function DashboardPage() {
             <Clock size={20} className="stat-icon" />
           </div>
           <span className="stat-value">
-            {/* UPDATED: Use the dynamically calculated variables */}
             {monthlySessionsCount} {monthlySessionsCount === 1 ? 'session' : 'sessions'}
           </span>
           <span className="stat-sub">{formatTime(monthlyMinutesCount)} interpreted</span>
@@ -850,10 +897,12 @@ export function DashboardPage() {
         <div className="section-header">
           <h3>Upcoming sessions</h3>
 
-          {/* UPDATED: Button with onClick */}
-          <button className="view-all" onClick={() => setShowAllSessions(!showAllSessions)}>
-            {showAllSessions ? 'Show less' : 'View all'} <ChevronRight size={16} />
-          </button>
+          {/* Only show the button if there are more than 6 sessions */}
+          {upcomingSessions.length > 6 && (
+            <button className="view-all" onClick={() => setShowAllSessions(!showAllSessions)}>
+              {showAllSessions ? 'Show less' : 'View all'} <ChevronRight size={16} />
+            </button>
+          )}
         </div>
 
         {bookingError && (
@@ -865,8 +914,8 @@ export function DashboardPage() {
           {upcomingSessions.length === 0 ? (
             <p className="text-muted">No upcoming sessions yet.</p>
           ) : (
-            /* UPDATED: Sliced array based on state */
-            (showAllSessions ? upcomingSessions : upcomingSessions.slice(0, 4)).map((session) => (
+            /* Show 6 cards by default, or all if showAllSessions is true */
+            (showAllSessions ? upcomingSessions : upcomingSessions.slice(0, 6)).map((session) => (
               <div key={session.id} className="session-card">
                 <div className="session-card-top">
                   <div className="session-date-box">
