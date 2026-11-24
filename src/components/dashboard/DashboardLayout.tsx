@@ -98,25 +98,17 @@ export function DashboardLayout({
           {links.map(({ id, label, to, icon: Icon, end, children }) => {
             const count = shownBadges[id] ?? 0;
             if (children) {
-              const childIsActive = children.some(
-                (item) => pathname === item.to || pathname.startsWith(`${item.to}/`),
-              );
               const expanded = moreOpen;
               return (
                 <div className="dl-nav-group" key={id}>
                   <button
                     type="button"
-                    className={`dl-link dl-more-button${childIsActive ? ' dl-link--active' : ''}`}
+                    className="dl-link dl-more-button"
                     aria-expanded={expanded}
                     onClick={() => setMoreOpen((open) => !open)}
                   >
-                    <Icon size={16} aria-hidden="true" />
+                    <span className="dl-nav-icon-spacer" aria-hidden="true" />
                     <span>{label}</span>
-                    {count > 0 && !expanded && (
-                      <span className="dl-count" aria-label={`${count} open support requests`}>
-                        {count}
-                      </span>
-                    )}
                     <ChevronDown
                       className={
                         expanded ? 'dl-more-chevron dl-more-chevron--open' : 'dl-more-chevron'

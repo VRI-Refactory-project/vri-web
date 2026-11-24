@@ -112,22 +112,20 @@
   color: #51617e;
   font-size: 12px;
 }
-.si-table tbody tr:hover {
-  background: #f8f6ff;
-}
-.si-request-link {
-  padding: 0;
-  border: 0;
-  background: none;
-  color: #37466a;
-  font: inherit;
-  font-weight: 700;
-  text-align: left;
+.si-clickable-row {
   cursor: pointer;
 }
-.si-request-link:hover {
+.si-table tbody tr:hover,
+.si-clickable-row:focus-visible {
+  background: #f8f6ff;
+}
+.si-row-primary {
+  color: #37466a;
+  font-weight: 700;
+}
+.si-clickable-row:hover .si-row-primary,
+.si-clickable-row:focus-visible .si-row-primary {
   color: #4b34a0;
-  text-decoration: underline;
 }
 .si-request-subject {
   max-width: 360px;
