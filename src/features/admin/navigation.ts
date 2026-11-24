@@ -9,6 +9,8 @@ import {
   Star,
   ScrollText,
   Settings,
+  LifeBuoy,
+  MoreHorizontal,
 } from 'lucide-react';
 import type { NavItem } from '../../components/dashboard/DashboardLayout';
 
@@ -40,6 +42,25 @@ export const adminNavItems: NavItem[] = [
     icon: Star,
   },
   { id: 'reports', label: 'Reports', to: '/dashboard/admin/reports', icon: BarChart3 },
-  { id: 'audit-logs', label: 'Audit Logs', to: '/dashboard/admin/audit-logs', icon: ScrollText },
-  { id: 'settings', label: 'Settings', to: '/dashboard/admin/settings', icon: Settings },
+  {
+    id: 'more',
+    label: 'More',
+    to: '',
+    icon: MoreHorizontal,
+    children: [
+      {
+        id: 'support-requests',
+        label: 'Support requests',
+        to: '/dashboard/admin/support-requests',
+        icon: LifeBuoy,
+      },
+      {
+        id: 'audit-logs',
+        label: 'Audit Logs',
+        to: '/dashboard/admin/audit-logs',
+        icon: ScrollText,
+      },
+      { id: 'settings', label: 'Settings', to: '/dashboard/admin/settings', icon: Settings },
+    ],
+  },
 ];

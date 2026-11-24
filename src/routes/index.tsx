@@ -73,6 +73,8 @@ import { InterpreterSettingsPage } from '../pages/interpreter/SettingsPage';
 import { InterpreterWalletPage } from '../pages/interpreter/WalletPage';
 import { GuestVideoPage } from '../features/video/GuestVideoPage';
 import { GuestSessionPage } from '../features/guest/GuestSessionPage';
+import { HelpSupportPage } from '../features/support/HelpSupportPage';
+import { SupportInboxPage } from '../features/support/SupportInboxPage';
 
 const appRoutes: RouteObject[] = [
   {
@@ -165,6 +167,7 @@ const appRoutes: RouteObject[] = [
           { path: 'messages/community', element: <CommunityPage /> },
           { path: 'profile', element: <DeafProfilePage /> },
           { path: 'settings', element: <DeafSettingsPage /> },
+          { path: 'help', element: <HelpSupportPage audience="deaf" /> },
         ],
       },
     ],
@@ -187,6 +190,7 @@ const appRoutes: RouteObject[] = [
               { path: 'wallet', element: <InterpreterWalletPage /> },
               { path: 'profile', element: <InterpreterProfilePage /> },
               { path: 'settings', element: <InterpreterSettingsPage /> },
+              { path: 'help', element: <HelpSupportPage audience="interpreter" /> },
             ],
           },
         ],
@@ -215,6 +219,7 @@ const appRoutes: RouteObject[] = [
               { path: 'settings', element: <InstitutionSettingsPage /> },
               { path: 'profile', element: <InstitutionProfilePage /> },
               { path: 'my-profile', element: <MyProfilePage isInstitutionAdmin /> },
+              { path: 'help', element: <HelpSupportPage audience="institution_admin" /> },
             ],
           },
         ],
@@ -271,6 +276,7 @@ const appRoutes: RouteObject[] = [
           { path: 'reports/:category', element: <ReportCategoryPage /> },
           { path: 'audit-logs', element: <AuditLogsPage /> },
           { path: 'settings', element: <SettingsPage /> },
+          { path: 'support-requests', element: <SupportInboxPage /> },
           { path: 'profile', element: <AdminProfilePage /> },
         ],
       },
