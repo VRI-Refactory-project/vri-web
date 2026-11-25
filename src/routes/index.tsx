@@ -74,8 +74,8 @@ import { InterpreterWalletPage } from '../pages/interpreter/WalletPage';
 import { GuestVideoPage } from '../features/video/GuestVideoPage';
 import { GuestSessionPage } from '../features/guest/GuestSessionPage';
 import { HelpSupportPage } from '../features/support/HelpSupportPage';
+import { StaffProfilePage } from '../pages/institution/StaffProfilePage';
 import { SupportInboxPage } from '../features/support/SupportInboxPage';
-
 const appRoutes: RouteObject[] = [
   {
     element: <GuestRoute />,
@@ -213,6 +213,7 @@ const appRoutes: RouteObject[] = [
               { path: 'staff', element: <StaffManagementPage /> },
               { path: 'staff/new', element: <CreateStaffAccountPage /> },
               { path: 'staff/created', element: <StaffAccountCreatedPage /> },
+              { path: 'staff/:id', element: <StaffProfilePage /> },
               { path: 'sessions', element: <InstitutionSessionsPage /> },
               { path: 'sessions/:id', element: <InstitutionSessionDetailPage /> },
               { path: 'analytics', element: <InstitutionAnalyticsPage /> },
