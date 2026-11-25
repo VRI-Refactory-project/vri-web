@@ -476,6 +476,13 @@
 .id-table tbody tr:hover {
   background: #faf9ff;
 }
+.id-table tbody tr.id-session-row {
+  cursor: pointer;
+}
+.id-table tbody tr.id-session-row:focus-visible {
+  outline: 2px solid var(--id-purple);
+  outline-offset: -2px;
+}
 
 .id-table .id-member {
   color: #28243d;

@@ -105,6 +105,14 @@
   color: #64748b;
   font-weight: 600;
 }
+.ipm-clickable-row {
+  cursor: pointer;
+}
+.ipm-clickable-row:hover,
+.ipm-clickable-row:focus-visible {
+  background: #f8f6ff;
+  outline: none;
+}
 .ipm-low {
   color: #b91c1c;
   font-weight: 700;

@@ -7,6 +7,7 @@ import {
   type InterpreterRatingTrend,
 } from '../../services/admin';
 import './InterpreterPerformancePage.css';
+import { InterpreterProfileModal } from '../dashboards/InterpreterProfileModal';
 
 const PAGE_SIZE = 10;
 
@@ -38,6 +39,7 @@ export function InterpreterPerformancePage() {
   const [metrics, setMetrics] = useState<InterpreterMetrics | null>(null);
   const [error, setError] = useState('');
   const [page, setPage] = useState(1);
+  const [selectedInterpreterId, setSelectedInterpreterId] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -155,7 +157,20 @@ export function InterpreterPerformancePage() {
                   </thead>
                   <tbody>
                     {metrics.interpreters.map((row) => (
-                      <tr key={row.interpreterId}>
+                      <tr
+                        key={row.interpreterId}
+                        className="ipm-clickable-row"
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`View ${row.interpreterName}'s profile`}
+                        onClick={() => setSelectedInterpreterId(row.interpreterId)}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            setSelectedInterpreterId(row.interpreterId);
+                          }
+                        }}
+                      >
                         <td>{row.interpreterName}</td>
                         <td>{row.specialisation}</td>
                         <td>{row.averageRating == null ? '—' : row.averageRating.toFixed(2)}</td>
@@ -220,6 +235,12 @@ export function InterpreterPerformancePage() {
             )}
           </section>
         </>
+      )}
+      {selectedInterpreterId !== null && (
+        <InterpreterProfileModal
+          interpreterId={selectedInterpreterId}
+          onClose={() => setSelectedInterpreterId(null)}
+        />
       )}
     </main>
   );

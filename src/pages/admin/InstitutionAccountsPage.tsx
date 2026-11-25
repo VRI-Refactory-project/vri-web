@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Building2,
   Check,
@@ -553,6 +553,7 @@ function ConfirmDialog({
 }
 
 export function InstitutionAccountsPage() {
+  const navigate = useNavigate();
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
@@ -976,7 +977,29 @@ export function InstitutionAccountsPage() {
                 </tr>
               ) : (
                 visibleInstitutions.map((institution) => (
-                  <tr key={institution.id}>
+                  <tr
+                    key={institution.id}
+                    className="ia-clickable-row"
+                    role="link"
+                    tabIndex={0}
+                    aria-label={`View ${institution.name} details`}
+                    onClick={(event) => {
+                      if (
+                        !(event.target as HTMLElement).closest('button, a, input, select, textarea')
+                      ) {
+                        navigate(`/dashboard/admin/institutions/${institution.id}`);
+                      }
+                    }}
+                    onKeyDown={(event) => {
+                      if (
+                        (event.key === 'Enter' || event.key === ' ') &&
+                        event.target === event.currentTarget
+                      ) {
+                        event.preventDefault();
+                        navigate(`/dashboard/admin/institutions/${institution.id}`);
+                      }
+                    }}
+                  >
                     <td data-card-primary>
                       <div className="ia-institution-cell">
                         <div className="ia-institution-cell__icon">
