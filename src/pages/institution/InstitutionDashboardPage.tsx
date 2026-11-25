@@ -47,6 +47,15 @@ interface Department {
   active: number;
 }
 
+interface InstitutionAlert {
+  id: number;
+  title: string;
+  message: string;
+  severity: 'INFO' | 'WARNING' | 'URGENT';
+  is_read: boolean;
+  created_at: string;
+}
+
 interface InstitutionDashboardData {
   activeSessions: number;
   staff: number;
@@ -78,6 +87,7 @@ export function InstitutionDashboardPage({
   const [weekly, setWeekly] = useState(true);
   const [search, setSearch] = useState('');
   const [sessionPage, setSessionPage] = useState(1);
+  const [alerts, setAlerts] = useState<InstitutionAlert[]>([]);
 
   const [orgName, setOrgName] = useState('');
   // The staff figures are real (GET /dashboard/institution/). The session, usage and department
@@ -107,13 +117,26 @@ export function InstitutionDashboardPage({
 
       const to = toIsoDay(today);
 
-      const [dashboardResult, usageResult, sessionsResult] = await Promise.allSettled([
-        getInstitutionDashboardData(),
-        getInstitutionUsage({ from, to }),
-        api<InstitutionSessionApi[]>('/api/v1/institutions/me/sessions/?state=active'),
-      ]);
+      const [dashboardResult, usageResult, sessionsResult, alertsResult] = await Promise.allSettled(
+        [
+          getInstitutionDashboardData(),
+          getInstitutionUsage({ from, to }),
+          api<InstitutionSessionApi[]>('/api/v1/institutions/me/sessions/?state=active'),
+          api<InstitutionAlert[]>('/api/v1/institutions/me/alerts/'),
+        ],
+      );
 
       if (cancelled) return;
+
+      if (alertsResult.status === 'fulfilled') {
+        setAlerts(alertsResult.value);
+        setData((current) => ({
+          ...current,
+          alerts: alertsResult.value.filter((alert) => !alert.is_read).length,
+        }));
+      } else {
+        console.error('Could not load institution alerts:', alertsResult.reason);
+      }
 
       // Dashboard analytics and staff figures
       if (dashboardResult.status === 'fulfilled') {
@@ -272,6 +295,22 @@ export function InstitutionDashboardPage({
     navigate(`/dashboard/institution/sessions?sessionId=${encodeURIComponent(sessionId)}`);
   };
 
+  const markAlertRead = async (alertId: number) => {
+    try {
+      const updated = await api<InstitutionAlert>(
+        `/api/v1/institutions/me/alerts/${alertId}/read/`,
+        { method: 'POST' },
+      );
+      setAlerts((current) => current.map((alert) => (alert.id === alertId ? updated : alert)));
+      setData((current) => ({
+        ...current,
+        alerts: Math.max(0, current.alerts - 1),
+      }));
+    } catch (error) {
+      console.error('Could not mark institution alert as read:', error);
+    }
+  };
+
   return (
     <div className="id-page">
       <header className="id-heading">
@@ -312,7 +351,6 @@ export function InstitutionDashboardPage({
         </article>
       </section>
 
-      {/* Cleaned up Alerts Feed */}
       <section className="id-section">
         <div className="id-section-heading">
           <h2>Alerts feed</h2>
@@ -320,9 +358,34 @@ export function InstitutionDashboardPage({
         </div>
 
         <div className="id-panel id-alerts">
-          <p style={{ padding: '24px', color: 'var(--text-muted, #6b7280)', textAlign: 'center' }}>
-            No new alerts.
-          </p>
+          {alerts.length === 0 ? (
+            <p className="id-alert-empty">No new alerts.</p>
+          ) : (
+            alerts.map((alert) => (
+              <article
+                className={`id-alert${alert.is_read ? ' id-alert--read' : ''}`}
+                key={alert.id}
+              >
+                <span
+                  className={`id-alert-dot id-alert-dot--${alert.severity.toLowerCase()}`}
+                  aria-label={`${alert.severity.toLowerCase()} severity`}
+                />
+                <span className="id-alert-copy">
+                  <strong>{alert.title}</strong>
+                  <small>{alert.message}</small>
+                </span>
+                {!alert.is_read && (
+                  <button
+                    type="button"
+                    className="id-alert-read"
+                    onClick={() => void markAlertRead(alert.id)}
+                  >
+                    Mark as read
+                  </button>
+                )}
+              </article>
+            ))
+          )}
         </div>
       </section>
 
