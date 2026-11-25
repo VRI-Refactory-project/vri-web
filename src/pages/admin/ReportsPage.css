@@ -470,3 +470,20 @@
     gap: 8px;
   }
 }
+
+.reports-export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.reports-btn--secondary {
+  color: var(--r-purple);
+  background: #f0effa;
+  border: 1px solid #dedbf3;
+}
+
+.reports-btn--secondary:hover:not(:disabled) {
+  background: #e5e2f7;
+}

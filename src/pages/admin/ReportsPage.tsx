@@ -1,20 +1,17 @@
 // src/pages/admin/ReportsPage.tsx
 import { useEffect, useState } from 'react';
-import { Download } from 'lucide-react';
 import {
   REPORT_RANGES,
-  downloadCsv,
   fetchResponseTimesReport,
   fetchUsageReport,
   formatSeconds,
-  responseTimesCsvRows,
-  usageCsvRows,
   type ReportRange,
   type ResponseTimesReport,
   type UsageReport,
 } from '../../services/adminReports';
 import { describeError } from '../../services/api';
 import './ReportsPage.css';
+import { exportReportCsv, exportReportExcel, previewReportPdf } from '../../services/reportExports';
 
 type Tab = 'usage' | 'response-times';
 
@@ -387,9 +384,31 @@ export function ReportsPage() {
   const usage = tab === 'usage' ? (current?.usage ?? null) : null;
   const times = tab === 'response-times' ? (current?.times ?? null) : null;
 
-  const handleExport = () => {
-    if (usage) downloadCsv(`usage-report-${days}-days.csv`, usageCsvRows(usage));
-    if (times) downloadCsv(`response-times-report-${days}-days.csv`, responseTimesCsvRows(times));
+  const getCurrentReport = () => {
+    if (usage) {
+      return { type: 'usage' as const, report: usage };
+    }
+
+    if (times) {
+      return { type: 'response-times' as const, report: times };
+    }
+
+    return null;
+  };
+
+  const handlePreviewPdf = () => {
+    const data = getCurrentReport();
+    if (data) previewReportPdf(data);
+  };
+
+  const handleExportCsv = () => {
+    const data = getCurrentReport();
+    if (data) exportReportCsv(data);
+  };
+
+  const handleExportExcel = () => {
+    const data = getCurrentReport();
+    if (data) exportReportExcel(data);
   };
 
   return (
@@ -439,16 +458,40 @@ export function ReportsPage() {
         </div>
 
         <div className="reports-card reports-option">
-          <h2 className="reports-option__title">Export</h2>
-          <p className="reports-option__text">Download the report you are viewing as a CSV file.</p>
-          <button
-            type="button"
-            className="reports-btn"
-            onClick={handleExport}
-            disabled={!usage && !times}
-          >
-            <Download size={15} /> Export CSV
-          </button>
+          <h2 className="reports-option__title">Preview and export</h2>
+
+          <p className="reports-option__text">
+            Preview your report or export the current reporting period.
+          </p>
+
+          <div className="reports-export-actions">
+            <button
+              type="button"
+              className="reports-btn"
+              onClick={handlePreviewPdf}
+              disabled={!usage && !times}
+            >
+              Preview PDF
+            </button>
+
+            <button
+              type="button"
+              className="reports-btn reports-btn--secondary"
+              onClick={handleExportCsv}
+              disabled={!usage && !times}
+            >
+              Export CSV
+            </button>
+
+            <button
+              type="button"
+              className="reports-btn reports-btn--secondary"
+              onClick={handleExportExcel}
+              disabled={!usage && !times}
+            >
+              Export Excel
+            </button>
+          </div>
         </div>
       </section>
 
