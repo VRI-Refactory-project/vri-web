@@ -50,6 +50,8 @@ describe('getInstitutionDashboardData', () => {
         completed_requests: 60,
         cancelled_requests: 8,
         failed_requests: 7,
+        active_sessions: 2,
+        sessions_this_month: 61,
         total_video_sessions: 75,
         waiting_video_sessions: 5,
         connecting_video_sessions: 3,
@@ -68,6 +70,8 @@ describe('getInstitutionDashboardData', () => {
         revoked: 2,
       },
       sessions: {
+        activeSessions: 2,
+        sessionsThisMonth: 61,
         totalRequests: 100,
         pendingRequests: 15,
         completedRequests: 60,

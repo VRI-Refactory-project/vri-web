@@ -41,6 +41,8 @@ beforeEach(() => {
         revoked: 2,
       },
       sessions: {
+        activeSessions: 1,
+        sessionsThisMonth: 20,
         totalRequests: 20,
         pendingRequests: 3,
         completedRequests: 15,
