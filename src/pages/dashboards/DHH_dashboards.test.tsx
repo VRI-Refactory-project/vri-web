@@ -276,10 +276,12 @@ describe('DashboardPage (deaf)', () => {
         init?.method === 'POST' ? ok({ id: 7, status: 'CANCELLED' }) : base(url),
       );
       renderPage();
-      await userEvent.click(await screen.findByRole('button', { name: 'Cancel booking' }));
+      await userEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
+      // V2-051: confirm in the dialog, which shows the notice rule first.
+      await userEvent.click(screen.getByRole('button', { name: 'Cancel booking' }));
 
       // The session is removed from the list, so the button disappears and the empty state returns
-      expect(screen.queryByRole('button', { name: 'Cancel booking' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
       expect(await screen.findByText('No upcoming sessions yet.')).toBeInTheDocument();
 
       const post = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST');
