@@ -105,7 +105,7 @@ describe('StaffDashboardPage', () => {
     expect(screen.queryByText('Northside Medical Center')).not.toBeInTheDocument();
   });
 
-  it("lists today's sessions under the calendar, with who answered and how they ended", async () => {
+  it('lists successful sessions under the calendar and hides missed sessions', async () => {
     // The calendar replaces the old "Recent sessions" card: it starts on today.
     source.load = () =>
       Promise.resolve([
@@ -116,7 +116,8 @@ describe('StaffDashboardPage', () => {
     renderPage();
     const calendar = screen.getByRole('region', { name: 'Calendar' });
     expect(await within(calendar).findByText('Amina Okafor')).toBeInTheDocument();
-    expect(within(calendar).getByText('Missed')).toBeInTheDocument();
+    expect(within(calendar).getByText('Completed')).toBeInTheDocument();
+    expect(within(calendar).queryByText('Missed')).not.toBeInTheDocument();
     expect(screen.queryByText('Older Session')).not.toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Recent sessions' })).not.toBeInTheDocument();
   });

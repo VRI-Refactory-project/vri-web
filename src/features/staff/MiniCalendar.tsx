@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { formatWhen, STATUS_LABEL, titleFor } from '../sessions/sessionHistory';
@@ -20,10 +20,12 @@ interface Props {
 export function MiniCalendar({ items, detailsBase, today = new Date() }: Props) {
   const [shown, setShown] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
   const [selected, setSelected] = useState(() => dayKey(today));
+  const [showAll, setShowAll] = useState(false);
 
   const byDay = useMemo(() => {
     const map = new Map<string, HistoryItem[]>();
     for (const item of items) {
+      if (['cancelled', 'failed', 'missed'].includes(item.status.toLowerCase())) continue;
       const when = new Date(item.createdAt);
       if (Number.isNaN(when.getTime())) continue;
       const key = dayKey(when);
@@ -39,6 +41,7 @@ export function MiniCalendar({ items, detailsBase, today = new Date() }: Props) 
     year: 'numeric',
   });
   const chosen = byDay.get(selected) ?? [];
+  const visibleChosen = showAll ? chosen : chosen.slice(0, 3);
   const chosenLabel = new Date(`${selected}T00:00:00`).toLocaleDateString('en-GB', {
     weekday: 'long',
     day: 'numeric',
@@ -51,6 +54,7 @@ export function MiniCalendar({ items, detailsBase, today = new Date() }: Props) 
   const goToToday = () => {
     setShown(new Date(today.getFullYear(), today.getMonth(), 1));
     setSelected(todayKey);
+    setShowAll(false);
   };
 
   return (
@@ -100,7 +104,10 @@ export function MiniCalendar({ items, detailsBase, today = new Date() }: Props) 
                 month: 'long',
                 year: 'numeric',
               })}${count ? `, ${count} session${count === 1 ? '' : 's'}` : ''}`}
-              onClick={() => setSelected(key)}
+              onClick={() => {
+                setSelected(key);
+                setShowAll(false);
+              }}
             >
               {date.getDate()}
               {count > 0 && <span className="mc-dot" aria-hidden="true" />}
@@ -115,7 +122,7 @@ export function MiniCalendar({ items, detailsBase, today = new Date() }: Props) 
           <p>No sessions this day.</p>
         ) : (
           <ul>
-            {chosen.map((item) => (
+            {visibleChosen.map((item) => (
               <li key={item.id}>
                 <Link to={`${detailsBase}/${item.id}`}>
                   <span>
@@ -129,6 +136,31 @@ export function MiniCalendar({ items, detailsBase, today = new Date() }: Props) 
               </li>
             ))}
           </ul>
+        )}
+        {chosen.length > 3 && (
+          <button
+            type="button"
+            aria-expanded={showAll}
+            onClick={() => setShowAll((current) => !current)}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              marginTop: 8,
+              padding: 4,
+              border: 0,
+              background: 'transparent',
+              color: 'inherit',
+              cursor: 'pointer',
+            }}
+          >
+            {showAll ? 'View less' : 'View more'}
+            {showAll ? (
+              <ChevronUp size={15} aria-hidden="true" />
+            ) : (
+              <ChevronDown size={15} aria-hidden="true" />
+            )}
+          </button>
         )}
       </div>
     </section>
