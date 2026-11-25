@@ -60,12 +60,11 @@ export function RoleSelectionPage() {
     }, 150);
   };
 
-  return (
-    // <AuthShell size="wide" bare backTo="/" steps={ROLE_STEP} current={1}>
+  return (   
     <AuthShell
       size="wide"
       bare
-      backTo="Landing"
+      backTo="/landing"
       steps={ROLE_STEP}
       current={1}
       logo={roleLogo}
