@@ -168,6 +168,11 @@
   color: #a16207;
 }
 
+.iw-badge--failed {
+  background: #fde8e8;
+  color: #a4161a;
+}
+
 .iw-badge--processing {
   background: #e0f0fd;
   color: #1d6fb8;

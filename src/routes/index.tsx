@@ -33,7 +33,6 @@ import { InstitutionLayout } from '../features/institution/InstitutionLayout';
 import { InstitutionRoleRoute } from '../components/InstitutionRoleRoute';
 import { StaffLayout } from '../features/staff/StaffLayout';
 import { StaffDashboardPage } from '../features/staff/StaffDashboardPage';
-import { StaffChatPage } from '../features/staff/StaffChatPage';
 import { MyProfilePage } from '../features/staff/MyProfilePage';
 import { StaffSettingsPage } from '../features/staff/StaffSettingsPage';
 import { StaffHelpPage } from '../features/staff/StaffHelpPage';
@@ -44,7 +43,6 @@ import { SessionsHubPage } from '../pages/deaf/SessionsHubPage';
 import { SessionHistoryPage } from '../pages/deaf/SessionHistoryPage';
 import { SessionDetailsPage } from '../pages/deaf/SessionDetailsPage';
 import { AccessibilityPage } from '../pages/deaf/AccessibilityPage';
-import { WalletPage } from '../pages/deaf/WalletPage';
 import { MessagesPage } from '../pages/deaf/MessagesPage';
 import { CommunityPage } from '../pages/deaf/CommunityPage';
 import { SchedulePage } from '../pages/deaf/SchedulePage';
@@ -54,6 +52,7 @@ import { ProfilePage as InterpreterProfilePage } from '../pages/interpreter/Prof
 import { InterpreterSessionsPage } from '../pages/interpreter/SessionsPage';
 import { SettingsPage } from '../pages/admin/SettingsPage';
 import { AdminProfilePage } from '../pages/admin/AdminProfilePage';
+import { InterpreterPerformancePage } from '../pages/admin/InterpreterPerformancePage';
 import { CreateStaffAccountPage } from '../pages/institution/CreateStaffAccountPage';
 import { OfflinePage } from '../pages/OfflinePage';
 import { StaffAccountCreatedPage } from '../pages/institution/StaffAccountCreatedPage';
@@ -67,13 +66,13 @@ import { ReportsPage } from '../pages/admin/ReportsPage';
 import { InstitutionSettingsPage } from '../pages/institution/InstitutionSettingsPage';
 import { InstitutionAnalyticsPage } from '../pages/institution/InstitutionAnalyticsPage';
 import { InstitutionSessionsPage } from '../pages/institution/InstitutionSessionsPage';
+import { InstitutionSessionDetailPage } from '../pages/institution/InstitutionSessionDetailPage';
 import { AuditLogsPage } from '../pages/admin/AuditLogsPage';
 import { ReportCategoryPage } from '../pages/admin/ReportCategoryPage';
 import { InterpreterSettingsPage } from '../pages/interpreter/SettingsPage';
 import { InterpreterWalletPage } from '../pages/interpreter/WalletPage';
 import { GuestVideoPage } from '../features/video/GuestVideoPage';
 import { GuestSessionPage } from '../features/guest/GuestSessionPage';
-import { StaffProfilePage } from '../pages/institution/StaffProfilePage';
 
 const appRoutes: RouteObject[] = [
   {
@@ -164,9 +163,9 @@ const appRoutes: RouteObject[] = [
           { path: 'accessibility', element: <AccessibilityPage /> },
           { path: 'messages', element: <MessagesPage /> },
           { path: 'messages/community', element: <CommunityPage /> },
-          { path: 'wallet', element: <WalletPage /> },
           { path: 'profile', element: <DeafProfilePage /> },
           { path: 'settings', element: <DeafSettingsPage /> },
+          { path: 'help', element: <HelpSupportPage audience="deaf" /> },
         ],
       },
     ],
@@ -189,6 +188,7 @@ const appRoutes: RouteObject[] = [
               { path: 'wallet', element: <InterpreterWalletPage /> },
               { path: 'profile', element: <InterpreterProfilePage /> },
               { path: 'settings', element: <InterpreterSettingsPage /> },
+              { path: 'help', element: <HelpSupportPage audience="interpreter" /> },
             ],
           },
         ],
@@ -213,10 +213,12 @@ const appRoutes: RouteObject[] = [
               { path: 'staff/created', element: <StaffAccountCreatedPage /> },
               { path: 'staff/:id', element: <StaffProfilePage /> },
               { path: 'sessions', element: <InstitutionSessionsPage /> },
+              { path: 'sessions/:id', element: <InstitutionSessionDetailPage /> },
               { path: 'analytics', element: <InstitutionAnalyticsPage /> },
               { path: 'settings', element: <InstitutionSettingsPage /> },
               { path: 'profile', element: <InstitutionProfilePage /> },
               { path: 'my-profile', element: <MyProfilePage isInstitutionAdmin /> },
+              { path: 'help', element: <HelpSupportPage audience="institution_admin" /> },
             ],
           },
         ],
@@ -233,12 +235,10 @@ const appRoutes: RouteObject[] = [
               { path: 'start-session', element: <StartSessionPage /> },
               { path: 'schedule-session', element: <SchedulePage /> },
               {
+                // Their own sessions only (V2-030): other staff members' are private to them.
                 path: 'sessions',
                 element: (
-                  <SessionHistoryPage
-                    backTo="/dashboard/staff"
-                    detailsBase="/dashboard/staff/sessions"
-                  />
+                  <InstitutionSessionsPage scope="mine" detailsBase="/dashboard/staff/sessions" />
                 ),
               },
               {
@@ -246,7 +246,6 @@ const appRoutes: RouteObject[] = [
                 // Staff can cancel a request that is still waiting from here (V2-013).
                 element: <SessionDetailsPage backTo="/dashboard/staff/sessions" allowCancel />,
               },
-              { path: 'chat', element: <StaffChatPage /> },
               { path: 'profile', element: <MyProfilePage /> },
               { path: 'settings', element: <StaffSettingsPage /> },
               { path: 'help', element: <StaffHelpPage /> },
@@ -271,10 +270,12 @@ const appRoutes: RouteObject[] = [
           { path: 'institutions', element: <InstitutionAccountsPage /> },
           { path: 'institutions/:id', element: <InstitutionReviewPage /> },
           { path: 'sessions', element: <SessionsPage /> },
+          { path: 'interpreter-performance', element: <InterpreterPerformancePage /> },
           { path: 'reports', element: <ReportsPage /> },
           { path: 'reports/:category', element: <ReportCategoryPage /> },
           { path: 'audit-logs', element: <AuditLogsPage /> },
           { path: 'settings', element: <SettingsPage /> },
+          { path: 'support-requests', element: <SupportInboxPage /> },
           { path: 'profile', element: <AdminProfilePage /> },
         ],
       },

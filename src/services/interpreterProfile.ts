@@ -8,6 +8,7 @@ export interface InterpreterProfile {
   specialisation: string; // GENERAL | MEDICAL | LEGAL | OTHER
   specialisationOther: string;
   languages: string[];
+  yearsExperience: number | null;
 }
 
 interface ApiInterpreterProfile {
@@ -18,6 +19,7 @@ interface ApiInterpreterProfile {
   specialisation: string;
   specialisation_other: string;
   sign_languages: string[];
+  years_experience: number | null;
 }
 
 const toProfile = (raw: ApiInterpreterProfile): InterpreterProfile => ({
@@ -28,6 +30,7 @@ const toProfile = (raw: ApiInterpreterProfile): InterpreterProfile => ({
   specialisation: raw.specialisation,
   specialisationOther: raw.specialisation_other,
   languages: raw.sign_languages ?? [],
+  yearsExperience: raw.years_experience ?? null,
 });
 
 export async function getInterpreterProfile(): Promise<InterpreterProfile> {
@@ -35,18 +38,23 @@ export async function getInterpreterProfile(): Promise<InterpreterProfile> {
 }
 
 export async function updateInterpreterProfile(
-  data: Pick<
-    InterpreterProfile,
-    'available' | 'specialisation' | 'specialisationOther' | 'languages'
+  data: Partial<
+    Pick<
+      InterpreterProfile,
+      'available' | 'specialisation' | 'specialisationOther' | 'languages' | 'yearsExperience'
+    >
   >,
 ): Promise<InterpreterProfile> {
   const raw = await api<ApiInterpreterProfile>('/api/v1/interpreters/me/', {
     method: 'PATCH',
     body: JSON.stringify({
-      is_available: data.available,
-      specialisation: data.specialisation,
-      specialisation_other: data.specialisationOther,
-      sign_languages: data.languages,
+      ...(data.available !== undefined && { is_available: data.available }),
+      ...(data.specialisation !== undefined && { specialisation: data.specialisation }),
+      ...(data.specialisationOther !== undefined && {
+        specialisation_other: data.specialisationOther,
+      }),
+      ...(data.languages !== undefined && { sign_languages: data.languages }),
+      ...(data.yearsExperience !== undefined && { years_experience: data.yearsExperience }),
     }),
   });
   return toProfile(raw);

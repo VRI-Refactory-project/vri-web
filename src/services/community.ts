@@ -50,6 +50,8 @@ export interface ChatMessage {
   mine: boolean;
   /** The other person has opened it. Only meaningful for your own messages. */
   read: boolean;
+  /** The sender took it back. Show "This message was deleted"; nothing else is left in it. */
+  deleted: boolean;
 }
 
 export interface Conversation {
@@ -72,7 +74,7 @@ interface ApiPerson {
   photo_url: string | null;
 }
 
-interface ApiMessage {
+export interface ApiMessage {
   id: number;
   body: string;
   sticker?: string;
@@ -81,6 +83,7 @@ interface ApiMessage {
   created_at: string;
   sent_by_me: boolean;
   read: boolean;
+  deleted?: boolean;
 }
 
 const BASE = '/api/v1/community';
@@ -92,7 +95,7 @@ const toPerson = (p: ApiPerson): Person => ({
   photoUrl: photoSrc(p.photo_url),
 });
 
-const toMessage = (m: ApiMessage): ChatMessage => ({
+export const toMessage = (m: ApiMessage): ChatMessage => ({
   id: m.id,
   body: m.body,
   sticker: m.sticker ?? '',
@@ -101,6 +104,7 @@ const toMessage = (m: ApiMessage): ChatMessage => ({
   createdAt: m.created_at,
   mine: m.sent_by_me,
   read: m.read,
+  deleted: m.deleted ?? false,
 });
 
 /** Deaf people you can connect with, optionally narrowed by name or place. */
@@ -234,6 +238,14 @@ export function getMessageImage(path: string): Promise<string> {
     photoCache.set(path, photo);
   }
   return photo;
+}
+
+/** Takes back a message you sent, for both people. Returns it as it is now (deleted). */
+export async function deleteMessage(id: number, messageId: number): Promise<ChatMessage> {
+  const raw = await api<ApiMessage>(`${BASE}/conversations/${id}/messages/${messageId}/`, {
+    method: 'DELETE',
+  });
+  return toMessage(raw);
 }
 
 export const markRead = (id: number) =>

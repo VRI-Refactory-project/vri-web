@@ -6,8 +6,11 @@ import {
   Building2,
   Video,
   BarChart3,
+  Star,
   ScrollText,
   Settings,
+  LifeBuoy,
+  MoreHorizontal,
 } from 'lucide-react';
 import type { NavItem } from '../../components/dashboard/DashboardLayout';
 
@@ -32,7 +35,32 @@ export const adminNavItems: NavItem[] = [
     icon: Building2,
   },
   { id: 'sessions', label: 'Sessions', to: '/dashboard/admin/sessions', icon: Video },
+  {
+    id: 'interpreter-performance',
+    label: 'Interpreter performance',
+    to: '/dashboard/admin/interpreter-performance',
+    icon: Star,
+  },
   { id: 'reports', label: 'Reports', to: '/dashboard/admin/reports', icon: BarChart3 },
-  { id: 'audit-logs', label: 'Audit Logs', to: '/dashboard/admin/audit-logs', icon: ScrollText },
-  { id: 'settings', label: 'Settings', to: '/dashboard/admin/settings', icon: Settings },
+  {
+    id: 'more',
+    label: 'More',
+    to: '',
+    icon: MoreHorizontal,
+    children: [
+      {
+        id: 'support-requests',
+        label: 'Support requests',
+        to: '/dashboard/admin/support-requests',
+        icon: LifeBuoy,
+      },
+      {
+        id: 'audit-logs',
+        label: 'Audit Logs',
+        to: '/dashboard/admin/audit-logs',
+        icon: ScrollText,
+      },
+      { id: 'settings', label: 'Settings', to: '/dashboard/admin/settings', icon: Settings },
+    ],
+  },
 ];

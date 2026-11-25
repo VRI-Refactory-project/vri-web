@@ -1,0 +1,138 @@
+/* The staff tutorial (V2-065): a dimmed screen, the part each step is about lit up, and a card. */
+.staff-tour-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  font-family: 'Manrope', system-ui, sans-serif;
+}
+
+/* Lights up one part of the screen by dimming everything around it. */
+.staff-tour-spot {
+  position: fixed;
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 3px #d8b4fe,
+    0 0 0 9999px rgba(27, 18, 64, 0.6);
+  transition:
+    top 0.25s ease,
+    left 0.25s ease,
+    width 0.25s ease,
+    height 0.25s ease;
+  pointer-events: none;
+}
+
+.staff-tour-dim {
+  position: fixed;
+  inset: 0;
+  background: rgba(27, 18, 64, 0.6);
+}
+
+.staff-tour-card {
+  position: fixed;
+  box-sizing: border-box;
+  width: min(340px, calc(100vw - 32px));
+  padding: 20px 20px 16px;
+  border-radius: 16px;
+  background: #fff;
+  color: #1b1240;
+  box-shadow: 0 20px 50px rgba(27, 18, 64, 0.35);
+}
+
+/* A step on its own, or a phone where the sidebar is hidden: the card sits in the middle. */
+.staff-tour-card--centre {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.staff-tour-count {
+  margin: 0 0 4px;
+  color: #6b6585;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.staff-tour-card h2 {
+  margin: 0 0 8px;
+  font-size: 19px;
+}
+
+.staff-tour-card p#st-body {
+  margin: 0 0 14px;
+  color: #4a4565;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.staff-tour-progress {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.staff-tour-progress i {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: #e9e3fb;
+}
+
+.staff-tour-progress i.staff-tour-progress__done {
+  background: #3b2579;
+}
+
+.staff-tour-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.staff-tour-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.staff-tour-skip {
+  padding: 6px 4px;
+  border: 0;
+  background: none;
+  color: #6b6585;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.staff-tour-button {
+  padding: 9px 20px;
+  border: 0;
+  border-radius: 999px;
+  background: #3b2579;
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.staff-tour-button--ghost {
+  border: 1.5px solid #cfcae6;
+  background: #fff;
+  color: #3b2579;
+}
+
+.staff-tour-button:focus-visible,
+.staff-tour-skip:focus-visible {
+  outline: 3px solid #d8b4fe;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .staff-tour-spot {
+    transition: none;
+  }
+}

@@ -230,7 +230,8 @@ describe('DashboardPage (deaf)', () => {
   describe('booked sessions routing', () => {
     const booking = (id: number, status: string, interpreter_name: string | null = null) => ({
       id,
-      date: '2026-12-01',
+      // Two days ahead, so the tests keep working as the calendar moves on.
+      date: new Date(Date.now() + 2 * 86_400_000).toISOString().slice(0, 10),
       time: '10:00',
       duration: 30,
       session_type: 'medical',
@@ -268,7 +269,7 @@ describe('DashboardPage (deaf)', () => {
       expect(screen.queryByRole('button', { name: 'Join call' })).not.toBeInTheDocument();
     });
 
-    it('cancels a booking and shows it as cancelled', async () => {
+    it('cancels a booking and removes it from the list', async () => {
       respondWith([], [], [booking(7, 'PENDING')]);
       const base = fetchMock.getMockImplementation()!;
       fetchMock.mockImplementation(async (url: string, init?: RequestInit) =>
@@ -276,10 +277,13 @@ describe('DashboardPage (deaf)', () => {
       );
       renderPage();
       await userEvent.click(await screen.findByRole('button', { name: 'Cancel booking' }));
-      expect(await screen.findByText('Cancelled', { selector: 'span:not(.badge)' })).toBeVisible();
+
+      // The session is removed from the list, so the button disappears and the empty state returns
+      expect(screen.queryByRole('button', { name: 'Cancel booking' })).not.toBeInTheDocument();
+      expect(await screen.findByText('No upcoming sessions yet.')).toBeInTheDocument();
+
       const post = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST');
       expect(String(post?.[0])).toContain('/interpreters/sessions/booked/7/cancel/');
-      expect(screen.queryByRole('button', { name: 'Cancel booking' })).not.toBeInTheDocument();
     });
   });
 });

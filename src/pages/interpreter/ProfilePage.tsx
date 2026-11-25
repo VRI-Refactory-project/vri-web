@@ -5,13 +5,17 @@ import { useAuth } from '../../hooks/useAuth';
 import { SignOutButton } from '../../components/SignOutButton';
 import { describeError } from '../../services/api';
 import { getMyPhoto, removeMyPhoto, uploadMyPhoto } from '../../services/photos';
-import { getMyInterpreterProfileStats } from '../../services/interpreterProfile';
+import {
+  getInterpreterProfile,
+  getMyInterpreterProfileStats,
+  updateInterpreterProfile,
+} from '../../services/interpreterProfile';
 import { ProfilePhotoCropper } from '../dashboards/ProfilePhotoCropper';
 import './ProfilePage.css';
 
 interface InterpreterProfile {
   fullName: string;
-  headline: string;
+  yearsExperience: number | null;
   available: boolean;
   languages: string[];
   specialisations: string[];
@@ -32,7 +36,7 @@ export function ProfilePage() {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [form, setForm] = useState<InterpreterProfile>({
     fullName,
-    headline: 'Certified ASL Interpreter · 8 years experience',
+    yearsExperience: null,
     available: true,
     languages: ['Ugandan Sign Language', 'English', 'International Sign'],
     specialisations: ['Healthcare', 'Legal', 'Education'],
@@ -48,6 +52,9 @@ export function ProfilePage() {
     completedSessions: number;
   } | null>(null);
   const [statsError, setStatsError] = useState('');
+  const [profileError, setProfileError] = useState('');
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [savedExperience, setSavedExperience] = useState<number | null>(null);
   const [photoBusy, setPhotoBusy] = useState(false);
   const [photoError, setPhotoError] = useState('');
   const fileInput = useRef<HTMLInputElement>(null);
@@ -63,6 +70,24 @@ export function ProfilePage() {
         if (!cancelled) setPhotoUrl(url);
       },
       () => {},
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    getInterpreterProfile().then(
+      (profile) => {
+        if (!cancelled) {
+          setSavedExperience(profile.yearsExperience);
+          setForm((current) => ({ ...current, yearsExperience: profile.yearsExperience }));
+        }
+      },
+      (err) => {
+        if (!cancelled) setProfileError(describeError(err));
+      },
     );
     return () => {
       cancelled = true;
@@ -160,7 +185,12 @@ export function ProfilePage() {
   const validate = (): FieldErrors => {
     const e: FieldErrors = {};
     if (!form.fullName.trim()) e.fullName = 'Full name is required';
-    if (!form.headline.trim()) e.headline = 'Headline is required';
+    if (
+      form.yearsExperience === null ||
+      !Number.isInteger(form.yearsExperience) ||
+      form.yearsExperience < 0
+    )
+      e.yearsExperience = 'Enter a whole number of years (0 or more)';
     if (form.languages.length === 0) e.languages = 'At least one language is required';
     if (form.specialisations.length === 0)
       e.specialisations = 'At least one specialisation is required';
@@ -169,20 +199,32 @@ export function ProfilePage() {
     return e;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const e = validate();
     setErrors(e);
-    if (Object.keys(e).length === 0) setEditing(false);
+    if (Object.keys(e).length !== 0 || form.yearsExperience === null) return;
+    setSavingProfile(true);
+    setProfileError('');
+    try {
+      const saved = await updateInterpreterProfile({ yearsExperience: form.yearsExperience });
+      setSavedExperience(saved.yearsExperience);
+      setForm((current) => ({ ...current, yearsExperience: saved.yearsExperience }));
+      setEditing(false);
+    } catch (err) {
+      setProfileError(describeError(err));
+    } finally {
+      setSavingProfile(false);
+    }
   };
 
   const handleCancel = () => {
     setErrors({});
+    setForm((current) => ({ ...current, yearsExperience: savedExperience }));
     setEditing(false);
   };
 
   const topError =
     errors.fullName ||
-    errors.headline ||
     errors.languages ||
     errors.specialisations ||
     errors.emergencyName ||
@@ -201,6 +243,11 @@ export function ProfilePage() {
       </div>
 
       {topError && <div className="ip-error">{topError}</div>}
+      {profileError && (
+        <div className="ip-error" role="alert">
+          {profileError}
+        </div>
+      )}
       {photoError && <div className="ip-error">{photoError}</div>}
 
       <div className="ip-card ip-hero">
@@ -255,7 +302,32 @@ export function ProfilePage() {
             )}
             <BadgeCheck size={18} className="ip-verified" />
           </div>
-          <p className="ip-headline">{form.headline}</p>
+          {editing ? (
+            <label className="ip-experience-field">
+              Years of interpreting experience
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value={form.yearsExperience ?? ''}
+                onChange={(event) =>
+                  set(
+                    'yearsExperience',
+                    event.target.value === '' ? null : Number(event.target.value),
+                  )
+                }
+              />
+              {errors.yearsExperience && (
+                <span className="ip-field-error">{errors.yearsExperience}</span>
+              )}
+            </label>
+          ) : (
+            <p className="ip-headline">
+              {form.yearsExperience == null
+                ? 'Experience not provided'
+                : `${form.yearsExperience} years experience`}
+            </p>
+          )}
           <div className="ip-stats">
             <span>
               <Star size={14} className="ip-star" />{' '}
@@ -272,10 +344,9 @@ export function ProfilePage() {
         </div>
       </div>
 
-      {(errors.fullName || errors.headline) && (
+      {errors.fullName && (
         <div className="ip-card">
-          {errors.fullName && <div className="ip-field-error">{errors.fullName}</div>}
-          {errors.headline && <div className="ip-field-error">{errors.headline}</div>}
+          <div className="ip-field-error">{errors.fullName}</div>
         </div>
       )}
 
@@ -393,11 +464,19 @@ export function ProfilePage() {
       <div className="ip-actions">
         {editing ? (
           <>
-            <button className="ip-btn ip-btn--ghost" onClick={handleCancel}>
+            <button
+              className="ip-btn ip-btn--ghost"
+              disabled={savingProfile}
+              onClick={handleCancel}
+            >
               Cancel
             </button>
-            <button className="ip-btn ip-btn--primary" onClick={handleSave}>
-              <Save size={15} /> Save changes
+            <button
+              className="ip-btn ip-btn--primary"
+              disabled={savingProfile}
+              onClick={() => void handleSave()}
+            >
+              <Save size={15} /> {savingProfile ? 'Saving…' : 'Save changes'}
             </button>
           </>
         ) : (
