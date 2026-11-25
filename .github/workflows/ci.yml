@@ -71,3 +71,7 @@ jobs:
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           fingerprint: ${{ secrets.DEPLOY_HOST_FINGERPRINT }}
           script: sudo /usr/local/sbin/deploy-signconnect-frontend
+
+concurrency:
+  group: deploy-signconnect
+  cancel-in-progress: false

@@ -158,7 +158,7 @@ export const SignInPage = () => {
         )}
 
         <button type="submit" className="btn-primary login-submit" disabled={submitting}>
-          {submitting ? 'Signing in...' : 'Sign In'}
+          {submitting ? 'Signing in...' : 'Login'}
         </button>
       </form>
 
