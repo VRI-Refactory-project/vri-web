@@ -104,7 +104,25 @@ export async function deleteMyDepartment(id: string): Promise<void> {
   await api(`${MY_DEPARTMENTS}${encodeURIComponent(id)}/`, { method: 'DELETE' });
 }
 
-export type InstitutionStatus = 'approved' | 'pending' | 'deactivated';
+export type InstitutionStatus = 'approved' | 'pending' | 'rejected' | 'deactivated';
+
+export interface InstitutionDocument {
+  id: string;
+  name: string;
+  type: string;
+  url: string;
+  issuingAuthority: string;
+  uploadedAt: string;
+}
+
+export type VerificationStage = 'completed' | 'in_progress' | 'not_started';
+
+export interface InstitutionVerificationProgress {
+  institutionDetails: VerificationStage;
+  documents: VerificationStage;
+  verificationChecks: VerificationStage;
+  approvalDecision: VerificationStage;
+}
 
 export type InstitutionSector =
   | 'Healthcare'
@@ -128,6 +146,14 @@ export interface Institution {
   createdAt: string;
   createdBy: string;
   verification_document?: string; // ADDED: Holds the URL of the uploaded PDF
+  contactName: string;
+  address: string;
+  website: string;
+  description: string;
+  foundedDate: string;
+  lastActive: string;
+  documents: InstitutionDocument[];
+  verificationProgress: InstitutionVerificationProgress;
 }
 
 export interface InstitutionForm {
@@ -190,6 +216,8 @@ function normalizeStatus(record: RawRecord): InstitutionStatus {
     .toLowerCase()
     .replace(/[\s-]+/g, '_');
 
+  if (rawStatus === 'rejected') return 'rejected';
+
   if (
     record.is_active === false ||
     record.is_active === 0 ||
@@ -197,8 +225,7 @@ function normalizeStatus(record: RawRecord): InstitutionStatus {
     rawStatus === 'deactivated' ||
     rawStatus === 'inactive' ||
     rawStatus === 'disabled' ||
-    rawStatus === 'suspended' ||
-    rawStatus === 'rejected'
+    rawStatus === 'suspended'
   ) {
     return 'deactivated';
   }
@@ -216,8 +243,86 @@ function normalizeStatus(record: RawRecord): InstitutionStatus {
   return 'pending';
 }
 
+function normalizeStage(value: unknown): VerificationStage | undefined {
+  const stage = stringValue(value)
+    .toLowerCase()
+    .replace(/[\s-]+/g, '_');
+  if (['completed', 'complete', 'done', 'verified'].includes(stage)) return 'completed';
+  if (['in_progress', 'in_review', 'reviewing', 'pending'].includes(stage)) return 'in_progress';
+  if (['not_started', 'not_started_yet', 'incomplete'].includes(stage)) return 'not_started';
+  return undefined;
+}
+
+function normalizeDocuments(record: RawRecord): InstitutionDocument[] {
+  const rawValue =
+    record.documents ??
+    record.verification_documents ??
+    record.document ??
+    record.verification_document;
+  const rows = Array.isArray(rawValue) ? rawValue : rawValue ? [rawValue] : [];
+  return rows.flatMap((value, index) => {
+    const doc = asRecord(value);
+    const url =
+      (typeof value === 'string' ? value : '') ||
+      stringValue(
+        doc.file_url,
+        doc.document_url,
+        doc.download_url,
+        doc.file_path,
+        doc.url,
+        doc.file,
+        doc.verification_document,
+      );
+    if (!url) return [];
+    return [
+      {
+        id: stringValue(doc.id, doc.uuid, doc.pk) || String(index),
+        name:
+          stringValue(doc.file_name, doc.original_filename, doc.name, doc.title) ||
+          `Document ${index + 1}`,
+        type: stringValue(doc.document_type, doc.type, doc.category),
+        url,
+        issuingAuthority: stringValue(doc.issuing_authority),
+        uploadedAt: stringValue(doc.uploaded_at, doc.created_at, doc.created),
+      },
+    ];
+  });
+}
+
 function normalizeInstitution(value: unknown): Institution {
   const record = asRecord(value);
+  const contact = asRecord(record.contact_person ?? record.contact ?? record.user ?? record.owner);
+  const documents = normalizeDocuments(record);
+  const rawProgress = asRecord(record.verification_progress ?? record.progress);
+  const status = normalizeStatus(record);
+  const hasRegistrationDetails = Boolean(
+    stringValue(record.name, record.institution_name, record.organisation_name) &&
+    stringValue(record.email, record.contact_email, record.official_email) &&
+    stringValue(record.phone, record.phone_number, record.contact_phone, record.contact_number) &&
+    stringValue(
+      record.organisation_type,
+      record.organization_type,
+      record.institution_type,
+      record.type,
+    ) &&
+    stringValue(
+      record.contact_person_name,
+      record.contact_name,
+      contact.full_name,
+      contact.name,
+      record.full_name,
+    ),
+  );
+  const detailsProgress =
+    normalizeStage(rawProgress.institution_details ?? rawProgress.details) ??
+    (hasRegistrationDetails ? 'completed' : 'not_started');
+  const documentsProgress =
+    normalizeStage(rawProgress.documents) ?? (documents.length ? 'completed' : 'not_started');
+  const checksProgress =
+    normalizeStage(rawProgress.verification_checks ?? rawProgress.checks) ?? 'not_started';
+  const decisionProgress =
+    normalizeStage(rawProgress.approval_decision ?? rawProgress.decision) ??
+    (status === 'approved' || status === 'rejected' ? 'completed' : 'not_started');
 
   return {
     id: stringValue(record.id, record.uuid, record.pk),
@@ -242,7 +347,7 @@ function normalizeInstitution(value: unknown): Institution {
       record.contact_phone,
       record.contact_number,
     ),
-    status: normalizeStatus(record),
+    status,
     createdAt: stringValue(
       record.created_at,
       record.createdAt,
@@ -251,6 +356,25 @@ function normalizeInstitution(value: unknown): Institution {
     ),
     createdBy: stringValue(record.created_by_name, record.created_by, record.createdBy) || 'Admin',
     verification_document: stringValue(record.verification_document) || undefined, // ADDED: Map the URL from the backend
+    contactName: stringValue(
+      record.contact_person_name,
+      record.contact_name,
+      contact.full_name,
+      contact.name,
+      record.full_name,
+    ),
+    address: stringValue(record.address, record.physical_address, record.location),
+    website: stringValue(record.website, record.website_url),
+    description: stringValue(record.description),
+    foundedDate: stringValue(record.founded_date, record.established_at),
+    lastActive: stringValue(record.last_active, record.last_active_at, contact.last_login),
+    documents,
+    verificationProgress: {
+      institutionDetails: detailsProgress,
+      documents: documentsProgress,
+      verificationChecks: checksProgress,
+      approvalDecision: decisionProgress,
+    },
   };
 }
 
@@ -315,9 +439,10 @@ export async function approveInstitution(id: string): Promise<Institution> {
   return normalizeInstitution(response);
 }
 
-export async function rejectInstitution(id: string): Promise<Institution> {
+export async function rejectInstitution(id: string, reason: string): Promise<Institution> {
   const response = await api<unknown>(`${BASE}${encodeURIComponent(id)}/reject/`, {
     method: 'POST',
+    body: JSON.stringify({ rejection_reason: reason }),
   });
   return normalizeInstitution(response);
 }
