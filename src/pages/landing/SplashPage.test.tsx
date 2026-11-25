@@ -12,6 +12,7 @@ describe('SplashPage', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     navigate.mockClear();
+    sessionStorage.clear();
   });
 
   afterEach(() => {
@@ -45,5 +46,16 @@ describe('SplashPage', () => {
     });
 
     expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('skips straight to the landing page when it has already played', () => {
+    const { unmount } = render(<SplashPage />);
+    unmount();
+    navigate.mockClear();
+
+    render(<SplashPage />);
+
+    expect(navigate).toHaveBeenCalledWith('/landing', { replace: true });
+    expect(screen.queryByRole('img', { name: 'SignConnect' })).not.toBeInTheDocument();
   });
 });

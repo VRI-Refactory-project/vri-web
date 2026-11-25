@@ -160,6 +160,11 @@ export const SignInPage = () => {
         <button type="submit" className="btn-primary login-submit" disabled={submitting}>
           {submitting ? 'Signing in...' : 'Login'}
         </button>
+
+        <p className="login-legal">
+          By signing in, you agree to our <Link to="/terms">Terms of Use</Link> and{' '}
+          <Link to="/privacy">Privacy Policy</Link>.
+        </p>
       </form>
 
       <div className="login-divider">
@@ -175,11 +180,6 @@ export const SignInPage = () => {
 
       <p className="login-signup-link">
         Don't have an account? <Link to="/get-started">Sign up</Link>
-      </p>
-
-      <p className="login-legal">
-        By continuing, you agree to our <Link to="/terms">Terms of Service</Link> and{' '}
-        <Link to="/privacy">Privacy Policy</Link>.
       </p>
     </AuthLayout>
   );

@@ -76,6 +76,8 @@ import { GuestSessionPage } from '../features/guest/GuestSessionPage';
 import { HelpSupportPage } from '../features/support/HelpSupportPage';
 import { StaffProfilePage } from '../pages/institution/StaffProfilePage';
 import { SupportInboxPage } from '../features/support/SupportInboxPage';
+import { TermsPage, PrivacyPage } from '../components/LegalPage';
+
 const appRoutes: RouteObject[] = [
   {
     element: <GuestRoute />,
@@ -99,6 +101,8 @@ const appRoutes: RouteObject[] = [
   { path: '/register/institution/upload-license', element: <UploadInstitutionLicense /> },
 
   { path: '/sign-in', element: <SignInPage /> },
+  { path: '/terms', element: <TermsPage /> },
+  { path: '/privacy', element: <PrivacyPage /> },
   { path: '/video/:roomName', element: <GuestVideoPage /> },
   { path: '/join/:token', element: <GuestSessionPage /> },
   { path: '/verify-email', element: <VerifyEmailPage /> },

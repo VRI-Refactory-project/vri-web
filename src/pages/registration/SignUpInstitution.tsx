@@ -6,8 +6,6 @@ import { PasswordStrength } from '../../components/PasswordStrength';
 import { PhoneField } from '../../components/PhoneField';
 import { FLOWS } from '../../features/registration/flows';
 import { useAuth } from '../../hooks/useAuth';
-import { LegalModal } from '../../components/LegalModal';
-import { TermsContent, PrivacyContent } from '../../components/LegalContent';
 import {
   collectErrors,
   validateEmail,
@@ -66,10 +64,6 @@ export const SignUpInstitution = () => {
   const [error, setError] = useState<string>();
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
-  const [agreed, setAgreed] = useState(false);
-  const [showTerms, setShowTerms] = useState(false);
-  const [showPrivacy, setShowPrivacy] = useState(false);
 
   const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
   const [submitted, setSubmitted] = useState(false);
@@ -299,46 +293,6 @@ export const SignUpInstitution = () => {
 
         <PasswordStrength password={form.password} />
 
-        <div className="form-group" style={{ marginTop: '16px' }}>
-          <label className="ca-terms">
-            <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
-            <span>
-              I agree to the{' '}
-              <button
-                type="button"
-                onClick={() => setShowTerms(true)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--color-primary)',
-                  padding: 0,
-                  font: 'inherit',
-                  cursor: 'pointer',
-                  textDecoration: 'underline',
-                }}
-              >
-                Terms
-              </button>{' '}
-              and{' '}
-              <button
-                type="button"
-                onClick={() => setShowPrivacy(true)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--color-primary)',
-                  padding: 0,
-                  font: 'inherit',
-                  cursor: 'pointer',
-                  textDecoration: 'underline',
-                }}
-              >
-                Privacy Policy
-              </button>
-            </span>
-          </label>
-        </div>
-
         {error && (
           <p className="form-error" role="alert">
             {error}
@@ -349,7 +303,7 @@ export const SignUpInstitution = () => {
           type="submit"
           className="btn-primary"
           style={{ marginTop: '16px' }}
-          disabled={submitting || !agreed}
+          disabled={submitting}
         >
           {submitting ? 'Please wait...' : 'Submit registration'} <ChevronRight size={18} />
         </button>
@@ -359,13 +313,10 @@ export const SignUpInstitution = () => {
         Have an account? <Link to="/sign-in">Sign in</Link>
       </p>
 
-      <LegalModal isOpen={showTerms} onClose={() => setShowTerms(false)} title="Terms of Service">
-        <TermsContent />
-      </LegalModal>
-
-      <LegalModal isOpen={showPrivacy} onClose={() => setShowPrivacy(false)} title="Privacy Policy">
-        <PrivacyContent role="institution" />
-      </LegalModal>
+      <p className="ca-legal">
+        By submitting, you agree to our <Link to="/terms">Terms of Use</Link> and{' '}
+        <Link to="/privacy">Privacy Policy</Link>.
+      </p>
     </AuthLayout>
   );
 };

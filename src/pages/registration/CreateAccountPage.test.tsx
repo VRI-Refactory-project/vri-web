@@ -562,7 +562,6 @@ describe('CreateAccountPage', () => {
       Password: 'Secret-pass-1',
       'Confirm password': 'Secret-pass-1',
     });
-    await user.click(screen.getByRole('checkbox'));
     await user.click(screen.getByRole('button', { name: /create account/i }));
     await waitFor(() => expect(screen.getByText('welcome step')).toBeInTheDocument());
     expect(spy).toHaveBeenCalledWith(
@@ -594,7 +593,6 @@ describe('CreateAccountPage', () => {
       'Confirm password': 'Secret-pass-1',
     });
 
-    await user.click(screen.getByRole('checkbox'));
     await user.click(screen.getByRole('button', { name: /create account/i }));
 
     expect(
@@ -608,7 +606,6 @@ describe('CreateAccountPage', () => {
     const user = userEvent.setup();
     const spy = vi.spyOn(registration, 'registerDeaf');
     renderPage();
-    await user.click(screen.getByRole('checkbox'));
     await user.click(screen.getByRole('button', { name: /create account/i }));
 
     // Using regex to ignore slight punctuation differences (like a missing period)
@@ -667,21 +664,14 @@ describe('CreateAccountPage', () => {
     expect(screen.getByText(/cannot be only numbers/i)).toBeInTheDocument();
   });
 
-  it('requires the terms to be accepted', async () => {
-    const user = userEvent.setup();
-    const spy = vi.spyOn(registration, 'registerDeaf');
+  it('links to the terms of use and privacy policy', () => {
     renderPage();
-    await fill(user, {
-      'First name': 'Catherine',
-      'Last name': 'Nawagirwa',
-      'Phone number': '772123456',
-      'Email address': 'catherine@example.com',
-      Password: 'Secret-pass-1',
-      'Confirm password': 'Secret-pass-1',
-    });
-    await user.click(screen.getByRole('button', { name: /create account/i }));
-    expect(screen.getByText(/accept the terms/i)).toBeInTheDocument();
-    expect(spy).not.toHaveBeenCalled();
+    expect(screen.getByRole('link', { name: 'Terms of Use' })).toHaveAttribute('href', '/terms');
+    expect(screen.getByRole('link', { name: 'Privacy Policy' })).toHaveAttribute(
+      'href',
+      '/privacy',
+    );
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
   });
 
   describe('password', () => {
@@ -745,7 +735,6 @@ describe('CreateAccountPage', () => {
         Password: 'secret-pass-1',
         'Confirm password': 'secret-pass-1',
       });
-      await user.click(screen.getByRole('checkbox'));
       await user.click(screen.getByRole('button', { name: /create account/i }));
       expect(screen.getByText('Add one uppercase letter.')).toBeInTheDocument();
       expect(spy).not.toHaveBeenCalled();
@@ -764,7 +753,6 @@ describe('CreateAccountPage', () => {
         Password: 'Secret-pass-1',
         'Confirm password': 'Secret-pass-1',
       });
-      await user.click(screen.getByRole('checkbox'));
       await user.click(screen.getByRole('button', { name: /continue/i }));
       expect(screen.getByText('Enter your email address.')).toBeInTheDocument();
       expect(spy).not.toHaveBeenCalled();
@@ -787,7 +775,6 @@ describe('CreateAccountPage', () => {
 
       await pick(user, 'Medical / health');
 
-      await user.click(screen.getByRole('checkbox'));
       await user.click(screen.getByRole('button', { name: /continue/i }));
 
       await waitFor(() => expect(screen.getByText('upload certificates')).toBeInTheDocument());
@@ -860,7 +847,6 @@ describe('CreateAccountPage', () => {
         const spy = vi.spyOn(registration, 'registerInterpreter');
         renderPage('interpreter');
         await fillInterpreter(user);
-        await user.click(screen.getByRole('checkbox'));
         await user.click(screen.getByRole('button', { name: /continue/i }));
         expect(screen.getByText('Choose at least one specialisation.')).toBeInTheDocument();
         expect(spy).not.toHaveBeenCalled();
@@ -882,7 +868,6 @@ describe('CreateAccountPage', () => {
         await fillInterpreter(user);
         await pick(user, 'Other (please specify)');
         await user.type(screen.getByLabelText('Your specialisation'), 'legal / court');
-        await user.click(screen.getByRole('checkbox'));
         await user.click(screen.getByRole('button', { name: /continue/i }));
         expect(screen.getByText(/already in the list/i)).toBeInTheDocument();
         expect(spy).not.toHaveBeenCalled();
@@ -931,7 +916,6 @@ describe('CreateAccountPage', () => {
       ).not.toBeInTheDocument();
     });
 
-    await user.click(screen.getByRole('checkbox'));
     await user.click(screen.getByRole('button', { name: /create account/i }));
 
     await waitFor(() => {

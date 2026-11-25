@@ -522,3 +522,21 @@ select.ca-input {
   background: var(--ca-bg-input);
   color: var(--ca-purple);
 }
+
+.ca-legal {
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid #eee;
+  text-align: center;
+  color: #888;
+  font-size: 11px;
+  line-height: 1.7;
+}
+.ca-legal a {
+  color: #8054c7;
+  font-weight: 600;
+  text-decoration: none;
+}
+.ca-legal a:hover {
+  text-decoration: underline;
+}

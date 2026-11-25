@@ -189,24 +189,20 @@ describe('SignUpInstitution', () => {
     sessionStorage.clear();
   });
 
-  it('disables the submit button until the terms are agreed to', async () => {
-    const user = userEvent.setup();
+  it('links to the terms of use and privacy policy', () => {
     renderPage();
-    const submitButton = screen.getByRole('button', { name: /submit registration/i });
-    expect(submitButton).toBeDisabled();
-
-    const checkbox = screen.getByRole('checkbox');
-    await user.click(checkbox);
-
-    expect(submitButton).not.toBeDisabled();
+    expect(screen.getByRole('link', { name: 'Terms of Use' })).toHaveAttribute('href', '/terms');
+    expect(screen.getByRole('link', { name: 'Privacy Policy' })).toHaveAttribute(
+      'href',
+      '/privacy',
+    );
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
   });
 
   it('shows what is missing next to each field before submitting', async () => {
     const user = userEvent.setup();
     const spy = vi.spyOn(registration, 'registerInstitution');
     renderPage();
-
-    await user.click(screen.getByRole('checkbox'));
 
     await user.click(screen.getByRole('button', { name: /submit registration/i }));
     expect(screen.getByText('Enter the institution name.')).toBeInTheDocument();
@@ -238,8 +234,6 @@ describe('SignUpInstitution', () => {
     expect(screen.queryByLabelText('Please specify the type')).not.toBeInTheDocument();
     await user.selectOptions(screen.getByLabelText('Institution type'), 'OTHER');
     expect(screen.getByLabelText('Please specify the type')).toBeInTheDocument();
-
-    await user.click(screen.getByRole('checkbox'));
 
     await user.click(screen.getByRole('button', { name: /submit registration/i }));
     expect(screen.getByText('Tell us what kind of institution this is.')).toBeInTheDocument();
@@ -286,8 +280,6 @@ describe('SignUpInstitution', () => {
     await user.type(screen.getByLabelText('Password'), 'Secret-pass-1');
     await user.type(screen.getByLabelText('Confirm password'), 'Secret-pass-1');
 
-    await user.click(screen.getByRole('checkbox'));
-
     await user.click(screen.getByRole('button', { name: /submit registration/i }));
 
     await waitFor(() => expect(screen.getByText('verify email page')).toBeInTheDocument());
@@ -310,8 +302,6 @@ describe('SignUpInstitution', () => {
     await user.type(screen.getByLabelText('Work email'), 'a@school.org');
     await user.type(screen.getByLabelText('Password'), 'Secret-pass-1');
     await user.type(screen.getByLabelText('Confirm password'), 'Secret-pass-1');
-
-    await user.click(screen.getByRole('checkbox'));
 
     await user.click(screen.getByRole('button', { name: /submit registration/i }));
 

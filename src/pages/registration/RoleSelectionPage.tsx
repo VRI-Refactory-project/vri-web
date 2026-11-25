@@ -65,7 +65,7 @@ export function RoleSelectionPage() {
     <AuthShell
       size="wide"
       bare
-      backTo="/"
+      backTo="Landing"
       steps={ROLE_STEP}
       current={1}
       logo={roleLogo}
