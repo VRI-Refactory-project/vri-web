@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { InstitutionDashboardPage } from './InstitutionDashboardPage';
@@ -119,8 +119,10 @@ describe('InstitutionDashboardPage', () => {
 
     const staff = screen.getByText('Staff', { selector: '.id-kpi-label' }).closest('article');
 
-    expect(staff).toHaveTextContent('12');
-    expect(staff).toHaveTextContent('10 active');
+    await waitFor(() => {
+      expect(staff).toHaveTextContent('12');
+      expect(staff).toHaveTextContent('10 active');
+    });
 
     expect(screen.getByText('2 staff accounts with access revoked')).toBeInTheDocument();
   });
@@ -132,13 +134,17 @@ describe('InstitutionDashboardPage', () => {
       selector: '.id-kpi-label',
     });
 
-    expect(sessions.closest('article')).toHaveTextContent('20');
+    await waitFor(() => {
+      expect(sessions.closest('article')).toHaveTextContent('20');
+    });
 
     const usage = screen.getByText('Usage', {
       selector: '.id-kpi-label',
     });
 
-    expect(usage.closest('article')).toHaveTextContent('2.0h');
+    await waitFor(() => {
+      expect(usage.closest('article')).toHaveTextContent('2.0h');
+    });
   });
 
   it('shows active interpreter requests from the sessions API', async () => {
@@ -164,32 +170,34 @@ describe('InstitutionDashboardPage', () => {
 
     expect(await screen.findByText('0 staff accounts with access revoked')).toBeInTheDocument();
   });
-});
 
-it('counts all active institution requests in the Active Sessions KPI', async () => {
-  renderPage();
+  it('counts all active institution requests in the Active Sessions KPI', async () => {
+    renderPage();
 
-  const activeSessions = await screen.findByText('Active sessions', {
-    selector: '.id-kpi-label',
+    const activeSessions = await screen.findByText('Active sessions', {
+      selector: '.id-kpi-label',
+    });
+
+    await waitFor(() => {
+      expect(activeSessions.closest('article')).toHaveTextContent('1');
+    });
   });
 
-  expect(activeSessions.closest('article')).toHaveTextContent('1');
-});
+  it('shows monthly and active session counts for each department', async () => {
+    renderPage();
 
-it('shows monthly and active session counts for each department', async () => {
-  renderPage();
+    const outpatient = await screen.findByRole('button', {
+      name: /Outpatient/,
+    });
 
-  const outpatient = await screen.findByRole('button', {
-    name: /Outpatient/,
+    expect(outpatient).toHaveTextContent('12 sessions this month');
+    expect(outpatient).toHaveTextContent('1 active');
+
+    const emergency = screen.getByRole('button', {
+      name: /Emergency/,
+    });
+
+    expect(emergency).toHaveTextContent('8 sessions this month');
+    expect(emergency).toHaveTextContent('0 active');
   });
-
-  expect(outpatient).toHaveTextContent('12 sessions this month');
-  expect(outpatient).toHaveTextContent('1 active');
-
-  const emergency = screen.getByRole('button', {
-    name: /Emergency/,
-  });
-
-  expect(emergency).toHaveTextContent('8 sessions this month');
-  expect(emergency).toHaveTextContent('0 active');
 });
