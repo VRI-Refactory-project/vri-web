@@ -97,7 +97,7 @@ export async function listStaff(): Promise<StaffMember[]> {
   return rows.map(toStaffMember);
 }
 
-/** Creates the account; the API emails the person their login details (a temporary password). */
+/** Creates the account; the API emails the person a staff invitation link to set their password. */
 export async function createStaff(d: NewStaffMember): Promise<StaffMember> {
   const raw = await api<ApiStaff>(BASE, {
     method: 'POST',

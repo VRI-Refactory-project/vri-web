@@ -69,6 +69,18 @@ export async function changePassword(
   return toSession(res);
 }
 
+/** Accepts an institution staff invitation and sets the member's first password. */
+export async function acceptStaffInvitation(
+  token: string,
+  newPassword: string,
+): Promise<AuthSession> {
+  const res = await api<LoginResponse>('/api/v1/institutions/staff/invitations/accept/', {
+    method: 'POST',
+    body: JSON.stringify({ token, new_password: newPassword }),
+  });
+  return toSession(res);
+}
+
 /** Exchanges a refresh token for a new access token. */
 export const refreshAccessToken = (refresh: string) =>
   api<RefreshResponse>('/api/v1/auth/token/refresh/', {

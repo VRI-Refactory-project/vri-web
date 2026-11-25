@@ -8,6 +8,8 @@ import './VerifyEmailPage.css';
 const safePath = (value: unknown): string | null =>
   typeof value === 'string' && value.startsWith('/') && !value.startsWith('//') ? value : null;
 
+const STAFF_ONBOARDING_KEY = 'staffInvitationOnboarding';
+
 export function VerifyEmailPage() {
   const { session, logout } = useAuth();
   const location = useLocation();
@@ -19,6 +21,13 @@ export function VerifyEmailPage() {
   if (!session) return <Navigate to="/sign-in" replace />;
 
   if (!needsEmailVerification(session.user)) {
+    // Invitation acceptance uses a temporary session only to verify the staff member's email.
+    // End that session so their next step is a normal sign-in to the staff dashboard.
+    if (sessionStorage.getItem(STAFF_ONBOARDING_KEY) === 'true') {
+      sessionStorage.removeItem(STAFF_ONBOARDING_KEY);
+      logout();
+      return <Navigate to="/sign-in" replace />;
+    }
     // Only the administrator registering a new institution still has its licence to upload. Staff,
     // whose accounts their administrator made, go straight to their own dashboard.
     if (needsLicenceUpload(session.user)) {
