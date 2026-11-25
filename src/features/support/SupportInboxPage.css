@@ -186,8 +186,19 @@
   text-transform: capitalize;
 }
 .si-status--open {
-  background: #fff4dc;
-  color: #9a5b00;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff0f0;
+  color: #b42318;
+}
+.si-open-dot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: #d92d20;
+  box-shadow: 0 0 0 2px rgb(217 45 32 / 14%);
 }
 .si-status--in_progress {
   background: #e8f1ff;

@@ -387,7 +387,30 @@ export function InstitutionDashboardPage({
 
               <tbody>
                 {filteredSessions.map((session, index) => (
-                  <tr key={session.id} {...mobileRows.itemProps(index)}>
+                  <tr
+                    key={session.id}
+                    {...mobileRows.itemProps(index)}
+                    className="id-session-row"
+                    role="link"
+                    tabIndex={0}
+                    aria-label={`View session for ${session.member}`}
+                    onClick={(event) => {
+                      if (
+                        !(event.target as HTMLElement).closest('button, a, input, select, textarea')
+                      ) {
+                        viewSession(session.id);
+                      }
+                    }}
+                    onKeyDown={(event) => {
+                      if (
+                        (event.key === 'Enter' || event.key === ' ') &&
+                        event.target === event.currentTarget
+                      ) {
+                        event.preventDefault();
+                        viewSession(session.id);
+                      }
+                    }}
+                  >
                     <td className="id-member" data-card-primary>
                       {session.member}
                     </td>

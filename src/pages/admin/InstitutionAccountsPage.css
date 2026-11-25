@@ -513,6 +513,13 @@
 .ia-table tbody tr:hover {
   background: #fcfbff;
 }
+.ia-table tbody tr.ia-clickable-row {
+  cursor: pointer;
+}
+.ia-table tbody tr.ia-clickable-row:focus-visible {
+  outline: 2px solid #4b34a0;
+  outline-offset: -2px;
+}
 
 .ia-col-name {
   min-width: 215px;
