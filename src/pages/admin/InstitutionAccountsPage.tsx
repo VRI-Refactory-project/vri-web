@@ -103,6 +103,7 @@ function StatusBadge({ status }: { status: InstitutionStatus }) {
   const labels: Record<InstitutionStatus, string> = {
     approved: 'Approved',
     pending: 'Pending',
+    rejected: 'Rejected',
     deactivated: 'Deactivated',
   };
 
@@ -110,6 +111,7 @@ function StatusBadge({ status }: { status: InstitutionStatus }) {
     <span className={`ia-status ia-status--${status}`}>
       {status === 'approved' && <CheckCircle2 size={13} />}
       {status === 'pending' && <Clock3 size={13} />}
+      {status === 'rejected' && <AlertCircle size={13} />}
       {status === 'deactivated' && <CircleMinus size={13} />}
       {labels[status]}
     </span>
@@ -864,6 +866,7 @@ export function InstitutionAccountsPage() {
             <option value="all">All Statuses</option>
             <option value="approved">Approved</option>
             <option value="pending">Pending</option>
+            <option value="rejected">Rejected</option>
             <option value="deactivated">Deactivated</option>
           </select>
 
@@ -898,7 +901,7 @@ export function InstitutionAccountsPage() {
         {showFilters && (
           <div className="ia-filter-drawer">
             <span>Quick status:</span>
-            {(['all', 'pending', 'approved', 'deactivated'] as const).map((status) => (
+            {(['all', 'pending', 'approved', 'rejected', 'deactivated'] as const).map((status) => (
               <button
                 key={status}
                 type="button"
@@ -1069,6 +1072,8 @@ export function InstitutionAccountsPage() {
                             <Check size={15} />
                             Approve
                           </button>
+                        ) : institution.status === 'rejected' ? (
+                          <span className="ia-row-application-rejected">Application rejected</span>
                         ) : institution.status === 'deactivated' ? (
                           <button
                             type="button"
