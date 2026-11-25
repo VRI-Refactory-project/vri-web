@@ -20,6 +20,8 @@ export interface InstitutionDashboardData {
     revoked: number;
   };
   sessions: {
+    activeSessions: number;
+    sessionsThisMonth: number;
     totalRequests: number;
     pendingRequests: number;
     completedRequests: number;
@@ -52,6 +54,8 @@ interface ApiOverview {
     completed_requests: number;
     cancelled_requests: number;
     failed_requests: number;
+    active_sessions: number;
+    sessions_this_month: number;
     total_video_sessions: number;
     waiting_video_sessions: number;
     connecting_video_sessions: number;
@@ -88,6 +92,8 @@ export async function getInstitutionDashboardData(): Promise<InstitutionDashboar
     institutionName: raw.institution.organisation_name,
     staff: raw.staff_summary,
     sessions: {
+      activeSessions: analytics.active_sessions,
+      sessionsThisMonth: analytics.sessions_this_month,
       totalRequests: analytics.total_requests,
       pendingRequests: analytics.pending_requests,
       completedRequests: analytics.completed_requests,

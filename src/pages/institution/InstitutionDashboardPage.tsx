@@ -146,9 +146,11 @@ export function InstitutionDashboardPage({
 
         setData((current) => ({
           ...current,
+          activeSessions: dashboard.sessions.activeSessions,
           staff: dashboard.staff.total,
           activeStaff: dashboard.staff.active,
           revokedStaff: dashboard.staff.revoked,
+          sessionsThisMonth: dashboard.sessions.sessionsThisMonth,
         }));
       } else {
         console.error('Could not load institution dashboard:', dashboardResult.reason);
@@ -162,7 +164,6 @@ export function InstitutionDashboardPage({
 
         setData((current) => ({
           ...current,
-          sessionsThisMonth: usage.sessions,
           usageHours: usage.totalMinutes / 60,
           weeklyActivity: weeklyData.map((day) => day.count),
         }));
@@ -209,7 +210,6 @@ export function InstitutionDashboardPage({
 
         setData((current) => ({
           ...current,
-          activeSessions: requests.length,
           sessions: mappedSessions,
         }));
       } else {
