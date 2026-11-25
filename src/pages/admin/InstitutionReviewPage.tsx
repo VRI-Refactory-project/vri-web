@@ -22,6 +22,7 @@ import {
 import {
   approveInstitution,
   fetchInstitution,
+  institutionSectorLabel,
   rejectInstitution,
   type Institution,
   type InstitutionStatus,
@@ -180,7 +181,9 @@ export function InstitutionReviewPage() {
                 </div>
                 <div>
                   <h3 className="ir-institution-name">{institution.name}</h3>
-                  <span className="ir-sector-pill">{institution.sector} Institution</span>
+                  <span className="ir-sector-pill">
+                    {institutionSectorLabel(institution.sector, institution.sectorOther)}
+                  </span>
                   <ul className="ir-contact-list">
                     {institution.email && (
                       <li>
@@ -270,7 +273,9 @@ export function InstitutionReviewPage() {
               </div>
               <div>
                 <small>Institution type</small>
-                <strong>{institution.sector}</strong>
+                <strong>
+                  {institutionSectorLabel(institution.sector, institution.sectorOther)}
+                </strong>
               </div>
             </div>
           </section>
@@ -302,7 +307,7 @@ export function InstitutionReviewPage() {
               <DetailItem
                 icon={<Building2 size={14} />}
                 label="Institution type"
-                value={institution.sector}
+                value={institutionSectorLabel(institution.sector, institution.sectorOther)}
               />
               <DetailItem
                 icon={<Phone size={14} />}

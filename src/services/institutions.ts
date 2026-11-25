@@ -125,21 +125,28 @@ export interface InstitutionVerificationProgress {
 }
 
 export type InstitutionSector =
-  | 'Healthcare'
-  | 'Education'
-  | 'Government'
-  | 'Legal'
-  | 'Religious'
-  | 'Security'
-  | 'Manufacturing'
-  | 'Finance'
-  | 'Other';
+  'HOSPITAL' | 'COURT' | 'GOVERNMENT' | 'CHURCH' | 'POLICE' | 'SCHOOL' | 'OTHER';
+
+const INSTITUTION_SECTOR_LABELS: Record<InstitutionSector, string> = {
+  HOSPITAL: 'Hospital or clinic',
+  COURT: 'Court',
+  GOVERNMENT: 'Government office',
+  CHURCH: 'Church',
+  POLICE: 'Police station',
+  SCHOOL: 'School or institution',
+  OTHER: 'Other',
+};
+
+export function institutionSectorLabel(sector: InstitutionSector, other = ''): string {
+  return sector === 'OTHER' && other.trim() ? other.trim() : INSTITUTION_SECTOR_LABELS[sector];
+}
 
 export interface Institution {
   id: string;
   name: string;
   registrationNumber: string;
   sector: InstitutionSector;
+  sectorOther: string;
   email: string;
   phone: string;
   status: InstitutionStatus;
@@ -188,26 +195,28 @@ function normalizeSector(value: unknown): InstitutionSector {
   const sector = stringValue(value).trim().toLowerCase();
 
   const known: Record<string, InstitutionSector> = {
-    healthcare: 'Healthcare',
-    health: 'Healthcare',
-    hospital: 'Healthcare',
-    education: 'Education',
-    school: 'Education',
-    government: 'Government',
-    public: 'Government',
-    legal: 'Legal',
-    law: 'Legal',
-    religious: 'Religious',
-    religion: 'Religious',
-    security: 'Security',
-    police: 'Security',
-    manufacturing: 'Manufacturing',
-    finance: 'Finance',
-    financial: 'Finance',
-    other: 'Other',
+    healthcare: 'HOSPITAL',
+    health: 'HOSPITAL',
+    hospital: 'HOSPITAL',
+    hospital_or_clinic: 'HOSPITAL',
+    education: 'SCHOOL',
+    school: 'SCHOOL',
+    school_or_institution: 'SCHOOL',
+    government: 'GOVERNMENT',
+    government_office: 'GOVERNMENT',
+    public: 'GOVERNMENT',
+    legal: 'COURT',
+    law: 'COURT',
+    court: 'COURT',
+    religious: 'CHURCH',
+    religion: 'CHURCH',
+    church: 'CHURCH',
+    security: 'POLICE',
+    police: 'POLICE',
+    other: 'OTHER',
   };
 
-  return known[sector] ?? 'Other';
+  return known[sector] ?? 'OTHER';
 }
 
 function normalizeStatus(record: RawRecord): InstitutionStatus {
@@ -339,7 +348,18 @@ function normalizeInstitution(value: unknown): Institution {
       record.reg_number,
       record.reg_no,
     ),
-    sector: normalizeSector(record.sector ?? record.industry ?? record.institution_type),
+    sector: normalizeSector(
+      record.sector ??
+        record.organisation_type ??
+        record.organization_type ??
+        record.institution_type ??
+        record.industry,
+    ),
+    sectorOther: stringValue(
+      record.sector_other,
+      record.organisation_type_other,
+      record.organization_type_other,
+    ),
     email: stringValue(record.email, record.contact_email, record.official_email),
     phone: stringValue(
       record.phone,
@@ -391,8 +411,8 @@ function toPayload(form: InstitutionForm) {
   return {
     name: form.name,
     registration_number: form.registrationNumber,
-    sector: form.sector.toLowerCase(),
-    ...(form.sector === 'Other' && form.sectorOther?.trim()
+    sector: form.sector,
+    ...(form.sector === 'OTHER' && form.sectorOther?.trim()
       ? { sector_other: form.sectorOther.trim() }
       : {}),
     email: form.email,
