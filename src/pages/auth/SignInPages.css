@@ -1,39 +1,97 @@
-/* Sign-in specific bits. The page frame, logo and Back live in components/AuthShell. */
-.login-forgot-link {
-  display: block;
-  text-align: center;
-  margin-top: 16px;
-  color: var(--color-text-muted);
-  font-size: 13px;
-  font-weight: 600;
-  text-decoration: none;
+/* =========================================
+   SIGN CONNECT - LOGIN PAGE
+   ========================================= */
+
+.as-page--sign-in .as-card {
+  padding: 2.25rem 2rem;
 }
 
-.login-forgot-link:hover {
-  color: var(--color-primary);
-  text-decoration: underline;
+/* Heading */
+
+.as-page--sign-in .as-card-header {
+  margin-bottom: 1.75rem;
 }
 
-.login-notice {
-  margin: 0 0 16px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: #f4f2fa;
-  color: var(--color-primary, #382c77);
-  font-size: 13px;
-  font-weight: 600;
+.as-page--sign-in .as-card-header h1 {
+  font-size: clamp(1.8rem, 4vw, 2.25rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
 }
+
+.as-page--sign-in .as-card-header p {
+  margin-top: 0.4rem;
+  font-size: 0.875rem;
+}
+
+/* Form spacing */
+
+.as-page--sign-in .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+}
+
+/* Keep labels accessible while using placeholders visually */
+
+.as-page--sign-in .form-group > label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Input fields */
+
+.as-page--sign-in .form-group .form-input {
+  width: 100%;
+  min-height: 3.4rem;
+  padding: 0.9rem 1rem;
+
+  border: 1px solid transparent;
+  border-radius: 13px;
+
+  background: #f3f4f7;
+  color: var(--color-text-main);
+
+  font-family: var(--font-main);
+  font-size: 0.9rem;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.as-page--sign-in .form-group .form-input::placeholder {
+  color: #9298a5;
+  opacity: 1;
+}
+
+.as-page--sign-in .form-group .form-input:focus {
+  border-color: var(--color-primary);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgb(56 44 119 / 9%);
+}
+
+/* Password field */
+
 .password-field {
   position: relative;
 }
 
-.password-field .form-input {
-  padding-right: 44px; /* room for the eye so long passwords don't run under it */
+.as-page--sign-in .password-field .form-input {
+  padding-right: 3rem;
 }
 
-.password-toggle {
+.as-page--sign-in .password-toggle {
   position: absolute;
-  right: 8px;
+  right: 0.55rem;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
@@ -41,12 +99,201 @@
   justify-content: center;
   padding: 6px;
   border: none;
-  border-radius: 4px;
   background: none;
-  color: var(--color-text-muted, #6b7280);
+  color: var(--color-text-muted);
   cursor: pointer;
 }
 
-.password-toggle:hover {
+.as-page--sign-in .password-toggle:hover {
   color: var(--color-primary);
+}
+
+/* Forgot password */
+
+.as-page--sign-in .login-forgot-link {
+  display: block;
+  width: fit-content;
+
+  margin: 0.1rem 0 0 auto;
+
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  text-decoration: none;
+}
+
+.as-page--sign-in .login-forgot-link:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+/* Login button */
+
+.as-page--sign-in .login-submit {
+  width: 100%;
+  min-height: 3.4rem;
+  margin-top: 0.45rem;
+
+  border: none;
+  border-radius: 13px;
+
+  background-color: var(--color-primary);
+  color: #fff;
+
+  font-family: var(--font-main);
+  font-size: 0.95rem;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.as-page--sign-in .login-submit:hover {
+  opacity: 0.92;
+}
+
+.as-page--sign-in .login-submit:active {
+  transform: scale(0.99);
+}
+
+.as-page--sign-in .login-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Signup link */
+
+.as-page--sign-in .login-signup-link {
+  margin: 1.4rem 0 0;
+
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.as-page--sign-in .login-signup-link a {
+  color: var(--color-primary);
+  font-weight: 700;
+
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Session notice */
+
+.login-notice {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+
+  border-radius: 10px;
+
+  background: #f4f2fa;
+  color: var(--color-primary, #382c77);
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Mobile */
+
+@media (max-width: 640px) {
+  .as-page--sign-in .as-card {
+    padding: 1.75rem 1.25rem;
+  }
+
+  .as-page--sign-in .as-card-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .as-page--sign-in .form-group .form-input {
+    min-height: 3.2rem;
+  }
+}
+
+/* Login divider */
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 24px 0 18px;
+  color: #888;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e5e5e5;
+}
+
+/* Google login */
+.google-login-button {
+  width: 100%;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid #dedee5;
+  border-radius: 9px;
+  color: #292536;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.google-login-button:hover {
+  background: #f8f6fc;
+  border-color: #8054c7;
+}
+
+.google-letter {
+  font-size: 21px;
+  font-weight: 700;
+  color: #4285f4;
+}
+
+/* Registration */
+.login-signup-link {
+  margin-top: 22px;
+  text-align: center;
+  font-size: 13px;
+  color: #666;
+}
+
+.login-signup-link a,
+.login-forgot-link,
+.login-legal a {
+  color: #8054c7;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.login-signup-link a:hover,
+.login-forgot-link:hover,
+.login-legal a:hover {
+  text-decoration: underline;
+}
+
+/* Legal links */
+.login-legal {
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid #eee;
+  text-align: center;
+  color: #888;
+  font-size: 11px;
+  line-height: 1.7;
 }
