@@ -189,6 +189,24 @@
   color: #1e293b;
 }
 
+/* `.ad-page button { font: inherit }` above outranks a plain class, so the button text sizes are
+   set here with the page class too. */
+.ad-page .sessions-filter,
+.ad-page .sessions-btn {
+  font-size: 12.5px;
+}
+
+.ad-page .sessions-action {
+  font-size: 12px;
+}
+
+/* The search box draws its own focus ring (above); the shared admin ring on the input inside it
+   would be a second box within the first. The flag note input has its own ring too. */
+.ad-page .sessions-search input:focus-visible,
+.ad-page .sessions-flag-form input:focus-visible {
+  outline: none;
+}
+
 .sessions-search input::placeholder {
   color: #9a96b3;
 }
@@ -260,6 +278,14 @@
   border-top: 1px solid #f0eefb;
 }
 
+/* A call that needs attention: an amber bar down its left edge (WEB-05). */
+.sessions-row--attention {
+  margin: 0 -20px;
+  padding: 14px 20px 14px 17px;
+  border-left: 3px solid var(--s-amber);
+  background: #fffbf3;
+}
+
 .sessions-row__info {
   display: flex;
   flex-direction: column;
@@ -294,15 +320,160 @@
   color: #4338ca;
 }
 
-.sessions-badge--review {
+.sessions-badge--emergency {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.sessions-badge--stuck,
+.sessions-badge--over_duration {
+  background: #fef3c7;
+  color: var(--s-amber);
+}
+
+.sessions-badge--flagged {
+  background: #ede9fe;
+  color: var(--s-purple);
+}
+
+.sessions-row__reasons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+/* Warnings an admin has marked as seen: still shown, but quiet. */
+.sessions-badge--seen {
   background: #f1f5f9;
   color: #64748b;
 }
 
-.sessions-row__arrow {
-  color: #8a86a5;
-  font-size: 18px;
-  line-height: 1;
+.sessions-row__seen {
+  color: #64748b !important;
+}
+
+.sessions-row__flag {
+  color: var(--s-purple) !important;
+  font-weight: 600;
+}
+
+.sessions-row__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 72px;
+}
+
+.sessions-action {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid #d8d2f0;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--s-purple);
+  font-size: 12px;
+  font-weight: 650;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease;
+}
+
+.sessions-action:hover:not(:disabled) {
+  background: #f5f3ff;
+  border-color: #9589d6;
+}
+
+.sessions-action:disabled,
+.sessions-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.sessions-flag-form {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sessions-flag-form input {
+  flex: 1 1 240px;
+  min-width: 0;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid #e2e0ee;
+  border-radius: 9px;
+  font-size: 12.5px;
+  color: #1e293b;
+}
+
+.sessions-flag-form input:focus {
+  outline: 0;
+  border-color: #9589d6;
+  box-shadow: 0 0 0 3px rgb(94 75 176 / 8%);
+}
+
+.sessions-row__error,
+.sessions-error {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #b91c1c;
+  font-size: 12px;
+}
+
+.sessions-error {
+  padding: 0 20px 12px;
+}
+
+/* ---------- Filters (WEB-02) ---------- */
+.sessions-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sessions-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid #e2e0ee;
+  border-radius: 10px;
+  background: #fff;
+  color: #4b4770;
+  font-size: 12.5px;
+  font-weight: 650;
+}
+
+.sessions-filter[aria-pressed='true'] {
+  background: var(--s-purple);
+  border-color: var(--s-purple);
+  color: #fff;
+}
+
+.sessions-filter__count {
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgb(56 44 119 / 10%);
+  font-size: 11px;
+  text-align: center;
+}
+
+.sessions-filter[aria-pressed='true'] .sessions-filter__count {
+  background: rgb(255 255 255 / 22%);
+}
+
+.sessions-live-dot--polling {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.sessions-live-dot--polling i {
+  background: #94a3b8;
 }
 
 .sessions-empty {
@@ -319,5 +490,29 @@
   }
   .sessions-toolbar {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .sessions-row {
+    grid-template-columns: 1fr auto;
+  }
+  .sessions-row__reasons {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: flex-start;
+  }
+  .sessions-row__actions {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
+  }
+  .sessions-filters {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .sessions-filter {
+    justify-content: center;
+    padding: 0 6px;
   }
 }
