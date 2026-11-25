@@ -1,0 +1,166 @@
+/* Cancel and Reschedule for an upcoming booking (V2-051). */
+.bc-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+
+/* On the Deaf dashboard cards both are text links in red (the old Cancel style): only Cancel
+   should look like a warning. */
+.bc-actions .session-cancel.bc-reschedule {
+  color: #382c77;
+}
+
+.bc-locked {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Fills the shared pop-up (which is 440px including its padding) and reads left to right; the
+   pop-up centres text by default. */
+.bc-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  min-width: 0;
+  color: #211d42;
+  text-align: left;
+}
+
+.bc-dialog h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 750;
+}
+
+.bc-current {
+  margin: 0;
+  color: #4b4770;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.bc-rule {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border-left: 3px solid #382c77;
+  border-radius: 8px;
+  background: #f5f3ff;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.bc-rule strong {
+  color: #382c77;
+}
+
+.bc-rule span {
+  color: #4b4770;
+}
+
+.bc-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.bc-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  color: #4b4770;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.bc-fields label:last-child {
+  grid-column: 1 / -1;
+}
+
+.bc-fields input,
+.bc-fields select {
+  height: 40px;
+  padding: 0 10px;
+  border: 1px solid #d8d2f0;
+  border-radius: 9px;
+  background: #fff;
+  color: #211d42;
+  font: inherit;
+  font-size: 14px;
+}
+
+.bc-fields input:focus-visible,
+.bc-fields select:focus-visible {
+  outline: 3px solid rgb(91 75 190 / 24%);
+  border-color: #9589d6;
+}
+
+.bc-hint {
+  margin: 0;
+  color: #64748b;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.bc-error {
+  margin: 0;
+  color: #b91c1c;
+  font-size: 13px;
+}
+
+.bc-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.bc-buttons button {
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.bc-buttons button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.bc-secondary {
+  border: 1px solid #d8d2f0;
+  background: #fff;
+  color: #382c77;
+}
+
+.bc-primary {
+  border: 1px solid #382c77;
+  background: #382c77;
+  color: #fff;
+}
+
+.bc-danger {
+  border: 1px solid #b91c1c;
+  background: #b91c1c;
+  color: #fff;
+}
+
+@media (max-width: 480px) {
+  .bc-fields {
+    grid-template-columns: 1fr;
+  }
+  .bc-buttons {
+    flex-direction: column-reverse;
+  }
+  .bc-buttons button {
+    width: 100%;
+  }
+}

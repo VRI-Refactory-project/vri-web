@@ -89,10 +89,15 @@ describe('StaffBookedSessions', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('This session was missed.');
   });
 
-  it('cancels a booking that has not started', async () => {
-    respond([booking(4)]);
+  it('cancels a booking that has not started, after confirming', async () => {
+    respond([booking(4)], reply(true, 200, booking(4, { status: 'CANCELLED' })));
     renderCard();
     fireEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
+
+    // V2-051: a confirmation with the notice rule comes first; nothing is sent yet.
+    expect(screen.getByRole('dialog', { name: 'Cancel this booking?' })).toBeInTheDocument();
+    expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false);
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel booking' }));
 
     await waitFor(() =>
       expect(screen.queryByText('Waiting for an interpreter')).not.toBeInTheDocument(),
