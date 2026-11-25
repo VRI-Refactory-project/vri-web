@@ -243,3 +243,47 @@
 .st-btn--danger:active {
   transform: scale(0.98);
 }
+
+.st-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(20 16 43 / 56%);
+}
+
+.st-dialog {
+  width: min(100%, 430px);
+  padding: 24px;
+  border: 1px solid #eceafa;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 20px 60px rgb(20 16 43 / 22%);
+}
+
+.st-dialog h2 {
+  margin: 0;
+  color: #201d35;
+  font-size: 19px;
+}
+
+.st-dialog p {
+  margin: 10px 0 22px;
+  color: #68738a;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.st-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.st-btn--secondary {
+  border: 1px solid #ded9eb;
+  background: #fff;
+  color: #4b34a0;
+}

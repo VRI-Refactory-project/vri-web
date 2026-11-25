@@ -87,38 +87,36 @@ describe('SettingsPage', () => {
     expect(screen.getByRole('button', { name: 'Logout' })).toBeInTheDocument();
   });
 
-  it('asks for confirmation before logging out', async () => {
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+  it('asks for confirmation in an in-app dialog before logging out', async () => {
+    const confirmSpy = vi.spyOn(window, 'confirm');
 
     renderSettings();
 
     await userEvent.click(await screen.findByRole('button', { name: 'Logout' }));
 
-    expect(confirmSpy).toHaveBeenCalledWith(
+    expect(screen.getByRole('alertdialog')).toHaveTextContent(
       'Are you sure you want to log out of your administrator account?',
     );
-
+    expect(confirmSpy).not.toHaveBeenCalled();
     expect(logout).not.toHaveBeenCalled();
   });
 
   it('does not log out when the administrator cancels', async () => {
-    vi.spyOn(window, 'confirm').mockReturnValue(false);
-
     renderSettings();
 
     await userEvent.click(await screen.findByRole('button', { name: 'Logout' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
 
     expect(logout).not.toHaveBeenCalled();
-
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument();
   });
 
   it('logs out and redirects to the login page when confirmed', async () => {
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
-
     renderSettings();
 
     await userEvent.click(await screen.findByRole('button', { name: 'Logout' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Log out' }));
 
     expect(logout).toHaveBeenCalledTimes(1);
 

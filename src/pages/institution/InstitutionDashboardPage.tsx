@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useMobileViewMore } from '../../components/responsive/useMobileViewMore';
+import { TablePagination } from '../../components/TablePagination';
 import { CircleUserRound, Plus } from 'lucide-react';
 
 import { getInstitutionDashboardData } from '../../services/institutionDashboard';
@@ -72,6 +72,7 @@ interface InstitutionDashboardData {
 }
 
 const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+const SESSION_PAGE_SIZE = 5;
 
 export interface InstitutionDashboardPageProps {
   onCreateStaff?: () => void;
@@ -85,6 +86,7 @@ export function InstitutionDashboardPage({
   const navigate = useNavigate();
   const [weekly, setWeekly] = useState(true);
   const [search, setSearch] = useState('');
+  const [sessionPage, setSessionPage] = useState(1);
   const [alerts, setAlerts] = useState<InstitutionAlert[]>([]);
 
   const [orgName, setOrgName] = useState('');
@@ -266,9 +268,11 @@ export function InstitutionDashboardPage({
       ),
     );
   }, [data.sessions, search]);
-  const mobileRows = useMobileViewMore(
-    filteredSessions.length,
-    [search, filteredSessions.length].join('|'),
+  const sessionPageCount = Math.max(1, Math.ceil(filteredSessions.length / SESSION_PAGE_SIZE));
+  const currentSessionPage = Math.min(sessionPage, sessionPageCount);
+  const visibleSessions = filteredSessions.slice(
+    (currentSessionPage - 1) * SESSION_PAGE_SIZE,
+    currentSessionPage * SESSION_PAGE_SIZE,
   );
 
   const goTo = (section: string) => {
@@ -439,7 +443,10 @@ export function InstitutionDashboardPage({
               <span className="id-visually-hidden">Search sessions</span>
               <input
                 value={search}
-                onChange={(event) => setSearch(event.target.value)}
+                onChange={(event) => {
+                  setSearch(event.target.value);
+                  setSessionPage(1);
+                }}
                 placeholder="Search member, department or interpreter"
               />
             </label>
@@ -460,10 +467,9 @@ export function InstitutionDashboardPage({
               </thead>
 
               <tbody>
-                {filteredSessions.map((session, index) => (
+                {visibleSessions.map((session) => (
                   <tr
                     key={session.id}
-                    {...mobileRows.itemProps(index)}
                     className="id-session-row"
                     role="link"
                     tabIndex={0}
@@ -520,7 +526,13 @@ export function InstitutionDashboardPage({
               </tbody>
             </table>
           </div>
-          {mobileRows.button}
+          <TablePagination
+            page={currentSessionPage}
+            pageSize={SESSION_PAGE_SIZE}
+            total={filteredSessions.length}
+            label="sessions"
+            onPageChange={setSessionPage}
+          />
 
           <p className="id-table-footer">
             Showing {filteredSessions.length} of {data.sessions.length} active requests
