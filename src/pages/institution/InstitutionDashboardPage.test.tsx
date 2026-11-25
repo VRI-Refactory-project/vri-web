@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   dashboardLoad: (() => Promise.resolve({})) as () => Promise<unknown>,
   usageLoad: (() => Promise.resolve({})) as () => Promise<unknown>,
   sessionsLoad: (() => Promise.resolve([])) as () => Promise<unknown>,
+  alertsLoad: (() => Promise.resolve([])) as () => Promise<unknown>,
 }));
 
 vi.mock('../../services/institutionDashboard', () => ({
@@ -19,7 +20,7 @@ vi.mock('../../services/institutionUsage', () => ({
 }));
 
 vi.mock('../../services/api', () => ({
-  api: () => mocks.sessionsLoad(),
+  api: (path: string) => (path.includes('/alerts/') ? mocks.alertsLoad() : mocks.sessionsLoad()),
 }));
 
 function renderPage() {
