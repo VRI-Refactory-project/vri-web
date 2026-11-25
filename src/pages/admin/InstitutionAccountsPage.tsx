@@ -20,7 +20,6 @@ import {
   Phone,
   Mail,
   Church,
-  Factory,
   BriefcaseBusiness,
   RefreshCw,
   AlertCircle,
@@ -31,6 +30,7 @@ import {
   fetchInstitutions,
   updateInstitution,
   updateInstitutionStatus,
+  institutionSectorLabel,
   type Institution,
   type InstitutionForm,
   type InstitutionStatus,
@@ -44,21 +44,19 @@ const DESKTOP_PAGE_SIZE = 8;
 const MOBILE_PAGE_SIZE = 5;
 
 const SECTORS: InstitutionSector[] = [
-  'Healthcare',
-  'Education',
-  'Government',
-  'Legal',
-  'Religious',
-  'Security',
-  'Manufacturing',
-  'Finance',
-  'Other',
+  'HOSPITAL',
+  'COURT',
+  'GOVERNMENT',
+  'CHURCH',
+  'POLICE',
+  'SCHOOL',
+  'OTHER',
 ];
 
 const EMPTY_FORM: InstitutionForm = {
   name: '',
   registrationNumber: '',
-  sector: 'Other',
+  sector: 'OTHER',
   email: '',
   phone: '',
   sectorOther: '',
@@ -79,21 +77,18 @@ function SectorIcon({ sector }: { sector: InstitutionSector }) {
   const common = { size: 19, strokeWidth: 2 };
 
   switch (sector) {
-    case 'Healthcare':
+    case 'HOSPITAL':
       return <Building2 {...common} />;
-    case 'Education':
+    case 'SCHOOL':
       return <GraduationCap {...common} />;
-    case 'Government':
-    case 'Finance':
+    case 'GOVERNMENT':
       return <Landmark {...common} />;
-    case 'Legal':
+    case 'COURT':
       return <BriefcaseBusiness {...common} />;
-    case 'Religious':
+    case 'CHURCH':
       return <Church {...common} />;
-    case 'Security':
+    case 'POLICE':
       return <ShieldCheck {...common} />;
-    case 'Manufacturing':
-      return <Factory {...common} />;
     default:
       return <Building2 {...common} />;
   }
@@ -143,7 +138,7 @@ function InstitutionModal({
           sector: institution.sector,
           email: institution.email,
           phone: institution.phone,
-          sectorOther: '',
+          sectorOther: institution.sectorOther,
         }
       : { ...EMPTY_FORM },
   );
@@ -165,7 +160,7 @@ function InstitutionModal({
     const e: Record<string, string> = {};
     if (!form.name.trim()) e.name = 'Institution name is required';
     if (!form.registrationNumber.trim()) e.registrationNumber = 'Registration number is required';
-    if (form.sector === 'Other' && !form.sectorOther?.trim()) {
+    if (form.sector === 'OTHER' && !form.sectorOther?.trim()) {
       e.sectorOther = 'Please specify the sector';
     }
     if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
@@ -189,7 +184,7 @@ function InstitutionModal({
       sector: form.sector,
       email: form.email.trim(),
       phone: form.phone.trim(),
-      ...(form.sector === 'Other' ? { sectorOther: form.sectorOther?.trim() ?? '' } : {}),
+      ...(form.sector === 'OTHER' ? { sectorOther: form.sectorOther?.trim() ?? '' } : {}),
     });
   }
 
@@ -284,13 +279,13 @@ function InstitutionModal({
               </div>
 
               <div
-                className={`ia-form-field ${form.sector === 'Other' && errors.sectorOther ? 'ia-form-field--invalid' : ''}`}
+                className={`ia-form-field ${form.sector === 'OTHER' && errors.sectorOther ? 'ia-form-field--invalid' : ''}`}
               >
-                <label htmlFor={form.sector === 'Other' ? 'ia-sector-other' : 'ia-sector'}>
+                <label htmlFor={form.sector === 'OTHER' ? 'ia-sector-other' : 'ia-sector'}>
                   Sector *
                 </label>
 
-                {form.sector === 'Other' ? (
+                {form.sector === 'OTHER' ? (
                   <div className="ia-sector-input-wrap">
                     <input
                       id="ia-sector-other"
@@ -307,7 +302,7 @@ function InstitutionModal({
                       className="ia-sector-drop-btn"
                       aria-label="Pick sector from list"
                       onClick={() => {
-                        updateField('sector', 'Healthcare');
+                        updateField('sector', 'HOSPITAL');
                         updateField('sectorOther', '');
                       }}
                     >
@@ -333,13 +328,13 @@ function InstitutionModal({
                   >
                     {SECTORS.map((sector) => (
                       <option key={sector} value={sector}>
-                        {sector}
+                        {institutionSectorLabel(sector)}
                       </option>
                     ))}
                   </select>
                 )}
 
-                {form.sector === 'Other' && errors.sectorOther && (
+                {form.sector === 'OTHER' && errors.sectorOther && (
                   <p className="ia-field-error" id="ia-sector-other-error">
                     {errors.sectorOther}
                   </p>
@@ -882,7 +877,7 @@ export function InstitutionAccountsPage() {
             <option value="all">All Sectors</option>
             {SECTORS.map((sector) => (
               <option key={sector} value={sector}>
-                {sector}
+                {institutionSectorLabel(sector)}
               </option>
             ))}
           </select>
@@ -1021,7 +1016,9 @@ export function InstitutionAccountsPage() {
                     </td>
 
                     <td data-label="Sector">
-                      <span className="ia-sector-label">{institution.sector}</span>
+                      <span className="ia-sector-label">
+                        {institutionSectorLabel(institution.sector, institution.sectorOther)}
+                      </span>
                     </td>
 
                     <td data-label="Contact info">
