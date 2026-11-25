@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Download, Search, Pencil, Check, Trash2, XCircle } from 'lucide-react';
 import {
-  fetchAdminUsers,
+  fetchAllAdminUsers,
+  fetchAdminUsersPage,
   approveUser,
   deactivateUser,
   deleteUser,
@@ -10,16 +11,15 @@ import {
   type AdminUserFilters,
 } from '../../services/adminUsers';
 import { describeError } from '../../services/api';
-import { useMobileViewMore } from '../../components/responsive/useMobileViewMore';
+import { TablePagination } from '../../components/TablePagination';
 import './AdminDashboardPage.css';
 import './UsersPage.css';
 
-// Cache survives re-renders and navigation
-let cachedUsers: AdminUser[] | null = null;
+const PAGE_SIZE = 10;
 
 export function UsersPage() {
-  // Initialize from cache
-  const [users, setUsers] = useState<AdminUser[] | null>(cachedUsers);
+  const [users, setUsers] = useState<AdminUser[] | null>(null);
+  const [totalUsers, setTotalUsers] = useState(0);
   const [error, setError] = useState('');
 
   // Filter states
@@ -27,13 +27,13 @@ export function UsersPage() {
   const [type, setType] = useState('all-types');
   const [status, setStatus] = useState('all-statuses');
   const [range, setRange] = useState('all-time');
+  const [page, setPage] = useState(1);
 
   // Selection state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const mobileRows = useMobileViewMore(
-    users?.length ?? 0,
-    [search, type, status, range, users?.length ?? 0].join('|'),
-  );
+  const pageCount = Math.max(1, Math.ceil(totalUsers / PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount);
+  const visibleUsers = users ?? [];
 
   // Modal states
   const [confirmAction, setConfirmAction] = useState<{
@@ -44,6 +44,7 @@ export function UsersPage() {
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
   const [editForm, setEditForm] = useState({ name: '', email: '', phone: '' });
   const [isSaving, setIsSaving] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -51,19 +52,21 @@ export function UsersPage() {
 
     const fetchData = () => {
       setError('');
+      setUsers(null);
 
-      fetchAdminUsers(filters)
+      fetchAdminUsersPage(filters, currentPage, PAGE_SIZE)
         .then((data) => {
           if (!cancelled) {
-            setUsers(data);
-            cachedUsers = data;
+            setUsers(data.results);
+            setTotalUsers(data.total);
             setSelectedIds(new Set());
           }
         })
         .catch((err) => {
           if (!cancelled) {
             setError(describeError(err));
-            if (!cachedUsers) setUsers([]);
+            setUsers([]);
+            setTotalUsers(0);
           }
         });
     };
@@ -76,13 +79,17 @@ export function UsersPage() {
       cancelled = true;
       clearTimeout(timeoutId);
     };
-  }, [search, type, status, range]);
+  }, [search, type, status, range, currentPage]);
 
   const refreshUsers = async () => {
     try {
-      const data = await fetchAdminUsers({ search, type, status, range });
-      setUsers(data);
-      cachedUsers = data;
+      const data = await fetchAdminUsersPage(
+        { search, type, status, range },
+        currentPage,
+        PAGE_SIZE,
+      );
+      setUsers(data.results);
+      setTotalUsers(data.total);
       setSelectedIds(new Set());
     } catch (err) {
       setError(`Failed to refresh: ${describeError(err)}`);
@@ -108,34 +115,42 @@ export function UsersPage() {
     return { background: '#f1f5f9', color: '#475569' };
   };
 
-  const handleExport = () => {
-    if (!users || users.length === 0) {
-      alert('No users to export');
-      return;
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const exportUsers = await fetchAllAdminUsers({ search, type, status, range });
+      if (exportUsers.length === 0) {
+        setError('There are no users to export for these filters.');
+        return;
+      }
+
+      const headers = ['Name', 'Role', 'Verification Status', 'Email', 'Phone', 'Registered At'];
+      const rows = exportUsers.map((u) => [
+        `"${u.name}"`,
+        `"${u.role}"`,
+        `"${u.verificationStatus}"`,
+        `"${u.email}"`,
+        `"${u.phone || ''}"`,
+        `"${formatDate(u.registeredAt)}"`,
+      ]);
+
+      const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute(
+        'download',
+        `signconnect_users_${new Date().toISOString().split('T')[0]}.csv`,
+      );
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      setError(`Failed to export users: ${describeError(err)}`);
+    } finally {
+      setIsExporting(false);
     }
-
-    const headers = ['Name', 'Role', 'Verification Status', 'Email', 'Phone', 'Registered At'];
-    const rows = users.map((u) => [
-      `"${u.name}"`,
-      `"${u.role}"`,
-      `"${u.verificationStatus}"`,
-      `"${u.email}"`,
-      `"${u.phone || ''}"`,
-      `"${formatDate(u.registeredAt)}"`,
-    ]);
-
-    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute(
-      'download',
-      `signconnect_users_${new Date().toISOString().split('T')[0]}.csv`,
-    );
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
   const toggleSelect = (id: string) => {
@@ -148,15 +163,21 @@ export function UsersPage() {
   };
 
   const toggleSelectAll = () => {
-    if (!users) return;
-    if (selectedIds.size === users.length) {
-      setSelectedIds(new Set());
+    if (!visibleUsers.length) return;
+    const allVisibleSelected = visibleUsers.every((user) => selectedIds.has(user.id));
+    if (allVisibleSelected) {
+      setSelectedIds((previous) => {
+        const next = new Set(previous);
+        visibleUsers.forEach((user) => next.delete(user.id));
+        return next;
+      });
     } else {
-      setSelectedIds(new Set(users.map((u) => u.id)));
+      setSelectedIds((previous) => new Set([...previous, ...visibleUsers.map((user) => user.id)]));
     }
   };
 
-  const allSelected = users && users.length > 0 && selectedIds.size === users.length;
+  const allSelected =
+    visibleUsers.length > 0 && visibleUsers.every((user) => selectedIds.has(user.id));
 
   // Action handlers
   const handleEdit = (user: AdminUser) => {
@@ -206,6 +227,7 @@ export function UsersPage() {
       } else {
         await deleteUser(user.id);
         setUsers((prev) => (prev ? prev.filter((u) => u.id !== user.id) : prev));
+        setTotalUsers((count) => Math.max(0, count - 1));
         setSelectedIds((prev) => {
           const next = new Set(prev);
           next.delete(user.id);
@@ -220,7 +242,7 @@ export function UsersPage() {
   };
 
   const loading = users === null;
-  const isEmpty = !loading && users.length === 0;
+  const isEmpty = !loading && totalUsers === 0;
 
   return (
     <div className="ad-page users-management-page" style={{ width: '100%', maxWidth: '100%' }}>
@@ -239,9 +261,14 @@ export function UsersPage() {
           marginBottom: '24px',
         }}
       >
-        <button type="button" className="users-btn users-btn--ghost" onClick={handleExport}>
+        <button
+          type="button"
+          className="users-btn users-btn--ghost"
+          onClick={() => void handleExport()}
+          disabled={isExporting}
+        >
           <Download size={15} />
-          Export users
+          {isExporting ? 'Exporting…' : 'Export users'}
         </button>
       </div>
 
@@ -282,11 +309,21 @@ export function UsersPage() {
             type="search"
             placeholder="Search users by name, email or phone…"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
           />
         </label>
 
-        <select className="users-select" value={type} onChange={(e) => setType(e.target.value)}>
+        <select
+          className="users-select"
+          value={type}
+          onChange={(e) => {
+            setType(e.target.value);
+            setPage(1);
+          }}
+        >
           <option value="all-types">All types</option>
           <option value="deaf">DHH User</option>
           <option value="interpreter">Interpreter</option>
@@ -294,7 +331,14 @@ export function UsersPage() {
           <option value="admin">Admin</option>
         </select>
 
-        <select className="users-select" value={status} onChange={(e) => setStatus(e.target.value)}>
+        <select
+          className="users-select"
+          value={status}
+          onChange={(e) => {
+            setStatus(e.target.value);
+            setPage(1);
+          }}
+        >
           <option value="all-statuses">All statuses</option>
           <option value="verified">Verified</option>
           <option value="pending">Pending</option>
@@ -302,135 +346,152 @@ export function UsersPage() {
           <option value="suspended">Suspended</option>
         </select>
 
-        <select className="users-select" value={range} onChange={(e) => setRange(e.target.value)}>
+        <select
+          className="users-select"
+          value={range}
+          onChange={(e) => {
+            setRange(e.target.value);
+            setPage(1);
+          }}
+        >
           <option value="all-time">All time</option>
           <option value="7-days">Last 7 days</option>
           <option value="30-days">Last 30 days</option>
         </select>
       </section>
 
-      <section className="ad-table-card mobile-data-cards">
-        <table className="users-table">
-          <thead>
-            <tr>
-              <th className="users-col-check">
-                <input
-                  type="checkbox"
-                  aria-label="Select all"
-                  checked={!!allSelected}
-                  onChange={toggleSelectAll}
-                />
-              </th>
-              <th>User</th>
-              <th>Type</th>
-              <th>Verification status</th>
-              <th>Email / Phone</th>
-              <th>Registered</th>
-              <th>Last active</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
+      <section className="ad-table-card">
+        <div className="users-table-scroll">
+          <table className="users-table">
+            <thead>
               <tr>
-                <td colSpan={8} className="users-empty">
-                  Loading users…
-                </td>
+                <th className="users-col-check">
+                  <input
+                    type="checkbox"
+                    aria-label="Select all"
+                    checked={!!allSelected}
+                    onChange={toggleSelectAll}
+                  />
+                </th>
+                <th>User</th>
+                <th>Type</th>
+                <th>Verification status</th>
+                <th>Email / Phone</th>
+                <th>Registered</th>
+                <th>Last active</th>
+                <th>Actions</th>
               </tr>
-            ) : isEmpty ? (
-              <tr>
-                <td colSpan={8} className="users-empty">
-                  {error ? `Could not load users: ${error}` : 'No users to show yet.'}
-                </td>
-              </tr>
-            ) : (
-              users.map((u, index) => (
-                <tr key={u.id} {...mobileRows.itemProps(index)}>
-                  <td data-card-select>
-                    <input
-                      type="checkbox"
-                      aria-label={`Select ${u.name}`}
-                      checked={selectedIds.has(u.id)}
-                      onChange={() => toggleSelect(u.id)}
-                    />
-                  </td>
-                  <td data-card-primary>
-                    <strong>{u.name}</strong>
-                  </td>
-                  <td data-label="Type">{u.role}</td>
-                  <td data-label="Verification status">
-                    <span
-                      style={{
-                        display: 'inline-block',
-                        padding: '4px 10px',
-                        borderRadius: '999px',
-                        fontSize: '11px',
-                        fontWeight: 700,
-                        textTransform: 'capitalize',
-                        ...statusBadgeStyle(u.verificationStatus),
-                      }}
-                    >
-                      {u.verificationStatus}
-                    </span>
-                  </td>
-                  <td data-label="Email / Phone">
-                    {u.email}
-                    {u.phone ? ` · ${u.phone}` : ''}
-                  </td>
-                  <td data-label="Registered">{formatDate(u.registeredAt)}</td>
-                  <td data-label="Last active">{formatDate(u.lastActive)}</td>
-                  <td data-card-actions>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <button
-                        type="button"
-                        onClick={() => handleEdit(u)}
-                        className="users-action-btn users-action-btn--edit"
-                        title="Edit user"
-                      >
-                        <Pencil size={14} />
-                      </button>
-
-                      {u.verificationStatus === 'pending' ? (
-                        <button
-                          type="button"
-                          onClick={() => handleApprove(u)}
-                          className="users-action-btn users-action-btn--approve"
-                        >
-                          <Check size={14} />
-                          Approve
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => handleDeactivate(u)}
-                          className="users-action-btn users-action-btn--deactivate"
-                        >
-                          <XCircle size={14} />
-                          Deactivate
-                        </button>
-                      )}
-
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(u)}
-                        className="users-action-btn users-action-btn--delete"
-                        title="Delete user"
-                      >
-                        <Trash2 size={20} />
-                      </button>
-                    </div>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={8} className="users-empty">
+                    Loading users…
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-        {mobileRows.button}
+              ) : isEmpty ? (
+                <tr>
+                  <td colSpan={8} className="users-empty">
+                    {error ? `Could not load users: ${error}` : 'No users to show yet.'}
+                  </td>
+                </tr>
+              ) : (
+                visibleUsers.map((u) => (
+                  <tr key={u.id}>
+                    <td data-card-select>
+                      <input
+                        type="checkbox"
+                        aria-label={`Select ${u.name}`}
+                        checked={selectedIds.has(u.id)}
+                        onChange={() => toggleSelect(u.id)}
+                      />
+                    </td>
+                    <td data-card-primary>
+                      <strong>{u.name}</strong>
+                    </td>
+                    <td data-label="Type">{u.role}</td>
+                    <td data-label="Verification status">
+                      <span
+                        style={{
+                          display: 'inline-block',
+                          padding: '4px 10px',
+                          borderRadius: '999px',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          textTransform: 'capitalize',
+                          ...statusBadgeStyle(u.verificationStatus),
+                        }}
+                      >
+                        {u.verificationStatus}
+                      </span>
+                    </td>
+                    <td data-label="Email / Phone">
+                      {u.email}
+                      {u.phone ? ` · ${u.phone}` : ''}
+                    </td>
+                    <td data-label="Registered">{formatDate(u.registeredAt)}</td>
+                    <td data-label="Last active">{formatDate(u.lastActive)}</td>
+                    <td data-card-actions>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <button
+                          type="button"
+                          onClick={() => handleEdit(u)}
+                          className="users-action-btn users-action-btn--edit"
+                          title="Edit user"
+                          aria-label={`Edit ${u.name}`}
+                        >
+                          <Pencil size={14} />
+                        </button>
+
+                        {u.verificationStatus === 'pending' ? (
+                          <button
+                            type="button"
+                            onClick={() => handleApprove(u)}
+                            className="users-action-btn users-action-btn--approve"
+                          >
+                            <Check size={14} />
+                            Approve
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleDeactivate(u)}
+                            className="users-action-btn users-action-btn--deactivate"
+                          >
+                            <XCircle size={14} />
+                            Deactivate
+                          </button>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(u)}
+                          className="users-action-btn users-action-btn--delete"
+                          title="Delete user"
+                          aria-label={`Delete ${u.name}`}
+                        >
+                          <Trash2 size={20} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+        <TablePagination
+          page={currentPage}
+          pageSize={PAGE_SIZE}
+          total={users?.length ?? 0}
+          label="users"
+          onPageChange={setPage}
+        />
       </section>
 
       <footer className="users-footer">
         <span>
-          Showing {users?.length ?? 0} user{users?.length === 1 ? '' : 's'}
+          Showing {totalUsers} user{totalUsers === 1 ? '' : 's'}
           {selectedIds.size > 0 && ` · ${selectedIds.size} selected`}
         </span>
       </footer>

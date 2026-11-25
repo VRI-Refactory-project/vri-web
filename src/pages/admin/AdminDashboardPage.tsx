@@ -17,7 +17,7 @@ import {
   Headphones,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { useMobileViewMore } from '../../components/responsive/useMobileViewMore';
+import { TablePagination } from '../../components/TablePagination';
 import {
   fetchAdminSummary,
   fetchSessionActivity,
@@ -44,6 +44,8 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useInterval } from '../../features/community/useInterval';
 import './AdminDashboardPage.css';
+
+const UPCOMING_PAGE_SIZE = 5;
 
 const KPI_META = [
   {
@@ -161,6 +163,7 @@ export function AdminDashboardPage() {
 
   // Search
   const [query, setQuery] = useState('');
+  const [upcomingPage, setUpcomingPage] = useState(1);
 
   // Fetch dashboard data
   useEffect(() => {
@@ -287,9 +290,12 @@ export function AdminDashboardPage() {
       ),
     );
   }, [sessions, searchTerm]);
-  const mobileRows = useMobileViewMore(
-    filteredSessions?.length ?? 0,
-    [searchTerm, filteredSessions?.length ?? 0].join('|'),
+  const upcomingCount = filteredSessions?.length ?? 0;
+  const upcomingPageCount = Math.max(1, Math.ceil(upcomingCount / UPCOMING_PAGE_SIZE));
+  const currentUpcomingPage = Math.min(upcomingPage, upcomingPageCount);
+  const visibleUpcomingSessions = (filteredSessions ?? []).slice(
+    (currentUpcomingPage - 1) * UPCOMING_PAGE_SIZE,
+    currentUpcomingPage * UPCOMING_PAGE_SIZE,
   );
 
   // Session activity chart scale
@@ -326,7 +332,10 @@ export function AdminDashboardPage() {
             placeholder="Search name, organization, country..."
             aria-label="Search dashboard"
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => {
+              setQuery(event.target.value);
+              setUpcomingPage(1);
+            }}
           />
         </div>
 
@@ -1470,7 +1479,7 @@ export function AdminDashboardPage() {
               </thead>
 
               <tbody>
-                {filteredSessions.map((item, index) => {
+                {visibleUpcomingSessions.map((item) => {
                   const typeLabel = item.type
                     ? item.type.charAt(0).toUpperCase() + item.type.slice(1)
                     : '—';
@@ -1478,7 +1487,7 @@ export function AdminDashboardPage() {
                   const status = statusStyle(item.status);
 
                   return (
-                    <tr key={item.id} {...mobileRows.itemProps(index)}>
+                    <tr key={item.id}>
                       <td
                         data-label="Time"
                         style={{
@@ -1548,7 +1557,13 @@ export function AdminDashboardPage() {
                 })}
               </tbody>
             </table>
-            {mobileRows.button}
+            <TablePagination
+              page={currentUpcomingPage}
+              pageSize={UPCOMING_PAGE_SIZE}
+              total={upcomingCount}
+              label="sessions"
+              onPageChange={setUpcomingPage}
+            />
           </div>
         ) : (
           <p className="ad-empty">

@@ -25,6 +25,7 @@ export function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [banner, setBanner] = useState('');
   const [bannerKind, setBannerKind] = useState<'error' | 'success'>('error');
+  const [confirmLogout, setConfirmLogout] = useState(false);
 
   useEffect(() => {
     fetchAdminPreferences()
@@ -64,12 +65,6 @@ export function SettingsPage() {
   }
 
   function handleLogout() {
-    const confirmed = window.confirm(
-      'Are you sure you want to log out of your administrator account?',
-    );
-
-    if (!confirmed) return;
-
     logout();
     navigate('/login', { replace: true });
   }
@@ -196,11 +191,45 @@ export function SettingsPage() {
             <p>You will need to sign in again to access the administrator dashboard.</p>
           </div>
 
-          <button type="button" className="st-btn st-btn--danger" onClick={handleLogout}>
+          <button
+            type="button"
+            className="st-btn st-btn--danger"
+            onClick={() => setConfirmLogout(true)}
+          >
             Logout
           </button>
         </div>
       </section>
+      {confirmLogout && (
+        <div
+          className="st-dialog-backdrop"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setConfirmLogout(false);
+          }}
+        >
+          <section
+            className="st-dialog"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="st-dialog-title"
+          >
+            <h2 id="st-dialog-title">Log out?</h2>
+            <p>Are you sure you want to log out of your administrator account?</p>
+            <div className="st-dialog-actions">
+              <button
+                type="button"
+                className="st-btn st-btn--secondary"
+                onClick={() => setConfirmLogout(false)}
+              >
+                Cancel
+              </button>
+              <button type="button" className="st-btn st-btn--danger" onClick={handleLogout}>
+                Log out
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   );
 }

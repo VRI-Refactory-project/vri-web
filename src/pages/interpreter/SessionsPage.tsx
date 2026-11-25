@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { SessionFilters } from '../../components/interpreter/sessions/SessionFilters';
-import { useMobileViewMore } from '../../components/responsive/useMobileViewMore';
+import { TablePagination } from '../../components/TablePagination';
 import { SessionRow } from '../../components/interpreter/sessions/SessionRow';
 import { UpNextCard } from '../../components/interpreter/sessions/UpNextCard';
 import { INTERPRETER_BASE } from '../../features/interpreter/navigation';
@@ -17,6 +17,8 @@ import {
 } from '../../services/interpreterSessions';
 import './SessionsPage.css';
 
+const PAGE_SIZE = 10;
+
 /** The interpreter's booked sessions: the next one up, then the full list. */
 export function InterpreterSessionsPage() {
   const navigate = useNavigate();
@@ -26,6 +28,7 @@ export function InterpreterSessionsPage() {
   const [filter, setFilter] = useState<SessionFilter>('all');
   const [search, setSearch] = useState('');
   const [retryCount, setRetryCount] = useState(0);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     let cancelled = false;
@@ -50,7 +53,9 @@ export function InterpreterSessionsPage() {
   const upNext = useMemo(() => nextSession(all), [all]);
   const shown = useMemo(() => filterSessions(all, filter, search), [all, filter, search]);
 
-  const mobileRows = useMobileViewMore(shown.length, [filter, search, shown.length].join('|'));
+  const pageCount = Math.max(1, Math.ceil(shown.length / PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount);
+  const visibleSessions = shown.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   const emptyMessage =
     all.length === 0 ? 'No sessions yet.' : 'No sessions match your search or filter.';
@@ -96,9 +101,15 @@ export function InterpreterSessionsPage() {
 
             <SessionFilters
               filter={filter}
-              onFilterChange={setFilter}
+              onFilterChange={(nextFilter) => {
+                setFilter(nextFilter);
+                setPage(1);
+              }}
               search={search}
-              onSearchChange={setSearch}
+              onSearchChange={(nextSearch) => {
+                setSearch(nextSearch);
+                setPage(1);
+              }}
             />
           </div>
 
@@ -118,19 +129,20 @@ export function InterpreterSessionsPage() {
                   </thead>
 
                   <tbody>
-                    {shown.map((session, index) => (
-                      <SessionRow
-                        key={session.id}
-                        session={session}
-                        now={now}
-                        mobileItemProps={mobileRows.itemProps(index)}
-                      />
+                    {visibleSessions.map((session) => (
+                      <SessionRow key={session.id} session={session} now={now} />
                     ))}
                   </tbody>
                 </table>
               </div>
 
-              {mobileRows.button}
+              <TablePagination
+                page={currentPage}
+                pageSize={PAGE_SIZE}
+                total={shown.length}
+                label="sessions"
+                onPageChange={setPage}
+              />
             </>
           )}
         </section>
