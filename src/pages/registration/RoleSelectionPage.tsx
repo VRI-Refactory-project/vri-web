@@ -60,7 +60,7 @@ export function RoleSelectionPage() {
     }, 150);
   };
 
-  return (   
+  return (
     <AuthShell
       size="wide"
       bare
