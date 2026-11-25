@@ -52,6 +52,7 @@ describe('getInstitutionDashboardData', () => {
         failed_requests: 7,
         active_sessions: 2,
         sessions_this_month: 61,
+        daily_usage_minutes: [3, 5, 2, 0, 1, 7, 4],
         total_video_sessions: 75,
         waiting_video_sessions: 5,
         connecting_video_sessions: 3,
@@ -72,6 +73,7 @@ describe('getInstitutionDashboardData', () => {
       sessions: {
         activeSessions: 2,
         sessionsThisMonth: 61,
+        dailyUsageMinutes: [3, 5, 2, 0, 1, 7, 4],
         totalRequests: 100,
         pendingRequests: 15,
         completedRequests: 60,

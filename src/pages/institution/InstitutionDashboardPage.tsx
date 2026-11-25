@@ -84,7 +84,6 @@ export function InstitutionDashboardPage({
   onViewSession,
 }: InstitutionDashboardPageProps) {
   const navigate = useNavigate();
-  const [weekly, setWeekly] = useState(true);
   const [search, setSearch] = useState('');
   const [sessionPage, setSessionPage] = useState(1);
   const [alerts, setAlerts] = useState<InstitutionAlert[]>([]);
@@ -147,6 +146,7 @@ export function InstitutionDashboardPage({
         setData((current) => ({
           ...current,
           activeSessions: dashboard.sessions.activeSessions,
+          weeklyActivity: dashboard.sessions.dailyUsageMinutes,
           staff: dashboard.staff.total,
           activeStaff: dashboard.staff.active,
           revokedStaff: dashboard.staff.revoked,
@@ -160,12 +160,9 @@ export function InstitutionDashboardPage({
       if (usageResult.status === 'fulfilled') {
         const usage = usageResult.value;
 
-        const weeklyData = usage.overTime.slice(-7);
-
         setData((current) => ({
           ...current,
           usageHours: usage.totalMinutes / 60,
-          weeklyActivity: weeklyData.map((day) => day.count),
         }));
       } else {
         console.error('Could not load institution usage:', usageResult.reason);
@@ -274,6 +271,7 @@ export function InstitutionDashboardPage({
     (currentSessionPage - 1) * SESSION_PAGE_SIZE,
     currentSessionPage * SESSION_PAGE_SIZE,
   );
+  const maxUsage = Math.max(0, ...data.weeklyActivity);
 
   const goTo = (section: string) => {
     navigate(`/dashboard/institution/${section}`);
@@ -393,17 +391,8 @@ export function InstitutionDashboardPage({
         <div className="id-activity-heading">
           <div>
             <h2>Session activity</h2>
-            <p>{weekly ? 'Last 7 days' : 'Daily activity overview'}</p>
+            <p>Last 7 days · minutes of VRI usage</p>
           </div>
-
-          <button
-            type="button"
-            className="id-weekly-toggle"
-            onClick={() => setWeekly((value) => !value)}
-            aria-pressed={weekly}
-          >
-            {weekly ? 'Weekly' : 'Daily'}
-          </button>
         </div>
 
         <div
@@ -412,8 +401,7 @@ export function InstitutionDashboardPage({
           aria-label="Session activity for the seven days of the week"
         >
           {data.weeklyActivity.map((value, index) => {
-            // Added Math.max to prevent bars from disappearing completely when value is 0
-            const height = weekly ? Math.max(value, 2) : Math.max(12, Math.round(value * 0.65));
+            const height = maxUsage > 0 ? (value / maxUsage) * 100 : 0;
 
             return (
               <div className="id-chart-day" key={`${index}-${WEEKDAYS[index]}`}>
@@ -421,7 +409,7 @@ export function InstitutionDashboardPage({
                   <div
                     className="id-chart-bar"
                     style={{ height: `${height}%` }}
-                    title={`${WEEKDAYS[index]}: ${value} activity units`}
+                    title={`${WEEKDAYS[index]}: ${value} minutes`}
                   />
                 </div>
                 <span>{WEEKDAYS[index]}</span>

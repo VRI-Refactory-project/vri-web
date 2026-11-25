@@ -43,6 +43,7 @@ beforeEach(() => {
       sessions: {
         activeSessions: 1,
         sessionsThisMonth: 20,
+        dailyUsageMinutes: [1, 2, 3, 4, 5, 6, 7],
         totalRequests: 20,
         pendingRequests: 3,
         completedRequests: 15,
