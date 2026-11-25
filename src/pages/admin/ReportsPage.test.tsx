@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -58,6 +58,15 @@ describe('ReportsPage', () => {
     expect(screen.getByText('Medical')).toBeInTheDocument();
     expect(screen.getByText('Completed', { selector: '.reports-stat__label' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /export csv/i })).toBeEnabled();
+  });
+
+  it('lists each day with a totals row', async () => {
+    render(<ReportsPage />);
+
+    const table = await screen.findByRole('table');
+    expect(within(table).getByText('Total')).toBeInTheDocument();
+    expect(within(table).getAllByRole('row')).toHaveLength(4);
+    expect(within(table).getByText('80%')).toBeInTheDocument();
   });
 
   it('shows the response times report on its tab', async () => {
