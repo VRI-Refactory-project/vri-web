@@ -108,13 +108,113 @@ function Columns({
   );
 }
 
+/** The big numbers at the top of a report, like the headline strip on a finance dashboard. */
+function Headline({
+  title,
+  subtitle,
+  items,
+}: {
+  title: string;
+  subtitle: string;
+  items: { label: string; value: string | number; hint?: string }[];
+}) {
+  return (
+    <section className="reports-card reports-headline">
+      <header className="reports-headline__head">
+        <h2>{title}</h2>
+        <p>{subtitle}</p>
+      </header>
+      <div className="reports-headline__grid">
+        {items.map((item) => (
+          <div key={item.label} className="reports-headline__item">
+            <span className="reports-headline__label">{item.label}</span>
+            <strong className="reports-headline__value">{item.value}</strong>
+            {item.hint && <small className="reports-headline__hint">{item.hint}</small>}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function percent(part: number, whole: number): string {
+  return whole === 0 ? '—' : `${Math.round((part / whole) * 100)}%`;
+}
+
+function formatDay(date: string): string {
+  const parsed = new Date(`${date}T00:00:00`);
+  return Number.isNaN(parsed.getTime())
+    ? date
+    : parsed.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
+/** A compact table with a totals row: newest day first. */
+function DailyTable({ rows }: { rows: UsageReport['byDay'] }) {
+  if (rows.length === 0) return <p className="reports-empty">No requests in this period.</p>;
+
+  const sorted = [...rows].sort((a, b) => b.date.localeCompare(a.date));
+  const totalRequests = rows.reduce((sum, row) => sum + row.requests, 0);
+  const totalSessions = rows.reduce((sum, row) => sum + row.sessions, 0);
+
+  return (
+    <div className="reports-table-wrap">
+      <table className="reports-table">
+        <thead>
+          <tr>
+            <th scope="col">Day</th>
+            <th scope="col" className="reports-table__num">
+              Requests
+            </th>
+            <th scope="col" className="reports-table__num">
+              Sessions
+            </th>
+            <th scope="col" className="reports-table__num">
+              Answered
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map((row) => (
+            <tr key={row.date}>
+              <td>{formatDay(row.date)}</td>
+              <td className="reports-table__num">{row.requests}</td>
+              <td className="reports-table__num">{row.sessions}</td>
+              <td className="reports-table__num">{percent(row.sessions, row.requests)}</td>
+            </tr>
+          ))}
+        </tbody>
+        <tfoot>
+          <tr>
+            <th scope="row">Total</th>
+            <td className="reports-table__num">{totalRequests}</td>
+            <td className="reports-table__num">{totalSessions}</td>
+            <td className="reports-table__num">{percent(totalSessions, totalRequests)}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  );
+}
+
 function UsageView({ report }: { report: UsageReport }) {
   const { summary } = report;
   return (
     <>
+      <Headline
+        title="Usage summary"
+        subtitle={`Last ${report.rangeDays} days`}
+        items={[
+          { label: 'Requests', value: summary.requests, hint: 'Asked for an interpreter' },
+          { label: 'Sessions', value: summary.sessions, hint: 'An interpreter accepted' },
+          {
+            label: 'Answered',
+            value: percent(summary.sessions, summary.requests),
+            hint: 'Requests that got an interpreter',
+          },
+        ]}
+      />
+
       <section className="reports-stats">
-        <StatCard label="Requests" value={summary.requests} hint="Asked for an interpreter" />
-        <StatCard label="Sessions" value={summary.sessions} hint="An interpreter accepted" />
         <StatCard label="Completed" value={summary.completed} />
         <StatCard label="Cancelled" value={summary.cancelled} />
         <StatCard label="Nobody available" value={summary.failed} />
@@ -134,6 +234,14 @@ function UsageView({ report }: { report: UsageReport }) {
             title: `${row.date}: ${row.requests} requests, ${row.sessions} sessions`,
           }))}
         />
+      </section>
+
+      <section className="reports-panel">
+        <header className="reports-panel__head">
+          <h2>Day by day</h2>
+          <p>Newest first, with the totals for the period at the bottom.</p>
+        </header>
+        <DailyTable rows={report.byDay} />
       </section>
 
       <section className="reports-row">
@@ -168,22 +276,29 @@ function ResponseTimesView({ report }: { report: ResponseTimesReport }) {
   const { summary, offers } = report;
   return (
     <>
+      <Headline
+        title="Response summary"
+        subtitle={`Last ${report.rangeDays} days`}
+        items={[
+          {
+            label: 'Average time to accept',
+            value: formatSeconds(summary.avgSecondsToAccept),
+            hint: 'From request to an interpreter accepting',
+          },
+          {
+            label: 'Average time in queue',
+            value: formatSeconds(summary.avgSecondsInQueue),
+            hint: 'From request to the first offer',
+          },
+          {
+            label: 'Answered',
+            value: summary.answered,
+            hint: `of ${summary.requests} requests`,
+          },
+        ]}
+      />
+
       <section className="reports-stats">
-        <StatCard
-          label="Average time to accept"
-          value={formatSeconds(summary.avgSecondsToAccept)}
-          hint="From request to an interpreter accepting"
-        />
-        <StatCard
-          label="Average time in queue"
-          value={formatSeconds(summary.avgSecondsInQueue)}
-          hint="From request to the first offer"
-        />
-        <StatCard
-          label="Answered"
-          value={summary.answered}
-          hint={`of ${summary.requests} requests`}
-        />
         <StatCard
           label="Abandoned"
           value={summary.abandoned}
@@ -240,6 +355,11 @@ export function ReportsPage() {
   const [loaded, setLoaded] = useState<Loaded | null>(null);
 
   const key = `${tab}-${days}`;
+  const updatedOn = new Date().toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -279,46 +399,58 @@ export function ReportsPage() {
           <h1>Reports</h1>
           <p>How the platform is being used, and how quickly requests are answered.</p>
         </div>
-        <button
-          type="button"
-          className="reports-btn"
-          onClick={handleExport}
-          disabled={!usage && !times}
-        >
-          <Download size={15} /> Export CSV
-        </button>
+        <span className="reports-updated">Updated {updatedOn}</span>
       </header>
 
-      <div className="reports-toolbar">
-        <div className="reports-tabs" role="tablist" aria-label="Report">
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              role="tab"
-              aria-selected={tab === t.id}
-              className={`reports-tab ${tab === t.id ? 'reports-tab--active' : ''}`}
-              onClick={() => setTab(t.id)}
-            >
-              {t.label}
-            </button>
-          ))}
+      <section className="reports-controls">
+        <div className="reports-card reports-option">
+          <h2 className="reports-option__title">Report</h2>
+          <div className="reports-choices" role="tablist" aria-label="Report">
+            {TABS.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                role="tab"
+                aria-selected={tab === t.id}
+                className={`reports-choice ${tab === t.id ? 'reports-choice--active' : ''}`}
+                onClick={() => setTab(t.id)}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <div className="reports-ranges" role="group" aria-label="Period">
-          {REPORT_RANGES.map((range) => (
-            <button
-              key={range}
-              type="button"
-              aria-pressed={days === range}
-              className={`reports-pill ${days === range ? 'reports-pill--active' : ''}`}
-              onClick={() => setDays(range)}
-            >
-              Last {range} days
-            </button>
-          ))}
+        <div className="reports-card reports-option">
+          <h2 className="reports-option__title">Period</h2>
+          <div className="reports-choices" role="group" aria-label="Period">
+            {REPORT_RANGES.map((range) => (
+              <button
+                key={range}
+                type="button"
+                aria-pressed={days === range}
+                className={`reports-choice ${days === range ? 'reports-choice--active' : ''}`}
+                onClick={() => setDays(range)}
+              >
+                Last {range} days
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+
+        <div className="reports-card reports-option">
+          <h2 className="reports-option__title">Export</h2>
+          <p className="reports-option__text">Download the report you are viewing as a CSV file.</p>
+          <button
+            type="button"
+            className="reports-btn"
+            onClick={handleExport}
+            disabled={!usage && !times}
+          >
+            <Download size={15} /> Export CSV
+          </button>
+        </div>
+      </section>
 
       {loading && <p className="reports-empty">Loading report…</p>}
 
