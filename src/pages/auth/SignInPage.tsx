@@ -1,57 +1,72 @@
-// src/pages/auth/SignInPage.tsx
 import React, { useState } from 'react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
-import { ChevronRight, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
+
 import { AuthLayout } from '../../components/Authlayout';
 import { FieldError } from '../../components/FieldError';
 import { dashboardPathFor } from '../../features/auth/roles';
 import { useAuth } from '../../hooks/useAuth';
+
 import {
   collectErrors,
   identifierForApi,
   validateIdentifier,
   validatePasswordPresent,
 } from '../../lib/validation';
+
 import { useFieldErrors } from '../../lib/useFieldErrors';
 import { ApiError } from '../../services/api';
 import type { Role } from '../../types';
 import { signIn } from '../../services/auth';
+
 import './SignInPages.css';
 
 type FieldName = 'identifier' | 'password';
+
 const FIELD_ORDER: readonly FieldName[] = ['identifier', 'password'];
 
-/** Back to the page they were sent away from, but only if it belongs to their role's dashboard. */
 function destinationFor(role: Role, from: unknown): string {
   const home = dashboardPathFor(role);
+
   return typeof from === 'string' && (from === home || from.startsWith(`${home}/`)) ? from : home;
 }
 
 export const SignInPage = () => {
-  const [formData, setFormData] = useState({ identifier: '', password: '' });
+  const [formData, setFormData] = useState({
+    identifier: '',
+    password: '',
+  });
+
   const [error, setError] = useState<string>();
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
   const { session, sessionExpired, login } = useAuth();
+
   const location = useLocation();
   const from = (location.state as { from?: string } | null)?.from;
 
-  // Sign-in checks the shape of the identifier, but never password strength: an older account
-  // must still be able to get in with the password it already has.
+  // Configure this URL when the backend Google OAuth endpoint is ready.
+  const googleAuthUrl = import.meta.env.VITE_GOOGLE_AUTH_URL;
+
   const errors = collectErrors<FieldName>({
     identifier: validateIdentifier(formData.identifier),
     password: validatePasswordPresent(formData.password),
   });
+
   const { shown, check, fieldProps } = useFieldErrors(errors, FIELD_ORDER, (name) => name);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(undefined);
+
     if (!check()) return;
+
     setSubmitting(true);
+
     try {
       const session = await signIn(identifierForApi(formData.identifier), formData.password);
-      // The redirect below takes them to their dashboard once the session is stored.
+
       login(session);
     } catch (err) {
       setError(
@@ -64,32 +79,51 @@ export const SignInPage = () => {
     }
   };
 
-  // Someone who is already signed in has no use for this form.
-  if (session) return <Navigate to={destinationFor(session.user.role, from)} replace />;
+  const handleGoogleLogin = () => {
+    if (!googleAuthUrl) {
+      setError('Google sign-in is not configured yet. Please use email or phone login.');
+      return;
+    }
+
+    window.location.assign(googleAuthUrl);
+  };
+
+  if (session) {
+    return <Navigate to={destinationFor(session.user.role, from)} replace />;
+  }
 
   return (
-    <AuthLayout title="Welcome Back" subtitle="Sign In to continue to SignConnect." backTo="/">
-      <form onSubmit={handleSubmit} noValidate>
+    <AuthLayout
+      title="Welcome Back"
+      subtitle="Sign in to continue to Sign Connect"
+      backTo="/"
+      className="as-page--sign-in"
+    >
+      <form onSubmit={handleSubmit} noValidate className="sign-in-form">
         {sessionExpired && (
           <p role="status" className="login-notice">
             Your session has ended. Please sign in again.
           </p>
         )}
+
         <div className="form-group">
           <label htmlFor="identifier">Email or phone number</label>
+
           <input
             {...fieldProps('identifier')}
             type="text"
             autoComplete="username"
-            placeholder="name@example.com or +256 772 123 456"
+            placeholder="Enter your email or phone number"
             value={formData.identifier}
             onChange={(e) => setFormData({ ...formData, identifier: e.target.value })}
           />
+
           <FieldError id="identifier" message={shown('identifier')} />
         </div>
 
-        <div className="form-group">
+        <div className="form-group sign-in-password-group">
           <label htmlFor="password">Password</label>
+
           <div className="password-field">
             <input
               {...fieldProps('password')}
@@ -99,6 +133,7 @@ export const SignInPage = () => {
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             />
+
             <button
               type="button"
               className="password-toggle"
@@ -108,7 +143,12 @@ export const SignInPage = () => {
               {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
             </button>
           </div>
+
           <FieldError id="password" message={shown('password')} />
+
+          <Link to="/forgot-password" className="login-forgot-link">
+            Forgot password?
+          </Link>
         </div>
 
         {error && (
@@ -117,19 +157,30 @@ export const SignInPage = () => {
           </p>
         )}
 
-        <button
-          type="submit"
-          className="btn-primary"
-          style={{ marginTop: '16px' }}
-          disabled={submitting}
-        >
-          {submitting ? 'Signing in...' : 'Login'} <ChevronRight size={18} />
+        <button type="submit" className="btn-primary login-submit" disabled={submitting}>
+          {submitting ? 'Signing in...' : 'Sign In'}
         </button>
       </form>
 
-      <Link to="/forgot-password" className="login-forgot-link">
-        Forgot Password?
-      </Link>
+      <div className="login-divider">
+        <span>OR CONTINUE WITH</span>
+      </div>
+
+      <button type="button" className="google-login-button" onClick={handleGoogleLogin}>
+        <span className="google-letter" aria-hidden="true">
+          G
+        </span>
+        Continue with Google
+      </button>
+
+      <p className="login-signup-link">
+        Don't have an account? <Link to="/get-started">Sign up</Link>
+      </p>
+
+      <p className="login-legal">
+        By continuing, you agree to our <Link to="/terms">Terms of Service</Link> and{' '}
+        <Link to="/privacy">Privacy Policy</Link>.
+      </p>
     </AuthLayout>
   );
 };
