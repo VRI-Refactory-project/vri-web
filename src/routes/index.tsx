@@ -73,7 +73,9 @@ import { InterpreterSettingsPage } from '../pages/interpreter/SettingsPage';
 import { InterpreterWalletPage } from '../pages/interpreter/WalletPage';
 import { GuestVideoPage } from '../features/video/GuestVideoPage';
 import { GuestSessionPage } from '../features/guest/GuestSessionPage';
-
+import { HelpSupportPage } from '../features/support/HelpSupportPage';
+import { StaffProfilePage } from '../pages/institution/StaffProfilePage';
+import { SupportInboxPage } from '../features/support/SupportInboxPage';
 const appRoutes: RouteObject[] = [
   {
     element: <GuestRoute />,
