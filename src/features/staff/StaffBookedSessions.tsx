@@ -8,6 +8,7 @@ import {
   useMyBookings,
   type MyBooking,
 } from '../sessions/myBookings';
+import { BookingChanges } from '../sessions/BookingChanges';
 
 const LIVE_PATH = '/live/institution';
 
@@ -22,9 +23,7 @@ const whenOf = (b: MyBooking) =>
 
 export function StaffBookedSessions() {
   const navigate = useNavigate();
-  const { bookings, error, busyId, join, cancel } = useMyBookings((id) =>
-    navigate(`${LIVE_PATH}/${id}`),
-  );
+  const { bookings, error, join, replace } = useMyBookings((id) => navigate(`${LIVE_PATH}/${id}`));
   const [showAll, setShowAll] = useState(false);
 
   // Only what is still to come or can still be joined: not cancelled, missed or finished ones.
@@ -96,14 +95,7 @@ export function StaffBookedSessions() {
                   Join call
                 </button>
               ) : hasStarted(b) ? null : (
-                <button
-                  type="button"
-                  className="sd-outline-btn"
-                  disabled={busyId === b.id}
-                  onClick={() => cancel(b.id)}
-                >
-                  Cancel
-                </button>
+                <BookingChanges booking={b} onChanged={replace} buttonClassName="sd-outline-btn" />
               )}
             </div>
           ))

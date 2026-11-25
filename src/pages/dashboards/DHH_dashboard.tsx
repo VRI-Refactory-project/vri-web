@@ -521,7 +521,8 @@
 //   );
 // }
 
-import { bookingLabel, hasStarted } from '../../features/sessions/myBookings';
+import { bookingLabel, hasStarted, type MyBooking } from '../../features/sessions/myBookings';
+import { BookingChanges } from '../../features/sessions/BookingChanges';
 import { startBookedCall } from '../../features/interpreter/bookedSessions';
 import {
   Video,
@@ -558,17 +559,7 @@ interface NotificationItem {
 }
 
 // Interface for the scheduled sessions
-interface BookedSession {
-  id: number;
-  date: string;
-  time: string;
-  duration: number;
-  session_type: string;
-  status: string;
-  interpreter_name?: string | null;
-  can_join?: boolean;
-  no_show?: '' | 'interpreter' | 'booker' | 'both';
-}
+type BookedSession = MyBooking;
 
 function greeting(date = new Date()) {
   const hour = date.getHours();
@@ -592,7 +583,6 @@ export function DashboardPage() {
 
   // --- STATE ---
   const [bookedSessions, setBookedSessions] = useState<BookedSession[]>([]);
-  const [cancelling, setCancelling] = useState<number | null>(null);
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [interpreters, setInterpreters] = useState<AvailableInterpreter[] | null>(null);
   const [openProfileId, setOpenProfileId] = useState<number | null>(null);
@@ -652,19 +642,9 @@ export function DashboardPage() {
     }
   };
 
-  const cancelBooking = async (id: number) => {
-    setCancelling(id);
-    setBookingError(null);
-    try {
-      await api(`/api/v1/interpreters/sessions/booked/${id}/cancel/`, { method: 'POST' });
-      setBookedSessions((list) =>
-        list.map((b) => (b.id === id ? { ...b, status: 'CANCELLED' } : b)),
-      );
-    } catch (err) {
-      setBookingError(describeError(err));
-    } finally {
-      setCancelling(null);
-    }
+  // After a booking is cancelled or moved (V2-051): the server's copy replaces ours.
+  const replaceBooking = (updated: BookedSession) => {
+    setBookedSessions((list) => list.map((b) => (b.id === updated.id ? { ...b, ...updated } : b)));
   };
 
   // Keep the upcoming count and cards clear of cancelled bookings, including stale API responses.
@@ -952,14 +932,11 @@ export function DashboardPage() {
                   ) : hasStarted(session) ? (
                     <span>Ended</span>
                   ) : (
-                    <button
-                      type="button"
-                      className="session-cancel"
-                      disabled={cancelling === session.id}
-                      onClick={() => cancelBooking(session.id)}
-                    >
-                      Cancel booking
-                    </button>
+                    <BookingChanges
+                      booking={session}
+                      onChanged={replaceBooking}
+                      buttonClassName="session-cancel"
+                    />
                   )}
                   <ChevronRight size={16} className="session-arrow" />
                 </div>

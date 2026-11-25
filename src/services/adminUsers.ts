@@ -170,6 +170,52 @@ export async function fetchAdminUsers(filters: AdminUserFilters = {}): Promise<A
     .filter((u) => u.id);
 }
 
+export async function fetchAdminUsersPage(
+  filters: AdminUserFilters,
+  page: number,
+  pageSize: number,
+): Promise<{ results: AdminUser[]; total: number }> {
+  const params = new URLSearchParams();
+  if (filters.search) params.set('search', filters.search);
+  if (filters.type && filters.type !== 'all-types') params.set('role', filters.type);
+  if (filters.status && filters.status !== 'all-statuses') params.set('status', filters.status);
+  if (filters.range && filters.range !== 'all-time') params.set('range', filters.range);
+  params.set('page', String(page));
+  params.set('page_size', String(pageSize));
+
+  const raw = await api<unknown>(`${PATH}?${params.toString()}`);
+  const rows = unwrap(raw)
+    .map(normalizeUser)
+    .filter((user) => user.id);
+  const record =
+    raw && typeof raw === 'object' && !Array.isArray(raw) ? (raw as { count?: unknown }) : null;
+  const total = typeof record?.count === 'number' ? record.count : rows.length;
+
+  // Support existing APIs that ignore page parameters and return the complete array.
+  if (total <= rows.length) {
+    return {
+      results: rows.slice((page - 1) * pageSize, page * pageSize),
+      total: rows.length,
+    };
+  }
+  return { results: rows, total };
+}
+
+export async function fetchAllAdminUsers(
+  filters: AdminUserFilters = {},
+  pageSize = 100,
+): Promise<AdminUser[]> {
+  const firstPage = await fetchAdminUsersPage(filters, 1, pageSize);
+  const users = [...firstPage.results];
+  const pageCount = Math.ceil(firstPage.total / pageSize);
+  for (let page = 2; page <= pageCount; page += 1) {
+    const next = await fetchAdminUsersPage(filters, page, pageSize);
+    if (next.results.length === 0) break;
+    users.push(...next.results);
+  }
+  return users;
+}
+
 // ==========================================
 // --- ACTION HELPERS ---
 // ==========================================
@@ -195,6 +241,10 @@ export async function updateUser(
 ): Promise<void> {
   await api(`${PATH}${userId}/`, {
     method: 'PATCH',
-    body: JSON.stringify(updates),
+    body: JSON.stringify({
+      full_name: updates.name,
+      email: updates.email,
+      phone_number: updates.phone,
+    }),
   });
 }

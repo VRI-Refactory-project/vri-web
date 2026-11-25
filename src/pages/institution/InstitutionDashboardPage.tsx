@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useMobileViewMore } from '../../components/responsive/useMobileViewMore';
+import { TablePagination } from '../../components/TablePagination';
 import { CircleUserRound, Plus } from 'lucide-react';
 
 import { getInstitutionDashboardData } from '../../services/institutionDashboard';
@@ -43,8 +43,17 @@ interface InstitutionSessionApi {
 
 interface Department {
   name: string;
-  sessionsToday: number;
+  sessionsThisMonth: number;
   active: number;
+}
+
+interface InstitutionAlert {
+  id: number;
+  title: string;
+  message: string;
+  severity: 'INFO' | 'WARNING' | 'URGENT';
+  is_read: boolean;
+  created_at: string;
 }
 
 interface InstitutionDashboardData {
@@ -63,6 +72,7 @@ interface InstitutionDashboardData {
 }
 
 const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+const SESSION_PAGE_SIZE = 5;
 
 export interface InstitutionDashboardPageProps {
   onCreateStaff?: () => void;
@@ -74,8 +84,9 @@ export function InstitutionDashboardPage({
   onViewSession,
 }: InstitutionDashboardPageProps) {
   const navigate = useNavigate();
-  const [weekly, setWeekly] = useState(true);
   const [search, setSearch] = useState('');
+  const [sessionPage, setSessionPage] = useState(1);
+  const [alerts, setAlerts] = useState<InstitutionAlert[]>([]);
 
   const [orgName, setOrgName] = useState('');
   // The staff figures are real (GET /dashboard/institution/). The session, usage and department
@@ -105,13 +116,26 @@ export function InstitutionDashboardPage({
 
       const to = toIsoDay(today);
 
-      const [dashboardResult, usageResult, sessionsResult] = await Promise.allSettled([
-        getInstitutionDashboardData(),
-        getInstitutionUsage({ from, to }),
-        api<InstitutionSessionApi[]>('/api/v1/institutions/me/sessions/?state=active'),
-      ]);
+      const [dashboardResult, usageResult, sessionsResult, alertsResult] = await Promise.allSettled(
+        [
+          getInstitutionDashboardData(),
+          getInstitutionUsage({ from, to }),
+          api<InstitutionSessionApi[]>('/api/v1/institutions/me/sessions/?state=active'),
+          api<InstitutionAlert[]>('/api/v1/institutions/me/alerts/'),
+        ],
+      );
 
       if (cancelled) return;
+
+      if (alertsResult.status === 'fulfilled') {
+        setAlerts(alertsResult.value);
+        setData((current) => ({
+          ...current,
+          alerts: alertsResult.value.filter((alert) => !alert.is_read).length,
+        }));
+      } else {
+        console.error('Could not load institution alerts:', alertsResult.reason);
+      }
 
       // Dashboard analytics and staff figures
       if (dashboardResult.status === 'fulfilled') {
@@ -119,16 +143,14 @@ export function InstitutionDashboardPage({
 
         setOrgName(dashboard.institutionName);
 
-        const analytics = dashboard.sessions;
-
         setData((current) => ({
           ...current,
+          activeSessions: dashboard.sessions.activeSessions,
+          weeklyActivity: dashboard.sessions.dailyUsageMinutes,
           staff: dashboard.staff.total,
           activeStaff: dashboard.staff.active,
           revokedStaff: dashboard.staff.revoked,
-
-          // Currently connected video calls
-          activeSessions: analytics.connectedVideoSessions,
+          sessionsThisMonth: dashboard.sessions.sessionsThisMonth,
         }));
       } else {
         console.error('Could not load institution dashboard:', dashboardResult.reason);
@@ -138,13 +160,9 @@ export function InstitutionDashboardPage({
       if (usageResult.status === 'fulfilled') {
         const usage = usageResult.value;
 
-        const weeklyData = usage.overTime.slice(-7);
-
         setData((current) => ({
           ...current,
-          sessionsThisMonth: usage.sessions,
           usageHours: usage.totalMinutes / 60,
-          weeklyActivity: weeklyData.map((day) => day.count),
         }));
       } else {
         console.error('Could not load institution usage:', usageResult.reason);
@@ -190,28 +208,43 @@ export function InstitutionDashboardPage({
         setData((current) => ({
           ...current,
           sessions: mappedSessions,
-          departments: current.departments.map((department) => ({
-            ...department,
-            active: activeByDepartment.get(department.name) || 0,
-          })),
         }));
       } else {
         console.error('Could not load active institution sessions:', sessionsResult.reason);
       }
 
-      // Populate department usage from monthly analytics
-      if (usageResult.status === 'fulfilled') {
-        const usage = usageResult.value;
+      // Combine monthly usage and active requests by department
+      const monthlyByDepartment = new Map<string, number>();
+      const activeByDepartment = new Map<string, number>();
 
-        setData((current) => ({
-          ...current,
-          departments: usage.byDepartment.map((department) => ({
-            name: department.label || 'No department',
-            sessionsToday: department.count,
-            active: current.departments.find((item) => item.name === department.label)?.active || 0,
-          })),
-        }));
+      if (usageResult.status === 'fulfilled') {
+        usageResult.value.byDepartment.forEach((department) => {
+          const name = department.label || 'No department';
+          monthlyByDepartment.set(name, department.count);
+        });
       }
+
+      if (sessionsResult.status === 'fulfilled') {
+        sessionsResult.value.forEach((request) => {
+          const department = request.staff.department || 'No department';
+
+          activeByDepartment.set(department, (activeByDepartment.get(department) || 0) + 1);
+        });
+      }
+
+      const departmentNames = new Set([
+        ...monthlyByDepartment.keys(),
+        ...activeByDepartment.keys(),
+      ]);
+
+      setData((current) => ({
+        ...current,
+        departments: Array.from(departmentNames).map((name) => ({
+          name,
+          sessionsThisMonth: monthlyByDepartment.get(name) || 0,
+          active: activeByDepartment.get(name) || 0,
+        })),
+      }));
     }
 
     loadDashboard();
@@ -232,10 +265,13 @@ export function InstitutionDashboardPage({
       ),
     );
   }, [data.sessions, search]);
-  const mobileRows = useMobileViewMore(
-    filteredSessions.length,
-    [search, filteredSessions.length].join('|'),
+  const sessionPageCount = Math.max(1, Math.ceil(filteredSessions.length / SESSION_PAGE_SIZE));
+  const currentSessionPage = Math.min(sessionPage, sessionPageCount);
+  const visibleSessions = filteredSessions.slice(
+    (currentSessionPage - 1) * SESSION_PAGE_SIZE,
+    currentSessionPage * SESSION_PAGE_SIZE,
   );
+  const maxUsage = Math.max(0, ...data.weeklyActivity);
 
   const goTo = (section: string) => {
     navigate(`/dashboard/institution/${section}`);
@@ -255,6 +291,22 @@ export function InstitutionDashboardPage({
       return;
     }
     navigate(`/dashboard/institution/sessions?sessionId=${encodeURIComponent(sessionId)}`);
+  };
+
+  const markAlertRead = async (alertId: number) => {
+    try {
+      const updated = await api<InstitutionAlert>(
+        `/api/v1/institutions/me/alerts/${alertId}/read/`,
+        { method: 'POST' },
+      );
+      setAlerts((current) => current.map((alert) => (alert.id === alertId ? updated : alert)));
+      setData((current) => ({
+        ...current,
+        alerts: Math.max(0, current.alerts - 1),
+      }));
+    } catch (error) {
+      console.error('Could not mark institution alert as read:', error);
+    }
   };
 
   return (
@@ -297,7 +349,6 @@ export function InstitutionDashboardPage({
         </article>
       </section>
 
-      {/* Cleaned up Alerts Feed */}
       <section className="id-section">
         <div className="id-section-heading">
           <h2>Alerts feed</h2>
@@ -305,9 +356,34 @@ export function InstitutionDashboardPage({
         </div>
 
         <div className="id-panel id-alerts">
-          <p style={{ padding: '24px', color: 'var(--text-muted, #6b7280)', textAlign: 'center' }}>
-            No new alerts.
-          </p>
+          {alerts.length === 0 ? (
+            <p className="id-alert-empty">No new alerts.</p>
+          ) : (
+            alerts.map((alert) => (
+              <article
+                className={`id-alert${alert.is_read ? ' id-alert--read' : ''}`}
+                key={alert.id}
+              >
+                <span
+                  className={`id-alert-dot id-alert-dot--${alert.severity.toLowerCase()}`}
+                  aria-label={`${alert.severity.toLowerCase()} severity`}
+                />
+                <span className="id-alert-copy">
+                  <strong>{alert.title}</strong>
+                  <small>{alert.message}</small>
+                </span>
+                {!alert.is_read && (
+                  <button
+                    type="button"
+                    className="id-alert-read"
+                    onClick={() => void markAlertRead(alert.id)}
+                  >
+                    Mark as read
+                  </button>
+                )}
+              </article>
+            ))
+          )}
         </div>
       </section>
 
@@ -315,17 +391,8 @@ export function InstitutionDashboardPage({
         <div className="id-activity-heading">
           <div>
             <h2>Session activity</h2>
-            <p>{weekly ? 'Last 7 days' : 'Daily activity overview'}</p>
+            <p>Last 7 days · minutes of VRI usage</p>
           </div>
-
-          <button
-            type="button"
-            className="id-weekly-toggle"
-            onClick={() => setWeekly((value) => !value)}
-            aria-pressed={weekly}
-          >
-            {weekly ? 'Weekly' : 'Daily'}
-          </button>
         </div>
 
         <div
@@ -334,8 +401,7 @@ export function InstitutionDashboardPage({
           aria-label="Session activity for the seven days of the week"
         >
           {data.weeklyActivity.map((value, index) => {
-            // Added Math.max to prevent bars from disappearing completely when value is 0
-            const height = weekly ? Math.max(value, 2) : Math.max(12, Math.round(value * 0.65));
+            const height = maxUsage > 0 ? (value / maxUsage) * 100 : 0;
 
             return (
               <div className="id-chart-day" key={`${index}-${WEEKDAYS[index]}`}>
@@ -343,7 +409,7 @@ export function InstitutionDashboardPage({
                   <div
                     className="id-chart-bar"
                     style={{ height: `${height}%` }}
-                    title={`${WEEKDAYS[index]}: ${value} activity units`}
+                    title={`${WEEKDAYS[index]}: ${value} minutes`}
                   />
                 </div>
                 <span>{WEEKDAYS[index]}</span>
@@ -365,7 +431,10 @@ export function InstitutionDashboardPage({
               <span className="id-visually-hidden">Search sessions</span>
               <input
                 value={search}
-                onChange={(event) => setSearch(event.target.value)}
+                onChange={(event) => {
+                  setSearch(event.target.value);
+                  setSessionPage(1);
+                }}
                 placeholder="Search member, department or interpreter"
               />
             </label>
@@ -386,8 +455,30 @@ export function InstitutionDashboardPage({
               </thead>
 
               <tbody>
-                {filteredSessions.map((session, index) => (
-                  <tr key={session.id} {...mobileRows.itemProps(index)}>
+                {visibleSessions.map((session) => (
+                  <tr
+                    key={session.id}
+                    className="id-session-row"
+                    role="link"
+                    tabIndex={0}
+                    aria-label={`View session for ${session.member}`}
+                    onClick={(event) => {
+                      if (
+                        !(event.target as HTMLElement).closest('button, a, input, select, textarea')
+                      ) {
+                        viewSession(session.id);
+                      }
+                    }}
+                    onKeyDown={(event) => {
+                      if (
+                        (event.key === 'Enter' || event.key === ' ') &&
+                        event.target === event.currentTarget
+                      ) {
+                        event.preventDefault();
+                        viewSession(session.id);
+                      }
+                    }}
+                  >
                     <td className="id-member" data-card-primary>
                       {session.member}
                     </td>
@@ -423,7 +514,13 @@ export function InstitutionDashboardPage({
               </tbody>
             </table>
           </div>
-          {mobileRows.button}
+          <TablePagination
+            page={currentSessionPage}
+            pageSize={SESSION_PAGE_SIZE}
+            total={filteredSessions.length}
+            label="sessions"
+            onPageChange={setSessionPage}
+          />
 
           <p className="id-table-footer">
             Showing {filteredSessions.length} of {data.sessions.length} active requests
@@ -455,8 +552,8 @@ export function InstitutionDashboardPage({
             >
               <strong>{department.name}</strong>
               <span>
-                {department.sessionsToday} {department.sessionsToday === 1 ? 'session' : 'sessions'}{' '}
-                this month
+                {department.sessionsThisMonth}{' '}
+                {department.sessionsThisMonth === 1 ? 'session' : 'sessions'} this month
               </span>
               <span className="id-teal">{department.active} active</span>
             </button>

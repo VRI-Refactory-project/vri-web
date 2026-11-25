@@ -68,6 +68,10 @@
   background: #fee2e2;
   color: #b91c1c;
 }
+.ir-status--rejected {
+  background: #fee2e2;
+  color: #b91c1c;
+}
 
 .ir-grid {
   display: grid;
@@ -193,6 +197,25 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+.ir-document-item {
+  display: grid;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid #eceafa;
+}
+.ir-document-item > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+.ir-document-item strong {
+  overflow-wrap: anywhere;
+  color: #0f172a;
+  font-size: 12px;
+}
+.ir-document-item small {
+  color: #8a86a5;
+  font-size: 11px;
 }
 
 .ir-meta-row {
@@ -495,6 +518,24 @@
   color: #475569;
   line-height: 1.6;
 }
+.ir-rejection-reason {
+  display: grid;
+  gap: 6px;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 700;
+}
+.ir-rejection-reason textarea {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d8d4e8;
+  border-radius: 9px;
+  color: #0f172a;
+  font: inherit;
+  font-weight: 400;
+  resize: vertical;
+}
 .ir-modal-institution {
   display: flex;
   gap: 10px;
@@ -563,5 +604,5 @@
 
 .ia-institution-link:hover strong {
   color: #4b34a0;
-  text-decoration: underline;
+  text-decoration: none;
 }

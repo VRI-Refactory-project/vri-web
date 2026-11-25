@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   dashboardLoad: (() => Promise.resolve({})) as () => Promise<unknown>,
   usageLoad: (() => Promise.resolve({})) as () => Promise<unknown>,
   sessionsLoad: (() => Promise.resolve([])) as () => Promise<unknown>,
+  alertsLoad: (() => Promise.resolve([])) as () => Promise<unknown>,
 }));
 
 vi.mock('../../services/institutionDashboard', () => ({
@@ -19,7 +20,7 @@ vi.mock('../../services/institutionUsage', () => ({
 }));
 
 vi.mock('../../services/api', () => ({
-  api: () => mocks.sessionsLoad(),
+  api: (path: string) => (path.includes('/alerts/') ? mocks.alertsLoad() : mocks.sessionsLoad()),
 }));
 
 function renderPage() {
@@ -40,6 +41,9 @@ beforeEach(() => {
         revoked: 2,
       },
       sessions: {
+        activeSessions: 1,
+        sessionsThisMonth: 20,
+        dailyUsageMinutes: [1, 2, 3, 4, 5, 6, 7],
         totalRequests: 20,
         pendingRequests: 3,
         completedRequests: 15,
@@ -160,4 +164,32 @@ describe('InstitutionDashboardPage', () => {
 
     expect(await screen.findByText('0 staff accounts with access revoked')).toBeInTheDocument();
   });
+});
+
+it('counts all active institution requests in the Active Sessions KPI', async () => {
+  renderPage();
+
+  const activeSessions = await screen.findByText('Active sessions', {
+    selector: '.id-kpi-label',
+  });
+
+  expect(activeSessions.closest('article')).toHaveTextContent('1');
+});
+
+it('shows monthly and active session counts for each department', async () => {
+  renderPage();
+
+  const outpatient = await screen.findByRole('button', {
+    name: /Outpatient/,
+  });
+
+  expect(outpatient).toHaveTextContent('12 sessions this month');
+  expect(outpatient).toHaveTextContent('1 active');
+
+  const emergency = screen.getByRole('button', {
+    name: /Emergency/,
+  });
+
+  expect(emergency).toHaveTextContent('8 sessions this month');
+  expect(emergency).toHaveTextContent('0 active');
 });

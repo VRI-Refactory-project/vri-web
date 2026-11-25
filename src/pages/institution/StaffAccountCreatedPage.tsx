@@ -23,7 +23,8 @@ export function StaffAccountCreatedPage() {
         <h1 className="sac-title">Staff account created</h1>
 
         <p className="sac-subtitle">
-          {name}’s account has been created and an invite email has been sent to their work address.
+          {name}’s account has been created. They can use the invitation email to set a password,
+          verify their email, and sign in.
         </p>
 
         <Link to="/dashboard/institution/staff/new" className="sac-btn sac-btn--primary">

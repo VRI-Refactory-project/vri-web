@@ -12,6 +12,15 @@ import './SupportInboxPage.css';
 
 const PAGE_SIZE = 20;
 
+function StatusBadge({ status }: { status: SupportStatus }) {
+  return (
+    <span className={`si-status si-status--${status.toLowerCase()}`}>
+      {status === 'OPEN' && <span className="si-open-dot" aria-hidden="true" />}
+      {status.replace('_', ' ').toLowerCase()}
+    </span>
+  );
+}
+
 function roleLabel(role: string) {
   const names: Record<string, string> = {
     deaf_hoh: 'Deaf or hard of hearing user',
@@ -63,9 +72,7 @@ function RequestEditor({
   return (
     <article className="si-detail">
       <header>
-        <span className={`si-status si-status--${status.toLowerCase()}`}>
-          {status.replace('_', ' ').toLowerCase()}
-        </span>
+        <StatusBadge status={status} />
         <time dateTime={request.created_at}>{new Date(request.created_at).toLocaleString()}</time>
       </header>
       <h2>{request.subject}</h2>
@@ -132,7 +139,7 @@ function RequestEditor({
 }
 
 export function SupportInboxPage() {
-  const [filter, setFilter] = useState<SupportStatus | 'ALL'>('OPEN');
+  const [filter, setFilter] = useState<SupportStatus | 'ALL'>('ALL');
   const [page, setPage] = useState(1);
   const [data, setData] = useState<SupportRequestPage | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -200,10 +207,10 @@ export function SupportInboxPage() {
               setFilter(event.target.value as SupportStatus | 'ALL');
             }}
           >
+            <option value="ALL">All requests</option>
             <option value="OPEN">Open</option>
             <option value="IN_PROGRESS">In progress</option>
             <option value="RESOLVED">Resolved</option>
-            <option value="ALL">All requests</option>
           </select>
         </label>
       </header>
@@ -266,9 +273,7 @@ export function SupportInboxPage() {
                       </td>
                       <td>{roleLabel(item.requester.role)}</td>
                       <td>
-                        <span className={`si-status si-status--${item.status.toLowerCase()}`}>
-                          {item.status.replace('_', ' ').toLowerCase()}
-                        </span>
+                        <StatusBadge status={item.status} />
                       </td>
                       <td>
                         <time dateTime={item.created_at}>

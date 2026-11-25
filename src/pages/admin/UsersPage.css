@@ -197,6 +197,14 @@
   text-align: left;
 }
 
+.users-table-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
 .users-table thead th {
   padding: 14px;
   border-bottom: 1px solid #e9ebf5;

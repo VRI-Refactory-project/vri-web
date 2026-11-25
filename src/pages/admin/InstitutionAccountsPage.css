@@ -513,6 +513,13 @@
 .ia-table tbody tr:hover {
   background: #fcfbff;
 }
+.ia-table tbody tr.ia-clickable-row {
+  cursor: pointer;
+}
+.ia-table tbody tr.ia-clickable-row:focus-visible {
+  outline: 2px solid #4b34a0;
+  outline-offset: -2px;
+}
 
 .ia-col-name {
   min-width: 215px;
@@ -554,6 +561,16 @@
   font-weight: 700;
   line-height: 1.4;
   overflow-wrap: anywhere;
+}
+
+.ia-institution-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.ia-institution-link:hover strong {
+  color: #4b34a0;
+  text-decoration: none;
 }
 
 .ia-institution-cell__text span {
@@ -622,6 +639,17 @@
 .ia-status--pending {
   color: #ad6b00;
   background: #fff0cf;
+}
+
+.ia-status--rejected {
+  color: #b42318;
+  background: #fee2e2;
+}
+
+.ia-row-application-rejected {
+  color: #b42318;
+  font-size: 10px;
+  font-weight: 700;
 }
 
 .ia-status--deactivated {

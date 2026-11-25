@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Building2,
   Check,
@@ -20,7 +20,6 @@ import {
   Phone,
   Mail,
   Church,
-  Factory,
   BriefcaseBusiness,
   RefreshCw,
   AlertCircle,
@@ -31,6 +30,7 @@ import {
   fetchInstitutions,
   updateInstitution,
   updateInstitutionStatus,
+  institutionSectorLabel,
   type Institution,
   type InstitutionForm,
   type InstitutionStatus,
@@ -44,21 +44,19 @@ const DESKTOP_PAGE_SIZE = 8;
 const MOBILE_PAGE_SIZE = 5;
 
 const SECTORS: InstitutionSector[] = [
-  'Healthcare',
-  'Education',
-  'Government',
-  'Legal',
-  'Religious',
-  'Security',
-  'Manufacturing',
-  'Finance',
-  'Other',
+  'HOSPITAL',
+  'COURT',
+  'GOVERNMENT',
+  'CHURCH',
+  'POLICE',
+  'SCHOOL',
+  'OTHER',
 ];
 
 const EMPTY_FORM: InstitutionForm = {
   name: '',
   registrationNumber: '',
-  sector: 'Other',
+  sector: 'OTHER',
   email: '',
   phone: '',
   sectorOther: '',
@@ -79,21 +77,18 @@ function SectorIcon({ sector }: { sector: InstitutionSector }) {
   const common = { size: 19, strokeWidth: 2 };
 
   switch (sector) {
-    case 'Healthcare':
+    case 'HOSPITAL':
       return <Building2 {...common} />;
-    case 'Education':
+    case 'SCHOOL':
       return <GraduationCap {...common} />;
-    case 'Government':
-    case 'Finance':
+    case 'GOVERNMENT':
       return <Landmark {...common} />;
-    case 'Legal':
+    case 'COURT':
       return <BriefcaseBusiness {...common} />;
-    case 'Religious':
+    case 'CHURCH':
       return <Church {...common} />;
-    case 'Security':
+    case 'POLICE':
       return <ShieldCheck {...common} />;
-    case 'Manufacturing':
-      return <Factory {...common} />;
     default:
       return <Building2 {...common} />;
   }
@@ -103,6 +98,7 @@ function StatusBadge({ status }: { status: InstitutionStatus }) {
   const labels: Record<InstitutionStatus, string> = {
     approved: 'Approved',
     pending: 'Pending',
+    rejected: 'Rejected',
     deactivated: 'Deactivated',
   };
 
@@ -110,6 +106,7 @@ function StatusBadge({ status }: { status: InstitutionStatus }) {
     <span className={`ia-status ia-status--${status}`}>
       {status === 'approved' && <CheckCircle2 size={13} />}
       {status === 'pending' && <Clock3 size={13} />}
+      {status === 'rejected' && <AlertCircle size={13} />}
       {status === 'deactivated' && <CircleMinus size={13} />}
       {labels[status]}
     </span>
@@ -141,7 +138,7 @@ function InstitutionModal({
           sector: institution.sector,
           email: institution.email,
           phone: institution.phone,
-          sectorOther: '',
+          sectorOther: institution.sectorOther,
         }
       : { ...EMPTY_FORM },
   );
@@ -163,7 +160,7 @@ function InstitutionModal({
     const e: Record<string, string> = {};
     if (!form.name.trim()) e.name = 'Institution name is required';
     if (!form.registrationNumber.trim()) e.registrationNumber = 'Registration number is required';
-    if (form.sector === 'Other' && !form.sectorOther?.trim()) {
+    if (form.sector === 'OTHER' && !form.sectorOther?.trim()) {
       e.sectorOther = 'Please specify the sector';
     }
     if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
@@ -187,7 +184,7 @@ function InstitutionModal({
       sector: form.sector,
       email: form.email.trim(),
       phone: form.phone.trim(),
-      ...(form.sector === 'Other' ? { sectorOther: form.sectorOther?.trim() ?? '' } : {}),
+      ...(form.sector === 'OTHER' ? { sectorOther: form.sectorOther?.trim() ?? '' } : {}),
     });
   }
 
@@ -282,13 +279,13 @@ function InstitutionModal({
               </div>
 
               <div
-                className={`ia-form-field ${form.sector === 'Other' && errors.sectorOther ? 'ia-form-field--invalid' : ''}`}
+                className={`ia-form-field ${form.sector === 'OTHER' && errors.sectorOther ? 'ia-form-field--invalid' : ''}`}
               >
-                <label htmlFor={form.sector === 'Other' ? 'ia-sector-other' : 'ia-sector'}>
+                <label htmlFor={form.sector === 'OTHER' ? 'ia-sector-other' : 'ia-sector'}>
                   Sector *
                 </label>
 
-                {form.sector === 'Other' ? (
+                {form.sector === 'OTHER' ? (
                   <div className="ia-sector-input-wrap">
                     <input
                       id="ia-sector-other"
@@ -305,7 +302,7 @@ function InstitutionModal({
                       className="ia-sector-drop-btn"
                       aria-label="Pick sector from list"
                       onClick={() => {
-                        updateField('sector', 'Healthcare');
+                        updateField('sector', 'HOSPITAL');
                         updateField('sectorOther', '');
                       }}
                     >
@@ -331,13 +328,13 @@ function InstitutionModal({
                   >
                     {SECTORS.map((sector) => (
                       <option key={sector} value={sector}>
-                        {sector}
+                        {institutionSectorLabel(sector)}
                       </option>
                     ))}
                   </select>
                 )}
 
-                {form.sector === 'Other' && errors.sectorOther && (
+                {form.sector === 'OTHER' && errors.sectorOther && (
                   <p className="ia-field-error" id="ia-sector-other-error">
                     {errors.sectorOther}
                   </p>
@@ -553,6 +550,7 @@ function ConfirmDialog({
 }
 
 export function InstitutionAccountsPage() {
+  const navigate = useNavigate();
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
@@ -863,6 +861,7 @@ export function InstitutionAccountsPage() {
             <option value="all">All Statuses</option>
             <option value="approved">Approved</option>
             <option value="pending">Pending</option>
+            <option value="rejected">Rejected</option>
             <option value="deactivated">Deactivated</option>
           </select>
 
@@ -878,7 +877,7 @@ export function InstitutionAccountsPage() {
             <option value="all">All Sectors</option>
             {SECTORS.map((sector) => (
               <option key={sector} value={sector}>
-                {sector}
+                {institutionSectorLabel(sector)}
               </option>
             ))}
           </select>
@@ -897,7 +896,7 @@ export function InstitutionAccountsPage() {
         {showFilters && (
           <div className="ia-filter-drawer">
             <span>Quick status:</span>
-            {(['all', 'pending', 'approved', 'deactivated'] as const).map((status) => (
+            {(['all', 'pending', 'approved', 'rejected', 'deactivated'] as const).map((status) => (
               <button
                 key={status}
                 type="button"
@@ -976,7 +975,29 @@ export function InstitutionAccountsPage() {
                 </tr>
               ) : (
                 visibleInstitutions.map((institution) => (
-                  <tr key={institution.id}>
+                  <tr
+                    key={institution.id}
+                    className="ia-clickable-row"
+                    role="link"
+                    tabIndex={0}
+                    aria-label={`View ${institution.name} details`}
+                    onClick={(event) => {
+                      if (
+                        !(event.target as HTMLElement).closest('button, a, input, select, textarea')
+                      ) {
+                        navigate(`/dashboard/admin/institutions/${institution.id}`);
+                      }
+                    }}
+                    onKeyDown={(event) => {
+                      if (
+                        (event.key === 'Enter' || event.key === ' ') &&
+                        event.target === event.currentTarget
+                      ) {
+                        event.preventDefault();
+                        navigate(`/dashboard/admin/institutions/${institution.id}`);
+                      }
+                    }}
+                  >
                     <td data-card-primary>
                       <div className="ia-institution-cell">
                         <div className="ia-institution-cell__icon">
@@ -995,7 +1016,9 @@ export function InstitutionAccountsPage() {
                     </td>
 
                     <td data-label="Sector">
-                      <span className="ia-sector-label">{institution.sector}</span>
+                      <span className="ia-sector-label">
+                        {institutionSectorLabel(institution.sector, institution.sectorOther)}
+                      </span>
                     </td>
 
                     <td data-label="Contact info">
@@ -1046,6 +1069,8 @@ export function InstitutionAccountsPage() {
                             <Check size={15} />
                             Approve
                           </button>
+                        ) : institution.status === 'rejected' ? (
+                          <span className="ia-row-application-rejected">Application rejected</span>
                         ) : institution.status === 'deactivated' ? (
                           <button
                             type="button"
