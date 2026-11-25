@@ -191,7 +191,7 @@ export function CreateStaffAccountPage() {
 
     setSubmitting(true);
     try {
-      // The API emails the person their login details (a temporary password).
+      // The API emails the person a link to set their password and verify their email.
       await createStaff({
         fullName: form.fullName,
         email: form.email,

@@ -12,6 +12,7 @@ import { SignUpInstitution } from '../pages/registration/SignUpInstitution';
 import { UploadInstitutionLicense } from '../pages/registration/UploadInstitutionLicense';
 import { VerifyEmailPage } from '../pages/auth/VerifyEmailPage';
 import { ChangeTemporaryPasswordPage } from '../pages/auth/ChangeTemporaryPasswordPage';
+import { AcceptStaffInvitationPage } from '../pages/auth/AcceptStaffInvitationPage';
 import { SignInPage } from '../pages/auth/SignInPage';
 import { CreateAccountPage } from '../pages/registration/CreateAccountPage';
 import { PendingReviewPage } from '../pages/registration/PendingReviewPage';
@@ -102,6 +103,7 @@ const appRoutes: RouteObject[] = [
   { path: '/join/:token', element: <GuestSessionPage /> },
   { path: '/verify-email', element: <VerifyEmailPage /> },
   { path: '/change-password', element: <ChangeTemporaryPasswordPage /> },
+  { path: '/staff/accept-invitation', element: <AcceptStaffInvitationPage /> },
   { path: '/offline', element: <OfflinePage /> },
   { path: '/forgot-password', element: <Forgotpassword /> },
   { path: '/reset-password', element: <Resetpassword /> },
