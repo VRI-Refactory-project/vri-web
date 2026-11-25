@@ -32,20 +32,6 @@
   margin-bottom: 1rem;
 }
 
-/* Keep labels accessible while using placeholders visually */
-
-.as-page--sign-in .form-group > label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
 /* Input fields */
 
 .as-page--sign-in .form-group .form-input {
