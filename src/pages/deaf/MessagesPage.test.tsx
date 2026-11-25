@@ -150,9 +150,10 @@ describe('MessagesPage', () => {
 
   it('sends a message, shows it, and clears the box', async () => {
     svc.sendMessage.mockResolvedValue(message(4, 'See you at 4', true));
-    renderPage();
-    await screen.findByText('Hi Irene');
     const user = userEvent.setup();
+    renderPage('/dashboard/deaf/messages');
+    await user.click(await screen.findByRole('button', { name: /Sarah Nsubuga/ }));
+    await screen.findByText('Hi Irene');
 
     await user.type(screen.getByLabelText('Write a message'), '  See you at 4 ');
     await user.click(screen.getByRole('button', { name: 'Send' }));

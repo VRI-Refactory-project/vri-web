@@ -41,7 +41,7 @@
 }
 .sd-side > section:first-child > .sd-card {
   display: flex;
-  flex: 1;
+  min-height: 150px;
   align-items: center;
   justify-content: center;
 }
