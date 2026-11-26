@@ -5,22 +5,59 @@ import type { AuthSession, AuthUser, SelectableRole } from '../../types';
 import { AuthContext } from './authContext';
 
 const STORAGE_KEY = 'vri.session';
+// When the person signed in (milliseconds). Kept apart from the session so AuthSession stays the same.
+const STARTED_KEY = 'vri.session.startedAt';
+// A signed-in person stays signed in for 7 days after signing in, then has to sign in again.
+// The server enforces the same limit on the refresh token (REFRESH_TOKEN_LIFETIME, 7 days, in vri-api).
+export const SESSION_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
-// sessionStorage keeps the user signed in across page reloads but not after the tab is closed.
-// It can be unavailable (private mode, blocked storage), so every access is wrapped.
+// localStorage is shared by every tab of the site, so a new tab finds the session and goes straight
+// to the dashboard. It can be unavailable (private mode, blocked storage), so every access is wrapped.
+function clearStored() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(STARTED_KEY);
+  } catch {
+    /* storage unavailable */
+  }
+}
+
+function startedAt(): number {
+  try {
+    return Number(localStorage.getItem(STARTED_KEY)) || 0;
+  } catch {
+    return 0;
+  }
+}
+
 function loadSession(): AuthSession | null {
   try {
-    const raw = sessionStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as AuthSession) : null;
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const started = startedAt();
+    if (started && Date.now() - started > SESSION_MAX_AGE_MS) {
+      // More than 7 days since sign-in: the session is over.
+      clearStored();
+      return null;
+    }
+    // A session saved without a start time is counted from now.
+    if (!started) localStorage.setItem(STARTED_KEY, String(Date.now()));
+    return JSON.parse(raw) as AuthSession;
   } catch {
     return null;
   }
 }
 
-function saveSession(session: AuthSession | null) {
+// `newSignIn` is true only when the person actually signs in. Refreshing a token or editing the
+// profile saves the session again but must not restart the 7 days.
+function saveSession(session: AuthSession | null, newSignIn = false) {
   try {
-    if (session) sessionStorage.setItem(STORAGE_KEY, JSON.stringify(session));
-    else sessionStorage.removeItem(STORAGE_KEY);
+    if (!session) {
+      clearStored();
+      return;
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+    if (newSignIn) localStorage.setItem(STARTED_KEY, String(Date.now()));
   } catch {
     /* storage unavailable: the session just lasts until reload */
   }
@@ -43,10 +80,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Counts sign-ins and sign-outs, so a slow check of an old stored session cannot overwrite a newer one.
   const generation = useRef(0);
 
-  const apply = useCallback((next: AuthSession | null) => {
+  const apply = useCallback((next: AuthSession | null, newSignIn = false) => {
     sessionRef.current = next;
     setAuthToken(next?.token ?? null);
-    saveSession(next);
+    saveSession(next, newSignIn);
     setSession(next);
   }, []);
 
@@ -54,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     (s: AuthSession) => {
       setSessionExpired(false);
       generation.current += 1;
-      apply(s);
+      apply(s, true);
     },
     [apply],
   );
@@ -105,8 +142,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     let cancelled = false;
-    const startedAt = generation.current;
-    const stillCurrent = () => !cancelled && startedAt === generation.current;
+    const startedAtGeneration = generation.current;
+    const stillCurrent = () => !cancelled && startedAtGeneration === generation.current;
     getCurrentUser()
       .then((user) => {
         const current = sessionRef.current;
@@ -123,9 +160,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [apply]);
 
+  // End the session 7 days after sign-in, even if the tab stays open the whole time.
+  // Depends on the token, so a new sign-in starts a fresh timer.
+  const accessToken = session?.token ?? null;
+  useEffect(() => {
+    if (!accessToken) return;
+    const started = startedAt() || Date.now();
+    const remaining = Math.max(started + SESSION_MAX_AGE_MS - Date.now(), 0);
+    const timer = window.setTimeout(() => {
+      generation.current += 1;
+      apply(null);
+      setSessionExpired(true);
+    }, remaining);
+    return () => window.clearTimeout(timer);
+  }, [accessToken, apply]);
+
+  // Keep every open tab in step. Signing out in one tab signs out the others, and signing in (or a
+  // renewed token) in one tab is picked up by the others. The browser only sends this event to the
+  // tabs that did not make the change, so it cannot loop.
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== null && e.key !== STORAGE_KEY && e.key !== STARTED_KEY) return;
+      const stored = loadSession();
+      if (JSON.stringify(stored) === JSON.stringify(sessionRef.current)) return;
+      generation.current += 1;
+      sessionRef.current = stored;
+      setAuthToken(stored?.token ?? null);
+      setSession(stored);
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
+
   // The browser's Back and Forward buttons never end a session. A session ends only when the person
-  // presses Sign out, the tab is closed, or the server refuses the token. Signed-in people are kept
-  // off the sign-in and sign-up pages by GuestRoute instead.
+  // presses Sign out, 7 days pass since they signed in, or the server refuses the token. Signed-in
+  // people are kept off the sign-in and sign-up pages by GuestRoute instead.
 
   const value = useMemo(
     () => ({

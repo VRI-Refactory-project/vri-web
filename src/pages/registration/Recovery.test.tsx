@@ -24,7 +24,7 @@
 // describe('account recovery pages (V2-008)', () => {
 //   afterEach(() => {
 //     vi.restoreAllMocks();
-//     sessionStorage.clear();
+//     localStorage.clear();
 //   });
 
 //   it('requests a code, carries the identifier to the reset page, then signs the user in', async () => {
@@ -93,7 +93,7 @@
 //     await userEvent.click(screen.getByRole('button', { name: /reset password/i }));
 
 //     expect(await screen.findByRole('alert')).toHaveTextContent('Invalid or expired code');
-//     expect(sessionStorage.getItem('vri.session')).toBeNull();
+//     expect(localStorage.getItem('vri.session')).toBeNull();
 //   });
 
 //   it('asks for a valid email or phone number before requesting a code', async () => {
@@ -169,7 +169,7 @@ function renderFlow() {
 describe('account recovery pages (V2-008)', () => {
   afterEach(() => {
     vi.restoreAllMocks();
-    sessionStorage.clear();
+    localStorage.clear();
   });
 
   it('requests a code, carries the identifier to the reset page, then signs the user in', async () => {
@@ -240,7 +240,7 @@ describe('account recovery pages (V2-008)', () => {
     await userEvent.click(screen.getByRole('button', { name: /reset password/i }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Invalid or expired code');
-    expect(sessionStorage.getItem('vri.session')).toBeNull();
+    expect(localStorage.getItem('vri.session')).toBeNull();
   });
 
   it('asks for a valid email or phone number before requesting a code', async () => {

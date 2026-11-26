@@ -19,7 +19,7 @@ function Probe() {
 describe('AuthProvider and the browser arrows', () => {
   beforeEach(async () => {
     vi.restoreAllMocks();
-    sessionStorage.setItem('vri.session', JSON.stringify(session));
+    localStorage.setItem('vri.session', JSON.stringify(session));
     vi.spyOn(auth, 'getCurrentUser').mockResolvedValue(session.user);
     vi.spyOn(auth, 'revokeSession').mockResolvedValue(undefined);
 
@@ -31,7 +31,7 @@ describe('AuthProvider and the browser arrows', () => {
     await screen.findByText('signed in');
   });
   afterEach(() => {
-    sessionStorage.clear();
+    localStorage.clear();
     window.history.pushState({}, '', '/');
   });
 
@@ -43,7 +43,7 @@ describe('AuthProvider and the browser arrows', () => {
 
     expect(screen.getByText('signed in')).toBeInTheDocument();
     expect(auth.revokeSession).not.toHaveBeenCalled();
-    expect(sessionStorage.getItem('vri.session')).not.toBeNull();
+    expect(localStorage.getItem('vri.session')).not.toBeNull();
   });
 
   it('stays signed in when moving between dashboard pages', () => {

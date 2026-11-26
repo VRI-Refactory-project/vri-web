@@ -18,8 +18,8 @@ function VerifyStub() {
 }
 
 function renderAt(session: AuthSession | null, requireVerifiedEmail = true) {
-  sessionStorage.clear();
-  if (session) sessionStorage.setItem('vri.session', JSON.stringify(session));
+  localStorage.clear();
+  if (session) localStorage.setItem('vri.session', JSON.stringify(session));
   return render(
     <AuthProvider>
       <MemoryRouter initialEntries={['/dashboard/interpreter']}>
@@ -61,7 +61,7 @@ describe('ProtectedRoute', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
   });
-  afterEach(() => sessionStorage.clear());
+  afterEach(() => localStorage.clear());
 
   it('sends signed-out visitors to sign in', () => {
     renderAt(null);
@@ -99,7 +99,7 @@ describe('ProtectedRoute', () => {
     vi.spyOn(auth, 'getCurrentUser').mockRejectedValue(new ApiError(401, 'Invalid token'));
     renderAt(sessionFor('interpreter'));
     expect(await screen.findByText(/sign in page/)).toBeInTheDocument();
-    expect(sessionStorage.getItem('vri.session')).toBeNull();
+    expect(localStorage.getItem('vri.session')).toBeNull();
   });
 
   it('believes the server about the role, not the stored copy', async () => {
