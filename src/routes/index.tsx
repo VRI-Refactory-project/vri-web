@@ -77,6 +77,7 @@ import { HelpSupportPage } from '../features/support/HelpSupportPage';
 import { StaffProfilePage } from '../pages/institution/StaffProfilePage';
 import { SupportInboxPage } from '../features/support/SupportInboxPage';
 import { TermsPage, PrivacyPage } from '../components/LegalPage';
+import { NotFoundPage } from '../pages/NotFoundPage';
 
 const appRoutes: RouteObject[] = [
   {
@@ -301,7 +302,7 @@ const appRoutes: RouteObject[] = [
 
   {
     path: '*',
-    element: <Placeholder title="Page not found" message="We could not find this page." />,
+    element: <NotFoundPage />,
   },
 ];
 
