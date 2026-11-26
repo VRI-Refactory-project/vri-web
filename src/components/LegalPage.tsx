@@ -1,6 +1,6 @@
-import { Fragment, type ReactNode } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { Fragment, type MouseEvent, type ReactNode } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { AuthShell } from './AuthShell';
 import { PRIVACY, TERMS, type Block, type LegalDocument } from './LegalText';
 import './LegalPage.css';
 
@@ -61,40 +61,63 @@ function LegalPage({
   otherPath: string;
   otherLabel: string;
 }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Back goes to the page the person came from (for example the sign-up form they were filling in).
+  // `key === 'default'` means this page was opened directly, with nothing to go back to, so sign-in.
+  const goBack = () => {
+    if (location.key === 'default') navigate('/sign-in', { replace: true });
+    else navigate(-1);
+  };
+
+  // Jump to a section without adding a browser history entry, so Back still leaves this page.
+  const jumpTo = (id: string) => (e: MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
-    <main className="legal-page">
-      <header className="legal-hero">
-        <Link to="/sign-in" className="legal-back">
-          <ArrowLeft size={16} /> Back
-        </Link>
-        {doc.company && <p className="legal-company">{doc.company}</p>}
-        <h1>{doc.title}</h1>
-      </header>
+    <AuthShell onBack={goBack} size="wide">
+      <article className="legal-page">
+        <header className="legal-hero">
+          {doc.company && <p className="legal-company">{doc.company}</p>}
+          <h1>{doc.title}</h1>
+        </header>
 
-      <div className="legal-body">
-        <nav className="legal-toc" aria-label="On this page">
-          <p className="legal-toc-title">On this page</p>
-          <ul>
-            {doc.sections.map((s) => (
-              <li key={s.id}>
-                <a href={`#${s.id}`}>{s.title}</a>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <div className="legal-body">
+          <nav className="legal-toc" aria-label="On this page">
+            <p className="legal-toc-title">On this page</p>
+            <ul>
+              {doc.sections.map((s) => (
+                <li key={s.id}>
+                  <a href={`#${s.id}`} onClick={jumpTo(s.id)}>
+                    {s.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
 
-        {doc.sections.map((s) => (
-          <section key={s.id} id={s.id} className="legal-section">
-            <h2>{s.title}</h2>
-            {s.blocks.map(renderBlock)}
-          </section>
-        ))}
+          {doc.sections.map((s) => (
+            <section key={s.id} id={s.id} className="legal-section">
+              <h2>{s.title}</h2>
+              {s.blocks.map(renderBlock)}
+            </section>
+          ))}
 
-        <p className="legal-other">
-          See also our <Link to={otherPath}>{otherLabel}</Link>.
-        </p>
-      </div>
-    </main>
+          {/* replace: moving between Terms and Privacy keeps one history entry, so Back still
+              returns to where the person started. */}
+          <p className="legal-other">
+            See also our{' '}
+            <Link to={otherPath} replace>
+              {otherLabel}
+            </Link>
+            .
+          </p>
+        </div>
+      </article>
+    </AuthShell>
   );
 }
 
