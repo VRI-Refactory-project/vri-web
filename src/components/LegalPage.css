@@ -1,42 +1,43 @@
+/* Terms of Use and Privacy Policy. They sit inside the shared AuthShell (purple photo background,
+   SignConnect logo on the left, Back on the right), so this file only styles the text card.
+   All words are black in Manrope; purple is used for links, rules and the table header. */
 .legal-page {
-  min-height: 100vh;
-  background: #fbfff5;
-  color: #1f2a24;
+  font-family: var(--font-main, 'Manrope', system-ui, sans-serif);
+  color: #000;
+  text-align: left;
+}
+
+.legal-page h1,
+.legal-page h2,
+.legal-page h3,
+.legal-page p,
+.legal-page li,
+.legal-page td,
+.legal-page th {
   font-family: inherit;
+  color: #000;
 }
 
 .legal-hero {
-  background: #0d2f1f;
-  color: #fff;
   text-align: center;
-  padding: 48px 20px 40px;
-  border-bottom: 6px solid #ffde59;
+  padding-bottom: 1.25rem;
+  border-bottom: 4px solid var(--color-primary, #382c77);
 }
 
 .legal-hero h1 {
-  margin: 12px 0 8px;
-  font-size: clamp(1.8rem, 5vw, 2.6rem);
+  margin: 0.5rem 0 0;
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  font-weight: 800;
 }
 
-.legal-updated {
+.legal-company {
   margin: 0;
-  font-size: 0.9rem;
-  opacity: 0.75;
-}
-
-.legal-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: #ffde59;
-  text-decoration: none;
-  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .legal-body {
-  max-width: 760px;
-  margin: 0 auto;
-  padding: 32px 20px 64px;
+  padding-top: 1.5rem;
   line-height: 1.7;
 }
 
@@ -45,11 +46,11 @@
 }
 
 .legal-toc {
-  background: #fff;
-  border: 1px solid #e3e8df;
+  background: #f5f3fb;
+  border: 1px solid #ddd7f0;
   border-radius: 12px;
   padding: 16px 20px;
-  margin: 24px 0 32px;
+  margin: 0 0 2rem;
 }
 
 .legal-toc-title {
@@ -64,7 +65,7 @@
 
 .legal-toc a,
 .legal-other a {
-  color: #2d5135;
+  color: var(--color-primary, #382c77);
   font-weight: 600;
 }
 
@@ -75,8 +76,12 @@
 
 .legal-section h2 {
   font-size: 1.25rem;
-  color: #0d2f1f;
   margin: 0 0 8px;
+}
+
+.legal-section h3 {
+  font-size: 1.05rem;
+  margin: 18px 0 6px;
 }
 
 .legal-section ul {
@@ -87,27 +92,14 @@
   margin-bottom: 6px;
 }
 
+.legal-note {
+  font-style: italic;
+}
+
 .legal-other {
   margin-top: 40px;
   padding-top: 16px;
-  border-top: 1px solid #e3e8df;
-}
-
-.legal-company {
-  margin: 16px 0 0;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-
-.legal-note {
-  font-style: italic;
-  color: #4a5750;
-}
-
-.legal-section h3 {
-  font-size: 1.05rem;
-  color: #2d5135;
-  margin: 18px 0 6px;
+  border-top: 1px solid #ddd7f0;
 }
 
 .legal-table-wrap {
@@ -123,12 +115,12 @@
 
 .legal-table th,
 .legal-table td {
-  border: 1px solid #d5dccf;
+  border: 1px solid #ddd7f0;
   padding: 10px 12px;
   text-align: left;
   vertical-align: top;
 }
 
 .legal-table th {
-  background: #eef3e8;
+  background: #ece8f8;
 }
