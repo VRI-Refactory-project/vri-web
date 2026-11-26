@@ -24,11 +24,38 @@ const CALL_MODES: Record<Mode, { video: boolean; audio: boolean }> = {
 interface GuestCallProps {
   token: CallToken;
   mode: Mode;
+  /** The connection dropped: go back to the waiting page, which checks the session again. */
   onLeave: () => void;
+  /** The guest pressed Leave: the visit is over. */
+  onLeft: () => void;
+}
+
+/**
+ * Shown when the guest's visit is over (they left, or the session ended). A hearing guest has no
+ * account, so there is nothing to go back to: no logo link, no Back button, no sign-in. They just
+ * see this message and close the tab.
+ */
+function GuestEnded({ message }: { message: string }) {
+  return (
+    <main
+      role="status"
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '24px',
+        textAlign: 'center',
+        color: '#1b1240',
+      }}
+    >
+      <p style={{ fontSize: '1.1rem', maxWidth: '28rem' }}>{message}</p>
+    </main>
+  );
 }
 
 /** The call for the hearing guest: the same screen the Deaf user and interpreter get. */
-function GuestCall({ token, mode, onLeave }: GuestCallProps) {
+function GuestCall({ token, mode, onLeave, onLeft }: GuestCallProps) {
   const call = useCall({
     createConnection: liveKitConnectionWith(() => Promise.resolve(token)),
     mode: CALL_MODES[mode],
@@ -56,7 +83,7 @@ function GuestCall({ token, mode, onLeave }: GuestCallProps) {
       selfName="Hearing guest"
       onLeave={() => {
         call.leave();
-        onLeave();
+        onLeft();
       }}
     />
   );
@@ -89,9 +116,10 @@ export function GuestSessionPage() {
   const [call, setCall] = useState<CallToken | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [left, setLeft] = useState(false);
 
   useEffect(() => {
-    if (call) return;
+    if (call || left) return;
     let cancelled = false;
     let timer: number | undefined;
 
@@ -112,7 +140,7 @@ export function GuestSessionPage() {
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [token, call]);
+  }, [token, call, left]);
 
   const join = async () => {
     setBusy(true);
@@ -131,7 +159,30 @@ export function GuestSessionPage() {
   };
 
   if (call) {
-    return <GuestCall token={call} mode={mode} onLeave={() => setCall(null)} />;
+    return (
+      <GuestCall
+        token={call}
+        mode={mode}
+        onLeave={() => setCall(null)}
+        onLeft={() => {
+          setCall(null);
+          setLeft(true);
+        }}
+      />
+    );
+  }
+
+  // The guest left, or the Deaf user ended the session (or removed them): nothing else to show.
+  if (left || phase === 'closed') {
+    return (
+      <GuestEnded
+        message={
+          left
+            ? 'You have left the session. You can close this tab.'
+            : 'This session has ended. You can close this tab.'
+        }
+      />
+    );
   }
 
   const canChoose = phase === 'waiting' || phase === 'ready';

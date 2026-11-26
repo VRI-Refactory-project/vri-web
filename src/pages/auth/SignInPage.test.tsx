@@ -31,7 +31,7 @@ async function fillAndSubmit() {
 describe('SignInPage', () => {
   afterEach(() => {
     vi.restoreAllMocks();
-    sessionStorage.clear();
+    localStorage.clear();
   });
 
   it('signs in and goes to the dashboard for the user role', async () => {
@@ -43,7 +43,7 @@ describe('SignInPage', () => {
     renderPage();
     await fillAndSubmit();
     expect(await screen.findByText('interpreter home')).toBeInTheDocument();
-    expect(sessionStorage.getItem('vri.session')).toContain('"token":"a"');
+    expect(localStorage.getItem('vri.session')).toContain('"token":"a"');
   });
 
   it('shows the API error and stays on the page', async () => {
@@ -51,7 +51,7 @@ describe('SignInPage', () => {
     renderPage();
     await fillAndSubmit();
     expect(await screen.findByRole('alert')).toHaveTextContent('Invalid credentials');
-    expect(sessionStorage.getItem('vri.session')).toBeNull();
+    expect(localStorage.getItem('vri.session')).toBeNull();
   });
 
   it('shows a generic message when the network fails', async () => {
@@ -126,7 +126,7 @@ describe('SignInPage', () => {
   };
 
   it('takes someone who is already signed in straight to their dashboard', () => {
-    sessionStorage.setItem('vri.session', JSON.stringify(interpreterSession));
+    localStorage.setItem('vri.session', JSON.stringify(interpreterSession));
     renderPage();
     expect(screen.getByText('interpreter home')).toBeInTheDocument();
   });

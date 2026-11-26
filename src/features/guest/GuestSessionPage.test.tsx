@@ -141,6 +141,28 @@ describe('GuestSessionPage: how the hearing guest joins', () => {
     expect(screen.getByText('SignConnect')).toBeInTheDocument();
   });
 
+  it('after the guest leaves there is nowhere to go: no links, no buttons, only a message', async () => {
+    const user = userEvent.setup();
+    await joinWith(null);
+
+    await user.click(screen.getByRole('button', { name: /leave call/i }));
+
+    expect(await screen.findByText(/you can close this tab/i)).toBeInTheDocument();
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+
+  it('after the guest leaves there is nowhere to go: no links, no buttons, only a message', async () => {
+    const user = userEvent.setup();
+    await joinWith(null);
+
+    await user.click(screen.getByRole('button', { name: /leave call/i }));
+
+    expect(await screen.findByText(/you can close this tab/i)).toBeInTheDocument();
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+
   it('joins the room once the camera and microphone are ready', async () => {
     await joinWith(null);
 

@@ -6,8 +6,8 @@ import type { AuthSession } from '../../types';
 import { VerifyEmailPage } from './VerifyEmailPage';
 
 function renderPage(session: AuthSession | null, next?: string) {
-  sessionStorage.clear();
-  if (session) sessionStorage.setItem('vri.session', JSON.stringify(session));
+  localStorage.clear();
+  if (session) localStorage.setItem('vri.session', JSON.stringify(session));
   return render(
     <AuthProvider>
       <MemoryRouter initialEntries={[{ pathname: '/verify-email', state: next ? { next } : null }]}>
@@ -32,7 +32,7 @@ const session = (user: Partial<AuthSession['user']>): AuthSession => ({
 });
 
 describe('VerifyEmailPage', () => {
-  afterEach(() => sessionStorage.clear());
+  afterEach(() => localStorage.clear());
 
   it('sends a signed-out visitor to sign in', () => {
     renderPage(null);

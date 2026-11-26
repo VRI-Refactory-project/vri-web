@@ -56,7 +56,7 @@ function renderAt(path: string) {
 describe('GuestRoute', () => {
   afterEach(() => {
     vi.restoreAllMocks();
-    sessionStorage.clear();
+    localStorage.clear();
     setAuthToken(null);
   });
 
@@ -66,7 +66,7 @@ describe('GuestRoute', () => {
   });
 
   it('sends someone who is already signed in to their dashboard', () => {
-    sessionStorage.setItem('vri.session', JSON.stringify(deafSession));
+    localStorage.setItem('vri.session', JSON.stringify(deafSession));
     renderAt('/get-started');
     expect(screen.getByText('deaf home')).toBeInTheDocument();
     expect(screen.queryByText('role selection')).not.toBeInTheDocument();

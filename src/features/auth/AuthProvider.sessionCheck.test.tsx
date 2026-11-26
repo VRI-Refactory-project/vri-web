@@ -33,9 +33,9 @@ const renderProvider = () =>
 describe('AuthProvider session check', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
-    sessionStorage.clear();
+    localStorage.clear();
   });
-  afterEach(() => sessionStorage.clear());
+  afterEach(() => localStorage.clear());
 
   it('does not check anything when nobody is signed in', () => {
     const spy = vi.spyOn(auth, 'getCurrentUser');
@@ -46,7 +46,7 @@ describe('AuthProvider session check', () => {
   });
 
   it('takes the name and role from the server, not from storage', async () => {
-    sessionStorage.setItem('vri.session', JSON.stringify(session));
+    localStorage.setItem('vri.session', JSON.stringify(session));
     vi.spyOn(auth, 'getCurrentUser').mockResolvedValue({ ...session.user, name: 'Sarah Real' });
     renderProvider();
     expect(screen.getByText('checking')).toBeInTheDocument();
@@ -55,7 +55,7 @@ describe('AuthProvider session check', () => {
   });
 
   it('cancels the refresh token on the server when signing out', async () => {
-    sessionStorage.setItem('vri.session', JSON.stringify(session));
+    localStorage.setItem('vri.session', JSON.stringify(session));
     vi.spyOn(auth, 'getCurrentUser').mockResolvedValue(session.user);
     const revoke = vi.spyOn(auth, 'revokeSession').mockResolvedValue(undefined);
     renderProvider();
@@ -65,6 +65,6 @@ describe('AuthProvider session check', () => {
     });
     expect(revoke).toHaveBeenCalledWith('refresh-1');
     expect(screen.getByText('signed out')).toBeInTheDocument();
-    expect(sessionStorage.getItem('vri.session')).toBeNull();
+    expect(localStorage.getItem('vri.session')).toBeNull();
   });
 });

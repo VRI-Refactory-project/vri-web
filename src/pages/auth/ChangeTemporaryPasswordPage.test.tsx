@@ -15,8 +15,8 @@ const session = (mustChangePassword: boolean): AuthSession => ({
 });
 
 function renderPage(stored: AuthSession | null) {
-  sessionStorage.clear();
-  if (stored) sessionStorage.setItem('vri.session', JSON.stringify(stored));
+  localStorage.clear();
+  if (stored) localStorage.setItem('vri.session', JSON.stringify(stored));
   return render(
     <AuthProvider>
       <MemoryRouter initialEntries={['/change-password']}>
@@ -36,7 +36,7 @@ describe('ChangeTemporaryPasswordPage', () => {
     vi.restoreAllMocks();
     vi.spyOn(auth, 'getCurrentUser').mockResolvedValue(session(true).user);
   });
-  afterEach(() => sessionStorage.clear());
+  afterEach(() => localStorage.clear());
 
   it('sends signed-out visitors to sign in', async () => {
     renderPage(null);

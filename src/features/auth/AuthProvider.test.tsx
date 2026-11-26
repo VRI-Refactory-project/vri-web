@@ -36,7 +36,7 @@ function renderProbe() {
   // tests are about refreshing and signing out, so both calls are stubbed.
   vi.spyOn(authService, 'getCurrentUser').mockResolvedValue(stored.user);
   vi.spyOn(authService, 'revokeSession').mockResolvedValue(undefined);
-  sessionStorage.setItem('vri.session', JSON.stringify(stored));
+  localStorage.setItem('vri.session', JSON.stringify(stored));
   return render(
     <AuthProvider>
       <Probe />
@@ -48,7 +48,7 @@ describe('AuthProvider session handling', () => {
   afterEach(() => {
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
-    sessionStorage.clear();
+    localStorage.clear();
     setAuthToken(null);
     setRefreshHandler(null);
   });
@@ -74,7 +74,7 @@ describe('AuthProvider session handling', () => {
     await userEvent.click(screen.getByText('call api'));
     expect(await screen.findByText('signed out')).toBeInTheDocument();
     expect(screen.getByText('expired')).toBeInTheDocument();
-    expect(sessionStorage.getItem('vri.session')).toBeNull();
+    expect(localStorage.getItem('vri.session')).toBeNull();
   });
 
   it('stays signed in when the refresh fails only because the network is down', async () => {
@@ -92,6 +92,6 @@ describe('AuthProvider session handling', () => {
     await userEvent.click(screen.getByText('log out'));
     expect(screen.getByText('signed out')).toBeInTheDocument();
     expect(screen.getByText('not expired')).toBeInTheDocument();
-    expect(sessionStorage.getItem('vri.session')).toBeNull();
+    expect(localStorage.getItem('vri.session')).toBeNull();
   });
 });

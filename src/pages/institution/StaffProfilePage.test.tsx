@@ -24,7 +24,7 @@ const sarah: StaffMember = {
 
 // Signed in as Grace (user id 7), the institution admin.
 function signInAsGrace() {
-  sessionStorage.setItem(
+  localStorage.setItem(
     'vri.session',
     JSON.stringify({
       token: 't',
@@ -55,7 +55,7 @@ describe('StaffProfilePage', () => {
   });
   afterEach(() => {
     vi.restoreAllMocks();
-    sessionStorage.clear();
+    localStorage.clear();
   });
 
   it('loads the staff member from the URL and shows their details', async () => {
