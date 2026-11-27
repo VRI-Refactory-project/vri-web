@@ -182,6 +182,48 @@ export function InterpreterHomePage() {
           <div className="ih-dashboard-split">
             <div className="ih-split-left">
               <section className="ih-section">
+                <div className="ih-activity-wrapper">
+                  <div
+                    className="ih-section-header"
+                    style={{
+                      marginBottom: '16px',
+                      paddingBottom: '12px',
+                      borderBottom: '1px solid #f1edf9',
+                    }}
+                  >
+                    <h3>
+                      <Clock size={18} className="ih-section-icon" /> Recent sessions
+                    </h3>
+                    <Link to={`${INTERPRETER_BASE}/sessions`} className="ih-section-link">
+                      View all <ChevronRight size={14} />
+                    </Link>
+                  </div>
+
+                  {recent.length === 0 && <p className="ih-time-label">No sessions yet.</p>}
+
+                  {recent.slice(0, 4).map((session) => (
+                    <div className="ih-recent-item" key={session.id}>
+                      <Avatar name={session.withName} photo={session.photo} />
+                      <div className="ih-list-info">
+                        <h4>{session.withName}</h4>
+                        <p className="ih-meta">
+                          {dayLabel(session.startedAt, today)}, {timeOf(session.startedAt)}
+                          {session.durationMinutes
+                            ? ` · ${formatDuration(session.durationMinutes)}`
+                            : ''}
+                        </p>
+                      </div>
+                      <Link to={`${INTERPRETER_BASE}/sessions`} className="ih-recent-details">
+                        Details
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </div>
+
+            <div className="ih-split-right">
+              <section className="ih-section">
                 <div className="ih-next-session-wrapper">
                   <div className="ih-section-header">
                     <h3>
@@ -224,48 +266,6 @@ export function InterpreterHomePage() {
                   ) : (
                     <p className="ih-time-label ih-empty-note">No upcoming sessions booked.</p>
                   )}
-                </div>
-              </section>
-            </div>
-
-            <div className="ih-split-right">
-              <section className="ih-section">
-                <div className="ih-activity-wrapper">
-                  <div
-                    className="ih-section-header"
-                    style={{
-                      marginBottom: '16px',
-                      paddingBottom: '12px',
-                      borderBottom: '1px solid #f1edf9',
-                    }}
-                  >
-                    <h3>
-                      <Clock size={18} className="ih-section-icon" /> Recent sessions
-                    </h3>
-                    <Link to={`${INTERPRETER_BASE}/sessions`} className="ih-section-link">
-                      View all <ChevronRight size={14} />
-                    </Link>
-                  </div>
-
-                  {recent.length === 0 && <p className="ih-time-label">No sessions yet.</p>}
-
-                  {recent.slice(0, 4).map((session) => (
-                    <div className="ih-recent-item" key={session.id}>
-                      <Avatar name={session.withName} photo={session.photo} />
-                      <div className="ih-list-info">
-                        <h4>{session.withName}</h4>
-                        <p className="ih-meta">
-                          {dayLabel(session.startedAt, today)}, {timeOf(session.startedAt)}
-                          {session.durationMinutes
-                            ? ` · ${formatDuration(session.durationMinutes)}`
-                            : ''}
-                        </p>
-                      </div>
-                      <Link to={`${INTERPRETER_BASE}/sessions`} className="ih-recent-details">
-                        Details
-                      </Link>
-                    </div>
-                  ))}
                 </div>
               </section>
             </div>
