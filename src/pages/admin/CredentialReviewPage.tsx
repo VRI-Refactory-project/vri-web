@@ -186,7 +186,7 @@ export function CredentialReviewPage() {
               </p>
             )}
             {detail.certificates.length === 0 ? (
-              <p>
+              <p className="crp-empty-certificates" role="note">
                 No certificate has been uploaded yet. An interpreter cannot be approved without one.
               </p>
             ) : (
@@ -233,10 +233,12 @@ export function CredentialReviewPage() {
                 {detail.decisions.map((d) => (
                   <li key={d.id}>
                     <span className="crp-progress-label">
-                      {d.action} by {d.adminName}
+                      {decisionLabel(d.action)} by {d.adminName}
                       {d.reason ? `: ${d.reason}` : ''}
                     </span>
-                    <span className="crp-progress-status">{formatDate(d.createdAt)}</span>
+                    <time className="crp-progress-status" dateTime={d.createdAt}>
+                      on {formatDate(d.createdAt)}
+                    </time>
                   </li>
                 ))}
               </ul>
@@ -278,6 +280,12 @@ export function CredentialReviewPage() {
                     ? 'crp-btn crp-btn--danger'
                     : 'crp-btn crp-btn--success'
                 }
+                disabled={action === 'approve' && detail.certificates.length === 0}
+                title={
+                  action === 'approve' && detail.certificates.length === 0
+                    ? 'A certificate is required before approval.'
+                    : undefined
+                }
                 onClick={() => setPending(action)}
               >
                 {DIALOGS[action].variant === 'danger' ? <XCircle size={14} /> : <Check size={14} />}{' '}
@@ -315,4 +323,14 @@ function DetailRow({ label, value }: { label: string; value: string }) {
       <strong>{value}</strong>
     </div>
   );
+}
+
+function decisionLabel(action: string) {
+  const labels: Record<string, string> = {
+    approve: 'Approved',
+    reject: 'Rejected',
+    deactivate: 'Deactivated',
+    reactivate: 'Reactivated',
+  };
+  return labels[action.toLowerCase()] ?? action;
 }
