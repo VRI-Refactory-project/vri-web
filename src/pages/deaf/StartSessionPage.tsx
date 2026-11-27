@@ -11,7 +11,7 @@ const WAITING = ['CREATED', 'QUEUED', 'OFFERED'];
 const MATCHED = ['ACCEPTED', 'CONNECTING', 'ACTIVE'];
 
 /** How long we look for an interpreter before we stop and say none was found. */
-export const WAIT_LIMIT_MS = 3 * 60 * 1000;
+export const WAIT_LIMIT_MS = 2 * 60 * 1000;
 
 /** The words that differ between a Deaf user asking for themselves and staff asking for a client. */
 const COPY = {
@@ -159,7 +159,7 @@ export function StartSessionPage({ pollMs }: Props) {
   const emergency = params.get('priority') === 'emergency';
   const state = request?.state;
 
-  // After 3 minutes without an interpreter, stop the request and tell the person.
+  // After 2 minutes without an interpreter, stop the request and tell the person.
   const [noInterpreter, setNoInterpreter] = useState(false);
   const waitingId = request && state && WAITING.includes(state) ? request.id : null;
   const createdAt = request?.createdAt;
@@ -283,7 +283,7 @@ export function StartSessionPage({ pollMs }: Props) {
           >
             <h2 id="ss-modal-title">No interpreter found</h2>
             <p id="ss-modal-text">
-              We could not find an available interpreter in 3 minutes. Please try again in a few
+              We could not find an available interpreter in 2 minutes. Please try again in a few
               minutes.
             </p>
             <div className="ss-modal-actions">

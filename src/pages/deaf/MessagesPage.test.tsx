@@ -591,7 +591,8 @@ describe('MessagesPage', () => {
   });
 
   it('stops listening when the page is left', async () => {
-    const { unmount } = renderPage();
+    const { unmount } = renderPage('/dashboard/deaf/messages');
+    await userEvent.click(await screen.findByRole('button', { name: /Sarah Nsubuga/ }));
     await screen.findByText('Hi Irene');
 
     unmount();
