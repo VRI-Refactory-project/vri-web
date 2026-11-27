@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Download, Search, Pencil, Check, Trash2, XCircle } from 'lucide-react';
+import { Download, Search, Pencil, Check, Trash2, XCircle, RotateCcw } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
 import {
   fetchAllAdminUsers,
   fetchAdminUsersPage,
   approveUser,
   deactivateUser,
+  activateUser,
   deleteUser,
   updateUser,
   type AdminUser,
@@ -18,6 +20,7 @@ import './UsersPage.css';
 const PAGE_SIZE = 10;
 
 export function UsersPage() {
+  const { session } = useAuth();
   const [users, setUsers] = useState<AdminUser[] | null>(null);
   const [totalUsers, setTotalUsers] = useState(0);
   const [error, setError] = useState('');
@@ -111,7 +114,8 @@ export function UsersPage() {
     const s = status.toLowerCase();
     if (s === 'verified') return { background: '#dcfce7', color: '#15803d' };
     if (s === 'pending') return { background: '#fef3c7', color: '#b45309' };
-    if (s === 'rejected' || s === 'suspended') return { background: '#fee2e2', color: '#b91c1c' };
+    if (s === 'rejected' || s === 'suspended' || s === 'deactivated')
+      return { background: '#fee2e2', color: '#b91c1c' };
     return { background: '#f1f5f9', color: '#475569' };
   };
 
@@ -209,16 +213,31 @@ export function UsersPage() {
   };
 
   const handleDeactivate = (user: AdminUser) => {
+    if (user.role === 'admin' && user.id === session?.user.id) return;
     setConfirmAction({ type: 'deactivate', user });
   };
 
   const handleDelete = (user: AdminUser) => {
+    if (user.role === 'admin' && user.id === session?.user.id) return;
     setConfirmAction({ type: 'delete', user });
+  };
+
+  const handleReactivate = async (user: AdminUser) => {
+    try {
+      await activateUser(user.id);
+      await refreshUsers();
+    } catch (err) {
+      setError(`Failed to reactivate ${user.name}: ${describeError(err)}`);
+    }
   };
 
   const executeAction = async () => {
     if (!confirmAction) return;
     const { type, user } = confirmAction;
+    if (user.role === 'admin' && user.id === session?.user.id) {
+      setConfirmAction(null);
+      return;
+    }
 
     try {
       if (type === 'deactivate') {
@@ -343,7 +362,7 @@ export function UsersPage() {
           <option value="verified">Verified</option>
           <option value="pending">Pending</option>
           <option value="rejected">Rejected</option>
-          <option value="suspended">Suspended</option>
+          <option value="suspended">Deactivated</option>
         </select>
 
         <select
@@ -422,7 +441,10 @@ export function UsersPage() {
                           ...statusBadgeStyle(u.verificationStatus),
                         }}
                       >
-                        {u.verificationStatus}
+                        {u.verificationStatus === 'suspended' ||
+                        u.verificationStatus === 'deactivated'
+                          ? 'Deactivated'
+                          : u.verificationStatus}
                       </span>
                     </td>
                     <td data-label="Email / Phone">
@@ -452,7 +474,19 @@ export function UsersPage() {
                             <Check size={14} />
                             Approve
                           </button>
-                        ) : (
+                        ) :
+                        u.verificationStatus === 'deactivated' ||
+                        u.verificationStatus === 'suspended' ? (
+                          <button
+                            type="button"
+                            onClick={() => void handleReactivate(u)}
+                            className="users-action-btn users-action-btn--approve"
+                          >
+                            <RotateCcw size={14} />
+                            Reactivate
+                          </button>
+                        ) : u.verificationStatus === 'verified' &&
+                          !(u.role === 'admin' && u.id === session?.user.id) ? (
                           <button
                             type="button"
                             onClick={() => handleDeactivate(u)}
@@ -461,17 +495,24 @@ export function UsersPage() {
                             <XCircle size={14} />
                             Deactivate
                           </button>
+                        ) : u.role === 'admin' && u.id === session?.user.id ? null : (
+                          <span aria-label="No account action available">—</span>
                         )}
 
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(u)}
-                          className="users-action-btn users-action-btn--delete"
-                          title="Delete user"
-                          aria-label={`Delete ${u.name}`}
-                        >
-                          <Trash2 size={20} />
-                        </button>
+                        {u.role === 'admin' && u.id === session?.user.id ? null : (
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(u)}
+                            className="users-action-btn users-action-btn--delete"
+                            title="Delete user"
+                            aria-label={`Delete ${u.name}`}
+                          >
+                            <Trash2 size={20} />
+                          </button>
+                        )}
+                        {u.role === 'admin' && u.id === session?.user.id && (
+                          <span className="users-current-account">Current account</span>
+                        )}
                       </div>
                     </td>
                   </tr>
