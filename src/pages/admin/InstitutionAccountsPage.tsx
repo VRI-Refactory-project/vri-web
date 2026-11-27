@@ -462,7 +462,7 @@ function ConfirmDialog({
       title: 'Reactivate this institution?',
       description:
         'This will restore the organisation’s active account status. Confirm that it should regain access.',
-      button: 'Activate account',
+      button: 'Reactivate account',
     },
     approve: {
       title: 'Approve this institution?',
@@ -702,7 +702,7 @@ export function InstitutionAccountsPage() {
           confirmAction === 'deactivate'
             ? 'deactivated'
             : confirmAction === 'activate'
-              ? 'activated'
+              ? 'reactivated'
               : 'approved';
         setNotice(`${updated.name} was ${verb} successfully.`);
       }
@@ -1078,7 +1078,7 @@ export function InstitutionAccountsPage() {
                             onClick={() => openConfirm(institution, 'activate')}
                           >
                             <Check size={15} />
-                            Activate
+                            Reactivate
                           </button>
                         ) : (
                           <button

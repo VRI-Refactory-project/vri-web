@@ -95,7 +95,7 @@ export interface AdminUser {
   email: string;
   phone: string;
   role: 'deaf' | 'interpreter' | 'institution' | 'admin';
-  verificationStatus: 'verified' | 'pending' | 'rejected' | 'suspended';
+  verificationStatus: 'verified' | 'pending' | 'rejected' | 'suspended' | 'deactivated';
   registeredAt: string;
   lastActive: string;
 }
@@ -135,9 +135,11 @@ function normalizeUser(raw: ApiUser): AdminUser {
     verificationStatus:
       status === 'verified' || status === 'approved'
         ? 'verified'
-        : status === 'suspended' || status === 'rejected'
-          ? (status as 'suspended' | 'rejected')
-          : 'pending',
+        : status === 'suspended' || status === 'deactivated'
+          ? status
+          : status === 'rejected'
+            ? 'rejected'
+            : 'pending',
     registeredAt: raw.created_at ?? raw.registered_at ?? '',
     lastActive: raw.last_active ?? raw.last_login ?? '',
   };
@@ -228,6 +230,11 @@ export async function approveUser(userId: string): Promise<void> {
 /** POST /api/v1/administration/users/{id}/deactivate/ */
 export async function deactivateUser(userId: string): Promise<void> {
   await api(`${PATH}${userId}/deactivate/`, { method: 'POST' });
+}
+
+/** POST /api/v1/administration/users/{id}/activate/ */
+export async function activateUser(userId: string): Promise<void> {
+  await api(`${PATH}${userId}/activate/`, { method: 'POST' });
 }
 
 /** DELETE /api/v1/administration/users/{id}/delete/ */

@@ -474,6 +474,13 @@ export async function deactivateInstitution(id: string): Promise<Institution> {
   return normalizeInstitution(response);
 }
 
+export async function reactivateInstitution(id: string): Promise<Institution> {
+  const response = await api<unknown>(`${BASE}${encodeURIComponent(id)}/activate/`, {
+    method: 'POST',
+  });
+  return normalizeInstitution(response);
+}
+
 /* ---------- Delete ---------- */
 
 /** DELETE /api/v1/administration/institutions/{id}/ */
@@ -489,6 +496,7 @@ export async function updateInstitutionStatus(
   id: string,
   action: 'approve' | 'activate' | 'deactivate',
 ): Promise<Institution> {
-  if (action === 'approve' || action === 'activate') return approveInstitution(id);
+  if (action === 'approve') return approveInstitution(id);
+  if (action === 'activate') return reactivateInstitution(id);
   return deactivateInstitution(id);
 }
