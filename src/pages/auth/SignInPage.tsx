@@ -16,7 +16,7 @@ import {
 
 import { useFieldErrors } from '../../lib/useFieldErrors';
 import { ApiError } from '../../services/api';
-import type { Role } from '../../types';
+import type { AuthUser } from '../../types';
 import { signIn } from '../../services/auth';
 
 import './SignInPages.css';
@@ -25,8 +25,10 @@ type FieldName = 'identifier' | 'password';
 
 const FIELD_ORDER: readonly FieldName[] = ['identifier', 'password'];
 
-function destinationFor(role: Role, from: unknown): string {
-  const home = dashboardPathFor(role);
+function destinationFor(user: AuthUser, from: unknown): string {
+  if (user.role === 'institution' && user.institutionRole === 'STAFF' && user.mustChangePassword)
+    return '/change-password';
+  const home = dashboardPathFor(user.role, user.institutionRole);
 
   return typeof from === 'string' && (from === home || from.startsWith(`${home}/`)) ? from : home;
 }
@@ -67,6 +69,9 @@ export const SignInPage = () => {
     try {
       const session = await signIn(identifierForApi(formData.identifier), formData.password);
 
+      if (session.user.role === 'institution' && session.user.institutionRole === 'STAFF') {
+        sessionStorage.removeItem('staffPasswordChangeDeferred');
+      }
       login(session);
     } catch (err) {
       setError(
@@ -89,7 +94,7 @@ export const SignInPage = () => {
   };
 
   if (session) {
-    return <Navigate to={destinationFor(session.user.role, from)} replace />;
+    return <Navigate to={destinationFor(session.user, from)} replace />;
   }
 
   return (

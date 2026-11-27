@@ -145,11 +145,11 @@ describe('ProtectedRoute', () => {
     expect(await screen.findByText('interpreter home')).toBeInTheDocument();
   });
 
-  it('sends staff with a one-time password to choose their own first', async () => {
+  it('does not force non-staff users to change their password', async () => {
     const base = sessionFor('interpreter');
     const session = { ...base, user: { ...base.user, mustChangePassword: true } };
     serverConfirms(session);
     renderAt(session);
-    expect(await screen.findByText('choose your own password')).toBeInTheDocument();
+    expect(await screen.findByText('interpreter home')).toBeInTheDocument();
   });
 });

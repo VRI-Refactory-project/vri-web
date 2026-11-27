@@ -11,8 +11,6 @@ import '../registration/AuthPages.css';
 
 type Field = 'password' | 'confirm';
 const ORDER: readonly Field[] = ['password', 'confirm'];
-const STAFF_ONBOARDING_KEY = 'staffInvitationOnboarding';
-
 /** Public, one-time link used by institution staff to choose their first password. */
 export function AcceptStaffInvitationPage() {
   const { login } = useAuth();
@@ -41,9 +39,8 @@ export function AcceptStaffInvitationPage() {
       if (session.user.role !== 'institution' || session.user.institutionRole !== 'STAFF') {
         throw new Error('This invitation is not for an institution staff account.');
       }
-      sessionStorage.setItem(STAFF_ONBOARDING_KEY, 'true');
       login(session);
-      navigate('/verify-email', { replace: true });
+      navigate('/dashboard/staff', { replace: true });
     } catch (err) {
       setError(
         err instanceof ApiError

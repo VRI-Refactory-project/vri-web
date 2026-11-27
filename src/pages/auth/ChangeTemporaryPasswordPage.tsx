@@ -14,7 +14,7 @@ import '../registration/AuthPages.css';
 type Field = 'current' | 'next' | 'confirm';
 const ORDER: readonly Field[] = ['current', 'next', 'confirm'];
 
-/** First sign-in for staff made by an institution: swap the one-time password for their own. */
+/** Optional password change offered to institution staff after their first sign-in. */
 export function ChangeTemporaryPasswordPage() {
   const { session, checking, login } = useAuth();
   const navigate = useNavigate();
@@ -33,7 +33,8 @@ export function ChangeTemporaryPasswordPage() {
 
   if (checking) return null;
   if (!session) return <Navigate to="/sign-in" replace />;
-  if (!session.user.mustChangePassword) {
+  const isStaff = session.user.role === 'institution' && session.user.institutionRole === 'STAFF';
+  if (!isStaff || !session.user.mustChangePassword) {
     return (
       <Navigate to={dashboardPathFor(session.user.role, session.user.institutionRole)} replace />
     );
@@ -46,6 +47,7 @@ export function ChangeTemporaryPasswordPage() {
     setSubmitting(true);
     try {
       const updated = await changePassword(current, next);
+      sessionStorage.removeItem('staffPasswordChangeDeferred');
       login(updated);
       navigate(dashboardPathFor(updated.user.role, updated.user.institutionRole), {
         replace: true,
@@ -61,15 +63,20 @@ export function ChangeTemporaryPasswordPage() {
     }
   };
 
+  const deferChange = () => {
+    sessionStorage.setItem('staffPasswordChangeDeferred', session.user.id);
+    navigate(dashboardPathFor(session.user.role, session.user.institutionRole), { replace: true });
+  };
+
   return (
     <AuthLayout
-      title="Choose your own password"
-      subtitle="You signed in with a one-time password. Set a new one to continue."
-      backTo="/sign-in"
+      title="Change your password?"
+      subtitle="You can replace the temporary password now, or keep using it and change it later in Settings."
+      backTo={dashboardPathFor(session.user.role, session.user.institutionRole)}
     >
       <form onSubmit={submit} noValidate>
         <div className="form-group">
-          <label htmlFor="change-current">One-time password</label>
+          <label htmlFor="change-current">Current password</label>
           <input
             {...fieldProps('current')}
             type="password"
@@ -107,7 +114,10 @@ export function ChangeTemporaryPasswordPage() {
           </p>
         )}
         <button type="submit" className="btn-primary" disabled={submitting}>
-          {submitting ? 'Saving…' : 'Save and continue'}
+          {submitting ? 'Saving…' : 'Change password'}
+        </button>
+        <button type="button" className="btn-secondary" onClick={deferChange}>
+          I’ll change it later
         </button>
       </form>
     </AuthLayout>
