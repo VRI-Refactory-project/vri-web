@@ -1,6 +1,19 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, BadgeCheck, Star, Pencil, Save, X, Plus, Camera } from 'lucide-react';
+import {
+  AlertCircle,
+  ArrowLeft,
+  BadgeCheck,
+  Camera,
+  Clock,
+  Heart,
+  Languages,
+  Pencil,
+  Plus,
+  Save,
+  Star,
+  X,
+} from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { SignOutButton } from '../../components/SignOutButton';
 import { describeError } from '../../services/api';
@@ -11,7 +24,8 @@ import {
   updateInterpreterProfile,
 } from '../../services/interpreterProfile';
 import { ProfilePhotoCropper } from '../dashboards/ProfilePhotoCropper';
-import './ProfilePage.css';
+// One look for every profile: this is the Deaf user's profile stylesheet.
+import '../deaf/ProfilePage.css';
 
 interface InterpreterProfile {
   fullName: string;
@@ -223,269 +237,287 @@ export function ProfilePage() {
     setEditing(false);
   };
 
-  const topError =
-    errors.fullName ||
-    errors.languages ||
-    errors.specialisations ||
-    errors.emergencyName ||
-    errors.emergencyPhone;
+  const hasErrors = Object.values(errors).some(Boolean);
+  const banner = profileError || photoError || (hasErrors ? 'Please fix the errors below.' : '');
+  const initial = form.fullName.trim().charAt(0).toUpperCase() || 'A';
 
   return (
-    <div className="ip-page">
-      <div className="ip-header">
+    <div className={`pr-page${editing ? ' pr-page--editing' : ''}`}>
+      <div className="pr-header">
         <div>
-          <h1>{editing ? 'Edit interpreter profile' : 'Interpreter profile'}</h1>
+          <div className="pr-title-row">
+            <h1>{editing ? 'Edit interpreter profile' : 'Interpreter profile'}</h1>
+            <span className={`pr-mode${editing ? ' pr-mode--edit' : ''}`}>
+              {editing ? 'Editing' : 'Viewing'}
+            </span>
+          </div>
           <p>Manage your skills, availability, and preferences.</p>
         </div>
-        <button className="ip-back" onClick={() => navigate('/dashboard/interpreter')}>
+        <button
+          type="button"
+          className="pr-back"
+          onClick={() => navigate('/dashboard/interpreter')}
+        >
           <ArrowLeft size={15} /> Back
         </button>
       </div>
 
-      {topError && <div className="ip-error">{topError}</div>}
-      {profileError && (
-        <div className="ip-error" role="alert">
-          {profileError}
+      {banner && (
+        <div className="pr-banner pr-banner--error" role="alert">
+          <AlertCircle size={15} /> {banner}
         </div>
       )}
-      {photoError && <div className="ip-error">{photoError}</div>}
 
-      <div className="ip-card ip-hero">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-start' }}>
-          {photoUrl ? (
-            <img
-              src={photoUrl}
-              alt={fullName}
-              style={{ width: 84, height: 84, borderRadius: 15, objectFit: 'cover' }}
-            />
-          ) : (
-            <span className="ip-avatar">{fullName.trim().charAt(0).toUpperCase() || 'A'}</span>
-          )}
-          <input
-            ref={fileInput}
-            type="file"
-            accept="image/*"
-            hidden
-            onChange={handleFileSelect} /* <-- CHANGED */
-          />
-          <button
-            type="button"
-            className="ip-btn ip-btn--ghost"
-            style={{ padding: '6px 12px', fontSize: 12 }}
-            disabled={photoBusy}
-            onClick={() => fileInput.current?.click()}
-          >
-            <Camera size={13} /> {photoBusy ? 'Working…' : photoUrl ? 'Change photo' : 'Add photo'}
-          </button>
-          {photoUrl && (
-            <button
-              type="button"
-              className="ip-btn ip-btn--ghost"
-              style={{ padding: '6px 12px', fontSize: 12 }}
-              disabled={photoBusy}
-              onClick={() => void handlePhotoRemove()}
-            >
-              <X size={13} /> Remove
-            </button>
-          )}
-        </div>
-        <div className="ip-hero-info">
-          <div className="ip-name">
-            {editing ? (
-              <input
-                className="ip-name-input"
-                value={form.fullName}
-                onChange={(e) => set('fullName', e.target.value)}
-              />
-            ) : (
-              <span>{form.fullName}</span>
-            )}
-            <BadgeCheck size={18} className="ip-verified" />
-          </div>
-          {editing ? (
-            <label className="ip-experience-field">
-              Years of interpreting experience
-              <input
-                type="number"
-                min="0"
-                step="1"
-                value={form.yearsExperience ?? ''}
-                onChange={(event) =>
-                  set(
-                    'yearsExperience',
-                    event.target.value === '' ? null : Number(event.target.value),
-                  )
-                }
-              />
-              {errors.yearsExperience && (
-                <span className="ip-field-error">{errors.yearsExperience}</span>
+      <div className="pr-columns">
+        {/* LEFT */}
+        <div className="pr-left">
+          <div className="pr-card">
+            <div className="pr-photo">
+              {photoUrl ? (
+                <img className="pr-avatar-img" src={photoUrl} alt={form.fullName} />
+              ) : (
+                <span className="pr-avatar">{initial}</span>
               )}
-            </label>
-          ) : (
-            <p className="ip-headline">
-              {form.yearsExperience == null
-                ? 'Experience not provided'
-                : `${form.yearsExperience} years experience`}
-            </p>
-          )}
-          <div className="ip-stats">
-            <span>
-              <Star size={14} className="ip-star" />{' '}
-              {profileStats?.averageRating == null ? '—' : profileStats.averageRating.toFixed(2)}
-            </span>
-            <span>{profileStats ? profileStats.completedSessions : '—'} completed sessions</span>
-          </div>
-          {statsError && (
-            <div className="ip-field-error" role="status">
-              {statsError}
-            </div>
-          )}
-          {form.available && <span className="ip-pill">Available now</span>}
-        </div>
-      </div>
-
-      {errors.fullName && (
-        <div className="ip-card">
-          <div className="ip-field-error">{errors.fullName}</div>
-        </div>
-      )}
-
-      <div className="ip-grid">
-        <div className="ip-card">
-          <h2>Languages</h2>
-          <ul className="ip-list">
-            {form.languages.map((l) => (
-              <li key={l}>
-                <span>✓ {l}</span>
-                {editing && (
-                  <button onClick={() => removeItem('languages', l)} aria-label={`Remove ${l}`}>
-                    <X size={12} />
-                  </button>
-                )}
-              </li>
-            ))}
-          </ul>
-          {editing && (
-            <div className="ip-add">
-              <input
-                placeholder="Add language"
-                value={newLanguage}
-                onChange={(e) => setNewLanguage(e.target.value)}
-              />
-              <button onClick={() => addItem('languages')} aria-label="Add language">
-                <Plus size={14} />
-              </button>
-            </div>
-          )}
-          {errors.languages && <div className="ip-field-error">{errors.languages}</div>}
-        </div>
-
-        <div className="ip-card">
-          <h2>Specialisations</h2>
-          <ul className="ip-list">
-            {form.specialisations.map((s) => (
-              <li key={s}>
-                <span>✓ {s}</span>
-                {editing && (
+              <div className="pr-photo-actions">
+                <input
+                  ref={fileInput}
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={handleFileSelect}
+                />
+                <button
+                  type="button"
+                  disabled={photoBusy}
+                  onClick={() => fileInput.current?.click()}
+                >
+                  <Camera size={14} />{' '}
+                  {photoBusy ? 'Working…' : photoUrl ? 'Change photo' : 'Add photo'}
+                </button>
+                {photoUrl && (
                   <button
-                    onClick={() => removeItem('specialisations', s)}
-                    aria-label={`Remove ${s}`}
+                    type="button"
+                    disabled={photoBusy}
+                    onClick={() => void handlePhotoRemove()}
                   >
-                    <X size={12} />
+                    <X size={14} /> Remove
                   </button>
                 )}
-              </li>
-            ))}
-          </ul>
-          {editing && (
-            <div className="ip-add">
-              <input
-                placeholder="Add specialisation"
-                value={newSpecialisation}
-                onChange={(e) => setNewSpecialisation(e.target.value)}
-              />
-              <button onClick={() => addItem('specialisations')} aria-label="Add specialisation">
-                <Plus size={14} />
-              </button>
+              </div>
             </div>
-          )}
-          {errors.specialisations && <div className="ip-field-error">{errors.specialisations}</div>}
+
+            <div className="pr-stats">
+              <span className="pr-stat">
+                <Star size={14} className="pr-star" />{' '}
+                {profileStats?.averageRating == null ? '—' : profileStats.averageRating.toFixed(2)}
+              </span>
+              <span className="pr-stat">
+                {profileStats ? profileStats.completedSessions : '—'} completed sessions
+              </span>
+              {form.available && <span className="pr-badge pr-badge--ok">Available now</span>}
+            </div>
+            {statsError && (
+              <span className="pr-msg" role="status">
+                {statsError}
+              </span>
+            )}
+          </div>
+
+          <div className="pr-card">
+            <h2>
+              <BadgeCheck size={15} /> Profile details
+            </h2>
+            <div className="pr-grid">
+              <div className="pr-field">
+                <label htmlFor="interpreter-name">Full name</label>
+                <input
+                  id="interpreter-name"
+                  className={errors.fullName ? 'pr-invalid' : ''}
+                  value={form.fullName}
+                  disabled={!editing}
+                  onChange={(e) => set('fullName', e.target.value)}
+                />
+                {errors.fullName && <span className="pr-msg">{errors.fullName}</span>}
+              </div>
+
+              <div className="pr-field">
+                <label htmlFor="interpreter-experience">Years of interpreting experience</label>
+                <input
+                  id="interpreter-experience"
+                  className={errors.yearsExperience ? 'pr-invalid' : ''}
+                  type="number"
+                  min="0"
+                  step="1"
+                  placeholder="Not provided"
+                  value={form.yearsExperience ?? ''}
+                  disabled={!editing}
+                  onChange={(event) =>
+                    set(
+                      'yearsExperience',
+                      event.target.value === '' ? null : Number(event.target.value),
+                    )
+                  }
+                />
+                {errors.yearsExperience && <span className="pr-msg">{errors.yearsExperience}</span>}
+              </div>
+            </div>
+          </div>
+
+          <div className="pr-card">
+            <h2>
+              <Languages size={15} /> Languages
+            </h2>
+            <div className="pr-chips">
+              {form.languages.map((l) => (
+                <span key={l} className="pr-chip">
+                  {l}
+                  {editing && (
+                    <button
+                      type="button"
+                      onClick={() => removeItem('languages', l)}
+                      aria-label={`Remove ${l}`}
+                    >
+                      <X size={11} />
+                    </button>
+                  )}
+                </span>
+              ))}
+            </div>
+            {editing && (
+              <div className="pr-add-row">
+                <input
+                  placeholder="Add language"
+                  value={newLanguage}
+                  onChange={(e) => setNewLanguage(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="pr-icon-btn"
+                  onClick={() => addItem('languages')}
+                  aria-label="Add language"
+                >
+                  <Plus size={14} />
+                </button>
+              </div>
+            )}
+            {errors.languages && <span className="pr-msg">{errors.languages}</span>}
+          </div>
+
+          <div className="pr-card">
+            <h2>Specialisations</h2>
+            <div className="pr-chips">
+              {form.specialisations.map((s) => (
+                <span key={s} className="pr-chip">
+                  {s}
+                  {editing && (
+                    <button
+                      type="button"
+                      onClick={() => removeItem('specialisations', s)}
+                      aria-label={`Remove ${s}`}
+                    >
+                      <X size={11} />
+                    </button>
+                  )}
+                </span>
+              ))}
+            </div>
+            {editing && (
+              <div className="pr-add-row">
+                <input
+                  placeholder="Add specialisation"
+                  value={newSpecialisation}
+                  onChange={(e) => setNewSpecialisation(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="pr-icon-btn"
+                  onClick={() => addItem('specialisations')}
+                  aria-label="Add specialisation"
+                >
+                  <Plus size={14} />
+                </button>
+              </div>
+            )}
+            {errors.specialisations && <span className="pr-msg">{errors.specialisations}</span>}
+          </div>
         </div>
 
-        <div className="ip-card">
-          <h2>Availability</h2>
-          <ul className="ip-list">
-            <li>
-              <span>✓ {form.availabilityToday}</span>
-            </li>
-            <li>
-              <span>✓ Response time: {form.responseTime}</span>
-            </li>
-          </ul>
-        </div>
+        {/* RIGHT */}
+        <div className="pr-right">
+          <div className="pr-card">
+            <h2>
+              <Clock size={15} /> Availability
+            </h2>
+            <ul className="pr-list">
+              <li>✓ {form.availabilityToday}</li>
+              <li>✓ Response time: {form.responseTime}</li>
+            </ul>
+          </div>
 
-        <div className="ip-card">
-          <h2>Emergency contact</h2>
-          <ul className="ip-list">
-            <li>
-              <span>
-                Name:
-                {editing ? (
-                  <input
-                    className="ip-inline-input"
-                    value={form.emergencyName}
-                    onChange={(e) => set('emergencyName', e.target.value)}
-                  />
-                ) : (
-                  <> {form.emergencyName}</>
-                )}
-              </span>
-            </li>
-            <li>
-              <span>
-                Phone:
-                {editing ? (
-                  <input
-                    className="ip-inline-input"
-                    value={form.emergencyPhone}
-                    onChange={(e) => set('emergencyPhone', e.target.value)}
-                  />
-                ) : (
-                  <> {form.emergencyPhone}</>
-                )}
-              </span>
-            </li>
-          </ul>
-          {errors.emergencyName && <div className="ip-field-error">{errors.emergencyName}</div>}
-          {errors.emergencyPhone && <div className="ip-field-error">{errors.emergencyPhone}</div>}
+          <div className="pr-card">
+            <h2>
+              <Heart size={15} /> Emergency contact
+            </h2>
+            <div className="pr-grid">
+              <div className="pr-field">
+                <label htmlFor="interpreter-emergency-name">Name</label>
+                <input
+                  id="interpreter-emergency-name"
+                  className={errors.emergencyName ? 'pr-invalid' : ''}
+                  value={form.emergencyName}
+                  disabled={!editing}
+                  onChange={(e) => set('emergencyName', e.target.value)}
+                />
+                {errors.emergencyName && <span className="pr-msg">{errors.emergencyName}</span>}
+              </div>
+              <div className="pr-field">
+                <label htmlFor="interpreter-emergency-phone">Phone</label>
+                <input
+                  id="interpreter-emergency-phone"
+                  className={errors.emergencyPhone ? 'pr-invalid' : ''}
+                  value={form.emergencyPhone}
+                  disabled={!editing}
+                  onChange={(e) => set('emergencyPhone', e.target.value)}
+                />
+                {errors.emergencyPhone && <span className="pr-msg">{errors.emergencyPhone}</span>}
+              </div>
+            </div>
+          </div>
+
+          <div className="pr-actions pr-actions--inline">
+            {editing ? (
+              <>
+                <button
+                  type="button"
+                  className="pr-btn pr-btn--ghost"
+                  disabled={savingProfile}
+                  onClick={handleCancel}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="pr-btn pr-btn--primary"
+                  disabled={savingProfile}
+                  onClick={() => void handleSave()}
+                >
+                  <Save size={15} /> {savingProfile ? 'Saving…' : 'Save changes'}
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                className="pr-btn pr-btn--primary"
+                onClick={() => setEditing(true)}
+              >
+                <Pencil size={15} /> Edit profile
+              </button>
+            )}
+          </div>
+          <SignOutButton />
         </div>
       </div>
 
-      <div className="ip-actions">
-        {editing ? (
-          <>
-            <button
-              className="ip-btn ip-btn--ghost"
-              disabled={savingProfile}
-              onClick={handleCancel}
-            >
-              Cancel
-            </button>
-            <button
-              className="ip-btn ip-btn--primary"
-              disabled={savingProfile}
-              onClick={() => void handleSave()}
-            >
-              <Save size={15} /> {savingProfile ? 'Saving…' : 'Save changes'}
-            </button>
-          </>
-        ) : (
-          <button className="ip-btn ip-btn--primary" onClick={() => setEditing(true)}>
-            <Pencil size={15} /> Edit profile
-          </button>
-        )}
-      </div>
-      <SignOutButton />
       {showCropper && selectedImage && (
         <ProfilePhotoCropper
           image={selectedImage}

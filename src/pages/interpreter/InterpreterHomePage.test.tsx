@@ -236,7 +236,7 @@ describe('InterpreterHomePage', () => {
     expect(screen.getByText('No sessions have been booked yet.')).toBeInTheDocument();
   });
 
-  it('lists what different Deaf users booked, soonest first, in Booked sessions', async () => {
+  it('lists what different Deaf users booked, soonest first, as a table', async () => {
     booked = reply(true, 200, [
       booking(1, 'Sierah Tabbuti', '09:00:00'),
       booking(2, 'Brian Okello', '11:30:00', { session_type_label: 'Legal / Court' }),
@@ -246,13 +246,47 @@ describe('InterpreterHomePage', () => {
 
     const list = card('Booked sessions');
     await within(list).findByText('Brian Okello');
-    const names = within(list)
-      .getAllByRole('heading', { level: 4 })
-      .map((heading) => heading.textContent);
-    expect(names).toEqual(['Sierah Tabbuti', 'Brian Okello', 'Grace Nakato']);
+    const rows = within(list).getAllByRole('row').slice(1); // the first row is the headings
+    const names = rows.map((row) => within(row).getAllByRole('cell')[0].textContent);
+    // Each name cell starts with the person's initial (their photo stands-in), so match the end.
+    expect(names).toHaveLength(3);
+    expect(names[0]).toMatch(/Sierah Tabbuti$/);
+    expect(names[1]).toMatch(/Brian Okello$/);
+    expect(names[2]).toMatch(/Grace Nakato$/);
     expect(within(list).getByText('Legal / Court')).toBeInTheDocument();
-    expect(within(list).getByText('Tomorrow, 11:30 AM')).toBeInTheDocument();
+    expect(within(list).getByText('11:30 AM')).toBeInTheDocument();
     expect(within(list).getByText('1 hr 30 mins')).toBeInTheDocument();
+  });
+
+  it('shows the booking form fields and the status as columns', async () => {
+    booked = reply(true, 200, [
+      booking(1, 'Sierah Tabbuti', '09:00:00', { my_state: 'offered' }),
+      booking(2, 'Brian Okello', '11:30:00', { my_state: 'confirmed', status: 'CONFIRMED' }),
+    ]);
+    renderHome();
+
+    const list = card('Booked sessions');
+    await within(list).findByText('Brian Okello');
+    const headings = within(list)
+      .getAllByRole('columnheader')
+      .map((heading) => heading.textContent);
+    expect(headings).toEqual([
+      'Deaf user',
+      'Date',
+      'Time',
+      'Duration',
+      'Session type',
+      'Status',
+      'Actions',
+    ]);
+
+    const [offered, confirmed] = within(list).getAllByRole('row').slice(1);
+    expect(within(offered).getByText('Awaiting your answer')).toBeInTheDocument();
+    expect(within(offered).getByText('Tomorrow')).toBeInTheDocument();
+    expect(within(offered).getByText('9:00 AM')).toBeInTheDocument();
+    expect(within(offered).getByText('45 mins')).toBeInTheDocument();
+    expect(within(offered).getByText('Medical / Healthcare')).toBeInTheDocument();
+    expect(within(confirmed).getByText('Confirmed')).toBeInTheDocument();
   });
 
   it('shows only the next 4 booked sessions', async () => {

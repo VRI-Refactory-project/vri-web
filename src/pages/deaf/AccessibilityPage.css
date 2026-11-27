@@ -57,8 +57,8 @@
 }
 .ac-switch {
   flex: none;
-  width: 52px;
-  height: 30px;
+  width: 40px;
+  height: 22px;
   padding: 3px;
   border: 0;
   border-radius: 999px;
@@ -68,8 +68,8 @@
 }
 .ac-switch span {
   display: block;
-  width: 24px;
-  height: 24px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: #fff;
   transition: transform 0.15s;
@@ -78,7 +78,7 @@
   background: #3b2579;
 }
 .ac-switch--on span {
-  transform: translateX(22px);
+  transform: translateX(18px);
 }
 @media (prefers-reduced-motion: reduce) {
   .ac-switch,

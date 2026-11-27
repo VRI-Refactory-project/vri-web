@@ -1,6 +1,18 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import type { FormEvent } from 'react';
+import {
+  AlertCircle,
+  ArrowLeft,
+  Building2,
+  Check,
+  Mail,
+  Pencil,
+  Phone,
+  Save,
+  ShieldCheck,
+  UserRound,
+} from 'lucide-react';
 import { FieldError } from '../../components/FieldError';
 import { PhoneField } from '../../components/PhoneField';
 import { useAuth } from '../../hooks/useAuth';
@@ -13,8 +25,8 @@ import {
   type InstitutionOverview,
 } from '../../services/institutionDashboard';
 import { updateMyProfile } from '../../services/staff';
-import '../../pages/deaf/SessionsPages.css';
-import './StaffPages.css';
+// One look for every profile: this is the Deaf user's profile stylesheet.
+import '../../pages/deaf/ProfilePage.css';
 
 const initials = (name: string) =>
   name
@@ -23,159 +35,6 @@ const initials = (name: string) =>
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
     .join('');
-
-interface MyProfilePageProps {
-  isInstitutionAdmin?: boolean;
-}
-
-/**
- * Displays the signed-in user's personal details and their institution.
- * Shared by institution administrators and institution staff.
- */
-export function MyProfilePage({ isInstitutionAdmin = false }: MyProfilePageProps) {
-  const { updateUser } = useAuth();
-  const [account, setAccount] = useState<MyAccount | null>(null);
-  const [institution, setInstitution] = useState<InstitutionOverview | null>(null);
-  const [error, setError] = useState('');
-  const [editing, setEditing] = useState(false);
-  const [saved, setSaved] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    getMyAccount().then(
-      (value) => !cancelled && setAccount(value),
-      (err) => !cancelled && setError(describeError(err)),
-    );
-
-    getInstitutionOverview().then(
-      (value) => !cancelled && setInstitution(value),
-      () => undefined,
-    );
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const startEditing = () => {
-    setSaved(false);
-    setEditing(true);
-  };
-
-  const onSaved = (changes: Pick<MyAccount, 'name' | 'phone'>) => {
-    setAccount((current) => current && { ...current, ...changes });
-    updateUser({ name: changes.name });
-    setEditing(false);
-    setSaved(true);
-  };
-
-  return (
-    <div className="sh-page">
-      <header className="sh-header">
-        <h1>My Profile</h1>
-        <p>View and manage your personal details on SignConnect.</p>
-      </header>
-
-      {error && (
-        <p className="sh-alert" role="alert">
-          {error}
-        </p>
-      )}
-
-      {!error && !account && <p className="sh-note">Loading your profile…</p>}
-
-      {account && (
-        <section className="sp-card" aria-label="Your details">
-          <div className="sp-hero">
-            <span className="sp-avatar" aria-hidden="true">
-              {initials(account.name)}
-            </span>
-
-            <div>
-              <strong>{account.name}</strong>
-              <span>{institution ? institution.name : 'Institution account'}</span>
-            </div>
-
-            {!editing && (
-              <button type="button" className="sp-btn sp-btn--ghost" onClick={startEditing}>
-                Edit
-              </button>
-            )}
-          </div>
-
-          {saved && (
-            <p className="sp-ok" role="status">
-              Your details have been saved.
-            </p>
-          )}
-
-          {editing && (
-            <EditDetailsForm
-              account={account}
-              onSaved={onSaved}
-              onCancel={() => setEditing(false)}
-            />
-          )}
-
-          <dl className="sp-rows">
-            {!editing && (
-              <>
-                <div>
-                  <dt>Full name</dt>
-                  <dd>{account.name}</dd>
-                </div>
-
-                <div>
-                  <dt>Phone</dt>
-                  <dd>{account.phone}</dd>
-                </div>
-              </>
-            )}
-
-            <div>
-              <dt>Email</dt>
-              <dd>
-                {account.email ?? 'None on this account'}
-
-                {account.email && (
-                  <span className={account.emailVerified ? 'sp-badge' : 'sp-badge sp-badge--warn'}>
-                    {account.emailVerified ? 'Verified' : 'Not verified'}
-                  </span>
-                )}
-              </dd>
-            </div>
-
-            {institution && (
-              <>
-                <div>
-                  <dt>Institution</dt>
-                  <dd>{institution.name}</dd>
-                </div>
-
-                <div>
-                  <dt>Role</dt>
-                  <dd>{institution.role === 'ADMIN' ? 'Administrator' : 'Staff'}</dd>
-                </div>
-              </>
-            )}
-          </dl>
-
-          <p>
-            {isInstitutionAdmin ? (
-              'Your email and administrator role cannot be changed from this page.'
-            ) : (
-              <>
-                Your email, department and role are managed by your institution’s administrator. You
-                can change your password in <Link to="/dashboard/staff/settings">Settings</Link>.
-              </>
-            )}
-          </p>
-        </section>
-      )}
-    </div>
-  );
-}
 
 type Field = 'name' | 'phone';
 
@@ -188,19 +47,55 @@ const SERVER_FIELDS: Record<Field, string> = {
 
 const fieldId = (name: Field) => `staff-profile-${name}`;
 
-interface EditDetailsFormProps {
-  account: MyAccount;
-  onSaved: (changes: Pick<MyAccount, 'name' | 'phone'>) => void;
-  onCancel: () => void;
+interface MyProfilePageProps {
+  isInstitutionAdmin?: boolean;
 }
 
-/** Name and phone number: the two details users may change themselves. */
-function EditDetailsForm({ account, onSaved, onCancel }: EditDetailsFormProps) {
-  const [name, setName] = useState(account.name);
-  const [phone, setPhone] = useState(account.phone);
-  const [serverErrors, setServerErrors] = useState<Partial<Record<Field, string>>>({});
-  const [error, setError] = useState('');
+/**
+ * The signed-in person's own profile. Shared by institution administrators and institution staff.
+ * Looks like the Deaf user's profile. It opens in "viewing" mode (every field greyed out) and
+ * switches to "editing" mode (name and phone turn white) when the person presses Edit profile.
+ */
+export function MyProfilePage({ isInstitutionAdmin = false }: MyProfilePageProps) {
+  const navigate = useNavigate();
+  const { updateUser } = useAuth();
+
+  const [account, setAccount] = useState<MyAccount | null>(null);
+  const [institution, setInstitution] = useState<InstitutionOverview | null>(null);
+  const [loadError, setLoadError] = useState('');
+
+  const [editing, setEditing] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
+
+  // What is typed in the two fields you can change.
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [serverErrors, setServerErrors] = useState<Partial<Record<Field, string>>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+
+    getMyAccount().then(
+      (value) => {
+        if (cancelled) return;
+        setAccount(value);
+        setName(value.name);
+        setPhone(value.phone);
+      },
+      (err) => !cancelled && setLoadError(describeError(err)),
+    );
+
+    getInstitutionOverview().then(
+      (value) => !cancelled && setInstitution(value),
+      () => undefined,
+    );
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const errors = collectErrors<Field>({
     name: validateName(name) ?? serverErrors.name,
@@ -209,19 +104,31 @@ function EditDetailsForm({ account, onSaved, onCancel }: EditDetailsFormProps) {
 
   const { shown, touch, fieldProps, check } = useFieldErrors(errors, ORDER, fieldId);
 
-  const setters: Record<Field, (value: string) => void> = {
-    name: setName,
-    phone: setPhone,
+  const change = (field: Field) => (value: string) => {
+    (field === 'name' ? setName : setPhone)(value);
+    setServerErrors((current) => ({ ...current, [field]: undefined }));
   };
 
-  const change = (field: Field) => (value: string) => {
-    setters[field](value);
-    setServerErrors((current) => ({ ...current, [field]: undefined }));
+  const startEditing = () => {
+    setSaved(false);
+    setSaveError('');
+    setEditing(true);
+  };
+
+  // Cancel puts back what was saved and returns to viewing.
+  const cancel = () => {
+    if (account) {
+      setName(account.name);
+      setPhone(account.phone);
+    }
+    setServerErrors({});
+    setSaveError('');
+    setEditing(false);
   };
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    setError('');
+    setSaveError('');
 
     if (!check()) return;
 
@@ -229,7 +136,12 @@ function EditDetailsForm({ account, onSaved, onCancel }: EditDetailsFormProps) {
 
     try {
       const updated = await updateMyProfile({ fullName: name, phone });
-      onSaved({ name: updated.name, phone: updated.phone });
+      setAccount((current) => current && { ...current, name: updated.name, phone: updated.phone });
+      setName(updated.name);
+      setPhone(updated.phone);
+      updateUser({ name: updated.name });
+      setEditing(false);
+      setSaved(true);
     } catch (err) {
       const byField =
         err instanceof ApiError
@@ -239,58 +151,209 @@ function EditDetailsForm({ account, onSaved, onCancel }: EditDetailsFormProps) {
             })
           : {};
 
-      if (Object.keys(byField).length > 0) {
-        setServerErrors(byField);
-      } else {
-        setError(describeError(err));
-      }
-
+      if (Object.keys(byField).length > 0) setServerErrors(byField);
+      else setSaveError(describeError(err));
+    } finally {
       setSaving(false);
     }
   };
 
+  const roleLabel = institution ? (institution.role === 'ADMIN' ? 'Administrator' : 'Staff') : '';
+  const banner = loadError || saveError;
+
   return (
-    <form className="sp-form" onSubmit={submit} noValidate aria-label="Edit your details">
-      <div className="sp-field">
-        <label htmlFor={fieldId('name')}>Full name</label>
-        <input
-          {...fieldProps('name')}
-          type="text"
-          autoComplete="name"
-          value={name}
-          onChange={(e) => change('name')(e.target.value)}
-        />
-        <FieldError id={fieldId('name')} message={shown('name')} />
+    <div className={`pr-page${editing ? ' pr-page--editing' : ''}`}>
+      <div className="pr-header">
+        <div>
+          <div className="pr-title-row">
+            <h1>{editing ? 'Edit Profile' : 'My Profile'}</h1>
+            <span className={`pr-mode${editing ? ' pr-mode--edit' : ''}`}>
+              {editing ? 'Editing' : 'Viewing'}
+            </span>
+          </div>
+          <p>
+            {editing
+              ? 'Change your name or phone number, then save.'
+              : 'View your personal details on SignConnect.'}
+          </p>
+        </div>
+        <button
+          type="button"
+          className="pr-back"
+          onClick={() =>
+            navigate(isInstitutionAdmin ? '/dashboard/institution' : '/dashboard/staff')
+          }
+        >
+          <ArrowLeft size={15} /> Back
+        </button>
       </div>
 
-      <div className="sp-field">
-        <label htmlFor={fieldId('phone')}>Phone number</label>
-        <PhoneField
-          id={fieldId('phone')}
-          value={phone}
-          onChange={change('phone')}
-          onBlur={touch('phone')}
-          invalid={Boolean(shown('phone'))}
-          errorId={shown('phone') ? `${fieldId('phone')}-error` : undefined}
-        />
-        <FieldError id={fieldId('phone')} message={shown('phone')} />
-      </div>
-
-      {error && (
-        <p className="sp-error" role="alert">
-          {error}
-        </p>
+      {banner && (
+        <div className="pr-banner pr-banner--error" role="alert">
+          <AlertCircle size={15} /> {banner}
+        </div>
       )}
 
-      <div className="sp-actions">
-        <button type="submit" className="sp-btn" disabled={saving}>
-          {saving ? 'Saving…' : 'Save changes'}
-        </button>
+      {saved && (
+        <div className="pr-banner pr-banner--success" role="status">
+          <Check size={15} /> Your details have been saved.
+        </div>
+      )}
 
-        <button type="button" className="sp-btn sp-btn--ghost" onClick={onCancel} disabled={saving}>
-          Cancel
-        </button>
-      </div>
-    </form>
+      {!loadError && !account && <p className="pr-hint">Loading your profile…</p>}
+
+      {account && (
+        <form
+          className="pr-columns"
+          onSubmit={(e) => void submit(e)}
+          noValidate
+          aria-label="Your details"
+        >
+          {/* LEFT: who you are, then the details */}
+          <div className="pr-left">
+            <div className="pr-card">
+              <div className="pr-identity">
+                <span className="pr-avatar" aria-hidden="true">
+                  {initials(account.name)}
+                </span>
+                <div className="pr-identity-text">
+                  <strong>{account.name}</strong>
+                  <span>{institution ? institution.name : 'Institution account'}</span>
+                  <div className="pr-identity-badges">
+                    {roleLabel && <span className="pr-badge">{roleLabel}</span>}
+                    {account.email && (
+                      <span
+                        className={`pr-badge ${account.emailVerified ? 'pr-badge--ok' : 'pr-badge--warn'}`}
+                      >
+                        {account.emailVerified ? 'Verified' : 'Not verified'}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="pr-card">
+              <h2>Profile details</h2>
+              <div className="pr-grid">
+                <div className="pr-field">
+                  <label htmlFor={fieldId('name')}>Full name</label>
+                  <input
+                    {...fieldProps('name')}
+                    className={shown('name') ? 'pr-invalid' : ''}
+                    type="text"
+                    autoComplete="name"
+                    value={name}
+                    disabled={!editing}
+                    onChange={(e) => change('name')(e.target.value)}
+                  />
+                  <FieldError id={fieldId('name')} message={shown('name')} />
+                </div>
+
+                <div className="pr-field">
+                  <label htmlFor={fieldId('phone')}>Phone number</label>
+                  {editing ? (
+                    <PhoneField
+                      id={fieldId('phone')}
+                      value={phone}
+                      onChange={change('phone')}
+                      onBlur={touch('phone')}
+                      invalid={Boolean(shown('phone'))}
+                      errorId={shown('phone') ? `${fieldId('phone')}-error` : undefined}
+                    />
+                  ) : (
+                    <div className="pr-input">
+                      <Phone size={14} />
+                      <input id={fieldId('phone')} value={account.phone} disabled readOnly />
+                    </div>
+                  )}
+                  <FieldError id={fieldId('phone')} message={shown('phone')} />
+                </div>
+
+                <div className="pr-field pr-field--full">
+                  <label htmlFor="staff-profile-email">Email</label>
+                  <div className="pr-input">
+                    <Mail size={14} />
+                    <input
+                      id="staff-profile-email"
+                      value={account.email ?? 'None on this account'}
+                      disabled
+                      readOnly
+                    />
+                  </div>
+                </div>
+
+                {institution && (
+                  <>
+                    <div className="pr-field">
+                      <label htmlFor="staff-profile-institution">Institution</label>
+                      <div className="pr-input">
+                        <Building2 size={14} />
+                        <input
+                          id="staff-profile-institution"
+                          value={institution.name}
+                          disabled
+                          readOnly
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pr-field">
+                      <label htmlFor="staff-profile-role">Role</label>
+                      <div className="pr-input">
+                        <ShieldCheck size={14} />
+                        <input id="staff-profile-role" value={roleLabel} disabled readOnly />
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT: what you can change, then the buttons */}
+          <div className="pr-right">
+            <div className="pr-card">
+              <h2>
+                <UserRound size={15} /> What you can change
+              </h2>
+              <p className="pr-hint">
+                {isInstitutionAdmin ? (
+                  'Your email and administrator role cannot be changed from this page.'
+                ) : (
+                  <>
+                    Your email, department and role are managed by your institution’s administrator.
+                    You can change your password in{' '}
+                    <Link to="/dashboard/staff/settings">Settings</Link>.
+                  </>
+                )}
+              </p>
+            </div>
+
+            <div className="pr-actions pr-actions--inline">
+              {editing ? (
+                <>
+                  <button
+                    type="button"
+                    className="pr-btn pr-btn--ghost"
+                    onClick={cancel}
+                    disabled={saving}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="pr-btn pr-btn--primary" disabled={saving}>
+                    <Save size={15} /> {saving ? 'Saving…' : 'Save changes'}
+                  </button>
+                </>
+              ) : (
+                <button type="button" className="pr-btn pr-btn--primary" onClick={startEditing}>
+                  <Pencil size={15} /> Edit profile
+                </button>
+              )}
+            </div>
+          </div>
+        </form>
+      )}
+    </div>
   );
 }

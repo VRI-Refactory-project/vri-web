@@ -28,7 +28,7 @@ const renderPage = (isInstitutionAdmin = false) =>
 const openEditor = async () => {
   const user = userEvent.setup();
   renderPage();
-  await user.click(await screen.findByRole('button', { name: 'Edit' }));
+  await user.click(await screen.findByRole('button', { name: 'Edit profile' }));
   return user;
 };
 
@@ -53,8 +53,8 @@ beforeEach(() => {
 describe('MyProfilePage', () => {
   it('shows the staff member and their institution', async () => {
     renderPage();
-    expect(await screen.findByText('sarah@northside.example')).toBeInTheDocument();
-    expect(screen.getByText('+256772111000')).toBeInTheDocument();
+    expect(await screen.findByDisplayValue('sarah@northside.example')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('+256772111000')).toBeInTheDocument();
     expect(screen.getByText('Verified')).toBeInTheDocument();
     expect(await screen.findAllByText('Northside Medical Center')).not.toHaveLength(0);
     expect(screen.getByText('Staff')).toBeInTheDocument();
@@ -63,7 +63,7 @@ describe('MyProfilePage', () => {
   it('still shows the person when the institution cannot be loaded', async () => {
     mocks.institution = () => Promise.reject(new Error('offline'));
     renderPage();
-    expect(await screen.findByText('+256772111000')).toBeInTheDocument();
+    expect(await screen.findByDisplayValue('+256772111000')).toBeInTheDocument();
     expect(screen.queryByText('Northside Medical Center')).not.toBeInTheDocument();
   });
 
@@ -131,8 +131,26 @@ describe('MyProfilePage', () => {
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
 
     expect(mocks.updateMyProfile).not.toHaveBeenCalled();
-    expect(screen.queryByLabelText('Full name')).not.toBeInTheDocument();
+    // Back to viewing: the field is still there, but greyed out and showing the saved name.
+    expect(screen.getByLabelText('Full name')).toBeDisabled();
+    expect(screen.getByLabelText('Full name')).toHaveValue('Sarah Kimuli');
     expect(screen.getAllByText('Sarah Kimuli')).not.toHaveLength(0);
+  });
+
+  it('opens in viewing mode with every field disabled', async () => {
+    renderPage();
+    expect(await screen.findByText('Viewing')).toBeInTheDocument();
+    expect(screen.getByLabelText('Full name')).toBeDisabled();
+    expect(screen.getByLabelText('Phone number')).toBeDisabled();
+    expect(screen.queryByRole('button', { name: 'Save changes' })).not.toBeInTheDocument();
+  });
+
+  it('editing enables the name and phone, but never the email', async () => {
+    await openEditor();
+    expect(screen.getByText('Editing')).toBeInTheDocument();
+    expect(screen.getByLabelText('Full name')).toBeEnabled();
+    expect(screen.getByLabelText('Email')).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Save changes' })).toBeInTheDocument();
   });
 });
 
@@ -146,7 +164,7 @@ it('shows the administrator-specific profile information', async () => {
 
   renderPage(true);
 
-  expect(await screen.findByText('sarah@northside.example')).toBeInTheDocument();
+  expect(await screen.findByDisplayValue('sarah@northside.example')).toBeInTheDocument();
   expect(screen.getAllByText('Northside Medical Center')).not.toHaveLength(0);
   expect(screen.getByText('Administrator')).toBeInTheDocument();
 

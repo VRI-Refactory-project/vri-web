@@ -984,3 +984,89 @@ a.ih-recent-details {
   font-weight: 600;
   color: #15803d;
 }
+
+/* Booked sessions as a table: who, when, how long, what kind, and where it stands */
+.ih-booked-wrap {
+  overflow-x: auto;
+}
+
+.ih-booked-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.ih-booked-table th {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1edf9;
+  color: #6b6890;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ih-booked-table td {
+  padding: 12px;
+  border-bottom: 1px solid #f1edf9;
+  color: #2f3d52;
+  vertical-align: middle;
+}
+
+.ih-booked-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.ih-booked-person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.ih-status {
+  display: inline-flex;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ih-status--offered {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.ih-status--confirmed {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.ih-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* On a wide screen the actions stack, so the table never needs to scroll sideways */
+@media (min-width: 701px) {
+  .ih-booked-table th,
+  .ih-booked-table td {
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+
+  .ih-booked-table .ih-booking-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    min-width: 84px;
+  }
+}
