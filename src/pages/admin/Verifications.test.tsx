@@ -105,6 +105,32 @@ describe('VerificationsPage', () => {
 });
 
 describe('CredentialReviewPage', () => {
+  it('disables approval without certificates and lays out a readable rejection decision', async () => {
+    const rejectedDetail = {
+      ...detail,
+      verification_status: 'REJECTED',
+      certifications: [],
+      decisions: [
+        {
+          id: 3,
+          action: 'reject',
+          reason: 'Please upload a valid certificate',
+          admin_name: 'Trudy Hope',
+          created_at: '2026-11-24T08:00:00Z',
+        },
+      ],
+    };
+    fetchMock.mockResolvedValue(reply(true, 200, rejectedDetail));
+    renderAt('/dashboard/admin/verifications/4');
+
+    expect(await screen.findByText(/cannot be approved without one/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Approve' })).toBeDisabled();
+    expect(
+      screen.getByText('Rejected by Trudy Hope: Please upload a valid certificate'),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/on 24 Nov 2026/)).toBeInTheDocument();
+  });
+
   it('approves the interpreter through the API and shows the new status', async () => {
     fetchMock.mockImplementation(async (_url: string, init?: RequestInit) =>
       init?.method === 'POST'

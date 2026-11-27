@@ -34,12 +34,17 @@ export function PendingReviewPage() {
       <h1 className="ca-title">Thanks, {session?.user.name ?? 'we have your application'}</h1>
       <p className="ca-subtitle">
         {rejected
-          ? 'Our team could not approve your certificates. Please contact support to try again.'
+          ? 'Our team could not approve your application. Upload the requested or updated certificates so they can be reviewed again.'
           : isInterpreter
             ? 'Your account is created and your certificates are with our team for review.'
             : 'Your institution account is created and is waiting for our team to review it.'}
         {rejected ? '' : ' We will contact you once a decision is made.'}
       </p>
+      {rejected && (
+        <p>
+          <Link to="/register/interpreter/certifications">Upload or update certificates</Link>
+        </p>
+      )}
       <p>
         <Link to="/" onClick={logout}>
           Back to the home page
