@@ -474,9 +474,8 @@ export function UsersPage() {
                             <Check size={14} />
                             Approve
                           </button>
-                        ) :
-                        u.verificationStatus === 'deactivated' ||
-                        u.verificationStatus === 'suspended' ? (
+                        ) : u.verificationStatus === 'deactivated' ||
+                          u.verificationStatus === 'suspended' ? (
                           <button
                             type="button"
                             onClick={() => void handleReactivate(u)}
