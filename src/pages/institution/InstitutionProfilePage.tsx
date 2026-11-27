@@ -1,17 +1,20 @@
 ﻿import { useEffect, useState, type FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
+  AlertCircle,
+  ArrowLeft,
   Building2,
   Check,
   Mail,
   Pencil,
   Phone,
   Plus,
-  RotateCcw,
   Save,
   Trash2,
   Users,
   X,
 } from 'lucide-react';
+import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { describeError } from '../../services/api';
 import {
   createMyDepartment,
@@ -23,7 +26,8 @@ import {
   type InstitutionDepartment,
   type InstitutionProfile,
 } from '../../services/institutions';
-import './InstitutionProfilePage.css';
+// One look for every profile: this is the Deaf user's profile stylesheet.
+import '../deaf/ProfilePage.css';
 
 const EMPTY: InstitutionProfile = { name: '', email: '', phone: '', type: '', description: '' };
 const INITIAL_DEPARTMENT_LIMIT = 7;
@@ -38,7 +42,13 @@ const TYPES = [
   ['OTHER', 'Other'],
 ];
 
+/**
+ * The institution's own profile, for its administrator. Looks like the Deaf user's profile.
+ * It opens in "viewing" mode (everything greyed out). Edit profile switches to "editing" mode:
+ * the details unlock, and departments can be added, renamed and deleted.
+ */
 export function InstitutionProfilePage() {
+  const navigate = useNavigate();
   const [profile, setProfile] = useState(EMPTY);
   const [draft, setDraft] = useState(EMPTY);
   const [departments, setDepartments] = useState<InstitutionDepartment[]>([]);
@@ -55,6 +65,7 @@ export function InstitutionProfilePage() {
   const [departmentToDelete, setDepartmentToDelete] = useState<InstitutionDepartment | null>(null);
   const [deletingDepartment, setDeletingDepartment] = useState(false);
 
+  // Messages go away by themselves after 5 seconds.
   useEffect(() => {
     if (!error && !notice) return;
     const timeout = window.setTimeout(() => {
@@ -64,23 +75,6 @@ export function InstitutionProfilePage() {
     return () => window.clearTimeout(timeout);
   }, [error, notice]);
 
-  const load = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const [nextProfile, nextDepartments] = await Promise.all([
-        fetchMyInstitutionProfile(),
-        fetchMyDepartments(),
-      ]);
-      setProfile(nextProfile);
-      setDraft(nextProfile);
-      setDepartments(nextDepartments);
-    } catch (err) {
-      setError(describeError(err));
-    } finally {
-      setLoading(false);
-    }
-  };
   useEffect(() => {
     let cancelled = false;
     Promise.all([fetchMyInstitutionProfile(), fetchMyDepartments()])
@@ -101,6 +95,22 @@ export function InstitutionProfilePage() {
     };
   }, []);
 
+  const startEditing = () => {
+    setDraft(profile);
+    setError('');
+    setNotice('');
+    setEditing(true);
+  };
+
+  // Cancel puts the saved details back and returns to viewing. Department changes were already saved.
+  const cancelEditing = () => {
+    setDraft(profile);
+    setAdding(false);
+    setNewName('');
+    setEditingId(null);
+    setEditing(false);
+  };
+
   const saveProfile = async (event: FormEvent) => {
     event.preventDefault();
     setSaving(true);
@@ -110,6 +120,8 @@ export function InstitutionProfilePage() {
       const updated = await updateMyInstitutionProfile(draft);
       setProfile(updated);
       setDraft(updated);
+      setAdding(false);
+      setEditingId(null);
       setEditing(false);
       setNotice('Institution details saved.');
     } catch (err) {
@@ -118,6 +130,7 @@ export function InstitutionProfilePage() {
       setSaving(false);
     }
   };
+
   const addDepartment = async (event: FormEvent) => {
     event.preventDefault();
     if (!newName.trim()) return;
@@ -133,6 +146,7 @@ export function InstitutionProfilePage() {
       setError(describeError(err));
     }
   };
+
   const saveDepartment = async (id: string) => {
     if (!departmentDraft.trim()) return;
     setError('');
@@ -145,6 +159,7 @@ export function InstitutionProfilePage() {
       setError(describeError(err));
     }
   };
+
   const removeDepartment = async () => {
     if (!departmentToDelete) return;
     const department = departmentToDelete;
@@ -164,31 +179,40 @@ export function InstitutionProfilePage() {
 
   const activeDepartments = departments.filter((item) => item.active);
 
+  // While viewing, show what is saved. While editing, show what is being typed.
+  const shownProfile = editing ? draft : profile;
+
   return (
-    <main className="institution-profile">
-      <header className="ip-header">
+    <div className={`pr-page${editing ? ' pr-page--editing' : ''}`}>
+      <div className="pr-header">
         <div>
-          <h1>Institution Profile</h1>
-          <p>Manage and update your institution details.</p>
+          <div className="pr-title-row">
+            <h1>{editing ? 'Edit Institution Profile' : 'Institution Profile'}</h1>
+            <span className={`pr-mode${editing ? ' pr-mode--edit' : ''}`}>
+              {editing ? 'Editing' : 'Viewing'}
+            </span>
+          </div>
+          <p>
+            {editing
+              ? 'Change your institution details and departments, then save.'
+              : 'View your institution details and departments.'}
+          </p>
         </div>
-        {!editing && (
-          <button
-            className="ip-primary"
-            onClick={() => {
-              setDraft(profile);
-              setEditing(true);
-            }}
-          >
-            <Pencil size={17} /> Edit Profile
-          </button>
-        )}
-      </header>
+        <button
+          type="button"
+          className="pr-back"
+          onClick={() => navigate('/dashboard/institution')}
+        >
+          <ArrowLeft size={15} /> Back
+        </button>
+      </div>
+
       {(error || notice) && (
         <div
-          className={`ip-toast ${error ? 'ip-toast--error' : 'ip-toast--success'}`}
+          className={`pr-banner ${error ? 'pr-banner--error' : 'pr-banner--success'}`}
           role={error ? 'alert' : 'status'}
         >
-          <span>{error || notice}</span>
+          {error ? <AlertCircle size={15} /> : <Check size={15} />} {error || notice}
           <button
             type="button"
             aria-label="Dismiss message"
@@ -197,39 +221,44 @@ export function InstitutionProfilePage() {
               setNotice('');
             }}
           >
-            <X size={18} />
+            <X size={15} />
           </button>
         </div>
       )}
+
       {loading ? (
-        <div className="ip-loading">Loading institution profile…</div>
+        <p className="pr-hint">Loading institution profile…</p>
       ) : (
-        <>
-          <div className="ip-grid">
-            <section className="ip-card">
-              <div className="ip-card-heading">
-                <Building2 />
-                <div>
-                  <h2>Institution Details</h2>
-                  <p>Update your institution information.</p>
-                </div>
-              </div>
-              <form id="institution-profile-form" onSubmit={saveProfile}>
-                <label className="ip-field">
-                  Institution Name <b>*</b>
+        <div className="pr-columns">
+          {/* LEFT: the institution's details */}
+          <div className="pr-left">
+            <form
+              id="institution-profile-form"
+              className="pr-card"
+              onSubmit={(e) => void saveProfile(e)}
+            >
+              <h2>
+                <Building2 size={15} /> Institution details
+              </h2>
+              <div className="pr-grid">
+                <div className="pr-field pr-field--full">
+                  <label htmlFor="institution-name">Institution name</label>
                   <input
+                    id="institution-name"
                     required
-                    value={draft.name}
-                    onFocus={() => setEditing(true)}
+                    value={shownProfile.name}
+                    disabled={!editing}
                     onChange={(e) => setDraft({ ...draft, name: e.target.value })}
                   />
-                </label>
-                <label className="ip-field">
-                  Institution Type <b>*</b>
+                </div>
+
+                <div className="pr-field pr-field--full">
+                  <label htmlFor="institution-type">Institution type</label>
                   <select
+                    id="institution-type"
                     required
-                    value={draft.type}
-                    onFocus={() => setEditing(true)}
+                    value={shownProfile.type}
+                    disabled={!editing}
                     onChange={(e) => setDraft({ ...draft, type: e.target.value })}
                   >
                     <option value="">Select institution type</option>
@@ -239,74 +268,72 @@ export function InstitutionProfilePage() {
                       </option>
                     ))}
                   </select>
-                </label>
-                <label className="ip-field">
-                  Email Address <b>*</b>
-                  <span className="ip-input-icon">
-                    <Mail size={18} />
+                </div>
+
+                <div className="pr-field">
+                  <label htmlFor="institution-email">Email address</label>
+                  <div className="pr-input">
+                    <Mail size={14} />
                     <input
+                      id="institution-email"
                       required
                       type="email"
-                      value={draft.email}
-                      onFocus={() => setEditing(true)}
+                      value={shownProfile.email}
+                      disabled={!editing}
                       onChange={(e) => setDraft({ ...draft, email: e.target.value })}
                     />
-                  </span>
-                </label>
-                <label className="ip-field">
-                  Phone Number <b>*</b>
-                  <span className="ip-input-icon">
-                    <Phone size={18} />
+                  </div>
+                </div>
+
+                <div className="pr-field">
+                  <label htmlFor="institution-phone">Phone number</label>
+                  <div className="pr-input">
+                    <Phone size={14} />
                     <input
+                      id="institution-phone"
                       required
                       type="tel"
-                      value={draft.phone}
-                      onFocus={() => setEditing(true)}
+                      value={shownProfile.phone}
+                      disabled={!editing}
                       onChange={(e) => setDraft({ ...draft, phone: e.target.value })}
                     />
-                  </span>
-                </label>
-                <label className="ip-field">
-                  Description
+                  </div>
+                </div>
+
+                <div className="pr-field pr-field--full">
+                  <label htmlFor="institution-description">Description</label>
                   <textarea
+                    id="institution-description"
                     rows={3}
-                    value={draft.description}
-                    onFocus={() => {
-                      if (!editing) setEditing(true);
-                    }}
+                    value={shownProfile.description}
+                    disabled={!editing}
                     onChange={(e) => setDraft({ ...draft, description: e.target.value })}
                   />
-                </label>
-                {editing && (
-                  <div className="ip-actions">
-                    <button
-                      type="button"
-                      className="ip-secondary"
-                      onClick={() => {
-                        setDraft(profile);
-                        setEditing(false);
-                      }}
-                    >
-                      <X size={16} /> Cancel
-                    </button>
-                  </div>
-                )}
-              </form>
-            </section>
-            <section className="ip-card ip-departments">
-              <div className="ip-card-heading">
-                <Users />
-                <div>
-                  <h2>Departments</h2>
-                  <p>Manage the departments under your institution.</p>
                 </div>
-                <button className="ip-outline" onClick={() => setAdding((value) => !value)}>
-                  <Plus size={18} />
-                  {adding ? 'Close' : 'Add Department'}
-                </button>
               </div>
-              {adding && (
-                <form className="ip-add" onSubmit={addDepartment}>
+            </form>
+          </div>
+
+          {/* RIGHT: departments, then the buttons */}
+          <div className="pr-right">
+            <div className="pr-card">
+              <div className="pr-card-head">
+                <h2>
+                  <Users size={15} /> Departments
+                </h2>
+                {editing && (
+                  <button
+                    type="button"
+                    className="pr-btn pr-btn--ghost pr-btn--small"
+                    onClick={() => setAdding((value) => !value)}
+                  >
+                    <Plus size={14} /> {adding ? 'Close' : 'Add department'}
+                  </button>
+                )}
+              </div>
+
+              {editing && adding && (
+                <form className="pr-add-row" onSubmit={(e) => void addDepartment(e)}>
                   <input
                     aria-label="New department name"
                     autoFocus
@@ -316,18 +343,16 @@ export function InstitutionProfilePage() {
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                   />
-                  <button type="submit" className="ip-primary">
-                    <Plus size={16} /> Add
+                  <button type="submit" className="pr-btn pr-btn--primary pr-btn--small">
+                    <Plus size={14} /> Add
                   </button>
                 </form>
               )}
-              <div className="ip-department-list">
+
+              <ul className="pr-rows">
                 {activeDepartments.slice(0, visibleDepartmentCount).map((department) => (
-                  <div className="ip-department" key={department.id}>
-                    <span className="ip-dept-icon">
-                      <Users size={18} />
-                    </span>
-                    {editingId === department.id ? (
+                  <li className="pr-row" key={department.id}>
+                    {editing && editingId === department.id ? (
                       <input
                         aria-label="Department name"
                         value={departmentDraft}
@@ -337,128 +362,117 @@ export function InstitutionProfilePage() {
                         }}
                       />
                     ) : (
-                      <span className="ip-dept-name">{department.name}</span>
+                      <span className="pr-row-name">{department.name}</span>
                     )}
-                    <span className="ip-active">Active</span>
-                    {editingId === department.id ? (
-                      <button
-                        className="ip-icon-button"
-                        aria-label="Save department"
-                        onClick={() => void saveDepartment(department.id)}
-                      >
-                        <Check />
-                      </button>
-                    ) : (
-                      <button
-                        className="ip-icon-button"
-                        aria-label={`Edit ${department.name}`}
-                        onClick={() => {
-                          setEditingId(department.id);
-                          setDepartmentDraft(department.name);
-                        }}
-                      >
-                        <Pencil />
-                      </button>
+
+                    <span className="pr-badge pr-badge--ok">Active</span>
+
+                    {editing && (
+                      <>
+                        {editingId === department.id ? (
+                          <button
+                            type="button"
+                            className="pr-icon-btn"
+                            aria-label="Save department"
+                            onClick={() => void saveDepartment(department.id)}
+                          >
+                            <Check size={15} />
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className="pr-icon-btn"
+                            aria-label={`Edit ${department.name}`}
+                            onClick={() => {
+                              setEditingId(department.id);
+                              setDepartmentDraft(department.name);
+                            }}
+                          >
+                            <Pencil size={14} />
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          className="pr-icon-btn pr-icon-btn--danger"
+                          aria-label={`Delete ${department.name}`}
+                          onClick={() => setDepartmentToDelete(department)}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </>
                     )}
-                    <button
-                      className="ip-icon-button ip-delete"
-                      aria-label={`Delete ${department.name}`}
-                      onClick={() => setDepartmentToDelete(department)}
-                    >
-                      <Trash2 />
-                    </button>
-                  </div>
+                  </li>
                 ))}
-                {!activeDepartments.length && (
-                  <p className="ip-empty">
-                    No departments yet. Add the departments your institution uses.
-                  </p>
-                )}
-                {activeDepartments.length > visibleDepartmentCount && (
-                  <button
-                    className="ip-view-more"
-                    type="button"
-                    onClick={() =>
-                      setVisibleDepartmentCount((count) => count + DEPARTMENT_PAGE_SIZE)
-                    }
-                  >
-                    View more departments ({activeDepartments.length - visibleDepartmentCount}{' '}
-                    remaining)
-                  </button>
-                )}
-              </div>
-            </section>
-          </div>
-          <div className="ip-footer">
-            <button
-              className="ip-secondary"
-              onClick={() => {
-                setDraft(profile);
-                void load();
-              }}
-            >
-              <RotateCcw size={17} /> Reset Changes
-            </button>
-            <button
-              type="submit"
-              form="institution-profile-form"
-              className="ip-primary"
-              disabled={saving}
-            >
-              <Save size={18} /> {saving ? 'Saving…' : 'Save Changes'}
-            </button>
-          </div>
-          {departmentToDelete && (
-            <div
-              className="ip-dialog-backdrop"
-              onMouseDown={(event) => {
-                if (event.target === event.currentTarget && !deletingDepartment)
-                  setDepartmentToDelete(null);
-              }}
-            >
-              <section
-                className="ip-dialog"
-                role="alertdialog"
-                aria-modal="true"
-                aria-labelledby="ip-dialog-title"
-                aria-describedby="ip-dialog-description"
-              >
-                <span className="ip-dialog-icon">
-                  <Trash2 size={22} />
-                </span>
-                <h2 id="ip-dialog-title">Delete department?</h2>
-                <p id="ip-dialog-description">
-                  Delete <strong>{departmentToDelete.name}</strong>? Staff assigned to this
-                  department may need to be reassigned first.
+              </ul>
+
+              {!activeDepartments.length && (
+                <p className="pr-empty">
+                  No departments yet. Add the departments your institution uses.
                 </p>
-                {error && (
-                  <p className="ip-dialog-error" role="alert">
-                    {error}
-                  </p>
-                )}
-                <div className="ip-dialog-actions">
+              )}
+
+              {activeDepartments.length > visibleDepartmentCount && (
+                <button
+                  type="button"
+                  className="pr-more"
+                  onClick={() => setVisibleDepartmentCount((count) => count + DEPARTMENT_PAGE_SIZE)}
+                >
+                  View more departments ({activeDepartments.length - visibleDepartmentCount}{' '}
+                  remaining)
+                </button>
+              )}
+
+              {editing && (
+                <p className="pr-hint">
+                  Department changes are saved straight away. Only the details on the left need Save
+                  changes.
+                </p>
+              )}
+            </div>
+
+            <div className="pr-actions pr-actions--inline">
+              {editing ? (
+                <>
                   <button
                     type="button"
-                    className="ip-secondary"
-                    disabled={deletingDepartment}
-                    onClick={() => setDepartmentToDelete(null)}
+                    className="pr-btn pr-btn--ghost"
+                    onClick={cancelEditing}
+                    disabled={saving}
                   >
                     Cancel
                   </button>
                   <button
-                    type="button"
-                    className="ip-danger"
-                    disabled={deletingDepartment}
-                    onClick={() => void removeDepartment()}
+                    type="submit"
+                    form="institution-profile-form"
+                    className="pr-btn pr-btn--primary"
+                    disabled={saving}
                   >
-                    {deletingDepartment ? 'Deleting…' : 'Delete department'}
+                    <Save size={15} /> {saving ? 'Saving…' : 'Save changes'}
                   </button>
-                </div>
-              </section>
+                </>
+              ) : (
+                <button type="button" className="pr-btn pr-btn--primary" onClick={startEditing}>
+                  <Pencil size={15} /> Edit profile
+                </button>
+              )}
             </div>
-          )}
-        </>
+          </div>
+        </div>
       )}
-    </main>
+
+      <ConfirmDialog
+        open={departmentToDelete !== null}
+        variant="danger"
+        title="Delete department?"
+        message={`Delete ${departmentToDelete?.name ?? ''}? Staff assigned to this department may need to be reassigned first.`}
+        confirmLabel={deletingDepartment ? 'Deleting…' : 'Delete department'}
+        error={departmentToDelete ? error : ''}
+        busy={deletingDepartment}
+        onConfirm={() => void removeDepartment()}
+        onClose={() => {
+          if (!deletingDepartment) setDepartmentToDelete(null);
+        }}
+      />
+    </div>
   );
 }

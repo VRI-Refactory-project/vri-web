@@ -459,3 +459,291 @@
   min-width: 140px;
   justify-content: center;
 }
+
+/* ------------------------------------------------------------------
+   Shared with the other profile pages (institution admin, staff, interpreter).
+   They import this file, so every role's profile looks like the Deaf user's.
+   Add the class `pr-page--editing` next to `pr-page` while a page is being edited.
+   ------------------------------------------------------------------ */
+
+/* Title + a small "Viewing" / "Editing" pill, so the two modes are easy to tell apart */
+.pr-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pr-mode {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  background: #efeafd;
+  color: #4b34a0;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.pr-mode--edit {
+  background: #4b34a0;
+  color: #fff;
+}
+
+/* Selects and text areas look like the text inputs */
+.pr-field select,
+.pr-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px 14px;
+  border: 1px solid #e2e0ee;
+  border-radius: 15px;
+  background: #f7f6fd;
+  font-family: inherit;
+  font-size: 13.5px;
+  color: #1e293b;
+}
+.pr-field textarea {
+  min-height: 84px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+/* Viewing: the fields are disabled (same as the Deaf profile).
+   Editing: the fields you can change turn white with a purple border. */
+.pr-page--editing .pr-field > input:not(:disabled),
+.pr-page--editing .pr-field > select:not(:disabled),
+.pr-page--editing .pr-field > textarea:not(:disabled),
+.pr-page--editing .pr-input:has(input:not(:disabled)) {
+  background: #fff;
+  border-color: #b8aef0;
+}
+.pr-page--editing .pr-field > input:not(:disabled):focus,
+.pr-page--editing .pr-field > select:not(:disabled):focus,
+.pr-page--editing .pr-field > textarea:not(:disabled):focus,
+.pr-page--editing .pr-input:has(input:not(:disabled)):focus-within {
+  outline: none;
+  border-color: #4b34a0;
+}
+
+/* Small status badges, e.g. Verified, Administrator, Active */
+.pr-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  border-radius: 9999px;
+  background: #efeafd;
+  color: #4b34a0;
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.pr-badge--ok {
+  background: #ecfdf5;
+  color: #047857;
+}
+.pr-badge--warn {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+/* Avatar + name block at the top of a profile */
+.pr-identity {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.pr-identity-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.pr-identity-text strong {
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+.pr-identity-text > span {
+  font-size: 12.5px;
+  color: #64748b;
+}
+.pr-identity-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pr-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pr-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid #eceafa;
+  border-radius: 12px;
+  background: #f7f6fd;
+  color: #334155;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.pr-star {
+  color: #f59e0b;
+}
+
+/* A list of rows, e.g. departments */
+.pr-rows {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pr-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f1edf9;
+  font-size: 13px;
+  color: #334155;
+}
+.pr-row:last-child {
+  border-bottom: none;
+}
+.pr-row-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.pr-row input,
+.pr-add-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 12px;
+  border: 1px solid #b8aef0;
+  border-radius: 10px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  color: #1e293b;
+}
+.pr-row input:focus,
+.pr-add-row input:focus {
+  outline: none;
+  border-color: #4b34a0;
+}
+.pr-add-row {
+  display: flex;
+  gap: 8px;
+}
+
+.pr-icon-btn {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid #e2e0ee;
+  border-radius: 10px;
+  background: #fff;
+  color: #4b34a0;
+  cursor: pointer;
+}
+.pr-icon-btn:hover {
+  background: #f4f0ff;
+}
+.pr-icon-btn--danger {
+  color: #b91c1c;
+}
+.pr-icon-btn--danger:hover {
+  background: #fef2f2;
+}
+
+.pr-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.pr-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.pr-btn--small {
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-size: 12.5px;
+}
+.pr-btn--outline {
+  border: 1px solid #cfc9ea;
+  background: #fff;
+  color: #4b34a0;
+}
+
+.pr-more {
+  align-self: flex-start;
+  padding: 4px 0;
+  border: none;
+  background: none;
+  color: #4b34a0;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.pr-empty {
+  margin: 0;
+  font-size: 13px;
+  color: #8a86a5;
+}
+.pr-banner button {
+  margin-left: auto;
+  display: inline-flex;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+.pr-field .field-error {
+  margin: 2px 0 0;
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* The phone field (used while editing) takes the same shape as the other inputs */
+.pr-field .phone-field {
+  padding: 0 14px;
+  border: 1px solid #b8aef0;
+  border-radius: 15px;
+  background: #fff;
+}
+.pr-field .phone-field:focus-within {
+  border-color: #4b34a0;
+}
+.pr-field .phone-field--error {
+  border-color: #dc2626;
+}
+.pr-field .phone-field .PhoneInputInput {
+  padding: 11px 0;
+  font-size: 13.5px;
+}
+/* The search box inside the country list is not one of the profile's inputs */
+.pr-field .country-picker__search {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid #e2e0ee;
+  border-radius: 8px;
+  background: #fff;
+}

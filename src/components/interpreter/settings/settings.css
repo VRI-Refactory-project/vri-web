@@ -12,7 +12,7 @@
 
 /* --- Card --- */
 .is-card {
-  padding: 24px 28px;
+  padding: 18px 22px;
   border: 1px solid var(--is-border);
   border-radius: 16px;
   background: #fff;
@@ -23,8 +23,8 @@
 .is-card-head {
   display: flex;
   align-items: center;
-  gap: 18px;
-  margin-bottom: 12px;
+  gap: 14px;
+  margin-bottom: 8px;
 }
 
 .is-card-icon {
@@ -32,21 +32,22 @@
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  width: 64px;
-  height: 64px;
-  border-radius: 14px;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
   background: var(--is-purple-soft);
   color: var(--is-purple);
 }
 
 .is-card-head h2 {
-  margin: 0 0 4px;
-  font-size: 22px;
-  font-weight: 800;
+  margin: 0 0 2px;
+  font-size: 16px;
+  font-weight: 700;
 }
 
 .is-card-head p {
   margin: 0;
+  font-size: 13px;
   color: var(--is-muted);
 }
 
@@ -71,11 +72,11 @@
 }
 
 .is-row-text strong {
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .is-row-text span {
-  font-size: 14px;
+  font-size: 12.5px;
   color: var(--is-muted);
 }
 
@@ -84,18 +85,18 @@
   display: flex;
   flex-shrink: 0;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
 .is-pill {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
+  gap: 6px;
+  padding: 5px 11px;
   border-radius: 999px;
   background: var(--is-purple-soft);
   color: var(--is-purple);
-  font-size: 14px;
+  font-size: 12.5px;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -115,8 +116,8 @@
 .is-switch {
   position: relative;
   flex-shrink: 0;
-  width: 56px;
-  height: 32px;
+  width: 40px;
+  height: 22px;
   padding: 0;
   border: none;
   border-radius: 999px;
@@ -131,17 +132,17 @@
 
 .is-switch-knob {
   position: absolute;
-  top: 4px;
-  left: 4px;
-  width: 24px;
-  height: 24px;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: #fff;
   transition: transform 0.15s ease;
 }
 
 .is-switch[aria-checked='true'] .is-switch-knob {
-  transform: translateX(24px);
+  transform: translateX(18px);
 }
 
 .is-switch:focus-visible {
@@ -327,11 +328,11 @@
   }
 
   .is-page .is-card-head h2 {
-    font-size: 19px;
+    font-size: 15px;
   }
 
   .is-page .is-card-head p {
-    font-size: 13px;
+    font-size: 12px;
   }
 
   .is-page .is-row-text {
