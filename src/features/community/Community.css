@@ -102,13 +102,16 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  justify-self: start;
+  width: fit-content;
+  max-width: 100%;
   padding: 14px;
   background: #fff;
   border: 1px solid #ece9f7;
   border-radius: 16px;
 }
 .cm-person-text {
-  flex: 1;
+  flex: 0 0 auto;
   min-width: 0;
 }
 .cm-person-text strong,
