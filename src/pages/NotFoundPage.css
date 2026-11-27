@@ -23,17 +23,6 @@
   font-family: 'Manrope', system-ui, sans-serif;
 }
 
-.not-found-wave {
-  position: absolute;
-  z-index: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: clamp(150px, 24vh, 250px);
-  pointer-events: none;
-}
-
 .not-found-orb {
   position: absolute;
   z-index: 1;
@@ -43,25 +32,10 @@
 }
 
 .not-found-orb--logo {
-  top: -280px;
+  top: -230px;
   left: -12px;
   width: clamp(360px, 27vw, 430px);
   background: linear-gradient(145deg, #e1d5ff 0%, #d2bcff 100%);
-}
-
-.not-found-orb--right {
-  top: 8vh;
-  right: 7vw;
-  width: clamp(150px, 11vw, 175px);
-  background: linear-gradient(145deg, #e1d5ff 0%, #d2bcff 100%);
-}
-
-.not-found-orb--bottom {
-  right: -105px;
-  bottom: -330px;
-  width: 410px;
-  aspect-ratio: 1;
-  background: linear-gradient(140deg, #bb9af7, #d6c4ff);
 }
 
 .not-found-header {
@@ -97,7 +71,7 @@
   align-items: center;
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
   gap: clamp(24px, 3vw, 48px);
-  padding: 0 0 clamp(190px, 22vh, 250px);
+  padding: 0 0 clamp(80px, 10vh, 120px);
 }
 
 .not-found-art {
@@ -110,10 +84,10 @@
 
 .not-found-art img {
   display: block;
-  width: 108%;
-  max-width: 800px;
-  max-height: 60vh;
-  margin: -3vh 0 0 -4%;
+  width: 100%;
+  max-width: 700px;
+  max-height: 54vh;
+  margin: -2vh 0 0 -2%;
   object-fit: contain;
   object-position: center;
   transform: translateY(-6vh);
@@ -128,8 +102,8 @@
 .not-found-copy h1 {
   margin: 0;
   color: var(--nf-ink);
-  font-size: clamp(39px, 3.9vw, 60px);
-  font-weight: 800;
+  font-size: clamp(39px, 3.9vw, 50px);
+  font-weight: 400;
   letter-spacing: -0.055em;
   line-height: 1.16;
 }
@@ -138,7 +112,7 @@
   max-width: 600px;
   margin: 24px 0 38px;
   color: #3f3d71;
-  font-size: clamp(18px, 2vw, 31px);
+  font-size: clamp(17px, 2vw, 28px);
   font-weight: 500;
   line-height: 1.5;
 }
@@ -161,7 +135,7 @@
   border-radius: 999px;
   cursor: pointer;
   font: inherit;
-  font-size: 21px;
+  font-size: 17px;
   font-weight: 700;
   text-decoration: none;
   transition:
@@ -202,9 +176,10 @@
   }
 
   .not-found-art img {
-    width: 108%;
-    max-height: 58vh;
-    margin: -2vh 0 0 -4%;
+    width: 100%;
+    max-width: 660px;
+    max-height: 52vh;
+    margin: -1vh 0 0 -2%;
   }
 
   .not-found-copy h1 {
@@ -236,17 +211,11 @@
     width: min(92vw, 330px);
   }
 
-  .not-found-orb--right {
-    top: 42px;
-    right: 14px;
-    width: 82px;
-  }
-
   .not-found-art img {
-    width: min(104vw, 470px);
-    max-height: 27vh;
-    margin: -1vh 0 0 -3%;
-    transform: translateY(-2vh);
+    width: min(96vw, 430px);
+    max-height: 24vh;
+    margin: -1vh 0 0 -2%;
+    transform: translateY(-1vh);
   }
 
   .not-found-content {
@@ -285,16 +254,6 @@
     min-height: 54px;
     font-size: 18px;
   }
-
-  .not-found-wave {
-    height: 22vh;
-  }
-
-  .not-found-orb--bottom {
-    right: -180px;
-    bottom: -290px;
-    width: 350px;
-  }
 }
 
 @media (max-height: 760px) and (min-width: 621px) {
@@ -307,11 +266,11 @@
   }
 
   .not-found-content {
-    padding-bottom: 18vh;
+    padding-bottom: 9vh;
   }
 
   .not-found-art img {
-    max-height: 70vh;
+    max-height: 52vh;
   }
 
   .not-found-description {
