@@ -32,7 +32,7 @@
 }
 
 .not-found-orb--logo {
-  top: -230px;
+  top: -250px;
   left: -12px;
   width: clamp(360px, 27vw, 430px);
   background: linear-gradient(145deg, #e1d5ff 0%, #d2bcff 100%);
@@ -206,7 +206,7 @@
   }
 
   .not-found-orb--logo {
-    top: -215px;
+    top: -250px;
     left: -58px;
     width: min(92vw, 330px);
   }
