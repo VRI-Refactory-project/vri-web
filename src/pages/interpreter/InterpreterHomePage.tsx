@@ -18,7 +18,6 @@ import {
   timeOf,
   useMySessions,
 } from '../../features/interpreter/homeSessions';
-// 👇 Import the hook and the new dropdown component
 import { useInterpreterNotifications } from '../../features/interpreter/useInterpreterNotifications';
 import { NotificationDropdown } from '../../features/interpreter/NotificationDropdown';
 import './InterpreterHomePage.css';
@@ -66,10 +65,7 @@ export function InterpreterHomePage() {
   const { session } = useAuth();
   const firstName = session?.user.name?.split(' ')[0] || 'there';
 
-  // 👇 Get notifications and the markAllRead function from the hook
   const { notifications, unreadCount, markAllRead } = useInterpreterNotifications();
-
-  // 👇 State to show/hide the dropdown
   const [showNotifications, setShowNotifications] = useState(false);
 
   const { available, availableNow, reason, setAvailable, loading, saving, error } =
@@ -112,7 +108,6 @@ export function InterpreterHomePage() {
     <div className="ih-page">
       <header className="ih-topbar">
         <div className="ih-topbar-actions">
-          {/* 👇 Wrap the bell in a relative div to position the dropdown */}
           <div style={{ position: 'relative' }}>
             <button
               className="ih-icon-btn relative"
@@ -120,11 +115,9 @@ export function InterpreterHomePage() {
               onClick={() => setShowNotifications(!showNotifications)}
             >
               <Bell size={20} className="ih-icon" />
-              {/* 👇 Dynamic red dot */}
               {unreadCount > 0 && <span className="ih-notification-dot"></span>}
             </button>
 
-            {/* 👇 Show the dropdown when the bell is clicked */}
             {showNotifications && (
               <NotificationDropdown
                 notifications={notifications}
@@ -159,7 +152,6 @@ export function InterpreterHomePage() {
           </section>
 
           <div className="ih-stats-row">
-            {/* Booked Sessions Card */}
             <div className="ih-stat-box">
               <div className="ih-stat-header">
                 <CalendarCheck size={20} className="ih-icon-blue" />
@@ -186,112 +178,6 @@ export function InterpreterHomePage() {
               <p>This week&apos;s sessions</p>
             </div>
           </div>
-
-          <section className="ih-section" aria-label="Booked sessions">
-            <div className="ih-next-session-wrapper">
-              <div className="ih-section-header">
-                <h3>
-                  <Calendar size={18} className="ih-section-icon" /> Booked sessions
-                </h3>
-                <Link to={`${INTERPRETER_BASE}/sessions`} className="ih-section-link">
-                  View all <ChevronRight size={14} />
-                </Link>
-              </div>
-
-              {(bookingError || joinError) && (
-                <p className="ih-time-label ih-empty-note" role="alert">
-                  {bookingError || joinError}
-                </p>
-              )}
-              {loadError ? null : bookingsLoading ? (
-                <p className="ih-time-label ih-empty-note">Loading sessions…</p>
-              ) : bookings.length === 0 ? (
-                <p className="ih-time-label ih-empty-note">No sessions have been booked yet.</p>
-              ) : (
-                <div className="ih-booked-wrap mobile-data-cards">
-                  <table className="ih-booked-table">
-                    <thead>
-                      <tr>
-                        <th scope="col">Deaf user</th>
-                        <th scope="col">Date</th>
-                        <th scope="col">Time</th>
-                        <th scope="col">Duration</th>
-                        <th scope="col">Session type</th>
-                        <th scope="col">Status</th>
-                        <th scope="col">
-                          <span className="ih-sr-only">Actions</span>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {bookings.slice(0, 4).map((booking) => (
-                        <tr key={booking.id}>
-                          <td data-label="Deaf user" data-card-primary>
-                            <span className="ih-booked-person">
-                              <Avatar name={booking.withName} photo={booking.photo} />
-                              {booking.withName}
-                            </span>
-                          </td>
-                          <td data-label="Date">{dayLabel(booking.startsAt, today)}</td>
-                          <td data-label="Time">{timeOf(booking.startsAt)}</td>
-                          <td data-label="Duration">{formatDuration(booking.durationMinutes)}</td>
-                          <td data-label="Session type">{booking.typeLabel}</td>
-                          <td data-label="Status">
-                            <span className={`ih-status ih-status--${bookingStatus(booking).tone}`}>
-                              {bookingStatus(booking).label}
-                            </span>
-                          </td>
-                          <td data-label="Actions" data-card-actions>
-                            <div className="ih-booking-actions">
-                              {booking.offered ? (
-                                <>
-                                  <button
-                                    type="button"
-                                    className="ih-btn-primary ih-btn-small"
-                                    disabled={busyId === booking.id}
-                                    onClick={() => answer(booking.id, 'accept')}
-                                  >
-                                    Accept
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className="ih-btn-secondary ih-btn-small"
-                                    disabled={busyId === booking.id}
-                                    onClick={() => answer(booking.id, 'decline')}
-                                  >
-                                    Decline
-                                  </button>
-                                </>
-                              ) : booking.confirmed ? (
-                                booking.canJoin ? (
-                                  <button
-                                    type="button"
-                                    className="ih-btn-primary ih-btn-small"
-                                    onClick={() => join(booking.id)}
-                                  >
-                                    Join call
-                                  </button>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    className="ih-btn-secondary ih-btn-small"
-                                    disabled={busyId === booking.id}
-                                    onClick={() => answer(booking.id, 'release')}
-                                  >
-                                    Give back
-                                  </button>
-                                )
-                              ) : null}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          </section>
 
           <div className="ih-dashboard-split">
             <div className="ih-split-left">
@@ -363,7 +249,7 @@ export function InterpreterHomePage() {
 
                   {recent.length === 0 && <p className="ih-time-label">No sessions yet.</p>}
 
-                  {recent.map((session) => (
+                  {recent.slice(0, 4).map((session) => (
                     <div className="ih-recent-item" key={session.id}>
                       <Avatar name={session.withName} photo={session.photo} />
                       <div className="ih-list-info">
@@ -384,6 +270,125 @@ export function InterpreterHomePage() {
               </section>
             </div>
           </div>
+
+          <section className="ih-section" aria-label="Booked sessions">
+            <div className="ih-next-session-wrapper">
+              <div className="ih-section-header">
+                <h3>
+                  <Calendar size={18} className="ih-section-icon" /> Booked sessions
+                </h3>
+                <Link to={`${INTERPRETER_BASE}/sessions`} className="ih-section-link">
+                  View all <ChevronRight size={14} />
+                </Link>
+              </div>
+
+              {(bookingError || joinError) && (
+                <p className="ih-time-label ih-empty-note" role="alert">
+                  {bookingError || joinError}
+                </p>
+              )}
+
+              {!loadError && (
+                <div className="ih-booked-wrap mobile-data-cards">
+                  <table className="ih-booked-table">
+                    <thead>
+                      <tr>
+                        <th scope="col">Deaf user</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">Time</th>
+                        <th scope="col">Duration</th>
+                        <th scope="col">Session type</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">
+                          <span className="ih-sr-only">Actions</span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {bookingsLoading ? (
+                        <tr>
+                          <td colSpan={7} className="ih-time-label ih-empty-note">
+                            Loading sessions…
+                          </td>
+                        </tr>
+                      ) : bookings.length === 0 ? (
+                        <tr>
+                          <td colSpan={7} className="ih-time-label ih-empty-note">
+                            No sessions have been booked yet.
+                          </td>
+                        </tr>
+                      ) : (
+                        bookings.slice(0, 4).map((booking) => (
+                          <tr key={booking.id}>
+                            <td data-label="Deaf user" data-card-primary>
+                              <span className="ih-booked-person">
+                                <Avatar name={booking.withName} photo={booking.photo} />
+                                {booking.withName}
+                              </span>
+                            </td>
+                            <td data-label="Date">{dayLabel(booking.startsAt, today)}</td>
+                            <td data-label="Time">{timeOf(booking.startsAt)}</td>
+                            <td data-label="Duration">{formatDuration(booking.durationMinutes)}</td>
+                            <td data-label="Session type">{booking.typeLabel}</td>
+                            <td data-label="Status">
+                              <span
+                                className={`ih-status ih-status--${bookingStatus(booking).tone}`}
+                              >
+                                {bookingStatus(booking).label}
+                              </span>
+                            </td>
+                            <td data-label="Actions" data-card-actions>
+                              <div className="ih-booking-actions">
+                                {booking.offered ? (
+                                  <>
+                                    <button
+                                      type="button"
+                                      className="ih-btn-primary ih-btn-small"
+                                      disabled={busyId === booking.id}
+                                      onClick={() => answer(booking.id, 'accept')}
+                                    >
+                                      Accept
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="ih-btn-secondary ih-btn-small"
+                                      disabled={busyId === booking.id}
+                                      onClick={() => answer(booking.id, 'decline')}
+                                    >
+                                      Decline
+                                    </button>
+                                  </>
+                                ) : booking.confirmed ? (
+                                  booking.canJoin ? (
+                                    <button
+                                      type="button"
+                                      className="ih-btn-primary ih-btn-small"
+                                      onClick={() => join(booking.id)}
+                                    >
+                                      Join call
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      className="ih-btn-secondary ih-btn-small"
+                                      disabled={busyId === booking.id}
+                                      onClick={() => answer(booking.id, 'release')}
+                                    >
+                                      Give back
+                                    </button>
+                                  )
+                                ) : null}
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </section>
         </div>
 
         <aside className="ih-right-column">
