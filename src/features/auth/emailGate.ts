@@ -6,5 +6,10 @@ import type { AuthUser } from '../../types';
  * verification (undefined) are never asked.
  */
 export function needsEmailVerification(user: AuthUser): boolean {
-  return user.role !== 'admin' && !!user.email && user.emailVerified === false;
+  return (
+    user.role !== 'admin' &&
+    !(user.role === 'institution' && user.institutionRole === 'STAFF') &&
+    !!user.email &&
+    user.emailVerified === false
+  );
 }
