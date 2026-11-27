@@ -118,6 +118,11 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.cm-person-text strong {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+}
 .cm-person-text small {
   color: #64748b;
 }
@@ -126,6 +131,7 @@
   gap: 6px;
 }
 .cm-btn {
+  flex-shrink: 0;
   padding: 8px 14px;
   border: 1.5px solid #3b2579;
   border-radius: 10px;
