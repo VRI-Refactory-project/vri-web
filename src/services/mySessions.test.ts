@@ -32,12 +32,7 @@ describe('getMySessions', () => {
 
     const items = await getMySessions();
 
-    expect(items.map((i) => i.status)).toEqual([
-      'matched',
-      'waiting',
-      'cancelled',
-      'missed',
-    ]);
+    expect(items.map((i) => i.status)).toEqual(['matched', 'waiting', 'cancelled', 'missed']);
     expect(items[0].interpreterName).toBe('Amina');
     expect(items[1].interpreterName).toBeNull();
     expect(items[3].emergency).toBe(true);
@@ -52,11 +47,7 @@ describe('getMySessions', () => {
 
     const items = await getMySessions();
 
-    expect(items.map((i) => i.status)).toEqual([
-      'completed',
-      'matched',
-      'matched',
-    ]);
+    expect(items.map((i) => i.status)).toEqual(['completed', 'matched', 'matched']);
   });
 
   it('reads one request in full for the details screen, including its end time', async () => {
@@ -93,9 +84,7 @@ describe('getMySessions', () => {
 
   it('accepts a paged answer', async () => {
     vi.mocked(api).mockResolvedValue({
-      results: [
-        { id: 9, status: 'ASSIGNED', created_at: '2026-10-01T10:00:00Z' },
-      ],
+      results: [{ id: 9, status: 'ASSIGNED', created_at: '2026-10-01T10:00:00Z' }],
     });
 
     expect(await getMySessions()).toHaveLength(1);

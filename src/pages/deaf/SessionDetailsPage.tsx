@@ -59,9 +59,7 @@ export function SessionDetailsPage({
         ...(detail.matchedAt
           ? [['Accepted', formatWhen(detail.matchedAt)] as [string, string]]
           : []),
-        ...(detail.endedAt
-          ? [['Ended', formatWhen(detail.endedAt)] as [string, string]]
-          : []),
+        ...(detail.endedAt ? [['Ended', formatWhen(detail.endedAt)] as [string, string]] : []),
         ['Status', STATUS_LABEL[detail.status]],
         ...(detail.description ? [['Notes', detail.description] as [string, string]] : []),
       ]
