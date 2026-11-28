@@ -21,6 +21,8 @@ export interface SessionDetail extends HistoryItem {
   description: string;
   /** When an interpreter accepted. */
   matchedAt: string | null;
+  /** When the session ended. */
+  endedAt: string | null;
 }
 
 interface ApiRequest {
@@ -29,6 +31,7 @@ interface ApiRequest {
   priority?: string;
   created_at: string;
   assigned_at?: string | null;
+  ended_at?: string | null;
   specialisation_required?: string;
   description?: string;
   interpreter?: { name: string; languages?: string } | null;
@@ -73,5 +76,6 @@ export async function getMySession(id: string): Promise<SessionDetail> {
     specialisation: r.specialisation_required ?? 'GENERAL',
     description: r.description ?? '',
     matchedAt: r.assigned_at ?? null,
+    endedAt: r.ended_at ?? null,
   };
 }

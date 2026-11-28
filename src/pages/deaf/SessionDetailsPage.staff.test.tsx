@@ -22,6 +22,7 @@ const session = (status: SessionDetail['status']): SessionDetail => ({
   specialisation: 'MEDICAL',
   description: '',
   matchedAt: null,
+  endedAt: null,
 });
 
 const show = (allowCancel = true) =>
