@@ -29,6 +29,7 @@ describe('SessionDetailsPage', () => {
       specialisation: 'MEDICAL',
       description: 'Clinic visit',
       matchedAt: '2026-10-01T10:02:00',
+      endedAt: null,
     });
     show();
     expect(await screen.findByText('Amina Okafor')).toBeTruthy();
@@ -50,6 +51,7 @@ describe('SessionDetailsPage', () => {
       specialisation: 'GENERAL',
       description: '',
       matchedAt: null,
+      endedAt: '2026-10-01T10:35:00',
     });
     render(
       <MemoryRouter initialEntries={['/dashboard/staff/sessions/5']}>
