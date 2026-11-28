@@ -29,8 +29,15 @@ describe('getMySessions', () => {
         created_at: '2026-10-04T10:00:00Z',
       },
     ]);
+
     const items = await getMySessions();
-    expect(items.map((i) => i.status)).toEqual(['matched', 'waiting', 'cancelled', 'missed']);
+
+    expect(items.map((i) => i.status)).toEqual([
+      'matched',
+      'waiting',
+      'cancelled',
+      'missed',
+    ]);
     expect(items[0].interpreterName).toBe('Amina');
     expect(items[1].interpreterName).toBeNull();
     expect(items[3].emergency).toBe(true);
@@ -42,21 +49,32 @@ describe('getMySessions', () => {
       { id: 2, status: 'ACTIVE', created_at: '2026-10-02T10:00:00Z' },
       { id: 3, status: 'CONNECTING', created_at: '2026-10-03T10:00:00Z' },
     ]);
+
     const items = await getMySessions();
-    expect(items.map((i) => i.status)).toEqual(['completed', 'matched', 'matched']);
+
+    expect(items.map((i) => i.status)).toEqual([
+      'completed',
+      'matched',
+      'matched',
+    ]);
   });
 
-  it('reads one request in full for the details screen', async () => {
+  it('reads one request in full for the details screen, including its end time', async () => {
     vi.mocked(api).mockResolvedValue({
       id: 5,
       status: 'ASSIGNED',
       priority: 'EMERGENCY',
       created_at: '2026-10-01T10:00:00Z',
       assigned_at: '2026-10-01T10:02:00Z',
+      ended_at: '2026-10-01T10:35:00Z',
       specialisation_required: 'MEDICAL',
       description: 'Clinic visit',
-      interpreter: { name: 'Amina Okafor', languages: 'Ugandan Sign Language' },
+      interpreter: {
+        name: 'Amina Okafor',
+        languages: 'Ugandan Sign Language',
+      },
     });
+
     expect(await getMySession('5')).toEqual({
       id: '5',
       status: 'matched',
@@ -67,14 +85,19 @@ describe('getMySessions', () => {
       specialisation: 'MEDICAL',
       description: 'Clinic visit',
       matchedAt: '2026-10-01T10:02:00Z',
+      endedAt: '2026-10-01T10:35:00Z',
     });
+
     expect(api).toHaveBeenCalledWith('/api/v1/requests/5/');
   });
 
   it('accepts a paged answer', async () => {
     vi.mocked(api).mockResolvedValue({
-      results: [{ id: 9, status: 'ASSIGNED', created_at: '2026-10-01T10:00:00Z' }],
+      results: [
+        { id: 9, status: 'ASSIGNED', created_at: '2026-10-01T10:00:00Z' },
+      ],
     });
+
     expect(await getMySessions()).toHaveLength(1);
   });
 });
